@@ -25,7 +25,7 @@ const payload = {
     role: "admin"
 };
 
-const token = Auth.getToken(payload);
+const token = Auth.createToken(payload);
 ```
 
 ### Token Expiry
@@ -153,7 +153,7 @@ Router.post("/api/login", async (req, res) => {
         return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const token = Auth.getToken({
+    const token = Auth.createToken({
         user_id: user.id,
         email: user.email,
         name: user.name
@@ -353,7 +353,7 @@ Router.post("/api/login", async (req, res) => {
         return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const token = Auth.getToken({
+    const token = Auth.createToken({
         user_id: user.id,
         email: user.email,
         name: user.name,

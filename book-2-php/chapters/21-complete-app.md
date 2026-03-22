@@ -276,7 +276,7 @@ Route::post("/api/auth/login", function ($request, $response) {
     }
 
     // Generate JWT token
-    $token = Auth::generateToken([
+    $token = Auth::getToken([
         "user_id" => $user->id,
         "email" => $user->email,
         "role" => $user->role

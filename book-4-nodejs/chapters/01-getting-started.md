@@ -235,7 +235,7 @@ Create the file `src/routes/greeting.ts`:
 ```typescript
 import { Router } from "tina4-nodejs";
 
-Router.get("/api/greeting/:name", async (req, res) => {
+Router.get("/api/greeting/{name}", async (req, res) => {
     const name = req.params.name;
     return res.json({
         message: `Hello, ${name}!`,
@@ -292,7 +292,7 @@ curl http://localhost:7148/api/greeting/Alice
 ### Understanding What Happened
 
 1. You created a file in `src/routes/`. Tina4 discovered it at startup.
-2. `Router.get("/api/greeting/:name", ...)` registered a GET route with a path parameter `:name`.
+2. `Router.get("/api/greeting/{name}", ...)` registered a GET route with a path parameter `{name}`.
 3. A request to `/api/greeting/Alice` hit the router. Pattern matched. Handler fired.
 4. `req.params.name` delivered the value `"Alice"` from the URL.
 5. `res.json(...)` serialized the object, set `Content-Type: application/json`, and returned `200 OK`.
@@ -304,7 +304,7 @@ Add a POST endpoint. Update `src/routes/greeting.ts`:
 ```typescript
 import { Router } from "tina4-nodejs";
 
-Router.get("/api/greeting/:name", async (req, res) => {
+Router.get("/api/greeting/{name}", async (req, res) => {
     const name = req.params.name;
     return res.json({
         message: `Hello, ${name}!`,

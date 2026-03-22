@@ -54,7 +54,7 @@ req.path // "/api/users"
 Path parameters from the URL pattern (see Chapter 2):
 
 ```typescript
-// Route: /users/:id/posts/:postId
+// Route: /users/{id}/posts/{postId}
 // Request: /users/5/posts/42
 req.params.id     // "5" (or 5 if typed as :id:int)
 req.params.postId // "42"
@@ -443,7 +443,7 @@ import { Router } from "tina4-nodejs";
 import { existsSync } from "fs";
 import { join } from "path";
 
-Router.get("/api/reports/:filename", async (req, res) => {
+Router.get("/api/reports/{filename}", async (req, res) => {
     const filename = req.params.filename;
     const filepath = join(process.cwd(), "data/reports", filename);
 
@@ -470,7 +470,7 @@ Check the `Accept` header to return different formats:
 ```typescript
 import { Router } from "tina4-nodejs";
 
-Router.get("/api/products/:id:int", async (req, res) => {
+Router.get("/api/products/{id:int}", async (req, res) => {
     const id = req.params.id;
     const product = { id, name: "Wireless Keyboard", price: 79.99 };
 
@@ -499,7 +499,7 @@ Build an API that handles image uploads and serves them back.
 | Method | Path | Description |
 |--------|------|-------------|
 | `POST` | `/api/images` | Upload an image. Validate type and size. Return the image URL. |
-| `GET` | `/api/images/:filename` | Return the uploaded image file. Return 404 if not found. |
+| `GET` | `/api/images/{filename}` | Return the uploaded image file. Return 404 if not found. |
 
 Rules:
 
@@ -568,7 +568,7 @@ Router.post("/api/images", async (req, res) => {
     });
 });
 
-Router.get("/api/images/:filename", async (req, res) => {
+Router.get("/api/images/{filename}", async (req, res) => {
     const filename = req.params.filename;
 
     if (filename.includes("..") || filename.includes("/")) {

@@ -18,10 +18,10 @@ Create `src/routes/greet.php` with a `GET /api/greet` endpoint that:
 ### Expected Output
 
 ```bash
-curl "http://localhost:7145/api/greet?name=Sarah"
+curl "http://localhost:7146/api/greet?name=Sarah"
 # {"greeting":"Welcome, Sarah!","time_of_day":"afternoon"}
 
-curl "http://localhost:7145/api/greet"
+curl "http://localhost:7146/api/greet"
 # {"greeting":"Welcome, Stranger!","time_of_day":"afternoon"}
 ```
 

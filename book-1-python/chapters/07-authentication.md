@@ -120,7 +120,7 @@ from tina4_python.auth import Auth
 from tina4_python.database.connection import Database
 
 @post("/api/register")
-@noauth
+@noauth()
 async def register(request, response):
     body = request.body
 
@@ -184,7 +184,7 @@ from tina4_python.auth import Auth
 from tina4_python.database.connection import Database
 
 @post("/api/login")
-@noauth
+@noauth()
 async def login(request, response):
     body = request.body
 
@@ -357,18 +357,18 @@ Use `@noauth` for public endpoints that should bypass any global or group-level 
 from tina4_python.core.router import get, post, noauth
 
 @get("/api/public/health")
-@noauth
+@noauth()
 async def health(request, response):
     return response.json({"status": "ok"})
 
 @post("/api/login")
-@noauth
+@noauth()
 async def login(request, response):
     # Login logic
     pass
 
 @post("/api/register")
-@noauth
+@noauth()
 async def register(request, response):
     # Registration logic
     pass
@@ -382,7 +382,7 @@ By default, POST, PUT, PATCH, and DELETE routes are considered secured. GET rout
 from tina4_python.core.router import get, secured
 
 @get("/api/me")
-@secured
+@secured()
 async def me(request, response):
     # This GET route requires authentication
     return response.json(request.user)
@@ -671,7 +671,7 @@ async def auth_middleware(request, response, next_handler):
 
 
 @post("/api/register")
-@noauth
+@noauth()
 async def register(request, response):
     body = request.body
 
@@ -707,7 +707,7 @@ async def register(request, response):
 
 
 @post("/api/login")
-@noauth
+@noauth()
 async def login(request, response):
     body = request.body
 

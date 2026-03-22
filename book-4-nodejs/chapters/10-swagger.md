@@ -58,7 +58,7 @@ Router.get("/api/products", async (req, res) => {
  * @tags Products
  * @param int id The unique product identifier
  */
-Router.get("/api/products/:id:int", async (req, res) => {
+Router.get("/api/products/{id:int}", async (req, res) => {
     return res.json({ id: req.params.id, name: "Wireless Keyboard", price: 79.99 });
 });
 
@@ -195,7 +195,7 @@ import { Router } from "tina4-nodejs";
  * @example request {"name": "Alice Smith", "email": "alice.smith@example.com"}
  * @example response {"id": 1, "name": "Alice Smith", "email": "alice.smith@example.com", "role": "admin", "updated_at": "2026-03-22T14:30:00+00:00"}
  */
-Router.put("/api/users/:id:int", async (req, res) => {
+Router.put("/api/users/{id:int}", async (req, res) => {
     return res.json({ id: req.params.id, name: req.body.name ?? "Alice", updated_at: new Date().toISOString() });
 });
 
@@ -209,7 +209,7 @@ Router.put("/api/users/:id:int", async (req, res) => {
  * @response 200 {"orders": [{"id": "int", "product": "string", "total": "float", "status": "string"}], "total": "int"}
  * @response 404 {"error": "string"}
  */
-Router.get("/api/users/:id:int/orders", async (req, res) => {
+Router.get("/api/users/{id:int}/orders", async (req, res) => {
     return res.json({ orders: [], total: 0, page: parseInt(req.query.page ?? "1", 10) });
 });
 
@@ -223,7 +223,7 @@ Router.get("/api/users/:id:int/orders", async (req, res) => {
  * @response 400 {"error": "string"}
  * @example request {"avatar_url": "https://cdn.example.com/avatars/alice.jpg"}
  */
-Router.post("/api/users/:id:int/avatar", async (req, res) => {
+Router.post("/api/users/{id:int}/avatar", async (req, res) => {
     if (!req.body.avatar_url) {
         return res.status(400).json({ error: "avatar_url is required" });
     }

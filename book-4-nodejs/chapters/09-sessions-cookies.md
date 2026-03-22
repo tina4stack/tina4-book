@@ -245,8 +245,8 @@ Build a shopping cart stored entirely in session data.
 |--------|------|-------------|
 | `POST` | `/api/cart/add` | Add an item to the cart |
 | `GET` | `/api/cart` | View the cart with totals |
-| `PUT` | `/api/cart/:product_id:int` | Update quantity (0 removes) |
-| `DELETE` | `/api/cart/:product_id:int` | Remove an item |
+| `PUT` | `/api/cart/{product_id:int}` | Update quantity (0 removes) |
+| `DELETE` | `/api/cart/{product_id:int}` | Remove an item |
 | `DELETE` | `/api/cart` | Clear the cart |
 
 ---
@@ -310,7 +310,7 @@ Router.get("/api/cart", async (req, res) => {
     return res.json(cartResponse(getCart(req.session)));
 });
 
-Router.put("/api/cart/:product_id:int", async (req, res) => {
+Router.put("/api/cart/{product_id:int}", async (req, res) => {
     const productId = req.params.product_id;
     const quantity = parseInt(req.body.quantity ?? "0", 10);
     const cart = getCart(req.session);
@@ -330,7 +330,7 @@ Router.put("/api/cart/:product_id:int", async (req, res) => {
     return res.json(cartResponse(cart));
 });
 
-Router.delete("/api/cart/:product_id:int", async (req, res) => {
+Router.delete("/api/cart/{product_id:int}", async (req, res) => {
     const productId = req.params.product_id;
     const cart = getCart(req.session);
     const index = cart.findIndex(item => item.product_id === productId);

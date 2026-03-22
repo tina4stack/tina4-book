@@ -127,7 +127,7 @@ uv sync
 ```
 Resolved 1 package in 0.8s
 Installed 1 package in 0.3s
- + tina4-python==3.0.0
+ + tina4-python==3.1.0
 ```
 
 One package. No dependency tree. No version conflicts. Just `tina4-python`.

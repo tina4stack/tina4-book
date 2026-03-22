@@ -133,7 +133,7 @@ export class Product extends BaseModel {
 }
 
 // The AI generates type-safe route handlers
-Router.get("/api/products/:id:int", async (req, res) => {
+Router.get("/api/products/{id:int}", async (req, res) => {
     const product = new Product();
     await product.load(req.params.id);
     return product.id ? res.json(product.toDict()) : res.status(404).json({ error: "Not found" });

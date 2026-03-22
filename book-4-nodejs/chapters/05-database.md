@@ -453,10 +453,10 @@ Build a notes application backed by SQLite. Create the database table via a migr
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/api/notes` | List all notes. Support `?tag=` and `?search=` filters. |
-| `GET` | `/api/notes/:id:int` | Get a single note. 404 if not found. |
+| `GET` | `/api/notes/{id:int}` | Get a single note. 404 if not found. |
 | `POST` | `/api/notes` | Create a note. Validate title and content are not empty. |
-| `PUT` | `/api/notes/:id:int` | Update a note. 404 if not found. |
-| `DELETE` | `/api/notes/:id:int` | Delete a note. 204 on success, 404 if not found. |
+| `PUT` | `/api/notes/{id:int}` | Update a note. 404 if not found. |
+| `DELETE` | `/api/notes/{id:int}` | Delete a note. 204 on success, 404 if not found. |
 
 ---
 
@@ -522,7 +522,7 @@ Router.get("/api/notes", async (req, res) => {
     return res.json({ notes, count: notes.length });
 });
 
-Router.get("/api/notes/:id:int", async (req, res) => {
+Router.get("/api/notes/{id:int}", async (req, res) => {
     const db = Database.getConnection();
     const id = req.params.id;
 
@@ -561,7 +561,7 @@ Router.post("/api/notes", async (req, res) => {
     return res.status(201).json(note);
 });
 
-Router.put("/api/notes/:id:int", async (req, res) => {
+Router.put("/api/notes/{id:int}", async (req, res) => {
     const db = Database.getConnection();
     const id = req.params.id;
     const body = req.body;
@@ -587,7 +587,7 @@ Router.put("/api/notes/:id:int", async (req, res) => {
     return res.json(note);
 });
 
-Router.delete("/api/notes/:id:int", async (req, res) => {
+Router.delete("/api/notes/{id:int}", async (req, res) => {
     const db = Database.getConnection();
     const id = req.params.id;
 

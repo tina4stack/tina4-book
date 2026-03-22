@@ -127,7 +127,7 @@ connection.broadcast(JSON.stringify({ type: "message", text: message.text }), tr
 ## 7. Path-Scoped Isolation
 
 ```typescript
-Router.websocket("/ws/chat/:room", async (connection, event, data) => {
+Router.websocket("/ws/chat/{room}", async (connection, event, data) => {
     const room = connection.params.room;
 
     if (event === "open") {
@@ -170,7 +170,7 @@ import { Router } from "tina4-nodejs";
 
 const chatUsers: Record<string, { id: string; username: string; room: string }> = {};
 
-Router.websocket("/ws/livechat/:room", async (connection, event, data) => {
+Router.websocket("/ws/livechat/{room}", async (connection, event, data) => {
     const room = connection.params.room;
 
     if (event === "open") {
@@ -233,7 +233,7 @@ Router.websocket("/ws/livechat/:room", async (connection, event, data) => {
 ## 9. Live Notifications via HTTP
 
 ```typescript
-Router.post("/api/orders/:orderId:int/ship", async (req, res) => {
+Router.post("/api/orders/{orderId:int}/ship", async (req, res) => {
     const orderId = req.params.orderId;
     const userId = req.body.user_id ?? 0;
 
@@ -286,7 +286,7 @@ const ws = frond.ws("/ws/notifications/42", {
 
 ## 11. Exercise: Build a Real-Time Chat Room
 
-Build a WebSocket chat at `/ws/room/:roomName` with usernames, join/leave messages, and an HTML page at `GET /room/:roomName`.
+Build a WebSocket chat at `/ws/room/{roomName}` with usernames, join/leave messages, and an HTML page at `GET /room/{roomName}`.
 
 ---
 
@@ -299,7 +299,7 @@ import { Router } from "tina4-nodejs";
 
 const roomUsers: Record<string, string> = {};
 
-Router.websocket("/ws/room/:roomName", async (connection, event, data) => {
+Router.websocket("/ws/room/{roomName}", async (connection, event, data) => {
     const room = connection.params.roomName;
     const key = `${room}:${connection.id}`;
 
@@ -330,7 +330,7 @@ Router.websocket("/ws/room/:roomName", async (connection, event, data) => {
     }
 });
 
-Router.get("/room/:roomName", async (req, res) => {
+Router.get("/room/{roomName}", async (req, res) => {
     return res.html("room.html", { room: req.params.roomName });
 });
 ```

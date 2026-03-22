@@ -112,7 +112,7 @@ curl -X POST http://localhost:7148/api/products \
 When `id` is already set, `save()` performs an UPDATE:
 
 ```typescript
-Router.put("/api/products/:id:int", async (req, res) => {
+Router.put("/api/products/{id:int}", async (req, res) => {
     const product = new Product();
     await product.load(req.params.id);
 
@@ -150,7 +150,7 @@ if (!product.id) {
 ## 6. Deleting Records
 
 ```typescript
-Router.delete("/api/products/:id:int", async (req, res) => {
+Router.delete("/api/products/{id:int}", async (req, res) => {
     const product = new Product();
     await product.load(req.params.id);
 
@@ -296,7 +296,7 @@ export class Post extends BaseModel {
 ### Using Relationships
 
 ```typescript
-Router.get("/api/users/:id:int", async (req, res) => {
+Router.get("/api/users/{id:int}", async (req, res) => {
     const user = new User();
     await user.load(req.params.id);
 
@@ -388,10 +388,10 @@ This automatically registers:
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/api/products` | List all with pagination |
-| `GET` | `/api/products/:id` | Get one by ID |
+| `GET` | `/api/products/{id}` | Get one by ID |
 | `POST` | `/api/products` | Create a new record |
-| `PUT` | `/api/products/:id` | Update a record |
-| `DELETE` | `/api/products/:id` | Delete a record |
+| `PUT` | `/api/products/{id}` | Update a record |
+| `DELETE` | `/api/products/{id}` | Delete a record |
 
 ---
 
@@ -408,8 +408,8 @@ Build a blog with three models: User, Post, and Comment. Use relationships, eage
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/api/blog/posts` | List published posts with author info |
-| `GET` | `/api/blog/posts/:id:int` | Get a post with author and comments |
-| `POST` | `/api/blog/posts/:id:int/comments` | Add a comment to a post |
+| `GET` | `/api/blog/posts/{id:int}` | Get a post with author and comments |
+| `POST` | `/api/blog/posts/{id:int}/comments` | Add a comment to a post |
 
 ---
 
@@ -492,7 +492,7 @@ Router.get("/api/blog/posts", async (req, res) => {
     });
 });
 
-Router.get("/api/blog/posts/:id:int", async (req, res) => {
+Router.get("/api/blog/posts/{id:int}", async (req, res) => {
     const post = new Post();
     await post.load(req.params.id);
 
@@ -528,7 +528,7 @@ Router.post("/api/blog/posts", async (req, res) => {
     return res.status(201).json(post.toDict());
 });
 
-Router.post("/api/blog/posts/:id:int/comments", async (req, res) => {
+Router.post("/api/blog/posts/{id:int}/comments", async (req, res) => {
     const postId = req.params.id;
 
     const post = new Post();

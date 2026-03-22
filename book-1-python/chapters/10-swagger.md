@@ -169,7 +169,7 @@ from tina4_python.core.router import get, secured
 from tina4_python.swagger import description, tags
 
 @get("/api/profile")
-@secured
+@secured()
 @tags("Auth")
 @description("Get current user profile", "Requires a valid JWT token in the Authorization header.")
 async def get_profile(request, response):
@@ -184,7 +184,7 @@ Public routes marked with `@noauth` show as unlocked:
 from tina4_python.core.router import post, noauth
 
 @post("/api/login")
-@noauth
+@noauth()
 @tags("Auth")
 @description("Login", "Authenticate with email and password. Returns a JWT token.")
 @example({"email": "alice@example.com", "password": "securePass123"})
@@ -223,7 +223,7 @@ async def auth_middleware(request, response, next_handler):
 
 
 @post("/api/users")
-@noauth
+@noauth()
 @tags("Users")
 @description(
     "Register a new user",
@@ -374,7 +374,7 @@ async def auth_middleware(request, response, next_handler):
 
 
 @post("/api/register")
-@noauth
+@noauth()
 @tags("Auth")
 @description(
     "Register a new account",
@@ -397,7 +397,7 @@ async def register(request, response):
 
 
 @post("/api/login")
-@noauth
+@noauth()
 @tags("Auth")
 @description(
     "Login",

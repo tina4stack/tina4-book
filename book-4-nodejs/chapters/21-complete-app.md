@@ -42,10 +42,10 @@ We are building **TaskFlow** -- a task management system with:
 | POST | /api/auth/login | Login, get JWT | public |
 | GET | /api/profile | Get current user profile | secured |
 | GET | /api/tasks | List tasks (with filters) | secured |
-| GET | /api/tasks/:id | Get a single task | secured |
+| GET | /api/tasks/{id} | Get a single task | secured |
 | POST | /api/tasks | Create a task | secured |
-| PUT | /api/tasks/:id | Update a task | secured |
-| DELETE | /api/tasks/:id | Delete a task | secured |
+| PUT | /api/tasks/{id} | Update a task | secured |
+| DELETE | /api/tasks/{id} | Delete a task | secured |
 | GET | /api/dashboard/stats | Dashboard statistics | secured |
 | GET | /admin | Dashboard HTML page | public |
 
@@ -271,7 +271,7 @@ Router.post("/api/auth/login", async (req, res) => {
         return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const token = Auth.getToken({
+    const token = Auth.createToken({
         user_id: user.id,
         email: user.email,
         name: user.name,
@@ -350,7 +350,7 @@ Router.get("/api/tasks", async (req, res) => {
  * @tags Tasks
  * @param int id Task ID
  */
-Router.get("/api/tasks/:id:int", async (req, res) => {
+Router.get("/api/tasks/{id:int}", async (req, res) => {
     const db = Database.getConnection();
     const task = await db.fetchOne(
         `SELECT t.*, creator.name as creator_name, assignee.name as assignee_name
@@ -420,7 +420,7 @@ Router.post("/api/tasks", async (req, res) => {
  * Update a task
  * @tags Tasks
  */
-Router.put("/api/tasks/:id:int", async (req, res) => {
+Router.put("/api/tasks/{id:int}", async (req, res) => {
     const db = Database.getConnection();
     const id = req.params.id;
 
@@ -463,7 +463,7 @@ Router.put("/api/tasks/:id:int", async (req, res) => {
  * Delete a task
  * @tags Tasks
  */
-Router.delete("/api/tasks/:id:int", async (req, res) => {
+Router.delete("/api/tasks/{id:int}", async (req, res) => {
     const db = Database.getConnection();
     const id = req.params.id;
 

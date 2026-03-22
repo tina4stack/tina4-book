@@ -93,7 +93,7 @@ await cacheDelete("product:42");
 ```typescript
 import { Router, Database, cacheGet, cacheSet } from "tina4-nodejs";
 
-Router.get("/api/products/:id:int", async (req, res) => {
+Router.get("/api/products/{id:int}", async (req, res) => {
     const id = req.params.id;
     const cacheKey = `product:${id}`;
 
@@ -140,7 +140,7 @@ await cacheSet("products:featured", featuredProducts, 600);
 ### Event-Based Invalidation
 
 ```typescript
-Router.put("/api/products/:id:int", async (req, res) => {
+Router.put("/api/products/{id:int}", async (req, res) => {
     // Update database...
     await cacheDelete(`product:${req.params.id}`);
     await cacheDelete("products:all");
@@ -151,7 +151,7 @@ Router.put("/api/products/:id:int", async (req, res) => {
 ### Write-Through Cache
 
 ```typescript
-Router.put("/api/products/:id:int", async (req, res) => {
+Router.put("/api/products/{id:int}", async (req, res) => {
     // Update database...
     const updated = await db.fetchOne("SELECT * FROM products WHERE id = :id", { id });
     await cacheSet(`product:${id}`, updated, 600);
