@@ -279,7 +279,7 @@ Route::group("/api", function () {
         $offset = ($page - 1) * $perPage;
 
         $orders = $order->select("*", "", [], "created_at DESC", $perPage, $offset);
-        $results = array_map(fn($o) => $o->toDict(), $orders);
+        $results = array_map(fn($o) => $o->toArray(), $orders);
 
         return $response->json([
             "data" => $results,
@@ -298,7 +298,7 @@ Route::group("/api", function () {
             return $response->json(["error" => "Order not found"], 404);
         }
 
-        return $response->json($order->toDict());
+        return $response->json($order->toArray());
     });
 
     // Create an order
@@ -311,7 +311,7 @@ Route::group("/api", function () {
         $order->paid = (bool) ($body["paid"] ?? false);
         $order->save();
 
-        return $response->json($order->toDict(), 201);
+        return $response->json($order->toArray(), 201);
     });
 
     // Update an order
@@ -330,7 +330,7 @@ Route::group("/api", function () {
         if (isset($body["paid"])) $order->paid = (bool) $body["paid"];
         $order->save();
 
-        return $response->json($order->toDict());
+        return $response->json($order->toArray());
     });
 
     // Delete an order

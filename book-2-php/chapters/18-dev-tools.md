@@ -308,7 +308,7 @@ Route::get("/gallery/product-search", function ($request, $response) {
     return $response->json([
         "query" => $q,
         "category" => $category,
-        "results" => array_map(fn($p) => $p->toDict(), $results),
+        "results" => array_map(fn($p) => $p->toArray(), $results),
         "count" => count($results)
     ]);
 });

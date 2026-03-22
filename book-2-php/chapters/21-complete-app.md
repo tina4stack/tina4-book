@@ -197,7 +197,7 @@ class User extends ORM
      */
     public function toSafeDict(): array
     {
-        $dict = $this->toDict();
+        $dict = $this->toArray();
         unset($dict["password_hash"]);
         return $dict;
     }
@@ -413,7 +413,7 @@ class Task extends ORM
      */
     public function toDetailedDict(): array
     {
-        $dict = $this->toDict();
+        $dict = $this->toArray();
 
         $creator = $this->creator();
         $dict["creator"] = $creator ? $creator->toSafeDict() : null;

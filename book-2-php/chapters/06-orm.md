@@ -104,7 +104,7 @@ Route::post("/api/products", function ($request, $response) {
     $product->inStock = (bool) ($body["in_stock"] ?? true);
     $product->save();
 
-    return $response->json($product->toDict(), 201);
+    return $response->json($product->toArray(), 201);
 });
 ```
 
@@ -145,7 +145,7 @@ Route::put("/api/products/{id:int}", function ($request, $response) {
     $product->category = $body["category"] ?? $product->category;
     $product->save();
 
-    return $response->json($product->toDict());
+    return $response->json($product->toArray());
 });
 ```
 
@@ -177,7 +177,7 @@ Route::get("/api/products/{id:int}", function ($request, $response) {
         return $response->json(["error" => "Product not found"], 404);
     }
 
-    return $response->json($product->toDict());
+    return $response->json($product->toArray());
 });
 ```
 
@@ -318,7 +318,7 @@ Route::get("/api/products", function ($request, $response) {
 
     $products = $product->select("*", $filter, $params, $sort . " " . $order, $perPage, $offset);
 
-    $results = array_map(fn($p) => $p->toDict(), $products);
+    $results = array_map(fn($p) => $p->toArray(), $products);
 
     return $response->json([
         "products" => $results,
@@ -470,8 +470,8 @@ Route::get("/api/users/{id:int}", function ($request, $response) {
     $posts = $user->posts();
 
     return $response->json([
-        "user" => $user->toDict(),
-        "posts" => array_map(fn($p) => $p->toDict(), $posts),
+        "user" => $user->toArray(),
+        "posts" => array_map(fn($p) => $p->toArray(), $posts),
         "post_count" => count($posts)
     ]);
 });
@@ -507,15 +507,15 @@ $users = $user->select("*", "", [], "name ASC", 20, 0, ["posts"]);
 
 The seventh argument is an array of relationship names to include. This runs just 2 queries (one for users, one for all related posts) and stitches the results together.
 
-### toDict() with Nested Includes
+### toArray() with Nested Includes
 
-When eager loading is active, `toDict()` includes the related data:
+When eager loading is active, `toArray()` includes the related data:
 
 ```php
 $user = new User();
 $users = $user->select("*", "", [], "", 0, 0, ["posts"]);
 
-$result = array_map(fn($u) => $u->toDict(), $users);
+$result = array_map(fn($u) => $u->toArray(), $users);
 
 return $response->json($result);
 ```
@@ -919,7 +919,7 @@ Route::get("/api/blog/posts", function ($request, $response) {
     $post = new Post();
     $posts = $post->select("*", "published = :published", ["published" => 1], "created_at DESC", 0, 0, ["user"]);
 
-    $results = array_map(fn($p) => $p->toDict(), $posts);
+    $results = array_map(fn($p) => $p->toArray(), $posts);
 
     return $response->json([
         "posts" => $results,
@@ -939,9 +939,9 @@ Route::get("/api/blog/posts/{id:int}", function ($request, $response) {
     $user = $post->user();
     $comments = $post->comments();
 
-    $result = $post->toDict();
-    $result["user"] = $user ? $user->toDict() : null;
-    $result["comments"] = array_map(fn($c) => $c->toDict(), $comments);
+    $result = $post->toArray();
+    $result["user"] = $user ? $user->toArray() : null;
+    $result["comments"] = array_map(fn($c) => $c->toArray(), $comments);
     $result["comment_count"] = count($comments);
 
     return $response->json($result);
@@ -962,7 +962,7 @@ Route::post("/api/blog/posts", function ($request, $response) {
     $post->published = (bool) ($body["published"] ?? false);
     $post->save();
 
-    return $response->json($post->toDict(), 201);
+    return $response->json($post->toArray(), 201);
 });
 
 // Add a comment to a post
@@ -989,7 +989,7 @@ Route::post("/api/blog/posts/{id:int}/comments", function ($request, $response) 
     $comment->body = $body["body"];
     $comment->save();
 
-    return $response->json($comment->toDict(), 201);
+    return $response->json($comment->toArray(), 201);
 });
 ```
 
@@ -1079,4 +1079,4 @@ Route::post("/api/blog/posts/{id:int}/comments", function ($request, $response) 
 
 **Cause:** `select()` returns an array of model objects, not associative arrays. Each item is an instance of your model class.
 
-**Fix:** Access properties with object syntax: `$result->name`. Or convert to an array with `$result->toDict()`.
+**Fix:** Access properties with object syntax: `$result->name`. Or convert to an array with `$result->toArray()`.

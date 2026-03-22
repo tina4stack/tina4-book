@@ -106,7 +106,7 @@ GraphQL::resolve("Query", "products", function ($root, $args) {
     $product = new Product();
     $products = $product->select("*", "", [], "name ASC");
 
-    return array_map(fn($p) => $p->toDict(), $products);
+    return array_map(fn($p) => $p->toArray(), $products);
 });
 
 // Resolve the "product" query
@@ -118,7 +118,7 @@ GraphQL::resolve("Query", "product", function ($root, $args) {
         return null;
     }
 
-    return $product->toDict();
+    return $product->toArray();
 });
 ```
 
@@ -263,7 +263,7 @@ GraphQL::resolve("Mutation", "createProduct", function ($root, $args) {
     $product->inStock = (bool) ($input["inStock"] ?? true);
     $product->save();
 
-    return $product->toDict();
+    return $product->toArray();
 });
 
 // Update a product
@@ -282,7 +282,7 @@ GraphQL::resolve("Mutation", "updateProduct", function ($root, $args) {
     if (isset($input["inStock"])) $product->inStock = (bool) $input["inStock"];
     $product->save();
 
-    return $product->toDict();
+    return $product->toArray();
 });
 
 // Delete a product
@@ -305,7 +305,7 @@ GraphQL::resolve("Query", "productsByCategory", function ($root, $args) {
         "category" => $args["category"]
     ]);
 
-    return array_map(fn($p) => $p->toDict(), $products);
+    return array_map(fn($p) => $p->toArray(), $products);
 });
 ```
 
@@ -453,28 +453,28 @@ Add resolvers for the nested types:
 GraphQL::resolve("Query", "posts", function ($root, $args) {
     $post = new Post();
     $posts = $post->select("*", "published = :pub", ["pub" => 1], "created_at DESC");
-    return array_map(fn($p) => $p->toDict(), $posts);
+    return array_map(fn($p) => $p->toArray(), $posts);
 });
 
 // Single post query
 GraphQL::resolve("Query", "post", function ($root, $args) {
     $post = new Post();
     $post->load($args["id"]);
-    return empty($post->id) ? null : $post->toDict();
+    return empty($post->id) ? null : $post->toArray();
 });
 
 // Resolve Post.author (nested field)
 GraphQL::resolve("Post", "author", function ($post, $args) {
     $user = new User();
     $user->load($post["user_id"]);
-    return $user->toDict();
+    return $user->toArray();
 });
 
 // Resolve Post.comments (nested field)
 GraphQL::resolve("Post", "comments", function ($post, $args) {
     $comment = new Comment();
     $comments = $comment->select("*", "post_id = :postId", ["postId" => $post["id"]]);
-    return array_map(fn($c) => $c->toDict(), $comments);
+    return array_map(fn($c) => $c->toArray(), $comments);
 });
 
 // Resolve Post.commentCount (computed field)
@@ -488,7 +488,7 @@ GraphQL::resolve("Post", "commentCount", function ($post, $args) {
 GraphQL::resolve("User", "posts", function ($user, $args) {
     $post = new Post();
     $posts = $post->select("*", "user_id = :userId", ["userId" => $user["id"]]);
-    return array_map(fn($p) => $p->toDict(), $posts);
+    return array_map(fn($p) => $p->toArray(), $posts);
 });
 ```
 
@@ -708,28 +708,28 @@ use Tina4\GraphQL;
 GraphQL::resolve("Query", "posts", function ($root, $args) {
     $post = new Post();
     $posts = $post->select("*", "published = :pub", ["pub" => 1], "created_at DESC");
-    return array_map(fn($p) => $p->toDict(), $posts);
+    return array_map(fn($p) => $p->toArray(), $posts);
 });
 
 // Query: single post
 GraphQL::resolve("Query", "post", function ($root, $args) {
     $post = new Post();
     $post->load($args["id"]);
-    return empty($post->id) ? null : $post->toDict();
+    return empty($post->id) ? null : $post->toArray();
 });
 
 // Query: single user
 GraphQL::resolve("Query", "user", function ($root, $args) {
     $user = new User();
     $user->load($args["id"]);
-    return empty($user->id) ? null : $user->toDict();
+    return empty($user->id) ? null : $user->toArray();
 });
 
 // Post.author resolver
 GraphQL::resolve("Post", "author", function ($post, $args) {
     $user = new User();
     $user->load($post["user_id"]);
-    return $user->toDict();
+    return $user->toArray();
 });
 
 // Post.comments resolver
@@ -738,7 +738,7 @@ GraphQL::resolve("Post", "comments", function ($post, $args) {
     $comments = $comment->select("*", "post_id = :postId", [
         "postId" => $post["id"]
     ], "created_at ASC");
-    return array_map(fn($c) => $c->toDict(), $comments);
+    return array_map(fn($c) => $c->toArray(), $comments);
 });
 
 // Post.commentCount resolver
@@ -756,7 +756,7 @@ GraphQL::resolve("User", "posts", function ($user, $args) {
     $posts = $post->select("*", "user_id = :userId", [
         "userId" => $user["id"]
     ], "created_at DESC");
-    return array_map(fn($p) => $p->toDict(), $posts);
+    return array_map(fn($p) => $p->toArray(), $posts);
 });
 
 // Mutation: create a post
@@ -775,7 +775,7 @@ GraphQL::resolve("Mutation", "createPost", function ($root, $args) {
     $post->published = (bool) ($args["published"] ?? false);
     $post->save();
 
-    return $post->toDict();
+    return $post->toArray();
 });
 
 // Mutation: add a comment
@@ -793,7 +793,7 @@ GraphQL::resolve("Mutation", "addComment", function ($root, $args) {
     $comment->body = $args["body"];
     $comment->save();
 
-    return $comment->toDict();
+    return $comment->toArray();
 });
 ```
 
@@ -852,7 +852,7 @@ GraphQL::resolve("Mutation", "addComment", function ($root, $args) {
 GraphQL::resolve("Post", "author", function ($post, $args) {
     $user = new User();
     $user->load($post["user_id"]); // Use the foreign key from the parent
-    return $user->toDict();
+    return $user->toArray();
 });
 ```
 
@@ -896,4 +896,4 @@ return [
 ];
 ```
 
-The `toDict()` method handles this automatically for model properties with type declarations, but computed or derived fields need manual casting.
+The `toArray()` method handles this automatically for model properties with type declarations, but computed or derived fields need manual casting.
