@@ -164,18 +164,18 @@ tina4 serve
   |_| |_|_| |_|\__,_|  |_|
 
   Tina4 PHP v3.0.0
-  Server running at http://0.0.0.0:7145
+  Server running at http://0.0.0.0:7146
   Debug mode: ON
   Database: sqlite:///data/app.db
   Press Ctrl+C to stop
 ```
 
-Open your browser to `http://localhost:7145`. The Tina4 welcome page appears.
+Open your browser to `http://localhost:7146`. The Tina4 welcome page appears.
 
 Hit the health check:
 
 ```bash
-curl http://localhost:7145/health
+curl http://localhost:7146/health
 ```
 
 ```json
@@ -259,7 +259,7 @@ Save the file. The dev server picks it up. No restart needed if live reload is a
 ### Test It
 
 ```
-http://localhost:7145/api/greeting/Alice
+http://localhost:7146/api/greeting/Alice
 ```
 
 ```json
@@ -272,7 +272,7 @@ http://localhost:7145/api/greeting/Alice
 Or with curl:
 
 ```bash
-curl http://localhost:7145/api/greeting/Alice
+curl http://localhost:7146/api/greeting/Alice
 ```
 
 ```json
@@ -282,7 +282,7 @@ curl http://localhost:7145/api/greeting/Alice
 The browser pretty-prints. Curl shows compact JSON. Force pretty output with `?pretty=true`:
 
 ```bash
-curl "http://localhost:7145/api/greeting/Alice?pretty=true"
+curl "http://localhost:7146/api/greeting/Alice?pretty=true"
 ```
 
 ```json
@@ -344,7 +344,7 @@ Route::post("/api/greeting", function ($request, $response) {
 Test the POST endpoint:
 
 ```bash
-curl -X POST http://localhost:7145/api/greeting \
+curl -X POST http://localhost:7146/api/greeting \
   -H "Content-Type: application/json" \
   -d '{"name": "Carlos", "language": "es"}'
 ```
@@ -478,7 +478,7 @@ Route::get("/products", function ($request, $response) {
 
 ### See It in the Browser
 
-Open `http://localhost:7145/products`. You see:
+Open `http://localhost:7146/products`. You see:
 
 - A dark navigation bar with "Home" and "Products" links
 - The heading "Our Products"
@@ -520,7 +520,7 @@ The defaults that matter for development:
 
 | Variable | Default Value | What It Does |
 |----------|---------------|--------------|
-| `TINA4_PORT` | `7145` | Server port |
+| `TINA4_PORT` | `7146` | Server port |
 | `DATABASE_URL` | `sqlite:///data/app.db` | SQLite database in `data/` |
 | `TINA4_LOG_LEVEL` | `ALL` | All log messages output |
 | `CORS_ORIGINS` | `*` | All origins allowed |
@@ -552,7 +552,7 @@ TINA4_CONSOLE_TOKEN=my-dev-token
 Restart and navigate to:
 
 ```
-http://localhost:7145/tina4/console
+http://localhost:7146/tina4/console
 ```
 
 Enter your token. The dashboard opens.
@@ -606,8 +606,8 @@ Create an API endpoint at `GET /api/greet` that:
 **Test your endpoint with:**
 
 ```bash
-curl "http://localhost:7145/api/greet?name=Sarah"
-curl "http://localhost:7145/api/greet"
+curl "http://localhost:7146/api/greet?name=Sarah"
+curl "http://localhost:7146/api/greet"
 ```
 
 ### Exercise Part B: Product List Page
@@ -676,7 +676,7 @@ Route::get("/api/greet", function ($request, $response) {
 **Test:**
 
 ```bash
-curl "http://localhost:7145/api/greet?name=Sarah"
+curl "http://localhost:7146/api/greet?name=Sarah"
 ```
 
 ```json
@@ -684,7 +684,7 @@ curl "http://localhost:7145/api/greet?name=Sarah"
 ```
 
 ```bash
-curl "http://localhost:7145/api/greet"
+curl "http://localhost:7146/api/greet"
 ```
 
 ```json
@@ -782,7 +782,7 @@ Route::get("/store", function ($request, $response) {
 });
 ```
 
-**Open `http://localhost:7145/store`.** You see:
+**Open `http://localhost:7146/store`.** You see:
 
 - A dark header reading "Our Store"
 - Text: "5 products, 3 featured"
@@ -829,9 +829,9 @@ Route::get("/store", function ($request, $response) {
 
 ### 5. Port already in use
 
-**Problem:** `Error: Address already in use (port 7145)`.
+**Problem:** `Error: Address already in use (port 7146)`.
 
-**Cause:** Another process occupies port 7145.
+**Cause:** Another process occupies port 7146.
 
 **Fix:** Stop the other process, or change the port:
 

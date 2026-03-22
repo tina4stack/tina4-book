@@ -759,7 +759,7 @@ Route::get("/admin", function ($request, $response) {
 });
 ```
 
-Start the server. Visit `http://localhost:7145/admin`. You see:
+Start the server. Visit `http://localhost:7146/admin`. You see:
 
 - Dark sidebar on the left with navigation links
 - Top bar with a welcome message and logout button
@@ -1080,14 +1080,14 @@ Route::get("/admin/seed", function ($request, $response) {
 
 ### Expected Result
 
-Visit `http://localhost:7145/admin` and see:
+Visit `http://localhost:7146/admin` and see:
 
 - A sidebar with navigation (Dashboard highlighted)
 - Four stat cards showing product and order counts
 - A recent orders table with status badges
 - A dark mode toggle that switches the entire UI
 
-Visit `http://localhost:7145/admin/products` and see:
+Visit `http://localhost:7146/admin/products` and see:
 
 - A table of all products loaded via AJAX
 - An "Add Product" button that opens a modal

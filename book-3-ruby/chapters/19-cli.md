@@ -348,7 +348,7 @@ DELETE   /api/tasks/{id:int}      -            secured
 
 ### 5. serve Uses Wrong Port
 
-**Problem:** `tina4 serve` starts on port 7145 instead of 7147.
+**Problem:** `tina4 serve` starts on port 7146 instead of 7147.
 
 **Fix:** Ruby uses port 7147 by default. If it starts on a different port, check your `.env` file for `TINA4_PORT`.
 

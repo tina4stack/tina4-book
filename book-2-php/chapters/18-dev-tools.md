@@ -21,7 +21,7 @@ TINA4_CONSOLE_TOKEN=my-dev-token
 Restart your server and navigate to:
 
 ```
-http://localhost:7145/tina4/console
+http://localhost:7146/tina4/console
 ```
 
 Enter your console token (`my-dev-token`) when prompted. You are in the dev dashboard.
@@ -394,7 +394,7 @@ Route::get("/api/orders/summary", function ($request, $response) {
 ### Task
 
 1. Start the dev server with `tina4 serve`.
-2. Visit `http://localhost:7145/api/orders/summary`.
+2. Visit `http://localhost:7146/api/orders/summary`.
 3. Observe the error overlay.
 4. Use the error overlay to identify the exact line and cause of the error.
 5. Fix both bugs:

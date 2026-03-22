@@ -101,7 +101,7 @@ tina4 serve
   |_| |_|_| |_|\__,_|  |_|
 
   Tina4 PHP v3.0.0
-  Server running at http://0.0.0.0:7145
+  Server running at http://0.0.0.0:7146
   Debug mode: ON
   Database: sqlite:///data/app.db
   Press Ctrl+C to stop
@@ -111,7 +111,7 @@ tina4 serve
 
 | Flag | Description | Example |
 |------|-------------|---------|
-| `--port` | Custom port (default: 7145) | `tina4 serve --port 8080` |
+| `--port` | Custom port (default: 7146) | `tina4 serve --port 8080` |
 | `--host` | Bind address (default: 0.0.0.0) | `tina4 serve --host 127.0.0.1` |
 | `--no-reload` | Disable live reload | `tina4 serve --no-reload` |
 
@@ -617,15 +617,15 @@ Complete this in exactly 5 commands. After running them, test the API with curl 
 
 ```bash
 # Create a task
-curl -X POST http://localhost:7145/api/tasks \
+curl -X POST http://localhost:7146/api/tasks \
   -H "Content-Type: application/json" \
   -d '{"title": "Write chapter 19", "description": "CLI and scaffolding", "priority": "high", "user_id": 1}'
 
 # List tasks
-curl http://localhost:7145/api/tasks
+curl http://localhost:7146/api/tasks
 
 # Get one task
-curl http://localhost:7145/api/tasks/1
+curl http://localhost:7146/api/tasks/1
 ```
 
 ---
@@ -695,7 +695,7 @@ Tina4 Doctor - Environment Health Check
 **Test - create a task:**
 
 ```bash
-curl -X POST http://localhost:7145/api/tasks \
+curl -X POST http://localhost:7146/api/tasks \
   -H "Content-Type: application/json" \
   -d '{"title": "Write chapter 19", "description": "CLI and scaffolding", "priority": "high", "user_id": 1}'
 ```
@@ -747,7 +747,7 @@ From zero to a working CRUD API in 5 commands and under 2 minutes.
 
 **Problem:** `tina4 serve` fails with "Address already in use."
 
-**Cause:** Another process is using port 7145 (or whichever port you configured).
+**Cause:** Another process is using port 7146 (or whichever port you configured).
 
 **Fix:** Find and stop the other process, or use a different port:
 
@@ -758,7 +758,7 @@ tina4 serve --port 8080
 To find what is using the port:
 
 ```bash
-lsof -i :7145
+lsof -i :7146
 ```
 
 ### 5. CLI Not Found After Installation

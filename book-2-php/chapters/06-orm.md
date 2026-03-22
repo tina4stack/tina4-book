@@ -109,7 +109,7 @@ Route::post("/api/products", function ($request, $response) {
 ```
 
 ```bash
-curl -X POST http://localhost:7145/api/products \
+curl -X POST http://localhost:7146/api/products \
   -H "Content-Type: application/json" \
   -d '{"name": "Wireless Keyboard", "category": "Electronics", "price": 79.99}'
 ```
@@ -182,7 +182,7 @@ Route::get("/api/products/{id:int}", function ($request, $response) {
 ```
 
 ```bash
-curl http://localhost:7145/api/products/1
+curl http://localhost:7146/api/products/1
 ```
 
 ```json
@@ -330,7 +330,7 @@ Route::get("/api/products", function ($request, $response) {
 ```
 
 ```bash
-curl "http://localhost:7145/api/products?category=Electronics&sort=price&order=DESC&page=1&per_page=5"
+curl "http://localhost:7146/api/products?category=Electronics&sort=price&order=DESC&page=1&per_page=5"
 ```
 
 ```json
@@ -478,7 +478,7 @@ Route::get("/api/users/{id:int}", function ($request, $response) {
 ```
 
 ```bash
-curl http://localhost:7145/api/users/1
+curl http://localhost:7146/api/users/1
 ```
 
 ```json
@@ -660,7 +660,7 @@ class Product extends ORM
 The endpoint prefix comes from the table name: `products` becomes `/api/products`.
 
 ```bash
-curl http://localhost:7145/api/products
+curl http://localhost:7146/api/products
 ```
 
 ```json
@@ -678,7 +678,7 @@ curl http://localhost:7145/api/products
 Filtering, sorting, and pagination work out of the box:
 
 ```bash
-curl "http://localhost:7145/api/products?category=Electronics&sort=price&order=desc&page=1&per_page=10"
+curl "http://localhost:7146/api/products?category=Electronics&sort=price&order=desc&page=1&per_page=10"
 ```
 
 Custom routes still work alongside auto-CRUD. Your custom routes take precedence.
@@ -733,25 +733,25 @@ Three models: User, Post, Comment. Relationships, eager loading, and auto-CRUD.
 
 ```bash
 # Create a user (via auto-CRUD)
-curl -X POST http://localhost:7145/api/users \
+curl -X POST http://localhost:7146/api/users \
   -H "Content-Type: application/json" \
   -d '{"name": "Alice", "email": "alice@example.com"}'
 
 # Create a post
-curl -X POST http://localhost:7145/api/blog/posts \
+curl -X POST http://localhost:7146/api/blog/posts \
   -H "Content-Type: application/json" \
   -d '{"user_id": 1, "title": "My First Post", "body": "Hello world!", "published": true}'
 
 # List posts
-curl http://localhost:7145/api/blog/posts
+curl http://localhost:7146/api/blog/posts
 
 # Add a comment
-curl -X POST http://localhost:7145/api/blog/posts/1/comments \
+curl -X POST http://localhost:7146/api/blog/posts/1/comments \
   -H "Content-Type: application/json" \
   -d '{"author_name": "Bob", "body": "Great post!"}'
 
 # Get post with comments
-curl http://localhost:7145/api/blog/posts/1
+curl http://localhost:7146/api/blog/posts/1
 ```
 
 ---

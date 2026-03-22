@@ -84,7 +84,7 @@ Route::post("/api/register", function ($request, $response) {
 ```
 
 ```bash
-curl -X POST http://localhost:7145/api/register \
+curl -X POST http://localhost:7146/api/register \
   -H "Content-Type: application/json" \
   -d '{"name": "Alice", "email": "alice@example.com", "password": "securePass123"}'
 ```
@@ -504,23 +504,23 @@ Queue-based email for user signup. Queue the welcome email. Write a consumer.
 
 ```bash
 # Register
-curl -X POST http://localhost:7145/api/signup \
+curl -X POST http://localhost:7146/api/signup \
   -H "Content-Type: application/json" \
   -d '{"name": "Alice", "email": "alice@example.com", "password": "securePass123"}'
 
 # Register another
-curl -X POST http://localhost:7145/api/signup \
+curl -X POST http://localhost:7146/api/signup \
   -H "Content-Type: application/json" \
   -d '{"name": "Bob", "email": "bob@example.com", "password": "anotherPass456"}'
 
 # Check stats (2 pending)
-curl http://localhost:7145/api/queue/stats
+curl http://localhost:7146/api/queue/stats
 
 # Start worker in another terminal
 tina4 queue:work --queue welcome-emails
 
 # Check stats again (2 completed)
-curl http://localhost:7145/api/queue/stats
+curl http://localhost:7146/api/queue/stats
 ```
 
 ---

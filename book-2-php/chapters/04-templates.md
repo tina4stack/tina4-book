@@ -705,9 +705,9 @@ $products = [
 ### Test with:
 
 ```
-http://localhost:7145/catalog
-http://localhost:7145/catalog?category=Kitchen
-http://localhost:7145/catalog?category=Fitness
+http://localhost:7146/catalog
+http://localhost:7146/catalog?category=Kitchen
+http://localhost:7146/catalog?category=Fitness
 ```
 
 ---

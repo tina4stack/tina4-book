@@ -44,7 +44,7 @@ function blockEverything($request, $response, $next) {
 
 ## 3. Built-in CorsMiddleware
 
-CORS controls which domains can call your API. When React at `http://localhost:3000` calls your Tina4 API at `http://localhost:7145`, the browser sends a preflight `OPTIONS` request first. Wrong headers: the browser blocks everything.
+CORS controls which domains can call your API. When React at `http://localhost:3000` calls your Tina4 API at `http://localhost:7146`, the browser sends a preflight `OPTIONS` request first. Wrong headers: the browser blocks everything.
 
 Tina4 provides `CorsMiddleware`. Configure in `.env`:
 
@@ -78,7 +78,7 @@ Route::group("/api", function () {
 Test the preflight:
 
 ```bash
-curl -X OPTIONS http://localhost:7145/api/products \
+curl -X OPTIONS http://localhost:7146/api/products \
   -H "Origin: http://localhost:3000" \
   -H "Access-Control-Request-Method: POST" \
   -H "Access-Control-Request-Headers: Content-Type,Authorization" \
@@ -676,18 +676,18 @@ API_KEYS=key-alpha-001,key-beta-002,key-gamma-003
 
 ```bash
 # No key -- 401
-curl http://localhost:7145/api/partner/data
+curl http://localhost:7146/api/partner/data
 
 # Invalid key -- 403
-curl http://localhost:7145/api/partner/data \
+curl http://localhost:7146/api/partner/data \
   -H "X-API-Key: wrong-key"
 
 # Valid key -- 200
-curl http://localhost:7145/api/partner/data \
+curl http://localhost:7146/api/partner/data \
   -H "X-API-Key: key-alpha-001"
 
 # Valid key on another endpoint
-curl http://localhost:7145/api/partner/stats \
+curl http://localhost:7146/api/partner/stats \
   -H "X-API-Key: key-beta-002"
 ```
 

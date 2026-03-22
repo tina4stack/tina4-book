@@ -17,7 +17,7 @@ Route::get("/hello", function ($request, $response) {
 });
 ```
 
-Save that as `src/routes/hello.php`. Start the server. Visit `http://localhost:7145/hello`:
+Save that as `src/routes/hello.php`. Start the server. Visit `http://localhost:7146/hello`:
 
 ```json
 {"message":"Hello, World!"}
@@ -62,7 +62,7 @@ Route::delete("/products/{id}", function ($request, $response) {
 Test each one:
 
 ```bash
-curl http://localhost:7145/products
+curl http://localhost:7146/products
 ```
 
 ```json
@@ -70,7 +70,7 @@ curl http://localhost:7145/products
 ```
 
 ```bash
-curl -X POST http://localhost:7145/products \
+curl -X POST http://localhost:7146/products \
   -H "Content-Type: application/json" \
   -d '{"name": "Widget"}'
 ```
@@ -80,7 +80,7 @@ curl -X POST http://localhost:7145/products \
 ```
 
 ```bash
-curl -X PUT http://localhost:7145/products/42
+curl -X PUT http://localhost:7146/products/42
 ```
 
 ```json
@@ -88,7 +88,7 @@ curl -X PUT http://localhost:7145/products/42
 ```
 
 ```bash
-curl -X PATCH http://localhost:7145/products/42
+curl -X PATCH http://localhost:7146/products/42
 ```
 
 ```json
@@ -96,7 +96,7 @@ curl -X PATCH http://localhost:7145/products/42
 ```
 
 ```bash
-curl -X DELETE http://localhost:7145/products/42
+curl -X DELETE http://localhost:7146/products/42
 ```
 
 ```json
@@ -127,7 +127,7 @@ Route::get("/users/{id}/posts/{postId}", function ($request, $response) {
 ```
 
 ```bash
-curl http://localhost:7145/users/5/posts/99
+curl http://localhost:7146/users/5/posts/99
 ```
 
 ```json
@@ -154,7 +154,7 @@ Route::get("/orders/{id:int}", function ($request, $response) {
 ```
 
 ```bash
-curl http://localhost:7145/orders/42
+curl http://localhost:7146/orders/42
 ```
 
 ```json
@@ -164,7 +164,7 @@ curl http://localhost:7145/orders/42
 Pass a non-integer and the route does not match. A 404 comes back instead:
 
 ```bash
-curl http://localhost:7145/orders/abc
+curl http://localhost:7146/orders/abc
 ```
 
 ```json
@@ -205,7 +205,7 @@ Route::get("/search", function ($request, $response) {
 ```
 
 ```bash
-curl "http://localhost:7145/search?q=keyboard&page=2&limit=20"
+curl "http://localhost:7146/search?q=keyboard&page=2&limit=20"
 ```
 
 ```json
@@ -248,7 +248,7 @@ Route::group("/api/v1", function () {
 These register as `/api/v1/users`, `/api/v1/users/{id}`, and `/api/v1/products`. Short paths inside the group. Tina4 prepends the prefix.
 
 ```bash
-curl http://localhost:7145/api/v1/users
+curl http://localhost:7146/api/v1/users
 ```
 
 ```json
@@ -256,7 +256,7 @@ curl http://localhost:7145/api/v1/users
 ```
 
 ```bash
-curl http://localhost:7145/api/v1/products
+curl http://localhost:7146/api/v1/products
 ```
 
 ```json
@@ -285,7 +285,7 @@ Route::group("/api", function () {
 ```
 
 ```bash
-curl http://localhost:7145/api/v1/status
+curl http://localhost:7146/api/v1/status
 ```
 
 ```json
@@ -293,7 +293,7 @@ curl http://localhost:7145/api/v1/status
 ```
 
 ```bash
-curl http://localhost:7145/api/v2/status
+curl http://localhost:7146/api/v2/status
 ```
 
 ```json
@@ -357,7 +357,7 @@ Route::get("/api/secret", function ($request, $response) {
 ```
 
 ```bash
-curl http://localhost:7145/api/secret
+curl http://localhost:7146/api/secret
 ```
 
 ```json
@@ -367,7 +367,7 @@ curl http://localhost:7145/api/secret
 Status: `401 Unauthorized`.
 
 ```bash
-curl http://localhost:7145/api/secret -H "X-API-Key: my-secret-key"
+curl http://localhost:7146/api/secret -H "X-API-Key: my-secret-key"
 ```
 
 ```json
@@ -489,7 +489,7 @@ Route::get("/docs/*", function ($request, $response) {
 ```
 
 ```bash
-curl http://localhost:7145/docs/getting-started
+curl http://localhost:7146/docs/getting-started
 ```
 
 ```json
@@ -497,7 +497,7 @@ curl http://localhost:7145/docs/getting-started
 ```
 
 ```bash
-curl http://localhost:7145/docs/api/authentication/jwt
+curl http://localhost:7146/docs/api/authentication/jwt
 ```
 
 ```json
@@ -666,29 +666,29 @@ Test with:
 
 ```bash
 # List all
-curl http://localhost:7145/api/products
+curl http://localhost:7146/api/products
 
 # Filter by category
-curl "http://localhost:7145/api/products?category=Fitness"
+curl "http://localhost:7146/api/products?category=Fitness"
 
 # Get one
-curl http://localhost:7145/api/products/3
+curl http://localhost:7146/api/products/3
 
 # Create
-curl -X POST http://localhost:7145/api/products \
+curl -X POST http://localhost:7146/api/products \
   -H "Content-Type: application/json" \
   -d '{"name": "Desk Lamp", "category": "Office", "price": 39.99, "in_stock": true}'
 
 # Update
-curl -X PUT http://localhost:7145/api/products/3 \
+curl -X PUT http://localhost:7146/api/products/3 \
   -H "Content-Type: application/json" \
   -d '{"name": "Burr Coffee Grinder", "category": "Kitchen", "price": 59.99, "in_stock": true}'
 
 # Delete
-curl -X DELETE http://localhost:7145/api/products/3
+curl -X DELETE http://localhost:7146/api/products/3
 
 # Not found
-curl http://localhost:7145/api/products/999
+curl http://localhost:7146/api/products/999
 ```
 
 ---

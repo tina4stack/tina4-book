@@ -2,7 +2,7 @@
 
 ## 1. From Development to Production
 
-The app works on `localhost:7145`. Now it needs to run 24/7 on a real server. Handle 10,000 concurrent users. Survive server restarts. Not leak memory. The gap between "works on my machine" and "works in production" is where most projects stumble.
+The app works on `localhost:7146`. Now it needs to run 24/7 on a real server. Handle 10,000 concurrent users. Survive server restarts. Not leak memory. The gap between "works on my machine" and "works in production" is where most projects stumble.
 
 This chapter covers everything for deploying a Tina4 PHP application: environment configuration, Docker packaging, web server setup, SSL, scaling, monitoring, and graceful shutdown.
 
@@ -18,7 +18,7 @@ Create a production `.env`:
 # Core
 TINA4_DEBUG=false
 TINA4_LOG_LEVEL=WARNING
-TINA4_PORT=7145
+TINA4_PORT=7146
 
 # Database
 DATABASE_URL=sqlite:///data/app.db
@@ -89,7 +89,7 @@ tina4 serve --production
   Tina4 PHP v3.0.0
   Server: FrankenPHP (worker mode)
   Workers: 4
-  Running at https://0.0.0.0:7145
+  Running at https://0.0.0.0:7146
   TLS: automatic (Let's Encrypt)
 ```
 
@@ -101,7 +101,7 @@ tina4 serve --production
 ```
   Tina4 PHP v3.0.0
   Server: PHP built-in
-  Running at http://0.0.0.0:7145
+  Running at http://0.0.0.0:7146
   Warning: For production, consider FrankenPHP or PHP-FPM + nginx
 ```
 
@@ -156,11 +156,11 @@ RUN mkdir -p data logs secrets \
     && chown -R www-data:www-data data logs secrets
 
 # Expose port
-EXPOSE 7145
+EXPOSE 7146
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:7145/health || exit 1
+    CMD curl -f http://localhost:7146/health || exit 1
 
 # Start the server
 CMD ["tina4", "serve", "--production"]
@@ -177,7 +177,7 @@ services:
   app:
     build: .
     ports:
-      - "7145:7145"
+      - "7146:7146"
     environment:
       - TINA4_DEBUG=false
       - TINA4_LOG_LEVEL=WARNING
@@ -189,7 +189,7 @@ services:
       - app-logs:/app/logs
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7145/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:7146/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -209,7 +209,7 @@ docker build -t my-tina4-app .
 # Run it
 docker run -d \
   --name my-app \
-  -p 7145:7145 \
+  -p 7146:7146 \
   -e JWT_SECRET=your-production-secret \
   -v app-data:/app/data \
   my-tina4-app
@@ -221,7 +221,7 @@ docker compose up -d
 ### Verify
 
 ```bash
-curl http://localhost:7145/health
+curl http://localhost:7146/health
 ```
 
 ```json
@@ -347,7 +347,7 @@ sudo systemctl restart php8.3-fpm
 Tina4 includes a built-in health check endpoint at `/health`:
 
 ```bash
-curl http://localhost:7145/health
+curl http://localhost:7146/health
 ```
 
 ```json
@@ -620,7 +620,7 @@ If you run multiple Tina4 instances, use nginx as a load balancer:
 
 ```nginx
 upstream tina4_backend {
-    server 127.0.0.1:7145;
+    server 127.0.0.1:7146;
     server 127.0.0.1:7146;
     server 127.0.0.1:7147;
     server 127.0.0.1:7148;
@@ -643,7 +643,7 @@ server {
 Start four instances on different ports:
 
 ```bash
-TINA4_PORT=7145 tina4 serve --production &
+TINA4_PORT=7146 tina4 serve --production &
 TINA4_PORT=7146 tina4 serve --production &
 TINA4_PORT=7147 tina4 serve --production &
 TINA4_PORT=7148 tina4 serve --production &
@@ -724,13 +724,13 @@ Deploy the task management application you have been building throughout this bo
    - Uses FrankenPHP as the base image
    - Installs Composer and dependencies
    - Copies the application code
-   - Exposes port 7145
+   - Exposes port 7146
    - Includes a health check
    - Starts the server in production mode
 
 2. Create a `docker-compose.yml` that:
    - Builds and runs the application
-   - Maps port 7145
+   - Maps port 7146
    - Uses environment variables for secrets
    - Persists the database and logs via volumes
    - Includes restart policy
@@ -757,15 +757,15 @@ docker compose build
 docker compose up -d
 
 # Health check
-curl http://localhost:7145/health
+curl http://localhost:7146/health
 
 # Create a product
-curl -X POST http://localhost:7145/api/products \
+curl -X POST http://localhost:7146/api/products \
   -H "Content-Type: application/json" \
   -d '{"name": "Docker Widget", "price": 19.99}'
 
 # List products
-curl http://localhost:7145/api/products
+curl http://localhost:7146/api/products
 
 # View logs
 docker compose logs app
@@ -800,10 +800,10 @@ COPY . .
 RUN mkdir -p data logs secrets \
     && chown -R www-data:www-data data logs secrets
 
-EXPOSE 7145
+EXPOSE 7146
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:7145/health || exit 1
+    CMD curl -f http://localhost:7146/health || exit 1
 
 CMD ["tina4", "serve", "--production"]
 ```
@@ -817,14 +817,14 @@ services:
   app:
     build: .
     ports:
-      - "7145:7145"
+      - "7146:7146"
     environment:
       - TINA4_DEBUG=false
       - TINA4_LOG_LEVEL=WARNING
       - TINA4_CACHE_TEMPLATES=true
       - JWT_SECRET=change-this-to-a-real-secret
       - DATABASE_URL=sqlite:///data/app.db
-      - CORS_ORIGINS=http://localhost:7145
+      - CORS_ORIGINS=http://localhost:7146
     volumes:
       - app-data:/app/data
       - app-logs:/app/logs
@@ -886,7 +886,7 @@ CORS_ORIGINS=https://yourdomain.com
 **Fix:** For low-to-medium traffic (under 100 concurrent users), SQLite works fine. For higher traffic, switch to PostgreSQL or MySQL:
 
 ```env
-DATABASE_URL=pgsql://user:pass@localhost:5432/myapp
+DATABASE_URL=postgres://user:pass@localhost:5432/myapp
 ```
 
 If you must use SQLite under load, enable WAL mode by adding this to your application startup:
@@ -947,7 +947,7 @@ RUN mkdir -p data logs secrets \
 
 ```dockerfile
 HEALTHCHECK --start-period=10s --interval=30s --timeout=5s --retries=3 \
-    CMD curl -f http://localhost:7145/health || exit 1
+    CMD curl -f http://localhost:7146/health || exit 1
 ```
 
 The `start-period` tells Docker to ignore health check failures during the first 10 seconds.
