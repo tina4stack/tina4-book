@@ -8,6 +8,8 @@
 
 ### Book 0: Understanding Tina4 (all languages)
 
+[📥 Download PDF](book-0-understanding/Understanding-Tina4.pdf)
+
 1. [What is Tina4?](book-0-understanding/chapters/01-what-is-tina4.md)
 2. [Architecture](book-0-understanding/chapters/02-architecture.md)
 3. [Choosing Your Language](book-0-understanding/chapters/03-choosing-your-language.md)
