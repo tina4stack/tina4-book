@@ -2,15 +2,15 @@
 
 ## 1. From Development to Production
 
-You have built the app. It works perfectly on `localhost:7145`. Now it needs to run 24/7 on a real server, handle 10,000 concurrent users, survive server restarts, and not leak memory. The gap between "it works on my machine" and "it works in production" is where most projects stumble.
+The app works on `localhost:7145`. Now it needs to run 24/7 on a real server. Handle 10,000 concurrent users. Survive server restarts. Not leak memory. The gap between "works on my machine" and "works in production" is where most projects stumble.
 
-This chapter covers everything you need to deploy a Tina4 PHP application to production: environment configuration, Docker packaging, web server setup, SSL, scaling, monitoring, and graceful shutdown handling.
+This chapter covers everything for deploying a Tina4 PHP application: environment configuration, Docker packaging, web server setup, SSL, scaling, monitoring, and graceful shutdown.
 
 ---
 
 ## 2. Production .env Configuration
 
-The first step is configuring your `.env` for production. Development defaults are optimized for debugging. Production defaults are optimized for performance and security.
+Configure your `.env` for production. Development defaults optimize for debugging. Production defaults optimize for performance and security.
 
 Create a production `.env`:
 
@@ -49,7 +49,7 @@ TINA4_CONSOLE=false
 
 ### Sensitive Values
 
-Never commit production secrets to version control. The `.env` file is gitignored by default. For deployment, use environment variables from your hosting platform, CI/CD secrets, or a secrets management tool.
+Never commit production secrets to version control. The `.env` file is gitignored by default. For deployment, use environment variables from your hosting platform, CI/CD secrets, or a secrets manager.
 
 ```bash
 # Docker: pass env vars at runtime
@@ -66,7 +66,7 @@ railway variables set JWT_SECRET=your-secret
 
 ## 3. FrankenPHP Auto-Detection
 
-Tina4 PHP auto-detects FrankenPHP at startup. FrankenPHP is a modern PHP application server built on Caddy that provides:
+Tina4 PHP auto-detects FrankenPHP at startup. FrankenPHP is a modern PHP application server built on Caddy:
 
 - Worker mode (keeps PHP in memory between requests)
 - Built-in HTTPS with automatic certificate management
@@ -122,7 +122,7 @@ docker pull dunglas/frankenphp
 
 ## 4. Docker Deployment
 
-Docker is the most reliable way to deploy any application. It packages your code, dependencies, and runtime into a single container that runs identically everywhere.
+Docker is the most reliable deployment path. It packages your code, dependencies, and runtime into a single container. Runs identically everywhere.
 
 ### Dockerfile
 
@@ -422,7 +422,7 @@ Route::get("/health/detailed", function ($request, $response) {
 
 ## 7. Graceful Shutdown
 
-When a container or process receives a shutdown signal (SIGTERM), Tina4 handles it gracefully:
+When a container or process receives SIGTERM, Tina4 handles it gracefully:
 
 1. Stops accepting new connections
 2. Finishes processing in-flight requests (up to a configurable timeout)
@@ -430,7 +430,7 @@ When a container or process receives a shutdown signal (SIGTERM), Tina4 handles 
 4. Flushes logs
 5. Exits with status code 0
 
-This prevents data corruption and dropped requests during deployments.
+No data corruption. No dropped requests during deployments.
 
 ### Shutdown Timeout
 
@@ -456,7 +456,7 @@ services:
 
 ## 8. Log Rotation
 
-In production, log files grow indefinitely unless rotated. Tina4 writes logs to `logs/app.log`.
+In production, log files grow without limit unless rotated. Tina4 writes to `logs/app.log`.
 
 ### Using logrotate (Linux)
 

@@ -2,9 +2,11 @@
 
 ## 1. Every App Sends Email
 
-Your SaaS app needs to send signup confirmations, password resets, and weekly digest emails -- with attachments, HTML templates, and reliable delivery. Email is one of those features that every application needs but nobody enjoys implementing. SMTP configuration, plain text fallbacks, attachment encoding, connection timeouts, bounce handling -- the details pile up fast.
+Your SaaS app needs signup confirmations. Password resets. Weekly digest emails. Attachments, HTML templates, reliable delivery.
 
-Tina4's `Messenger` class handles all of this. Configure it via `.env`, create a Messenger instance, and send. In development mode, emails are intercepted and shown in the dev dashboard so you can inspect them without setting up a real SMTP server.
+Email is plumbing. Every application needs it. Nobody enjoys building it. SMTP configuration. Plain text fallbacks. Attachment encoding. Connection timeouts. Bounce handling. The details stack up fast.
+
+Tina4's `Messenger` class handles all of it. Configure via `.env`. Create an instance. Send. In development mode, emails are intercepted and shown in the dev dashboard -- no real SMTP server needed. No polluted inboxes.
 
 ---
 
@@ -70,7 +72,7 @@ TINA4_MAIL_SMTP_ENCRYPTION=tls
 
 ## 3. Constructor Override Pattern
 
-If you need to use different SMTP settings for different purposes (transactional emails from one account, marketing from another), override the configuration in the constructor:
+Different purposes, different accounts. Transactional emails from one sender. Marketing from another. Override the configuration in the constructor:
 
 ```php
 <?php
@@ -91,13 +93,13 @@ $marketingMailer = new Messenger([
 ]);
 ```
 
-The constructor accepts an associative array that overrides any `.env` values. Unspecified keys fall back to the `.env` configuration.
+The constructor accepts an associative array. Override any `.env` value. Unspecified keys fall back to the `.env` configuration.
 
 ---
 
 ## 4. Sending Plain Text Email
 
-The simplest email you can send:
+The simplest email:
 
 ```php
 <?php
@@ -135,7 +137,7 @@ curl -X POST http://localhost:7145/api/contact \
 {"message":"Email sent successfully"}
 ```
 
-The `send()` method returns an array with `"success"` (boolean) and `"error"` (string, only present on failure).
+The `send()` method returns an array with `"success"` (boolean) and `"error"` (string, present only on failure).
 
 ### The send() Method
 
@@ -152,7 +154,7 @@ $mailer->send($to, $subject, $body, $options = []);
 
 ## 5. Sending HTML Email with Text Fallback
 
-Most emails should be HTML with a plain text fallback for email clients that do not render HTML:
+Most emails should be HTML with a plain text fallback. Some email clients do not render HTML:
 
 ```php
 <?php
@@ -201,13 +203,13 @@ $result = $mailer->send(
 );
 ```
 
-The `text_body` option provides the plain text fallback. Email clients that cannot render HTML will show the text version instead.
+The `text_body` option provides the plain text fallback. Email clients that cannot render HTML show the text version instead.
 
 ---
 
 ## 6. Adding Attachments
 
-Attach files by providing their paths:
+Attach files by path:
 
 ```php
 <?php
@@ -228,7 +230,7 @@ $result = $mailer->send(
 );
 ```
 
-Each attachment is the absolute file path. Tina4 reads the file, determines the MIME type, and encodes it for email transmission.
+Each attachment is an absolute file path. Tina4 reads the file, determines the MIME type, and encodes it for transmission.
 
 ### Inline Attachments with Custom Names
 
@@ -248,7 +250,7 @@ $result = $mailer->send(
 );
 ```
 
-The recipient sees the file named `my-store-export.csv` regardless of its actual filename on disk.
+The recipient sees `my-store-export.csv` regardless of the actual filename on disk.
 
 ---
 
@@ -272,15 +274,15 @@ $result = $mailer->send(
 );
 ```
 
-- **cc**: Array of email addresses to carbon copy. All recipients can see CC addresses.
+- **cc**: Array of email addresses to carbon copy. All recipients see CC addresses.
 - **bcc**: Array of email addresses to blind carbon copy. Recipients cannot see BCC addresses.
-- **reply_to**: When the recipient clicks "Reply", this address is used instead of the "From" address.
+- **reply_to**: When the recipient clicks "Reply," this address is used instead of the "From" address.
 
 ---
 
 ## 8. Reading Inbox via IMAP
 
-Tina4's Messenger can also read emails via IMAP:
+Tina4's Messenger reads emails via IMAP:
 
 ```env
 TINA4_MAIL_IMAP_HOST=imap.example.com
@@ -373,33 +375,33 @@ Route::get("/api/inbox/{id}", function ($request, $response) {
 
 ## 9. Dev Mode: Email Interception
 
-When `TINA4_DEBUG=true`, all outgoing emails are intercepted and shown in the dev dashboard instead of being sent to real recipients. This prevents accidentally emailing users during development.
+When `TINA4_DEBUG=true`, all outgoing emails are intercepted. They appear in the dev dashboard instead of reaching real recipients. No accidents during development.
 
-Navigate to `/tina4/console` and look for the "Mail" section. You will see:
+Navigate to `/tina4/console` and find the "Mail" section. You see:
 
-- Every email that was "sent" during the current session
+- Every email "sent" during the current session
 - The To, CC, and BCC addresses
-- The subject and body (both HTML and plain text)
+- The subject and body (HTML and plain text)
 - Attachments (viewable inline)
 - The timestamp
 
-This is invaluable for testing email functionality without configuring a real SMTP server or polluting someone's inbox.
+Test email without configuring a real SMTP server. Inspect the output without polluting anyone's inbox.
 
 ### Disabling Interception
 
-If you need to test real email delivery during development, override the interception:
+To test real email delivery during development:
 
 ```env
 TINA4_MAIL_INTERCEPT=false
 ```
 
-With this set, emails are sent to real recipients even when `TINA4_DEBUG=true`. Use with caution -- you do not want to accidentally email your entire user base from a dev machine.
+Emails now reach real recipients even when `TINA4_DEBUG=true`. Use with caution. You do not want to email your entire user base from a dev machine.
 
 ---
 
 ## 10. Using Templates for Email Content
 
-Hardcoding HTML in PHP strings is ugly and hard to maintain. Use Frond templates for email content:
+Hardcoding HTML in PHP strings is fragile and hard to maintain. Use Frond templates for email content.
 
 Create `src/templates/emails/welcome.html`:
 
@@ -516,13 +518,13 @@ curl -X POST http://localhost:7145/api/register \
 }
 ```
 
-With `TINA4_DEBUG=true`, the email appears in the dev dashboard instead of being sent. You can inspect the rendered HTML, check that template variables were substituted correctly, and verify the layout.
+With `TINA4_DEBUG=true`, the email appears in the dev dashboard. Inspect the rendered HTML. Check that template variables were substituted. Verify the layout.
 
 ---
 
 ## 11. Sending Email via Queues
 
-For production, never send email synchronously in a route handler. Use the queue system from Chapter 11:
+In production, never send email inside a route handler. The SMTP handshake takes time. The user waits. Use the queue system from Chapter 11:
 
 ```php
 <?php
@@ -577,7 +579,7 @@ Queue::consume("emails", function ($job) {
 });
 ```
 
-The route handler returns in under 50 milliseconds. The email is sent by the queue worker, with automatic retries if the SMTP server is temporarily unavailable.
+The route handler returns in under 50 milliseconds. The queue worker sends the email in the background. Automatic retries handle temporary SMTP failures.
 
 ---
 
@@ -592,7 +594,7 @@ Build a contact form that sends an email notification when submitted.
 2. Create a `POST /contact` endpoint that:
    - Validates all fields are present
    - Sends an email notification to the site admin (`admin@example.com`)
-   - The email should include all form fields, nicely formatted
+   - The email should include all form fields, formatted with HTML
    - Shows a flash message on success
    - Redirects back to the contact page
 
@@ -814,27 +816,27 @@ The HTML response includes the success flash message.
 
 ### 1. Gmail Blocks "Less Secure" Apps
 
-**Problem:** Sending via Gmail fails with "Authentication failed" or "Username and Password not accepted".
+**Problem:** Sending via Gmail fails with "Authentication failed" or "Username and Password not accepted."
 
-**Cause:** Gmail blocks SMTP access from apps that do not use OAuth2 by default. Using your regular password will not work if two-factor authentication is enabled.
+**Cause:** Gmail blocks SMTP access from apps that do not use OAuth2 by default. Your regular password will not work with two-factor authentication enabled.
 
-**Fix:** Generate an "App Password" in your Google Account settings (Security > 2-Step Verification > App Passwords). Use this 16-character password as `TINA4_MAIL_SMTP_PASSWORD`. This is separate from your regular Google password.
+**Fix:** Generate an "App Password" in your Google Account settings (Security > 2-Step Verification > App Passwords). Use this 16-character password as `TINA4_MAIL_SMTP_PASSWORD`. It is separate from your regular Google password.
 
 ### 2. Emails Go to Spam
 
-**Problem:** Emails are delivered but land in the recipient's spam folder.
+**Problem:** Emails are delivered but land in the spam folder.
 
-**Cause:** Your sending domain lacks proper DNS records (SPF, DKIM, DMARC) or you are sending from a free email provider (Gmail, Yahoo).
+**Cause:** Your sending domain lacks proper DNS records (SPF, DKIM, DMARC), or you send from a free email provider (Gmail, Yahoo).
 
-**Fix:** Use a dedicated sending domain with proper DNS records. Set up SPF, DKIM, and DMARC records. Use a transactional email service like Mailgun, SendGrid, or Amazon SES that handles email reputation for you.
+**Fix:** Use a dedicated sending domain with proper DNS records. Set up SPF, DKIM, and DMARC. Or use a transactional email service -- Mailgun, SendGrid, Amazon SES -- that manages email reputation for you.
 
 ### 3. HTML Email Looks Broken
 
-**Problem:** The email looks fine in Gmail but broken in Outlook or Apple Mail.
+**Problem:** The email renders in Gmail but breaks in Outlook or Apple Mail.
 
 **Cause:** Email clients have wildly different HTML/CSS support. CSS flexbox, grid, and many modern properties do not work in email.
 
-**Fix:** Use inline styles (not external stylesheets or `<style>` blocks). Use table-based layouts for complex designs. Test with an email preview tool. Keep it simple -- most transactional emails do not need elaborate designs.
+**Fix:** Use inline styles. Not external stylesheets, not `<style>` blocks. Use table-based layouts for complex designs. Test with an email preview tool. Keep it simple. Most transactional emails do not need elaborate designs.
 
 ### 4. Attachment File Not Found
 
@@ -842,28 +844,28 @@ The HTML response includes the success flash message.
 
 **Cause:** The attachment path is relative or incorrect. The file does not exist at the specified location.
 
-**Fix:** Use absolute paths for attachments. Verify the file exists before calling `send()`: `if (!file_exists($path)) { ... }`. If the file is generated dynamically (like a PDF), make sure the generation completes before sending.
+**Fix:** Use absolute paths for attachments. Verify the file exists before calling `send()`: `if (!file_exists($path)) { ... }`. If the file is generated at runtime (a PDF, for example), make sure the generation completes before sending.
 
-### 5. Dev Mode Silently Intercepts Emails
+### 5. Dev Mode Intercepts Emails Silently
 
-**Problem:** You set up SMTP correctly but no emails arrive. No errors either.
+**Problem:** You set up SMTP. No emails arrive. No errors either.
 
-**Cause:** `TINA4_DEBUG=true` intercepts all emails and shows them in the dev dashboard. The email is never sent to the SMTP server.
+**Cause:** `TINA4_DEBUG=true` intercepts all emails and shows them in the dev dashboard. The email never reaches the SMTP server.
 
-**Fix:** Check the dev dashboard at `/tina4/console` for intercepted emails. If you want to send real emails during development, set `TINA4_MAIL_INTERCEPT=false`. Remember to remove this setting before committing.
+**Fix:** Check the dev dashboard at `/tina4/console` for intercepted emails. If you need real email delivery during development, set `TINA4_MAIL_INTERCEPT=false`. Remove this setting before committing.
 
 ### 6. Email Template Variables Not Substituted
 
-**Problem:** The email body shows `{{ name }}` literally instead of the user's name.
+**Problem:** The email body shows `{{ name }}` instead of the user's name.
 
-**Cause:** You passed the raw template file content instead of rendering it through Frond. The template engine was not invoked.
+**Cause:** You passed the raw template file content instead of rendering it through Frond. The template engine never ran.
 
-**Fix:** Use `Frond::render("emails/template.html", $data)` to render the template with variables substituted. Do not read the file with `file_get_contents()` -- that gives you the raw template source.
+**Fix:** Use `Frond::render("emails/template.html", $data)` to render the template with variables substituted. Do not use `file_get_contents()`. That gives you the raw template source.
 
 ### 7. Connection Timeout on Send
 
 **Problem:** `Messenger::send()` hangs for 30 seconds and then fails with a timeout error.
 
-**Cause:** The SMTP server is unreachable from your network, the port is blocked by a firewall, or the hostname is wrong.
+**Cause:** The SMTP server is unreachable. The port is blocked by a firewall. The hostname is wrong.
 
-**Fix:** Test SMTP connectivity: `telnet smtp.example.com 587`. Verify the hostname, port, and encryption settings. Check that your firewall allows outbound connections on the SMTP port. If you are behind a corporate firewall, port 587 or 465 might be blocked -- ask your network administrator.
+**Fix:** Test SMTP connectivity: `telnet smtp.example.com 587`. Verify the hostname, port, and encryption settings. Check that your firewall allows outbound connections on the SMTP port. Corporate firewalls often block ports 587 and 465. Ask your network administrator.

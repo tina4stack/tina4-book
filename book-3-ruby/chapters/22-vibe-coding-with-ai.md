@@ -2,19 +2,19 @@
 
 ## Why Tina4 is Built for AI-Assisted Development
 
-Imagine telling your AI assistant: "Add a product catalog with search, pagination, and category filtering." In most frameworks, the AI would need to know which packages to install, which config files to create, which naming conventions to follow, and how to wire everything together. It would hallucinate half of it.
+Tell your AI assistant: "Add a product catalog with search, pagination, and category filtering." In most frameworks, the AI needs to know which packages to install, which config files to create, which naming conventions to follow, how to wire everything together. It hallucinated half of it.
 
-With Tina4, the AI reads one file -- `CLAUDE.md` -- and knows everything. Every method signature, every import path, every convention. It generates correct, runnable code on the first try because there is only one way to do things in Tina4.
+With Tina4, the AI reads one file -- `CLAUDE.md` -- and knows everything. Every method signature. Every import path. Every convention. It generates correct, runnable code on the first attempt because there is one way to do things in Tina4.
 
-This is not accidental. Tina4 was designed from the ground up to be the best framework for AI-assisted development. Here is why.
+This is not accidental. Tina4 was designed from the ground up for AI-assisted development. Here is why.
 
 ---
 
 ## The Zero-Dependency Advantage
 
-When an AI generates code for Rails, it might suggest `ActiveRecord::Base` or `ApplicationRecord` -- both exist, both work differently. It might suggest `render json:` or `respond_to do |format|`. Which one? The AI has to guess.
+When an AI writes Rails code, it might suggest `ActiveRecord::Base` or `ApplicationRecord`. Both exist. Both behave differently. It might suggest `render json:` or `respond_to do |format|`. The AI guesses.
 
-With Tina4, there is one ORM. One queue. One template engine. One cache. No ambiguity, no alternatives, no "it depends on which gem you installed." The AI does not need to ask -- it knows.
+Tina4 gives it nothing to guess about. One ORM. One queue. One template engine. One cache. No ambiguity. No alternatives. No "it depends on which gem you installed." The AI knows.
 
 ```ruby
 # There is only one way to cache in Tina4
@@ -276,15 +276,15 @@ It did not hallucinate. It did not guess. It read CLAUDE.md and wrote correct co
 
 ## Why This Matters
 
-Traditional development: you write every line, look up every API, debug every typo. A simple CRUD feature takes an hour.
+Traditional development: write every line, look up every API, debug every typo. A simple CRUD feature takes an hour.
 
-Vibe coding with Tina4: you describe what you want, the AI generates correct code, you review and deploy. The same feature takes 5 minutes.
+Vibe coding with Tina4: describe what you want. The AI generates correct code. You review and deploy. The same feature takes 5 minutes.
 
-The key insight is that AI can only be as good as the framework it targets. A framework with 200 gems, 15 configuration files, and 3 ways to do everything gives the AI too many choices. A framework with zero dependencies, one way to do everything, and a complete reference in CLAUDE.md gives the AI exactly what it needs.
+The insight: AI can only be as good as the framework it targets. A framework with 200 gems, 15 configuration files, and 3 ways to do everything gives the AI too many choices. A framework with zero dependencies, one way to do everything, and a complete reference in CLAUDE.md gives the AI exactly what it needs.
 
-Tina4 was built for this. Every design decision -- zero deps, convention over configuration, identical API across languages, CLAUDE.md -- was made to create the best possible experience for AI-assisted development.
+Every Tina4 design decision -- zero deps, convention over configuration, identical API across 4 languages, CLAUDE.md -- exists to make AI-assisted development work.
 
-You bring the ideas. The AI brings the implementation. Tina4 bridges the gap.
+You bring the ideas. The AI brings the implementation. Tina4 is the bridge.
 
 ---
 

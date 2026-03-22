@@ -2,11 +2,11 @@
 
 ## 1. The 47-Endpoint Problem
 
-Your team has 47 API endpoints and the frontend developer keeps asking "what does this endpoint accept?" You email a spreadsheet. It goes out of date. You write a wiki page. Nobody updates it. You add comments to the code. Nobody reads them.
+Your team has 47 API endpoints. The frontend developer keeps asking "what does this endpoint accept?" You email a spreadsheet. It goes stale. You write a wiki page. Nobody touches it. You add comments to the code. Nobody reads them.
 
-Swagger (also called OpenAPI) solves this permanently. It generates interactive API documentation from annotations in your route files. The docs are always up to date because they come from the code itself. Your frontend developer can browse every endpoint, see the expected request and response formats, and even test endpoints directly from the browser.
+Swagger (OpenAPI) solves this for good. It generates interactive API documentation from annotations in your route files. The docs stay current because they live in the code. Your frontend developer browses every endpoint, sees expected request and response formats, and tests endpoints from the browser.
 
-Tina4 auto-generates a Swagger UI at `/swagger` from comment annotations on your routes. No build step. No extra tooling. Write the annotations, and the documentation appears.
+Tina4 auto-generates a Swagger UI at `/swagger` from comment annotations on your routes. No build step. No extra tooling. Write the annotations. The documentation appears.
 
 ---
 

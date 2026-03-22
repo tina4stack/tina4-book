@@ -2,42 +2,42 @@
 
 ## 1. The 47-Endpoint Problem
 
-Your team has 47 API endpoints and the frontend developer keeps asking "what does this endpoint accept?" You email a spreadsheet. It goes out of date. You write a wiki page. Nobody updates it. You add comments to the code. Nobody reads them.
+Your team has 47 API endpoints. The frontend developer asks what each one accepts. You email a spreadsheet. It goes stale. You write a wiki page. Nobody updates it. You add comments to the code. Nobody reads them.
 
-Swagger (also called OpenAPI) solves this permanently. It generates interactive API documentation from annotations in your route files. The docs are always up to date because they come from the code itself. Your frontend developer can browse every endpoint, see the expected request and response formats, and even test endpoints directly from the browser.
+Swagger solves this permanently. It generates interactive API documentation from annotations in your route files. The docs stay current because they come from the code itself. Your frontend developer browses every endpoint, sees the expected request and response formats, and tests endpoints from the browser.
 
-Tina4 auto-generates a Swagger UI at `/swagger` from doc-block annotations on your routes. No build step. No extra tooling. Write the annotations, and the documentation appears.
+Tina4 auto-generates a Swagger UI at `/swagger` from doc-block annotations. No build step. No extra tooling. Write the annotations. The documentation appears.
 
 ---
 
 ## 2. What Swagger/OpenAPI Is
 
-OpenAPI is a specification format for describing REST APIs. Swagger is the toolset that reads OpenAPI specs and generates documentation, client SDKs, and server stubs.
+OpenAPI is a specification for describing REST APIs. Swagger is the toolset that reads OpenAPI specs and generates documentation, client SDKs, and server stubs.
 
 An OpenAPI spec describes:
 
 - Every endpoint (path + HTTP method)
-- What parameters each endpoint accepts (path, query, header, body)
-- What each endpoint returns (response codes, response bodies)
-- Data schemas (what a "User" or "Product" object looks like)
+- Parameters (path, query, header, body)
+- Responses (status codes, body schemas)
+- Data schemas (what a "User" or "Product" looks like)
 - Authentication requirements
 - Grouping and tagging
 
-Tina4 builds this spec automatically from doc-block comments in your PHP code. You never write JSON or YAML by hand.
+Tina4 builds this spec from doc-block comments in your PHP. No JSON or YAML by hand.
 
 ---
 
 ## 3. Enabling Swagger
 
-Swagger is available out of the box when `TINA4_DEBUG=true`. Navigate to:
+Available out of the box when `TINA4_DEBUG=true`. Navigate to:
 
 ```
 http://localhost:7145/swagger
 ```
 
-You should see the Swagger UI with any routes you have already defined. If you have not added any Swagger annotations yet, you will see the routes listed with default descriptions.
+The Swagger UI appears with all defined routes. No annotations yet means default descriptions.
 
-For production, you can explicitly enable or disable Swagger:
+For production, control it explicitly:
 
 ```env
 TINA4_SWAGGER=true
@@ -45,7 +45,7 @@ TINA4_SWAGGER=true
 
 ### The Swagger JSON Endpoint
 
-The raw OpenAPI spec is available at:
+Raw OpenAPI spec:
 
 ```
 http://localhost:7145/swagger/json
@@ -77,13 +77,13 @@ curl http://localhost:7145/swagger/json
 }
 ```
 
-This JSON can be imported into tools like Postman, Insomnia, or used to generate client SDKs.
+Import this JSON into Postman, Insomnia, or use it to generate client SDKs.
 
 ---
 
 ## 4. Adding Descriptions to Routes
 
-Add Swagger annotations as doc-block comments above your route definitions:
+Doc-block comments above route definitions:
 
 ```php
 <?php
@@ -99,7 +99,7 @@ Route::get("/api/products", function ($request, $response) {
 });
 ```
 
-The first line of the doc-block becomes the `summary`. The `@description` tag provides a longer explanation. Visit `/swagger` and you will see the endpoint listed under the "Products" group with both the summary and the description.
+First line becomes the `summary`. `@description` provides detail. `@tags` groups the endpoint.
 
 ### Documenting Path Parameters
 
@@ -120,7 +120,7 @@ Route::get("/api/products/{id:int}", function ($request, $response) {
 });
 ```
 
-The `@param` annotation tells Swagger about the path parameter. It shows up in the docs as a required field with type information.
+`@param` tells Swagger about the path parameter. Shows as a required field with type information.
 
 ### Documenting Query Parameters
 
@@ -151,15 +151,13 @@ Route::get("/api/products/search", function ($request, $response) {
 });
 ```
 
-Each `@query` annotation adds a parameter to the Swagger docs with its type and description.
+Each `@query` adds a parameter to the docs with type and description.
 
 ---
 
 ## 5. Documenting Request and Response Schemas
 
 ### Request Body
-
-Use `@body` to document what the endpoint expects:
 
 ```php
 /**
@@ -188,7 +186,7 @@ Route::post("/api/products", function ($request, $response) {
 });
 ```
 
-The `@body` annotation describes the expected JSON structure. The `@response` annotation documents possible response codes and their payloads.
+`@body` describes the expected JSON. `@response` documents each status code and its payload.
 
 ### Multiple Response Codes
 
@@ -207,7 +205,6 @@ Route::put("/api/products/{id:int}", function ($request, $response) {
     $id = $request->params["id"];
     $body = $request->body;
 
-    // Simulate not found
     if ($id > 100) {
         return $response->json(["error" => "Product not found", "id" => $id], 404);
     }
@@ -223,13 +220,13 @@ Route::put("/api/products/{id:int}", function ($request, $response) {
 });
 ```
 
-Swagger UI shows each response code with its corresponding schema. Developers can see at a glance what a `200` looks like versus a `404`.
+Swagger UI shows each response code with its schema. A `200` versus a `404` at a glance.
 
 ---
 
 ## 6. Tags for Grouping Endpoints
 
-Tags group related endpoints in the Swagger UI. Without tags, all endpoints appear in a flat list. With tags, they are organized into collapsible sections.
+Tags organize the Swagger UI. Without tags: one flat list. With tags: collapsible sections.
 
 ```php
 /**
@@ -273,11 +270,11 @@ Route::get("/api/products", function ($request, $response) {
 });
 ```
 
-In the Swagger UI, you will see three sections: "Users", "Orders", and "Products". Each section expands to show its endpoints. This makes navigating a large API manageable.
+Three sections in the UI: "Users", "Orders", "Products". Each expands to show its endpoints.
 
 ### Multiple Tags
 
-An endpoint can belong to multiple groups:
+An endpoint in multiple groups:
 
 ```php
 /**
@@ -289,13 +286,13 @@ Route::get("/api/users/{id:int}/orders", function ($request, $response) {
 });
 ```
 
-This endpoint appears in both the "Users" and "Orders" sections.
+Appears in both the "Users" and "Orders" sections.
 
 ---
 
 ## 7. Example Values
 
-Add example values to make the docs more useful. Developers can see realistic data instead of just type names:
+Realistic data instead of type names:
 
 ```php
 /**
@@ -319,33 +316,33 @@ Route::post("/api/products", function ($request, $response) {
 });
 ```
 
-The `@example` annotations populate the "Example Value" section in the Swagger UI. When a developer clicks "Try it out", the example request is pre-filled in the input field, so they can test immediately.
+The `@example` annotations populate the Swagger UI. When a developer clicks "Try it out", the example request is pre-filled.
 
 ---
 
 ## 8. Try-It-Out from the Swagger UI
 
-The Swagger UI includes a "Try it out" button on every endpoint. Clicking it:
+Every endpoint has a "Try it out" button. Click it:
 
-1. Expands the endpoint with editable input fields
-2. Pre-fills example values (if provided)
-3. Lets you edit the parameters, headers, and request body
-4. Sends the actual HTTP request to your running server
-5. Shows the response status, headers, and body
+1. Input fields expand
+2. Example values pre-fill (if provided)
+3. Edit parameters, headers, body
+4. The actual HTTP request fires against your running server
+5. Response appears: status, headers, body
 
-This is a live testing tool built into your documentation. No need for Postman or curl -- frontend developers can test your API directly from the docs page.
+A live testing tool inside your documentation. No Postman needed.
 
 ### Authentication in Try-It-Out
 
-If your endpoints require authentication, click the "Authorize" button at the top of the Swagger UI. Enter your JWT token or API key, and all subsequent "Try it out" requests will include the authentication header.
+Endpoints requiring auth show a lock icon. Click "Authorize" at the top of the Swagger UI. Enter your JWT or API key. All subsequent requests include the header.
 
-Tina4 auto-detects authentication requirements from your route annotations (`@secured`, `@noauth`) and shows the lock icon on endpoints that require auth.
+Tina4 auto-detects auth requirements from `@secured` and `@noauth` annotations.
 
 ---
 
 ## 9. Customizing the Swagger Info Block
 
-Configure the top-level API information in `.env`:
+Configure in `.env`:
 
 ```env
 TINA4_SWAGGER_TITLE=My Store API
@@ -355,7 +352,7 @@ TINA4_SWAGGER_CONTACT_EMAIL=api@mystore.com
 TINA4_SWAGGER_LICENSE=MIT
 ```
 
-This information appears in the header of the Swagger UI and in the OpenAPI spec:
+This appears in the Swagger UI header and the OpenAPI spec:
 
 ```json
 {
@@ -378,34 +375,31 @@ This information appears in the header of the Swagger UI and in the OpenAPI spec
 
 ## 10. Generating Client SDKs from the Spec
 
-The OpenAPI spec at `/swagger/json` can be used with code generation tools to create client libraries in any language.
+The OpenAPI spec at `/swagger/json` feeds code generation tools. Client libraries in any language.
 
 ### Using OpenAPI Generator
 
 ```bash
-# Install the OpenAPI Generator CLI
 npm install -g @openapitools/openapi-generator-cli
 
-# Generate a TypeScript client
+# TypeScript client
 openapi-generator-cli generate \
   -i http://localhost:7145/swagger/json \
   -g typescript-fetch \
   -o ./frontend/api-client
 
-# Generate a Python client
+# Python client
 openapi-generator-cli generate \
   -i http://localhost:7145/swagger/json \
   -g python \
   -o ./python-client
 ```
 
-This generates typed client code with methods for every endpoint. Your frontend developer gets:
+The generated code is typed. IDE autocompletion works:
 
 ```typescript
-// Auto-generated TypeScript client
 const api = new ProductsApi();
 
-// Fully typed -- IDE autocompletion works
 const product = await api.getProductById({ id: 42 });
 console.log(product.name);  // TypeScript knows this is a string
 
@@ -417,13 +411,13 @@ const newProduct = await api.createProduct({
 });
 ```
 
-Every time you update your Swagger annotations and regenerate, the client stays in sync with the server.
+Update annotations. Regenerate. Client stays in sync.
 
 ---
 
 ## 11. A Complete Documented API
 
-Here is a full example showing all the annotation features together:
+All annotation features together:
 
 ```php
 <?php
@@ -531,17 +525,15 @@ Route::delete("/api/users/{id:int}", function ($request, $response) {
 });
 ```
 
-Visit `/swagger` and you will see all four endpoints grouped under "Users", each with full parameter documentation, example values, and multiple response codes.
+Visit `/swagger`. Four endpoints under "Users". Full parameter documentation, examples, multiple response codes.
 
 ---
 
 ## 12. Exercise: Document a Complete User API
 
-Take the User API from the example above and extend it with the following endpoints. Write full Swagger annotations for each one.
+Extend the User API with three more endpoints. Full Swagger annotations on each.
 
 ### Requirements
-
-Document these additional endpoints (you can use hardcoded data in the handlers):
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -549,24 +541,22 @@ Document these additional endpoints (you can use hardcoded data in the handlers)
 | `GET` | `/api/users/{id}/orders` | List a user's orders. Query: status filter, pagination. |
 | `POST` | `/api/users/{id}/avatar` | Upload user avatar. Body: avatar_url string. |
 
-Each endpoint should have:
+Each endpoint needs:
 
-1. A summary (first line of doc-block)
-2. A `@description`
-3. A `@tags` annotation
+1. Summary (first line)
+2. `@description`
+3. `@tags`
 4. `@param` for path parameters
 5. `@query` for query parameters (where applicable)
 6. `@body` for request body (where applicable)
-7. `@response` for each possible response code
+7. `@response` for each status code
 8. `@example` for request and response (where applicable)
 
-### Test by visiting:
+### Verify at:
 
 ```
 http://localhost:7145/swagger
 ```
-
-Verify that all endpoints appear with correct documentation, examples, and response codes.
 
 ---
 
@@ -634,17 +624,10 @@ Route::get("/api/users/{id:int}/orders", function ($request, $response) {
     ];
 
     if ($status !== null) {
-        $orders = array_values(array_filter(
-            $orders,
-            fn($o) => $o["status"] === $status
-        ));
+        $orders = array_values(array_filter($orders, fn($o) => $o["status"] === $status));
     }
 
-    return $response->json([
-        "orders" => $orders,
-        "total" => count($orders),
-        "page" => $page
-    ]);
+    return $response->json(["orders" => $orders, "total" => count($orders), "page" => $page]);
 });
 
 /**
@@ -679,13 +662,13 @@ Route::post("/api/users/{id:int}/avatar", function ($request, $response) {
 });
 ```
 
-Visit `http://localhost:7145/swagger` and verify:
+Visit `http://localhost:7145/swagger`. Verify:
 
-- The "Users" section now has six endpoints (list, get, create, update, delete, and avatar)
-- The "Orders" section shows the "List user orders" endpoint (because it has both `Users` and `Orders` tags)
-- Each endpoint has its summary, description, parameters, request body schema, and response codes
-- The "Try it out" button works for each endpoint
-- Example values are pre-filled when you click "Try it out"
+- "Users" section has six endpoints (list, get, create, update, delete, avatar)
+- "Orders" section shows "List user orders" (dual-tagged)
+- Each endpoint has summary, description, parameters, request body, response codes
+- "Try it out" works
+- Examples pre-fill
 
 ---
 
@@ -693,56 +676,56 @@ Visit `http://localhost:7145/swagger` and verify:
 
 ### 1. Annotations Must Be Directly Above the Route
 
-**Problem:** Your Swagger annotations do not appear in the docs.
+**Problem:** Swagger annotations missing from the docs.
 
-**Cause:** There is a blank line or other code between the doc-block and the `Route::` call. Tina4 only reads doc-blocks that are immediately above the route definition.
+**Cause:** Blank line or code between the doc-block and `Route::`. Tina4 reads only doc-blocks immediately above the route definition.
 
-**Fix:** Make sure the `*/` closing of the doc-block is on the line directly before `Route::get(...)` with no blank lines in between.
+**Fix:** `*/` must be on the line directly before `Route::get(...)`. No blank lines.
 
 ### 2. Missing @tags Makes Endpoints Hard to Find
 
-**Problem:** All endpoints appear in one giant flat list in the Swagger UI.
+**Problem:** All endpoints in one flat list.
 
-**Cause:** You did not add `@tags` to your routes. Without tags, Swagger groups everything under "default".
+**Cause:** No `@tags`. Everything grouped under "default".
 
-**Fix:** Add `@tags ResourceName` to every route doc-block. Group related endpoints under the same tag.
+**Fix:** Add `@tags ResourceName` to every route.
 
 ### 3. @body Must Be Valid JSON
 
-**Problem:** The Swagger UI shows the body schema as empty or broken.
+**Problem:** Body schema shows empty or broken.
 
-**Cause:** The JSON in your `@body` annotation is malformed. A trailing comma, missing quotes, or unescaped characters will break the parser.
+**Cause:** Malformed JSON. Trailing comma, missing quotes, unescaped characters.
 
-**Fix:** Validate your `@body` JSON. Every key and string value must be in double quotes. No trailing commas. Use `"string"`, `"int"`, `"float"`, `"bool"` for type placeholders.
+**Fix:** Validate the JSON. Double quotes on every key and string value. No trailing commas.
 
-### 4. Swagger Shows Routes You Did Not Annotate
+### 4. Swagger Shows Unannotated Routes
 
-**Problem:** Unannotated routes appear in the Swagger UI with minimal documentation.
+**Problem:** Routes without annotations appear with minimal docs.
 
-**Cause:** Tina4 includes all registered routes in the Swagger spec, not just annotated ones. Unannotated routes get a default summary based on the HTTP method and path.
+**Cause:** Tina4 includes all registered routes. By design. Nothing hidden.
 
-**Fix:** This is by design -- it ensures nothing is hidden. Add annotations to improve the documentation quality. If you want to hide a route from Swagger, add `@hidden` to its doc-block.
+**Fix:** Add annotations for quality. Hide a route with `@hidden` in its doc-block.
 
-### 5. Response Examples Do Not Match Actual Responses
+### 5. Response Examples Do Not Match Reality
 
-**Problem:** The example response in Swagger shows different fields than the actual API response.
+**Problem:** Example response shows different fields than the actual API.
 
-**Cause:** The `@example response` was written once and never updated when the handler changed. Swagger annotations are comments -- they are not validated against the actual code.
+**Cause:** Annotations written once, never updated. They are comments. Not validated against code.
 
-**Fix:** Treat annotations as part of the code. When you change a handler's response format, update the annotations at the same time. Consider adding integration tests that compare actual responses to documented schemas.
+**Fix:** Treat annotations as code. When the handler changes, update annotations. Consider integration tests that compare responses to documented schemas.
 
 ### 6. Swagger UI Not Available in Production
 
-**Problem:** `/swagger` returns a 404 in production.
+**Problem:** `/swagger` returns 404 in production.
 
-**Cause:** By default, Swagger is only available when `TINA4_DEBUG=true`. Production deployments with `TINA4_DEBUG=false` disable the Swagger UI.
+**Cause:** Swagger disabled when `TINA4_DEBUG=false`.
 
-**Fix:** If you want Swagger in production (for example, on a staging server), explicitly set `TINA4_SWAGGER=true` in your `.env`. Be aware that exposing your API documentation publicly may reveal implementation details.
+**Fix:** Set `TINA4_SWAGGER=true` in `.env` for staging servers. Be aware that public documentation reveals implementation details.
 
 ### 7. SDK Generation Produces Incorrect Types
 
-**Problem:** The generated TypeScript client has `any` types instead of proper interfaces.
+**Problem:** Generated TypeScript client has `any` types.
 
-**Cause:** Your `@body` and `@response` annotations use generic strings instead of typed schemas. `"name": "string"` tells the generator the type is a literal string "string", not a TypeScript `string` type.
+**Cause:** Annotations use generic strings instead of typed schemas.
 
-**Fix:** Use the correct OpenAPI type format in your annotations. For complex schemas, define them with proper type notation: `"name": "string"` (lowercase), `"price": "number"`, `"in_stock": "boolean"`, `"tags": ["string"]` (array of strings).
+**Fix:** Use correct OpenAPI type format: `"name": "string"` (lowercase), `"price": "number"`, `"in_stock": "boolean"`, `"tags": ["string"]` (array of strings).

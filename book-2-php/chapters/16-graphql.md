@@ -2,13 +2,13 @@
 
 ## 1. The Problem GraphQL Solves
 
-Your mobile app needs a list of products. Each product has a name, price, 20 image URLs, a full description, 15 review objects, and 8 other fields you do not need right now. With REST, you call `GET /api/products` and receive all of it -- 50KB of JSON when you only needed 2KB. On a spotty mobile connection, that wasted bandwidth matters.
+Your mobile app needs a list of products. Each product has a name, price, 20 image URLs, a full description, 15 review objects, and 8 other fields you do not need right now. REST sends all of it. 50KB of JSON when you needed 2KB. On a spotty mobile connection, that wasted bandwidth matters.
 
-Now your web dashboard needs the same products, but it also needs the category, stock status, and supplier info. With REST, you either make three requests (products, categories, suppliers) and stitch them together on the client, or you build a custom endpoint like `GET /api/products?include=category,supplier` and handle the query parameter parsing on the server.
+Now your web dashboard needs the same products plus the category, stock status, and supplier info. REST forces you into three requests (products, categories, suppliers) stitched together on the client, or a custom endpoint with query parameter parsing on the server.
 
-GraphQL solves both problems. The client asks for exactly the fields it needs, and the server returns exactly those fields. One endpoint, one request, one response with the right shape.
+GraphQL solves both problems. The client asks for the fields it needs. The server returns those fields. One endpoint. One request. One response with the right shape.
 
-Tina4 includes a built-in GraphQL engine. No external packages. No Apollo Server. No `graphql-php` library. It is part of the framework.
+Tina4 includes a built-in GraphQL engine. No external packages. No Apollo Server. No `graphql-php` library. Part of the framework.
 
 ---
 
@@ -30,7 +30,7 @@ REST is still great for simple APIs. GraphQL shines when clients have diverse da
 
 ## 3. Enabling GraphQL
 
-GraphQL is available by default in Tina4. The engine serves requests at `/graphql`. If you want to change the endpoint, set it in `.env`:
+GraphQL is available by default. The engine serves requests at `/graphql`. Change the endpoint in `.env` if needed:
 
 ```env
 TINA4_GRAPHQL_ENDPOINT=/graphql
@@ -62,7 +62,7 @@ If you see that response, GraphQL is running.
 
 ## 4. Defining a Schema
 
-A GraphQL schema defines the types of data your API can return and the queries and mutations clients can execute.
+A GraphQL schema defines the data types your API can return and the operations clients can execute.
 
 Create `src/graphql/schema.graphql`:
 
@@ -93,7 +93,7 @@ Tina4 auto-discovers `.graphql` files in `src/graphql/`. You do not need to regi
 
 ## 5. Writing Resolvers
 
-A resolver is the function that runs when a query or mutation is executed. Resolvers live in `src/graphql/` as PHP files.
+A resolver is the function that runs when a query or mutation executes. Resolvers live in `src/graphql/` as PHP files.
 
 Create `src/graphql/resolvers.php`:
 
@@ -195,7 +195,7 @@ curl -X POST http://localhost:7145/graphql \
 
 ## 6. Mutations
 
-Mutations are how clients create, update, or delete data. They are defined in the schema alongside queries.
+Mutations create, update, or delete data. They live in the schema alongside queries.
 
 Update `src/graphql/schema.graphql`:
 
@@ -381,7 +381,7 @@ curl -X POST http://localhost:7145/graphql \
 
 ## 7. Nested Types and Relationships
 
-GraphQL's real power comes from traversing relationships in a single query. Let us add authors and comments to a blog schema.
+GraphQL's real power: traversing relationships in a single query. Authors and comments in a blog schema.
 
 Update `src/graphql/schema.graphql`:
 
@@ -523,7 +523,7 @@ curl -X POST http://localhost:7145/graphql \
 }
 ```
 
-One request. Exactly the fields the client needs. No over-fetching. No under-fetching.
+One request. The fields the client asked for. Nothing more. Nothing less.
 
 ---
 
@@ -571,7 +571,7 @@ GraphiQL is only available when `TINA4_DEBUG=true`. In production, it is disable
 
 ## 10. Query Variables
 
-For production use, clients should send query variables separately from the query string. This prevents injection and allows query caching.
+For production, clients send query variables separately from the query string. This prevents injection and allows query caching.
 
 ```bash
 curl -X POST http://localhost:7145/graphql \

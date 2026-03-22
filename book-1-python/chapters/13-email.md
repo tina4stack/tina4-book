@@ -2,9 +2,9 @@
 
 ## 1. Every App Sends Email
 
-Your SaaS app needs to send signup confirmations, password resets, and weekly digest emails -- with attachments, HTML templates, and reliable delivery. Email is one of those features that every application needs but nobody enjoys implementing. SMTP configuration, plain text fallbacks, attachment encoding, connection timeouts, bounce handling -- the details pile up fast.
+Signup confirmations. Password resets. Weekly digests. Attachments, HTML templates, reliable delivery. Every application needs email. Nobody enjoys implementing it. SMTP configuration. Plain text fallbacks. Attachment encoding. Connection timeouts. The details pile up fast.
 
-Tina4's `Messenger` class handles all of this. Configure it via `.env`, create a Messenger instance, and send. In development mode, emails are intercepted and shown in the dev dashboard so you can inspect them without setting up a real SMTP server.
+Tina4's `Messenger` class absorbs that complexity. Configure via `.env`. Create an instance. Send. In development mode, emails are intercepted and shown in the dev dashboard -- no real SMTP server needed.
 
 ---
 
@@ -90,7 +90,7 @@ marketing_mailer = Messenger(
 )
 ```
 
-The constructor accepts keyword arguments that override any `.env` values. Unspecified keys fall back to the `.env` configuration.
+The constructor accepts keyword arguments that override `.env` values. Unspecified keys fall back to `.env`.
 
 ---
 
@@ -357,7 +357,7 @@ async def get_email(request, response):
 
 ## 9. Dev Mode: Email Interception
 
-When `TINA4_DEBUG=true`, all outgoing emails are intercepted and shown in the dev dashboard instead of being sent to real recipients. This prevents accidentally emailing users during development.
+When `TINA4_DEBUG=true`, Tina4 intercepts all outgoing emails and shows them in the dev dashboard. No real recipients receive anything. No accidental emails during development.
 
 Navigate to `/tina4/console` and look for the "Mail" section. You will see:
 
@@ -383,7 +383,7 @@ With this set, emails are sent to real recipients even when `TINA4_DEBUG=true`. 
 
 ## 10. Using Templates for Email Content
 
-Hardcoding HTML in Python strings is ugly and hard to maintain. Use Tina4 templates for email content:
+Hardcoded HTML in Python strings is ugly and hard to maintain. Templates fix this:
 
 Create `src/templates/emails/welcome.html`:
 
@@ -507,7 +507,7 @@ With `TINA4_DEBUG=true`, the email appears in the dev dashboard instead of being
 
 ## 11. Sending Email via Queues
 
-For production, never send email synchronously in a route handler. Use the queue system from Chapter 11:
+In production, never send email inside a route handler. The SMTP call blocks the response. Use the queue system from Chapter 11:
 
 ```python
 from tina4_python.core.router import post, template
@@ -561,7 +561,7 @@ async def send_email_job(job):
     return True
 ```
 
-The route handler returns in under 50 milliseconds. The email is sent by the queue worker, with automatic retries if the SMTP server is temporarily unavailable.
+The route handler returns in under 50 milliseconds. The queue worker sends the email on its own timeline. If the SMTP server is down, retries happen automatically.
 
 ---
 

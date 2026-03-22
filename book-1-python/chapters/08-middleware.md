@@ -2,11 +2,11 @@
 
 ## 1. The Pipeline Pattern
 
-Every HTTP request in a web application passes through a series of steps before reaching your route handler. Check the IP against a rate limiter. Parse the request body. Verify authentication. Log the request details. These steps are middleware -- code that wraps around your route handler and runs before, after, or both.
+Every HTTP request passes through a series of gates before reaching your route handler. Rate limiter. Body parser. Auth check. Logger. These gates are middleware -- code that wraps your route handler and runs before, after, or both.
 
-Imagine you are building a public API. Every request must be checked against a rate limit. Certain endpoints require an API key. All responses need CORS headers. Errors must be logged. Without middleware, you would duplicate this logic in every route handler. With middleware, you write it once and apply it wherever it is needed.
+Picture a public API. Every request hits a rate limit check. Some endpoints require an API key. All responses need CORS headers. Errors need logging. Without middleware, that logic lives in every handler. Duplicated. Scattered. Fragile. With middleware, you write it once and attach it where it belongs.
 
-Tina4 Python provides built-in middleware (CORS, rate limiting) and lets you write your own. This chapter covers both.
+Tina4 Python ships with built-in middleware (CORS, rate limiting) and lets you write your own. This chapter covers both.
 
 ---
 
@@ -199,7 +199,7 @@ def api_v1():
 
 ## 6. Execution Order
 
-When middleware is stacked, it forms a nested pipeline:
+Stacked middleware forms a nested pipeline. Requests travel inward. Responses travel outward:
 
 ```
 Request arrives
@@ -251,7 +251,7 @@ A: after
 
 ## 7. Short-Circuiting
 
-If middleware does not call `next_handler`, the chain stops and the route handler never runs. This is how blocking middleware works:
+Skip `next_handler` and the chain stops cold. The route handler never runs. This is how blocking middleware works:
 
 ```python
 async def maintenance_mode(request, response, next_handler):

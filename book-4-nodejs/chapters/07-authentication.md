@@ -2,7 +2,9 @@
 
 ## 1. Locking the Door
 
-Up to now, every endpoint you have built is public. Anyone with the URL can read, create, update, and delete data. That is fine for a tutorial, but a real application needs to know who is making a request and whether they are allowed to make it.
+Every endpoint you have built so far is public. Anyone with the URL can read, create, update, and delete data. Fine for a tutorial. Unacceptable in production.
+
+A real application needs identity. Who is making this request? And are they allowed to make it?
 
 This chapter covers Tina4's authentication system: JWT tokens, password hashing, middleware-based route protection, CSRF tokens for forms, and session management.
 
@@ -10,7 +12,7 @@ This chapter covers Tina4's authentication system: JWT tokens, password hashing,
 
 ## 2. JWT Tokens
 
-Tina4 uses JSON Web Tokens (JWT) for authentication. A JWT is a signed string that contains a payload (like a user ID and role). The server creates the token at login, the client sends it with every request, and the server verifies it without needing to look anything up in a database.
+Tina4 uses JSON Web Tokens (JWT) for authentication. A JWT is a signed string carrying a payload -- a user ID, a role, whatever you need. The server creates the token at login. The client sends it with every request. The server verifies it without touching the database.
 
 ### Generating a Token
 
@@ -56,7 +58,7 @@ const payload = Auth.getPayload(token);
 
 ### The Secret Key
 
-Tina4 auto-generates a random key at `secrets/jwt.key` on first run. Or set it explicitly:
+Tina4 generates a random key at `secrets/jwt.key` on first run. Or set it yourself:
 
 ```env
 TINA4_JWT_SECRET=my-very-long-and-random-secret-key-at-least-32-chars
@@ -66,7 +68,7 @@ TINA4_JWT_SECRET=my-very-long-and-random-secret-key-at-least-32-chars
 
 ## 3. Password Hashing
 
-Never store passwords in plain text.
+Plain text passwords are a breach waiting to happen.
 
 ### Hashing a Password
 

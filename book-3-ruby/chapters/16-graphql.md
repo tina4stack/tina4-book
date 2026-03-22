@@ -2,11 +2,11 @@
 
 ## 1. The Problem GraphQL Solves
 
-Your mobile app needs a list of products. Each product has a name, price, 20 image URLs, a full description, 15 review objects, and 8 other fields you do not need right now. With REST, you call `GET /api/products` and receive all of it -- 50KB of JSON when you only needed 2KB. On a spotty mobile connection, that wasted bandwidth matters.
+Your mobile app needs a product list. Each product carries a name, price, 20 image URLs, a full description, 15 review objects, and 8 other fields you do not need. REST sends all of it. 50KB of JSON when 2KB would do. On a spotty mobile connection, that waste hurts.
 
-Now your web dashboard needs the same products, but it also needs the category, stock status, and supplier info. With REST, you either make three requests (products, categories, suppliers) and stitch them together on the client, or you build a custom endpoint.
+Your web dashboard needs the same products but also wants category, stock status, and supplier info. REST forces three requests (products, categories, suppliers) stitched together on the client. Or a custom endpoint.
 
-GraphQL solves both problems. The client asks for exactly the fields it needs, and the server returns exactly those fields. One endpoint, one request, one response with the right shape.
+GraphQL kills both problems. The client asks for the fields it needs. The server returns those fields. One endpoint. One request. One response shaped to fit.
 
 Tina4 includes a built-in GraphQL engine. No external packages. No Apollo Server. It is part of the framework.
 

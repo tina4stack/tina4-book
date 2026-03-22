@@ -2,11 +2,11 @@
 
 ## 1. The Problem with Frontend Toolchains
 
-Your client wants a beautiful dashboard. You know the drill -- install Node.js, run `npm install`, wait for 200MB of `node_modules` to download, configure webpack or Vite, set up PostCSS, add a CSS framework, maybe Tailwind with its purge config, and then pray nothing breaks when you upgrade a dependency six months from now.
+Your client wants a dashboard. You know the drill. Install Node.js. Run `npm install`. Wait for 200MB of `node_modules`. Configure webpack or Vite. Set up PostCSS. Add a CSS framework. Pray nothing breaks when you upgrade a dependency six months from now.
 
-Tina4 takes a different approach. The framework ships with **tina4css** -- a Bootstrap-compatible CSS framework -- and **frond.js** -- a lightweight JavaScript helper library. Both are included automatically when you scaffold a project. No npm. No webpack. No build step for development. Just link the files and start building.
+Tina4 skips all of that. The framework ships with **tina4css** -- a Bootstrap-compatible CSS framework -- and **frond.js** -- a lightweight JavaScript helper. Both are included when you scaffold a project. No npm. No webpack. No build step. Link the files. Start building.
 
-By the end of this chapter, you will have a complete admin dashboard with a sidebar, navigation, cards, tables, modals, and dark mode support -- all without touching npm.
+By the end of this chapter, you will have a complete admin dashboard with sidebar, navigation, cards, tables, modals, and dark mode -- without touching npm.
 
 ---
 
@@ -552,7 +552,7 @@ function toggleDarkMode() {
 }
 ```
 
-Dark mode changes all backgrounds, text colors, borders, and component colors. Cards get a dark background. Tables get dark rows. Buttons adjust their contrast. All automatic -- you do not need to write a single CSS rule.
+Dark mode transforms every surface. Backgrounds darken. Text colors invert. Borders shift. Cards, tables, buttons -- all adjust contrast. Zero CSS rules required from you.
 
 ### Respecting System Preference
 

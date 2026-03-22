@@ -2,9 +2,9 @@
 
 ## 1. From Arrays to Real Data
 
-In Chapters 2 and 3, all our data lived in PHP arrays that reset every time the server restarted. That is fine for learning routing and responses, but real applications need persistent storage. This chapter covers Tina4's database layer -- raw queries, parameterised queries, transactions, schema inspection, helper methods, and migrations.
+In Chapters 2 and 3, data lived in PHP arrays. Every server restart wiped the slate clean. That works for learning routing and responses. Real applications need persistence. This chapter covers Tina4's database layer: raw queries, parameterised queries, transactions, schema inspection, helper methods, and migrations.
 
-Tina4 supports five database engines: SQLite, PostgreSQL, MySQL, Microsoft SQL Server, and Firebird. The API is the same across all of them. You switch databases by changing one line in `.env`.
+Tina4 supports five database engines: SQLite, PostgreSQL, MySQL, Microsoft SQL Server, and Firebird. The API is identical across all of them. Switch databases by changing one line in `.env`.
 
 ---
 
@@ -12,17 +12,17 @@ Tina4 supports five database engines: SQLite, PostgreSQL, MySQL, Microsoft SQL S
 
 ### The Default: SQLite
 
-When you scaffold a project with `tina4 init`, Tina4 creates a SQLite database at `data/app.db`. The default `.env` includes:
+`tina4 init` creates a SQLite database at `data/app.db`. The default `.env` contains:
 
 ```env
 TINA4_DEBUG=true
 ```
 
-With no explicit `DATABASE_URL`, Tina4 defaults to `sqlite:///data/app.db`. That is why the health check at `/health` already shows `"database": "connected"` without any configuration.
+No explicit `DATABASE_URL` means Tina4 defaults to `sqlite:///data/app.db`. The health check at `/health` already shows `"database": "connected"` without any configuration.
 
 ### Connection Strings for Other Databases
 
-Set `DATABASE_URL` in `.env` to use a different engine:
+Set `DATABASE_URL` in `.env`:
 
 ```env
 # SQLite (explicit)
@@ -43,7 +43,7 @@ DATABASE_URL=firebird://localhost:3050/path/to/database.fdb
 
 ### Separate Credentials
 
-If you prefer to keep credentials out of the connection string (recommended for production), use separate environment variables:
+Keep credentials out of the connection string. Better for production:
 
 ```env
 DATABASE_URL=postgres://localhost:5432/myapp
@@ -51,11 +51,11 @@ DATABASE_USERNAME=myuser
 DATABASE_PASSWORD=secretpassword
 ```
 
-Tina4 merges these with the connection string at startup. The credentials in the separate variables take precedence over any embedded in the URL.
+Tina4 merges these at startup. Separate variables take precedence over anything embedded in the URL.
 
 ### Verifying the Connection
 
-After updating `.env`, restart the server and check:
+Update `.env`. Restart. Check:
 
 ```bash
 curl http://localhost:7145/health
@@ -71,13 +71,13 @@ curl http://localhost:7145/health
 }
 ```
 
-If the database is not reachable, you will see `"database": "disconnected"` with an error message.
+If the database is unreachable, you see `"database": "disconnected"` with an error message.
 
 ---
 
 ## 3. Getting the Database Object
 
-In your route handlers, access the database via the global `Tina4\Database` class:
+Access the database through the global `Tina4\Database` class:
 
 ```php
 <?php
@@ -101,7 +101,7 @@ curl http://localhost:7145/api/test-db
 {"answer": 2}
 ```
 
-`Database::getConnection()` returns the active database connection. You call methods like `fetch()`, `execute()`, and `fetchOne()` on this object.
+`Database::getConnection()` returns the active connection. Call `fetch()`, `execute()`, and `fetchOne()` on it.
 
 ---
 
@@ -116,7 +116,7 @@ $db = Database::getConnection();
 $products = $db->fetch("SELECT * FROM products WHERE price > 50");
 ```
 
-Each row is an associative array with column names as keys:
+Each row is an associative array:
 
 ```php
 // $products looks like:
@@ -133,11 +133,11 @@ $product = $db->fetchOne("SELECT * FROM products WHERE id = 1");
 // Returns: ["id" => 1, "name" => "Keyboard", "price" => 79.99]
 ```
 
-If no row matches, `fetchOne()` returns `null`.
+No match returns `null`.
 
 ### execute() -- Run a Statement
 
-For INSERT, UPDATE, DELETE, and DDL statements that do not return rows:
+For INSERT, UPDATE, DELETE, and DDL -- statements that do not return rows:
 
 ```php
 $db->execute("INSERT INTO products (name, price) VALUES ('Widget', 9.99)");
@@ -184,14 +184,14 @@ curl http://localhost:7145/api/products
 
 ## 5. Parameterised Queries
 
-Never concatenate user input into SQL strings. This is how SQL injection attacks happen:
+Never concatenate user input into SQL strings. That is how SQL injection happens:
 
 ```php
 // NEVER do this:
 $db->fetch("SELECT * FROM products WHERE name = '" . $userInput . "'");
 ```
 
-Instead, use parameterised queries. Pass parameters as the second argument:
+Use parameterised queries instead. Parameters go in the second argument:
 
 ```php
 $db = Database::getConnection();
@@ -209,7 +209,7 @@ $products = $db->fetch(
 );
 ```
 
-The database driver handles escaping. Your input is never part of the SQL string.
+The database driver handles escaping. Your input never touches the SQL string.
 
 ### A Safe Search Endpoint
 
@@ -261,7 +261,7 @@ curl "http://localhost:7145/api/products/search?q=key&max_price=100"
 
 ## 6. Transactions
 
-When you need multiple operations to succeed or fail together, use transactions:
+Multiple operations that must succeed or fail together:
 
 ```php
 <?php
@@ -314,15 +314,15 @@ Route::post("/api/orders", function ($request, $response) {
 });
 ```
 
-If any step fails, `rollback()` undoes everything. The database is never left in a half-finished state.
+If any step fails, `rollback()` undoes everything. The database never lands in a half-finished state.
 
-**Important:** You must call `commit()` to save the changes. If you forget, the transaction will be rolled back when the connection closes.
+You must call `commit()` to save. Forget it, and the transaction rolls back when the connection closes.
 
 ---
 
 ## 7. Schema Inspection
 
-Tina4 provides methods to inspect your database structure at runtime:
+Tina4 provides methods to inspect your database structure at runtime.
 
 ### getTables()
 
@@ -343,7 +343,7 @@ Returns an array of table names:
 $columns = $db->getColumns("products");
 ```
 
-Returns an array of column definitions:
+Returns column definitions:
 
 ```php
 [
@@ -386,7 +386,7 @@ Route::get("/api/schema", function ($request, $response) {
 
 ## 8. Batch Operations with executeMany()
 
-Insert or update many rows efficiently:
+Insert or update many rows in one call:
 
 ```php
 $db = Database::getConnection();
@@ -404,13 +404,13 @@ $db->executeMany(
 );
 ```
 
-`executeMany()` prepares the statement once and executes it for each item in the array. This is significantly faster than calling `execute()` in a loop because the SQL only needs to be parsed once.
+`executeMany()` prepares the statement once and executes it for each item. The SQL is parsed once. Four rows inserted. Much faster than four separate `execute()` calls.
 
 ---
 
 ## 9. Helper Methods: insert(), update(), delete()
 
-Tina4 provides shorthand methods so you do not have to write SQL for simple operations.
+Shorthand methods for simple operations. No SQL needed.
 
 ### insert()
 
@@ -439,7 +439,7 @@ $db->insert("products", [
 $db->update("products", ["price" => 39.99, "in_stock" => 1], "id = :id", ["id" => 7]);
 ```
 
-The third argument is the WHERE clause, and the fourth is the parameters for it.
+Third argument: WHERE clause. Fourth argument: parameters.
 
 ### delete()
 
@@ -448,17 +448,15 @@ The third argument is the WHERE clause, and the fourth is the parameters for it.
 $db->delete("products", "id = :id", ["id" => 7]);
 ```
 
-These helper methods generate the SQL for you. They are convenient for simple CRUD operations but do not replace raw queries for complex joins, subqueries, or aggregations.
+These helpers generate SQL for you. Convenient for simple CRUD. For complex joins, subqueries, or aggregations, use raw queries.
 
 ---
 
 ## 10. Migrations
 
-Migrations are versioned SQL scripts that evolve your database schema over time. Instead of manually running `CREATE TABLE` statements, you write migration files and Tina4 applies them in order.
+Migrations are versioned SQL scripts that evolve your schema over time. No manual `CREATE TABLE` statements. Write migration files. Tina4 applies them in order.
 
 ### Creating a Migration
-
-Use the CLI:
 
 ```bash
 tina4 migrate:create create_products_table
@@ -468,9 +466,9 @@ tina4 migrate:create create_products_table
 Created migration: src/migrations/20260322143000_create_products_table.sql
 ```
 
-The filename starts with a timestamp so migrations always run in chronological order.
+The timestamp prefix ensures chronological order.
 
-Edit the generated file `src/migrations/20260322143000_create_products_table.sql`:
+Edit `src/migrations/20260322143000_create_products_table.sql`:
 
 ```sql
 -- UP
@@ -488,7 +486,7 @@ CREATE TABLE products (
 DROP TABLE IF EXISTS products;
 ```
 
-The `-- UP` section runs when applying the migration. The `-- DOWN` section runs when rolling back.
+`-- UP` runs when applying. `-- DOWN` runs when rolling back.
 
 ### Running Migrations
 
@@ -527,11 +525,9 @@ Rolling back last migration...
 Rollback complete. 1 rolled back.
 ```
 
-This runs the `-- DOWN` section of the most recently applied migration.
+Runs the `-- DOWN` section of the most recently applied migration.
 
 ### A Real Migration Sequence
-
-Here is what a typical project's migrations look like:
 
 ```
 src/migrations/
@@ -542,7 +538,7 @@ src/migrations/
 └── 20260323091500_add_email_index_to_users.sql
 ```
 
-The last migration might look like:
+The last migration:
 
 ```sql
 -- UP
@@ -552,23 +548,23 @@ CREATE INDEX idx_users_email ON users (email);
 DROP INDEX IF EXISTS idx_users_email;
 ```
 
-Migrations are applied in filename order. Each migration runs only once -- Tina4 tracks which ones have been applied in a `_migrations` table.
+Migrations run in filename order. Each runs only once. Tina4 tracks applied migrations in a `_migrations` table.
 
 ---
 
 ## 11. Query Caching
 
-For read-heavy applications, enable query caching:
+For read-heavy applications:
 
 ```env
 TINA4_DB_CACHE=true
 ```
 
-When enabled, Tina4 caches the results of `fetch()` and `fetchOne()` calls. Identical queries with identical parameters return cached results instead of hitting the database again.
+Tina4 caches results of `fetch()` and `fetchOne()` calls. Identical queries with identical parameters return cached results instead of hitting the database.
 
-The cache is automatically invalidated when you call `execute()`, `insert()`, `update()`, or `delete()` on the same table.
+The cache invalidates when you call `execute()`, `insert()`, `update()`, or `delete()` on the same table.
 
-You can also control caching per-query:
+Per-query control:
 
 ```php
 // Force a fresh query (bypass cache)
@@ -582,11 +578,11 @@ $db->clearCache();
 
 ## 12. Exercise: Build a Notes App
 
-Build a notes application backed by SQLite. Create the database table via a migration and build a full CRUD API.
+A notes application backed by SQLite. Migration for the table. Full CRUD API.
 
 ### Requirements
 
-1. Create a migration that creates a `notes` table with columns:
+1. Create a migration for a `notes` table:
    - `id` -- integer, primary key, auto-increment
    - `title` -- text, not null
    - `content` -- text, not null
@@ -594,7 +590,7 @@ Build a notes application backed by SQLite. Create the database table via a migr
    - `created_at` -- text, default current timestamp
    - `updated_at` -- text, default current timestamp
 
-2. Build these API endpoints:
+2. Build these endpoints:
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -656,7 +652,7 @@ CREATE TABLE notes (
 DROP TABLE IF EXISTS notes;
 ```
 
-Run the migration:
+Run it:
 
 ```bash
 tina4 migrate
@@ -866,19 +862,19 @@ Route::delete("/api/notes/{id:int}", function ($request, $response) {
 
 ### 1. Forgetting commit()
 
-**Problem:** You call `startTransaction()`, run your queries, but the changes disappear on the next request.
+**Problem:** Queries run inside `startTransaction()`, but changes vanish on the next request.
 
-**Cause:** Without `commit()`, the transaction is rolled back when the connection closes.
+**Cause:** No `commit()`. The transaction rolls back when the connection closes.
 
-**Fix:** Always call `$db->commit()` after your transaction succeeds. Use a try/catch block with `$db->rollback()` in the catch.
+**Fix:** Always call `$db->commit()` on success. Use try/catch with `$db->rollback()` in the catch.
 
 ### 2. Connection String Formats
 
-**Problem:** The database will not connect and you see a cryptic error about the connection string.
+**Problem:** Database refuses to connect. Cryptic error about the connection string.
 
-**Cause:** Each database engine expects a specific URL format. A common mistake is using `mysql://user:pass@host/db` when the engine expects the port.
+**Cause:** Missing port. A common mistake is `mysql://user:pass@host/db` without the port number.
 
-**Fix:** Always include the port: `mysql://localhost:3306/mydb`. Here are the default ports:
+**Fix:** Always include the port:
 
 | Engine | Default Port |
 |--------|-------------|
@@ -892,38 +888,38 @@ Route::delete("/api/notes/{id:int}", function ($request, $response) {
 
 **Problem:** SQLite creates a new empty database instead of using the existing one.
 
-**Cause:** The path in `DATABASE_URL` is relative and resolves to the wrong directory, or you used `sqlite://` (two slashes) instead of `sqlite:///` (three slashes).
+**Cause:** Wrong slash count. `sqlite://` (two slashes) instead of `sqlite:///` (three slashes). Or a relative path resolving to the wrong directory.
 
-**Fix:** Use three slashes for a relative path: `sqlite:///data/app.db`. For an absolute path, use four slashes: `sqlite:////var/data/app.db`. The third slash separates the scheme from the path; the fourth starts the absolute path.
+**Fix:** Three slashes for a relative path: `sqlite:///data/app.db`. Four slashes for absolute: `sqlite:////var/data/app.db`. The third slash separates the scheme. The fourth starts the absolute path.
 
 ### 4. Parameterised Queries with LIKE
 
-**Problem:** `WHERE name LIKE :q` with `["q" => "%search%"]` works, but `WHERE name LIKE '%:q%'` does not.
+**Problem:** `WHERE name LIKE :q` with `["q" => "%search%"]` works. `WHERE name LIKE '%:q%'` does not.
 
-**Cause:** Parameters inside quotes are treated as literal text, not as placeholders.
+**Cause:** Parameters inside quotes are literal text, not placeholders.
 
-**Fix:** Include the `%` wildcards in the parameter value, not in the SQL: `["q" => "%" . $search . "%"]`. The SQL should be `WHERE name LIKE :q`.
+**Fix:** Put the `%` wildcards in the parameter value: `["q" => "%" . $search . "%"]`. The SQL should be `WHERE name LIKE :q`.
 
 ### 5. Boolean Values in SQLite
 
-**Problem:** You insert `true` or `false` but the database stores `1` or `0`. When you read it back, you get integers, not booleans.
+**Problem:** You insert `true` or `false`. The database stores `1` or `0`. Reading it back gives integers, not booleans.
 
-**Cause:** SQLite does not have a native boolean type. It stores booleans as integers.
+**Cause:** SQLite has no native boolean type. Booleans become integers.
 
-**Fix:** Cast in your PHP code: `"in_stock" => (bool) $row["in_stock"]`. Or accept that `1` and `0` work as truthy/falsy in PHP.
+**Fix:** Cast in PHP: `"in_stock" => (bool) $row["in_stock"]`. Or accept that `1` and `0` work as truthy/falsy.
 
 ### 6. Migration Already Applied
 
-**Problem:** You edited a migration file and ran `tina4 migrate` again, but nothing changed.
+**Problem:** You edited a migration file and ran `tina4 migrate` again. Nothing changed.
 
-**Cause:** Tina4 tracks applied migrations by filename. Once applied, a migration will not run again even if you change its contents.
+**Cause:** Tina4 tracks applied migrations by filename. Once applied, a migration will not run again regardless of content changes.
 
-**Fix:** Create a new migration for schema changes. Do not edit applied migrations. If you are in early development and want to start fresh, use `tina4 migrate:rollback` to undo and then `tina4 migrate` to reapply.
+**Fix:** Create a new migration for schema changes. Never edit applied migrations. For early development, use `tina4 migrate:rollback` first, then `tina4 migrate` to reapply.
 
 ### 7. fetch() Returns Empty Array, Not Null
 
-**Problem:** You check `if ($result === null)` but it never matches, even when the table is empty.
+**Problem:** `if ($result === null)` never matches, even when the table is empty.
 
-**Cause:** `fetch()` always returns an array. An empty result is `[]`, not `null`. Only `fetchOne()` returns `null` when no row matches.
+**Cause:** `fetch()` always returns an array. Empty result is `[]`, not `null`. Only `fetchOne()` returns `null`.
 
 **Fix:** Check with `if (empty($result))` or `if (count($result) === 0)`.

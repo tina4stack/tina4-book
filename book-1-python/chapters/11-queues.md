@@ -2,11 +2,11 @@
 
 ## 1. Not Everything Should Happen Right Now
 
-Some tasks take too long to run inside an HTTP request. Sending an email might take 2 seconds. Generating a PDF report might take 10 seconds. Processing a large CSV upload might take a minute. If you do these inside a route handler, the user stares at a loading spinner -- or worse, the request times out.
+Some tasks are too slow for an HTTP request. Sending an email: 2 seconds. Generating a PDF report: 10 seconds. Processing a large CSV upload: a minute. Run these inside a route handler and the user stares at a spinner. Or the request times out.
 
-Queues solve this. Instead of doing the work immediately, you push a message onto a queue describing what needs to be done. A separate worker process picks up the message and does the work in the background. The user gets an instant response: "Your report is being generated. We will email it to you."
+Queues solve this. Push a message describing the work. A separate worker picks it up and does the job in the background. The user gets an instant response: "Your report is being generated."
 
-Imagine you are building a store that sends order confirmation emails, generates invoices as PDFs, and syncs inventory with a warehouse system. None of these should block the checkout flow. Each one becomes a queue message that a worker processes independently.
+Picture a store that sends order confirmations, generates invoices, and syncs inventory with a warehouse. None of these should block checkout. Each one becomes a queue message. A worker processes it on its own schedule.
 
 ---
 
@@ -56,7 +56,7 @@ Install the client library:
 uv add confluent-kafka
 ```
 
-The key point: your code stays the same regardless of backend. `Queue`, `push`, `pop`, and `worker` work identically whether the backend is SQLite, PostgreSQL, RabbitMQ, or Kafka.
+The key point: your code stays the same. `Queue`, `push`, `pop`, and `worker` work identically whether the backend is SQLite, PostgreSQL, RabbitMQ, or Kafka.
 
 ---
 
@@ -315,7 +315,7 @@ The user gets an instant response. The email, invoice, and warehouse sync happen
 
 ## 8. Switching Backends via .env
 
-The beauty of Tina4's queue system is that switching backends is a config change, not a code change.
+Switching backends is a config change, not a code change.
 
 ### Development: SQLite
 

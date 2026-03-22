@@ -2,9 +2,9 @@
 
 ## 1. Putting It All Together
 
-Over the last 20 chapters, you have learned routing, templates, databases, ORM, authentication, middleware, queues, WebSocket, caching, frontend, GraphQL, testing, dev tools, CLI scaffolding, and deployment. Now let us use all of it to build a real application from scratch.
+Twenty chapters. Routing. Templates. Databases. ORM. Authentication. Middleware. Queues. WebSocket. Caching. Frontend. GraphQL. Testing. Dev tools. CLI scaffolding. Deployment. Now they all converge into one application.
 
-We are building **TaskFlow** -- a task management system with:
+**TaskFlow** -- a task management system with:
 
 - User registration and JWT authentication
 - Task creation, assignment, and tracking
@@ -14,7 +14,7 @@ We are building **TaskFlow** -- a task management system with:
 - A full test suite
 - Docker deployment
 
-This is not a toy project. It is a complete, production-ready application that demonstrates every major Tina4 feature working together.
+This is not a toy. It is a production-ready application where every major Tina4 feature works in concert.
 
 ---
 

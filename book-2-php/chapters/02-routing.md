@@ -2,11 +2,11 @@
 
 ## 1. How Routing Works in Tina4
 
-Every web application maps URLs to code. You type `/products` in your browser, the framework finds the function that handles `/products`, runs it, and sends back the result. That mapping is called routing.
+A URL arrives. The framework finds the function that handles it. The function runs. The result goes back. That mapping -- URL to code -- is routing.
 
-In Tina4, you define routes in PHP files inside `src/routes/`. Every `.php` file in that directory (and its subdirectories) is auto-loaded when the server starts. You do not need to register files or update a central config -- just drop a file in and it works.
+In Tina4, routes live in PHP files inside `src/routes/`. Every `.php` file in that directory (and its subdirectories) is auto-loaded at startup. No registration file. No central config. Drop a file in. It works.
 
-Here is the simplest possible route:
+The simplest possible route:
 
 ```php
 <?php
@@ -17,19 +17,19 @@ Route::get("/hello", function ($request, $response) {
 });
 ```
 
-Save that as `src/routes/hello.php`, start the server with `tina4 serve`, and visit `http://localhost:7145/hello`:
+Save that as `src/routes/hello.php`. Start the server. Visit `http://localhost:7145/hello`:
 
 ```json
 {"message":"Hello, World!"}
 ```
 
-That is it. One line registers the route, one line handles the request.
+One line registers the route. One line handles the request.
 
 ---
 
 ## 2. HTTP Methods
 
-Tina4 supports all five standard HTTP methods. Each one has a static method on the `Route` class:
+Five methods. Five static calls on the `Route` class.
 
 ```php
 <?php
@@ -103,13 +103,13 @@ curl -X DELETE http://localhost:7145/products/42
 {"action":"delete product 42"}
 ```
 
-Use `GET` for reading, `POST` for creating, `PUT` for full replacement, `PATCH` for partial updates, and `DELETE` for removal. This follows the REST convention and makes your API predictable.
+`GET` reads. `POST` creates. `PUT` replaces. `PATCH` patches. `DELETE` removes. REST convention. Predictable API.
 
 ---
 
 ## 3. Path Parameters
 
-Path parameters let you capture values from the URL. Wrap the parameter name in curly braces:
+Curly braces capture values from the URL.
 
 ```php
 <?php
@@ -134,11 +134,11 @@ curl http://localhost:7145/users/5/posts/99
 {"user_id":"5","post_id":"99"}
 ```
 
-Notice that `user_id` came back as the string `"5"`, not the integer `5`. Path parameters are always strings by default.
+Notice: `user_id` came back as the string `"5"`, not the integer `5`. Path parameters are strings by default.
 
 ### Typed Parameters
 
-You can enforce a type by adding a colon and the type after the parameter name:
+Add a colon and a type to enforce constraints:
 
 ```php
 <?php
@@ -161,7 +161,7 @@ curl http://localhost:7145/orders/42
 {"order_id":42,"type":"integer"}
 ```
 
-If you pass a non-integer value, the route will not match and you will get a 404:
+Pass a non-integer and the route does not match. A 404 comes back instead:
 
 ```bash
 curl http://localhost:7145/orders/abc
@@ -171,7 +171,7 @@ curl http://localhost:7145/orders/abc
 {"error":"Not found","path":"/orders/abc","status":404}
 ```
 
-Supported types:
+Four types available:
 
 | Type | Matches | Example |
 |------|---------|---------|
@@ -184,7 +184,7 @@ Supported types:
 
 ## 4. Query Parameters
 
-Query parameters are the key-value pairs after the `?` in a URL. Access them via `$request->query`:
+Key-value pairs after the `?` in a URL. Access them through `$request->query`:
 
 ```php
 <?php
@@ -212,13 +212,13 @@ curl "http://localhost:7145/search?q=keyboard&page=2&limit=20"
 {"query":"keyboard","page":2,"limit":20,"offset":20}
 ```
 
-If a query parameter is missing, `$request->query["key"]` will not exist, so always use the null coalescing operator (`??`) to provide defaults.
+Missing query parameters do not exist in the array. Always use the null coalescing operator (`??`) for defaults.
 
 ---
 
 ## 5. Route Groups
 
-When you have a set of routes that share a common prefix, use `Route::group()` to avoid repeating yourself:
+Shared prefix. No repetition.
 
 ```php
 <?php
@@ -245,7 +245,7 @@ Route::group("/api/v1", function () {
 });
 ```
 
-The routes above register as `/api/v1/users`, `/api/v1/users/{id}`, and `/api/v1/products`. You write short paths inside the group, and Tina4 prepends the prefix automatically.
+These register as `/api/v1/users`, `/api/v1/users/{id}`, and `/api/v1/products`. Short paths inside the group. Tina4 prepends the prefix.
 
 ```bash
 curl http://localhost:7145/api/v1/users
@@ -263,7 +263,7 @@ curl http://localhost:7145/api/v1/products
 {"products":[]}
 ```
 
-Groups can be nested:
+Groups nest:
 
 ```php
 <?php
@@ -304,11 +304,11 @@ curl http://localhost:7145/api/v2/status
 
 ## 6. Middleware
 
-Middleware is code that runs before (or after) your route handler. Use it for authentication, logging, rate limiting, input validation, or anything that should happen on multiple routes.
+Code that runs before or after your handler. Authentication, logging, rate limiting, input validation -- anything that should apply to multiple routes without polluting each handler.
 
 ### Middleware on a Single Route
 
-Pass middleware as the third argument to any route method:
+Pass the middleware name as the third argument:
 
 ```php
 <?php
@@ -331,11 +331,11 @@ Route::get("/api/data", function ($request, $response) {
 }, "logRequest");
 ```
 
-The middleware function receives `$request`, `$response`, and `$next`. Call `$next($request, $response)` to continue to the route handler. If you do not call `$next`, the route handler never runs -- useful for blocking unauthorized requests.
+The middleware receives `$request`, `$response`, and `$next`. Call `$next($request, $response)` to continue to the handler. Skip the call and the handler never runs -- the chain stops cold.
 
 ### Blocking Middleware
 
-Here is middleware that checks for an API key:
+A gate that checks for an API key:
 
 ```php
 <?php
@@ -364,7 +364,7 @@ curl http://localhost:7145/api/secret
 {"error":"Invalid API key"}
 ```
 
-The response status is `401 Unauthorized`.
+Status: `401 Unauthorized`.
 
 ```bash
 curl http://localhost:7145/api/secret -H "X-API-Key: my-secret-key"
@@ -376,7 +376,7 @@ curl http://localhost:7145/api/secret -H "X-API-Key: my-secret-key"
 
 ### Middleware on a Group
 
-Apply middleware to an entire group by passing it as the third argument to `Route::group()`:
+Third argument to `Route::group()`. Every route inside inherits it.
 
 ```php
 <?php
@@ -405,11 +405,11 @@ Route::group("/api/admin", function () {
 }, "requireAuth");
 ```
 
-Every route inside the group now requires the `Authorization` header. You do not need to add the middleware to each route individually.
+No per-route repetition. The group handles it.
 
 ### Multiple Middleware
 
-Chain multiple middleware by passing an array:
+Pass an array. They run in order.
 
 ```php
 Route::get("/api/important", function ($request, $response) {
@@ -417,17 +417,17 @@ Route::get("/api/important", function ($request, $response) {
 }, ["logRequest", "requireApiKey", "requireAuth"]);
 ```
 
-Middleware runs in order: `logRequest` first, then `requireApiKey`, then `requireAuth`, then the route handler. If any middleware does not call `$next`, the chain stops there.
+`logRequest` first, then `requireApiKey`, then `requireAuth`, then the handler. If any middleware skips `$next`, the chain stops there.
 
 ---
 
 ## 7. Route Decorators: @noauth and @secured
 
-Tina4 provides two special decorators for controlling authentication on routes.
+Two annotations for controlling authentication at the route level.
 
 ### @noauth -- Public Routes
 
-When your application has global authentication middleware, use the `@noauth` annotation to mark specific routes as public:
+When your application has global authentication, `@noauth` exempts specific routes:
 
 ```php
 <?php
@@ -444,11 +444,11 @@ Route::get("/api/public/info", function ($request, $response) {
 });
 ```
 
-The `@noauth` decorator tells Tina4 to skip authentication checks for this route, even if global auth middleware is configured in `.env` or applied to the parent group.
+The `@noauth` decorator tells Tina4 to skip authentication for this route, even if global auth middleware is configured.
 
 ### @secured -- Protected GET Routes
 
-The `@secured` annotation explicitly marks a GET route as requiring authentication:
+`@secured` marks a GET route as requiring authentication:
 
 ```php
 <?php
@@ -465,7 +465,7 @@ Route::get("/api/profile", function ($request, $response) {
 });
 ```
 
-By default, `POST`, `PUT`, `PATCH`, and `DELETE` routes are considered secured. `GET` routes are not -- they are public unless you add `@secured`. This matches the common pattern where reading data is public but modifying data requires authentication.
+The convention: `POST`, `PUT`, `PATCH`, and `DELETE` routes are secured by default. `GET` routes are public unless you add `@secured`. Reading is open. Writing requires proof.
 
 ---
 
@@ -473,7 +473,7 @@ By default, `POST`, `PUT`, `PATCH`, and `DELETE` routes are considered secured. 
 
 ### Wildcard Routes
 
-Use `*` at the end of a path to match anything after it:
+A `*` at the end of a path matches everything after it:
 
 ```php
 <?php
@@ -506,7 +506,7 @@ curl http://localhost:7145/docs/api/authentication/jwt
 
 ### Catch-All Route (Custom 404)
 
-Register a catch-all to handle any unmatched URL:
+Handle any unmatched URL:
 
 ```php
 <?php
@@ -520,9 +520,9 @@ Route::get("/*", function ($request, $response) {
 });
 ```
 
-This route should be defined last (or in a file that sorts alphabetically after your other route files) so it does not shadow your real routes. Tina4 matches routes in the order they are registered -- the first match wins.
+Define this last. Tina4 matches routes in registration order -- first match wins. Place this in a file that sorts alphabetically after your other route files, or it will shadow everything.
 
-Alternatively, you can create a custom 404 page by placing a template at `src/templates/errors/404.html`:
+You can also create a custom 404 template at `src/templates/errors/404.html`:
 
 ```html
 {% extends "base.html" %}
@@ -536,13 +536,13 @@ Alternatively, you can create a custom 404 page by placing a template at `src/te
 {% endblock %}
 ```
 
-Tina4 automatically uses this template for any unmatched route when the template file exists.
+Tina4 uses this template for any unmatched route when the file exists.
 
 ---
 
 ## 9. Route Listing via CLI
 
-As your application grows, you will want to see all registered routes at a glance. Use the Tina4 CLI:
+Your application grows. You need a map. The CLI provides one.
 
 ```bash
 tina4 routes
@@ -568,9 +568,7 @@ GET      /search                       -                   public
 GET      /docs/*                       -                   public
 ```
 
-The `Auth` column shows whether a route is public, secured (default for non-GET methods), explicitly `@noauth`, or explicitly `@secured`.
-
-You can also filter by method:
+Filter by method:
 
 ```bash
 tina4 routes --method POST
@@ -583,7 +581,7 @@ POST     /products                     -                   secured
 POST     /api/v1/users                 -                   secured
 ```
 
-Or search for a specific path pattern:
+Search for a path pattern:
 
 ```bash
 tina4 routes --filter users
@@ -602,7 +600,7 @@ GET      /api/admin/users              requireAuth         public
 
 ## 10. Organizing Route Files
 
-You are free to organize route files any way you like. Tina4 loads every `.php` file in `src/routes/` recursively. Here are two common patterns:
+Tina4 loads every `.php` file in `src/routes/` recursively. The directory structure is yours to organize. Two common patterns:
 
 ### Pattern 1: One File Per Resource
 
@@ -630,17 +628,17 @@ src/routes/
     └── about.php
 ```
 
-Both patterns work identically. The directory structure has no effect on the URL paths -- only the route definitions inside the files matter. Choose whichever pattern keeps your project navigable.
+Both work identically. The directory structure has no effect on URL paths -- only the route definitions inside the files matter. Pick whichever pattern keeps your project navigable.
 
 ---
 
 ## 11. Exercise: Build a Full CRUD API for Products
 
-Build a complete REST API for managing products. All data is stored in a PHP array (no database yet -- we will add that in Chapter 5).
+Build a REST API for managing products. All data stored in a PHP array. No database yet -- Chapter 5 handles that.
 
 ### Requirements
 
-Create a file `src/routes/product-api.php` with the following routes:
+Create `src/routes/product-api.php` with these routes:
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -650,9 +648,9 @@ Create a file `src/routes/product-api.php` with the following routes:
 | `PUT` | `/api/products/{id:int}` | Replace a product. Return 404 if not found. |
 | `DELETE` | `/api/products/{id:int}` | Delete a product. Return 204 with no body. |
 
-Each product has: `id` (int), `name` (string), `category` (string), `price` (float), `in_stock` (bool).
+Each product: `id` (int), `name` (string), `category` (string), `price` (float), `in_stock` (bool).
 
-Start with this seed data:
+Seed data:
 
 ```php
 $products = [
@@ -849,56 +847,52 @@ Not found:
 
 ### 1. Trailing Slashes Matter
 
-**Problem:** `/products` works but `/products/` returns a 404 (or vice versa).
+**Problem:** `/products` works but `/products/` returns 404.
 
 **Cause:** Tina4 treats `/products` and `/products/` as different routes by default.
 
-**Fix:** Pick one convention and stick with it. If you want both to work, register the route without a trailing slash -- Tina4 will redirect `/products/` to `/products` automatically when `TINA4_TRAILING_SLASH_REDIRECT=true` is set in `.env`.
+**Fix:** Pick one convention. Stick with it. Set `TINA4_TRAILING_SLASH_REDIRECT=true` in `.env` to auto-redirect `/products/` to `/products`.
 
 ### 2. Parameter Names Must Be Unique in a Path
 
-**Problem:** `/users/{id}/posts/{id}` does not work as expected -- both parameters have the same name.
-
-**Cause:** The second `{id}` overwrites the first in `$request->params`.
+**Problem:** `/users/{id}/posts/{id}` produces wrong results -- the second `{id}` overwrites the first.
 
 **Fix:** Use distinct names: `/users/{userId}/posts/{postId}`.
 
 ### 3. Method Conflicts
 
-**Problem:** You defined `Route::get("/items/{id}", ...)` and `Route::get("/items/{action}", ...)` and the wrong handler runs.
+**Problem:** `Route::get("/items/{id}", ...)` and `Route::get("/items/{action}", ...)` collide. The wrong handler runs.
 
-**Cause:** Both patterns match `/items/42`. The first one registered wins.
+**Cause:** Both patterns match `/items/42`. First registration wins.
 
-**Fix:** Use typed parameters to disambiguate: `Route::get("/items/{id:int}", ...)` will only match integers, leaving `/items/export` free for the other route. Alternatively, restructure your paths: `/items/{id:int}` and `/items/actions/{action}`.
+**Fix:** Use typed parameters to disambiguate: `Route::get("/items/{id:int}", ...)` matches only integers, leaving `/items/export` free. Or restructure: `/items/{id:int}` and `/items/actions/{action}`.
 
 ### 4. Route Handler Must Return a Response
 
-**Problem:** Your route handler runs but the browser shows an empty page or a 500 error.
+**Problem:** The handler runs but the browser shows empty or 500.
 
-**Cause:** You forgot the `return` statement. Without `return`, the handler returns `null` and Tina4 does not know what to send back.
+**Cause:** No `return` statement. Without `return`, the handler returns `null`. Tina4 has nothing to send.
 
-**Fix:** Always `return $response->json(...)` or `return $response->html(...)` or `return $response->render(...)`. Every handler must return something.
+**Fix:** Every handler must return something. `return $response->json(...)`, `return $response->html(...)`, `return $response->render(...)`.
 
 ### 5. Route Files Must Start with `<?php`
 
-**Problem:** Your route file is ignored. No errors, just no routes registered.
+**Problem:** Route file is ignored. No errors. No routes registered.
 
-**Cause:** The file does not start with `<?php`. Without the PHP opening tag, the file is not parsed as PHP code.
+**Cause:** Missing PHP opening tag. Without `<?php`, the file is not parsed.
 
-**Fix:** Make sure every route file starts with `<?php` on the very first line.
+**Fix:** First line of every route file: `<?php`.
 
 ### 6. Middleware Function Must Be a String Name
 
 **Problem:** Passing a closure directly as middleware causes an error.
 
-**Cause:** Tina4 expects middleware to be referenced by function name (a string), not as an inline closure.
+**Cause:** Tina4 expects middleware referenced by function name (a string), not as an inline closure.
 
-**Fix:** Define your middleware as a named function and pass the name as a string: `"myMiddleware"`, not `function ($request, $response, $next) { ... }`.
+**Fix:** Define middleware as a named function. Pass the name as a string: `"myMiddleware"`.
 
 ### 7. Group Prefix Must Start with a Slash
 
-**Problem:** `Route::group("api/v1", ...)` produces routes like `/api/v1/users` but they do not match.
-
-**Cause:** The group prefix should start with `/` for consistency. While Tina4 may auto-correct this, it is better to be explicit.
+**Problem:** `Route::group("api/v1", ...)` produces routes that do not match.
 
 **Fix:** Always start group prefixes with `/`: `Route::group("/api/v1", ...)`.

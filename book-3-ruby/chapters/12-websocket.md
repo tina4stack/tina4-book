@@ -2,11 +2,11 @@
 
 ## 1. The Refresh Button Problem
 
-Your project management app needs live updates. When someone moves a card from "In Progress" to "Done", everyone else on the team should see it instantly -- no page refresh, no polling, no waiting. Traditional HTTP is request-response: the client asks, the server answers. The server cannot push data to the client on its own.
+Your project management app needs live updates. Someone moves a card from "In Progress" to "Done." Everyone else should see it -- no page refresh, no polling, no waiting. But HTTP is request-response. The client asks. The server answers. The server cannot speak first.
 
-WebSocket solves this by establishing a persistent, bi-directional connection between the browser and the server. Once connected, either side can send messages at any time. The connection stays open until explicitly closed.
+WebSocket tears down that wall. It establishes a persistent, bi-directional connection between browser and server. Either side can send messages at any time. The connection holds until one side closes it.
 
-Tina4 treats WebSocket like routing. You define a WebSocket handler the same way you define an HTTP route. The path determines which handler processes the connection.
+Tina4 treats WebSocket as routing. Define a WebSocket handler the same way you define an HTTP route. The path determines which handler owns the connection.
 
 ---
 

@@ -2,9 +2,11 @@
 
 ## 1. From Arrays to Real Data
 
-In Chapters 2 and 3, all our data lived in Ruby arrays that reset every time the server restarted. That is fine for learning routing and responses, but real applications need persistent storage. This chapter covers Tina4's database layer -- raw queries, parameterised queries, transactions, schema inspection, helper methods, and migrations.
+In Chapters 2 and 3, all your data lived in Ruby arrays. Server restart. Data gone. Fine for learning routing. Useless for production.
 
-Tina4 supports five database engines: SQLite, PostgreSQL, MySQL, Microsoft SQL Server, and Firebird. The API is the same across all of them. You switch databases by changing one line in `.env`.
+This chapter covers Tina4's database layer: raw queries, parameterised queries, transactions, schema inspection, helper methods, and migrations.
+
+Tina4 speaks to five database engines: SQLite, PostgreSQL, MySQL, Microsoft SQL Server, and Firebird. The API is identical across all five. Switch databases by changing one line in `.env`.
 
 ---
 
@@ -12,13 +14,13 @@ Tina4 supports five database engines: SQLite, PostgreSQL, MySQL, Microsoft SQL S
 
 ### The Default: SQLite
 
-When you scaffold a project with `tina4 init`, Tina4 creates a SQLite database at `data/app.db`. The default `.env` includes:
+When you scaffold with `tina4 init`, Tina4 creates a SQLite database at `data/app.db`. The default `.env` contains:
 
 ```env
 TINA4_DEBUG=true
 ```
 
-With no explicit `DATABASE_URL`, Tina4 defaults to `sqlite:///data/app.db`. That is why the health check at `/health` already shows `"database": "connected"` without any configuration.
+No explicit `DATABASE_URL`? Tina4 defaults to `sqlite:///data/app.db`. The health check at `/health` shows `"database": "connected"` with zero configuration.
 
 ### Connection Strings for Other Databases
 
@@ -184,7 +186,7 @@ curl http://localhost:7147/api/products
 
 ## 5. Parameterised Queries
 
-Never concatenate user input into SQL strings. This is how SQL injection attacks happen:
+Never concatenate user input into SQL strings. That road leads to SQL injection:
 
 ```ruby
 # NEVER do this:
@@ -257,7 +259,7 @@ curl "http://localhost:7147/api/products/search?q=key&max_price=100"
 
 ## 6. Transactions
 
-When you need multiple operations to succeed or fail together, use transactions:
+Multiple operations must succeed or fail together. Transactions enforce that contract:
 
 ```ruby
 Tina4::Router.post("/api/orders") do |request, response|
@@ -306,9 +308,9 @@ Tina4::Router.post("/api/orders") do |request, response|
 end
 ```
 
-If any step fails, `rollback` undoes everything. The database is never left in a half-finished state.
+If any step fails, `rollback` undoes everything. The database never sits in a half-finished state.
 
-**Important:** You must call `commit` to save the changes. If you forget, the transaction will be rolled back when the connection closes.
+**Critical:** You must call `commit` to save changes. Forget it, and the transaction rolls back when the connection closes.
 
 ---
 
@@ -436,13 +438,13 @@ The third argument is the WHERE clause, and the fourth is the parameters for it.
 db.delete("products", "id = :id", { id: 7 })
 ```
 
-These helper methods generate the SQL for you. They are convenient for simple CRUD operations but do not replace raw queries for complex joins, subqueries, or aggregations.
+These helpers generate SQL for you. Convenient for simple CRUD. Raw queries still own complex joins, subqueries, and aggregations.
 
 ---
 
 ## 10. Migrations
 
-Migrations are versioned SQL scripts that evolve your database schema over time. Instead of manually running `CREATE TABLE` statements, you write migration files and Tina4 applies them in order.
+Migrations are versioned SQL scripts that evolve your schema over time. No manual `CREATE TABLE` statements. Write migration files. Tina4 applies them in order.
 
 ### Creating a Migration
 
@@ -540,7 +542,7 @@ CREATE INDEX idx_users_email ON users (email);
 DROP INDEX IF EXISTS idx_users_email;
 ```
 
-Migrations are applied in filename order. Each migration runs only once -- Tina4 tracks which ones have been applied in a `_migrations` table.
+Migrations run in filename order. Each migration runs once. Tina4 tracks applied migrations in a `_migrations` table.
 
 ---
 

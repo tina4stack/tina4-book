@@ -2,9 +2,9 @@
 
 ## 1. Debugging at 2am
 
-It is 2am. Your production monitoring just pinged you -- a 500 error on the checkout endpoint. You pull up the dev dashboard, find the failing request in the request inspector, and see the full stack trace with source code context. Line 47 of `src/routes/checkout.rb` -- a nil reference on the shipping address because the user did not fill in the form. You add a nil check, push the fix, and go back to sleep. Total time: 30 seconds.
+2am. Production monitoring pings you. A 500 error on the checkout endpoint. You open the dev dashboard. Find the failing request in the request inspector. Full stack trace with source code context. Line 47 of `src/routes/checkout.rb` -- a nil reference on the shipping address because the user skipped the form. Add a nil check. Push the fix. Go back to sleep. 30 seconds.
 
-Tina4's dev tools are not an afterthought bolted on later. They are built into the framework from day one. When `TINA4_DEBUG=true`, you get a full development dashboard, an error overlay with source code, live reload, a request inspector, a SQL query runner, and more -- all without installing any additional packages.
+Tina4's dev tools are not an afterthought. They ship with the framework from day one. Set `TINA4_DEBUG=true` and you get a full development dashboard, an error overlay with source code, live reload, a request inspector, a SQL query runner -- all without installing a single extra package.
 
 ---
 

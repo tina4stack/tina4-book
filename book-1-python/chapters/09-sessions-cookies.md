@@ -2,9 +2,9 @@
 
 ## 1. Remembering Your Users
 
-JWT tokens are great for APIs, but traditional web applications need more. A shopping cart that persists across pages. A flash message that shows once after a redirect. A "remember me" checkbox on the login form. These features rely on sessions and cookies -- server-side state tied to a browser.
+JWT tokens handle APIs. Traditional web applications need more. A shopping cart that persists across pages. A flash message that appears once after a redirect. A "remember me" checkbox on the login form. These features run on sessions and cookies -- server-side state tied to a browser.
 
-Imagine you are building an e-commerce site. A customer adds three items to their cart, navigates to a product page, then comes back to the cart. Without sessions, the cart would be empty every time. Sessions let the server remember what each browser is doing, even across multiple requests.
+Picture an e-commerce site. A customer adds three items to their cart. Navigates to a product page. Comes back to the cart. Without sessions, the cart is empty every time. Sessions give the server memory. Each browser gets its own state, preserved across requests.
 
 ---
 
@@ -182,7 +182,7 @@ The `pop()` method reads the value and deletes it from the session in one step. 
 
 ## 5. Cookies
 
-Cookies are small pieces of data stored in the browser. Unlike sessions, cookies are sent with every request and are visible to JavaScript (unless `httpOnly` is set).
+Cookies are small data fragments stored in the browser. Unlike sessions, cookies travel with every request and are visible to JavaScript (unless `httpOnly` is set).
 
 ### Setting a Cookie
 
@@ -255,7 +255,7 @@ async def clear_preferences(request, response):
 | Tracking consent | Yes | No |
 | Sensitive data (user ID, role) | No | Yes |
 
-Rule of thumb: if the data is sensitive or should not be visible to the client, use sessions. If the data is non-sensitive and you want it to persist even after the session expires, use cookies.
+The rule: sensitive data or data the client should not see goes in sessions. Non-sensitive data that should persist beyond session expiry goes in cookies.
 
 ---
 

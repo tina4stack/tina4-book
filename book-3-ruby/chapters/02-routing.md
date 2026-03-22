@@ -2,11 +2,11 @@
 
 ## 1. How Routing Works in Tina4
 
-Every web application maps URLs to code. You type `/products` in your browser, the framework finds the function that handles `/products`, runs it, and sends back the result. That mapping is called routing.
+Every web application maps URLs to code. You type `/products` in your browser. The framework finds the handler for `/products`, runs it, sends back the result. That mapping is routing.
 
-In Tina4, you define routes in Ruby files inside `src/routes/`. Every `.rb` file in that directory (and its subdirectories) is auto-loaded when the server starts. You do not need to register files or update a central config -- just drop a file in and it works.
+In Tina4, routes live in Ruby files inside `src/routes/`. Every `.rb` file in that directory (and its subdirectories) is auto-loaded at startup. No registration. No central config. Drop a file in. It works.
 
-Here is the simplest possible route:
+The simplest possible route:
 
 ```ruby
 Tina4::Router.get("/hello") do |request, response|
@@ -14,19 +14,19 @@ Tina4::Router.get("/hello") do |request, response|
 end
 ```
 
-Save that as `src/routes/hello.rb`, start the server with `tina4 serve`, and visit `http://localhost:7147/hello`:
+Save that as `src/routes/hello.rb`, start the server, visit `http://localhost:7147/hello`:
 
 ```json
 {"message":"Hello, World!"}
 ```
 
-That is it. One line registers the route, one block handles the request.
+One line registers the route. One block handles the request. Done.
 
 ---
 
 ## 2. HTTP Methods
 
-Tina4 supports all five standard HTTP methods. Each one has a method on `Tina4::Router`:
+Tina4 supports all five standard HTTP methods. Each one lives on `Tina4::Router`:
 
 ```ruby
 Tina4::Router.get("/products") do |request, response|
@@ -97,13 +97,13 @@ curl -X DELETE http://localhost:7147/products/42
 {"action":"delete product 42"}
 ```
 
-Use `GET` for reading, `POST` for creating, `PUT` for full replacement, `PATCH` for partial updates, and `DELETE` for removal. This follows the REST convention and makes your API predictable.
+`GET` reads. `POST` creates. `PUT` replaces. `PATCH` patches. `DELETE` removes. REST convention. Predictable API.
 
 ---
 
 ## 3. Path Parameters
 
-Path parameters let you capture values from the URL. Wrap the parameter name in curly braces:
+Path parameters capture values from the URL. Wrap the name in curly braces:
 
 ```ruby
 Tina4::Router.get("/users/{id}/posts/{post_id}") do |request, response|
@@ -125,11 +125,11 @@ curl http://localhost:7147/users/5/posts/99
 {"user_id":"5","post_id":"99"}
 ```
 
-Notice that `user_id` came back as the string `"5"`, not the integer `5`. Path parameters are always strings by default.
+Notice: `user_id` came back as the string `"5"`, not the integer `5`. Path parameters are strings by default.
 
 ### Typed Parameters
 
-You can enforce a type by adding a colon and the type after the parameter name:
+Enforce a type with a colon after the parameter name:
 
 ```ruby
 Tina4::Router.get("/orders/{id:int}") do |request, response|
@@ -149,7 +149,7 @@ curl http://localhost:7147/orders/42
 {"order_id":42,"type":"Integer"}
 ```
 
-If you pass a non-integer value, the route will not match and you will get a 404:
+Pass a non-integer? The route refuses to match. You get a 404:
 
 ```bash
 curl http://localhost:7147/orders/abc
@@ -172,7 +172,7 @@ Supported types:
 
 ## 4. Query Parameters
 
-Query parameters are the key-value pairs after the `?` in a URL. Access them via `request.query`:
+Query parameters are key-value pairs after the `?` in a URL. Access them through `request.query`:
 
 ```ruby
 Tina4::Router.get("/search") do |request, response|
@@ -197,13 +197,13 @@ curl "http://localhost:7147/search?q=keyboard&page=2&limit=20"
 {"query":"keyboard","page":2,"limit":20,"offset":20}
 ```
 
-If a query parameter is missing, `request.query["key"]` will return `nil`, so always use `||` to provide defaults.
+Missing query parameter? `request.query["key"]` returns `nil`. Use `||` to provide defaults.
 
 ---
 
 ## 5. Route Groups
 
-When you have a set of routes that share a common prefix, use `Tina4::Router.group` to avoid repeating yourself:
+A set of routes shares a common prefix. `Tina4::Router.group` eliminates repetition:
 
 ```ruby
 Tina4::Router.group("/api/v1") do
@@ -228,7 +228,7 @@ Tina4::Router.group("/api/v1") do
 end
 ```
 
-The routes above register as `/api/v1/users`, `/api/v1/users/{id}`, and `/api/v1/products`. You write short paths inside the group, and Tina4 prepends the prefix automatically.
+These routes register as `/api/v1/users`, `/api/v1/users/{id}`, and `/api/v1/products`. Short paths inside the group. Tina4 prepends the prefix.
 
 ```bash
 curl http://localhost:7147/api/v1/users
@@ -246,7 +246,7 @@ curl http://localhost:7147/api/v1/products
 {"products":[]}
 ```
 
-Groups can be nested:
+Groups nest:
 
 ```ruby
 Tina4::Router.group("/api") do
@@ -284,11 +284,11 @@ curl http://localhost:7147/api/v2/status
 
 ## 6. Middleware
 
-Middleware is code that runs before (or after) your route handler. Use it for authentication, logging, rate limiting, input validation, or anything that should happen on multiple routes.
+Middleware is code that runs before or after your route handler. Authentication. Logging. Rate limiting. Input validation. Anything that belongs on multiple routes but not in every handler.
 
 ### Middleware on a Single Route
 
-Pass middleware as the third argument to any route method:
+Pass middleware as the third argument:
 
 ```ruby
 log_request = lambda do |request, response, next_handler|
@@ -308,11 +308,11 @@ Tina4::Router.get("/api/data", middleware: "log_request") do |request, response|
 end
 ```
 
-The middleware receives `request`, `response`, and `next_handler`. Call `next_handler.call(request, response)` to continue to the route handler. If you do not call `next_handler`, the route handler never runs -- useful for blocking unauthorized requests.
+The middleware receives `request`, `response`, and `next_handler`. Call `next_handler.call(request, response)` to proceed to the route handler. Skip the call and the handler never runs -- a gatekeeper that blocks unauthorized requests.
 
 ### Blocking Middleware
 
-Here is middleware that checks for an API key:
+Middleware that checks for an API key:
 
 ```ruby
 require_api_key = lambda do |request, response, next_handler|
@@ -338,7 +338,7 @@ curl http://localhost:7147/api/secret
 {"error":"Invalid API key"}
 ```
 
-The response status is `401 Unauthorized`.
+Status: `401 Unauthorized`.
 
 ```bash
 curl http://localhost:7147/api/secret -H "X-API-Key: my-secret-key"
@@ -350,7 +350,7 @@ curl http://localhost:7147/api/secret -H "X-API-Key: my-secret-key"
 
 ### Middleware on a Group
 
-Apply middleware to an entire group by passing it as an option to `Tina4::Router.group`:
+Apply middleware to every route inside a group:
 
 ```ruby
 Tina4::Router.group("/api/admin", middleware: "require_auth") do
@@ -366,11 +366,11 @@ Tina4::Router.group("/api/admin", middleware: "require_auth") do
 end
 ```
 
-Every route inside the group now requires the `Authorization` header. You do not need to add the middleware to each route individually.
+Every route in the group now demands the `Authorization` header. No per-route repetition.
 
 ### Multiple Middleware
 
-Chain multiple middleware by passing an array:
+Chain them with an array:
 
 ```ruby
 Tina4::Router.get("/api/important", middleware: ["log_request", "require_api_key", "require_auth"]) do |request, response|
@@ -378,17 +378,17 @@ Tina4::Router.get("/api/important", middleware: ["log_request", "require_api_key
 end
 ```
 
-Middleware runs in order: `log_request` first, then `require_api_key`, then `require_auth`, then the route handler. If any middleware does not call `next_handler`, the chain stops there.
+Middleware runs in order: `log_request` first, then `require_api_key`, then `require_auth`, then the route handler. If any middleware skips `next_handler`, the chain stops there.
 
 ---
 
 ## 7. Route Decorators: @noauth and @secured
 
-Tina4 provides two special decorators for controlling authentication on routes.
+Tina4 provides two decorators for controlling authentication at the route level.
 
 ### @noauth -- Public Routes
 
-When your application has global authentication middleware, use the `@noauth` annotation to mark specific routes as public:
+When your application has global authentication middleware, `@noauth` marks specific routes as public:
 
 ```ruby
 # @noauth
@@ -400,11 +400,11 @@ Tina4::Router.get("/api/public/info") do |request, response|
 end
 ```
 
-The `@noauth` comment tells Tina4 to skip authentication checks for this route, even if global auth middleware is configured in `.env` or applied to the parent group.
+The `@noauth` comment tells Tina4 to skip authentication for this route, even if global auth middleware guards the parent group.
 
 ### @secured -- Protected GET Routes
 
-The `@secured` annotation explicitly marks a GET route as requiring authentication:
+`@secured` marks a GET route as requiring authentication:
 
 ```ruby
 # @secured
@@ -414,7 +414,7 @@ Tina4::Router.get("/api/profile") do |request, response|
 end
 ```
 
-By default, `POST`, `PUT`, `PATCH`, and `DELETE` routes are considered secured. `GET` routes are not -- they are public unless you add `@secured`. This matches the common pattern where reading data is public but modifying data requires authentication.
+By default, `POST`, `PUT`, `PATCH`, and `DELETE` routes are secured. `GET` routes are public unless you add `@secured`. Reading is open. Writing demands credentials.
 
 ---
 
@@ -422,7 +422,7 @@ By default, `POST`, `PUT`, `PATCH`, and `DELETE` routes are considered secured. 
 
 ### Wildcard Routes
 
-Use `*` at the end of a path to match anything after it:
+Use `*` at the end of a path to match everything after it:
 
 ```ruby
 Tina4::Router.get("/docs/*") do |request, response|
@@ -452,7 +452,7 @@ curl http://localhost:7147/docs/api/authentication/jwt
 
 ### Catch-All Route (Custom 404)
 
-Register a catch-all to handle any unmatched URL:
+Handle any unmatched URL:
 
 ```ruby
 Tina4::Router.get("/*") do |request, response|
@@ -463,9 +463,9 @@ Tina4::Router.get("/*") do |request, response|
 end
 ```
 
-This route should be defined last (or in a file that sorts alphabetically after your other route files) so it does not shadow your real routes. Tina4 matches routes in the order they are registered -- the first match wins.
+Define this route last (or in a file that sorts alphabetically after your other route files). Tina4 matches routes in registration order. First match wins.
 
-Alternatively, you can create a custom 404 page by placing a template at `src/templates/errors/404.html`:
+Or create a custom 404 page at `src/templates/errors/404.html`:
 
 ```html
 {% extends "base.html" %}
@@ -479,13 +479,13 @@ Alternatively, you can create a custom 404 page by placing a template at `src/te
 {% endblock %}
 ```
 
-Tina4 automatically uses this template for any unmatched route when the template file exists.
+Tina4 uses this template for unmatched routes when the file exists.
 
 ---
 
 ## 9. Route Listing via CLI
 
-As your application grows, you will want to see all registered routes at a glance. Use the Tina4 CLI:
+As your application grows, you need to see all registered routes at a glance:
 
 ```bash
 tina4 routes
@@ -511,9 +511,7 @@ GET      /search                       -                   public
 GET      /docs/*                       -                   public
 ```
 
-The `Auth` column shows whether a route is public, secured (default for non-GET methods), explicitly `@noauth`, or explicitly `@secured`.
-
-You can also filter by method:
+Filter by method:
 
 ```bash
 tina4 routes --method POST
@@ -526,7 +524,7 @@ POST     /products                     -                   secured
 POST     /api/v1/users                 -                   secured
 ```
 
-Or search for a specific path pattern:
+Search for a path pattern:
 
 ```bash
 tina4 routes --filter users
@@ -545,7 +543,7 @@ GET      /api/admin/users              require_auth        public
 
 ## 10. Organizing Route Files
 
-You are free to organize route files any way you like. Tina4 loads every `.rb` file in `src/routes/` recursively. Here are two common patterns:
+Organize route files however you want. Tina4 loads every `.rb` file in `src/routes/` recursively. Two common patterns:
 
 ### Pattern 1: One File Per Resource
 
@@ -573,17 +571,17 @@ src/routes/
     └── about.rb
 ```
 
-Both patterns work identically. The directory structure has no effect on the URL paths -- only the route definitions inside the files matter. Choose whichever pattern keeps your project navigable.
+Both work the same. The directory structure has no effect on URL paths -- only the route definitions inside the files matter. Pick whichever pattern keeps your project navigable.
 
 ---
 
 ## 11. Exercise: Build a Full CRUD API for Products
 
-Build a complete REST API for managing products. All data is stored in a Ruby array (no database yet -- we will add that in Chapter 5).
+Build a complete REST API for managing products. Data lives in a Ruby array (no database yet -- Chapter 5 handles that).
 
 ### Requirements
 
-Create a file `src/routes/product_api.rb` with the following routes:
+Create `src/routes/product_api.rb` with these routes:
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -595,7 +593,7 @@ Create a file `src/routes/product_api.rb` with the following routes:
 
 Each product has: `id` (int), `name` (string), `category` (string), `price` (float), `in_stock` (bool).
 
-Start with this seed data:
+Seed data:
 
 ```ruby
 products = [
@@ -787,15 +785,15 @@ Not found:
 
 ### 1. Trailing Slashes Matter
 
-**Problem:** `/products` works but `/products/` returns a 404 (or vice versa).
+**Problem:** `/products` works but `/products/` returns 404.
 
 **Cause:** Tina4 treats `/products` and `/products/` as different routes by default.
 
-**Fix:** Pick one convention and stick with it. If you want both to work, register the route without a trailing slash -- Tina4 will redirect `/products/` to `/products` automatically when `TINA4_TRAILING_SLASH_REDIRECT=true` is set in `.env`.
+**Fix:** Pick one convention. Stick with it. Set `TINA4_TRAILING_SLASH_REDIRECT=true` in `.env` and Tina4 redirects `/products/` to `/products`.
 
 ### 2. Parameter Names Must Be Unique in a Path
 
-**Problem:** `/users/{id}/posts/{id}` does not work as expected -- both parameters have the same name.
+**Problem:** `/users/{id}/posts/{id}` behaves wrong -- both parameters share the same name.
 
 **Cause:** The second `{id}` overwrites the first in `request.params`.
 
@@ -805,38 +803,38 @@ Not found:
 
 **Problem:** You defined `Tina4::Router.get("/items/{id}", ...)` and `Tina4::Router.get("/items/{action}", ...)` and the wrong handler runs.
 
-**Cause:** Both patterns match `/items/42`. The first one registered wins.
+**Cause:** Both patterns match `/items/42`. First registered wins.
 
-**Fix:** Use typed parameters to disambiguate: `Tina4::Router.get("/items/{id:int}", ...)` will only match integers, leaving `/items/export` free for the other route. Alternatively, restructure your paths: `/items/{id:int}` and `/items/actions/{action}`.
+**Fix:** Use typed parameters: `Tina4::Router.get("/items/{id:int}", ...)` matches integers only, leaving `/items/export` free. Or restructure: `/items/{id:int}` and `/items/actions/{action}`.
 
 ### 4. Route Handler Must Return a Response
 
-**Problem:** Your route handler runs but the browser shows an empty page or a 500 error.
+**Problem:** Handler runs but the browser shows an empty page or 500 error.
 
-**Cause:** You forgot to use `response.json` or `response.render`. Without a return value from the response object, the handler returns `nil` and Tina4 does not know what to send back.
+**Cause:** No call to `response.json`, `response.render`, or another response method. Without a return value from the response object, Tina4 has nothing to send.
 
-**Fix:** Always use `response.json(...)` or `response.html(...)` or `response.render(...)`. Every handler must produce a response.
+**Fix:** Every handler must end with `response.json(...)`, `response.html(...)`, or `response.render(...)`.
 
 ### 5. Block Syntax Matters
 
-**Problem:** Your route handler raises a syntax error about unexpected blocks.
+**Problem:** Route handler raises a syntax error about unexpected blocks.
 
-**Cause:** Ruby blocks with `do...end` and `{...}` have different precedence. For multi-line route handlers, always use `do...end`.
+**Cause:** Ruby blocks with `do...end` and `{...}` have different precedence.
 
-**Fix:** Use `do |request, response| ... end` for route blocks. The curly brace form `{ |request, response| ... }` works for single-line handlers but can cause parsing issues with method arguments.
+**Fix:** Use `do |request, response| ... end` for route blocks. The curly brace form works for single-line handlers but causes parsing issues with method arguments.
 
 ### 6. Middleware Must Be a Named Function or String
 
 **Problem:** Passing an inline lambda as middleware causes unexpected behavior.
 
-**Cause:** Tina4 expects middleware to be referenced by name (a string), not as an inline block. The string is resolved to a method or lambda at runtime.
+**Cause:** Tina4 expects middleware referenced by name (a string), resolved at runtime.
 
-**Fix:** Define your middleware as a named method or lambda and pass the name as a string: `"my_middleware"`, not `lambda { |req, res, next_h| ... }`.
+**Fix:** Define middleware as a named method or lambda. Pass the name as a string: `"my_middleware"`.
 
 ### 7. Group Prefix Must Start with a Slash
 
-**Problem:** `Tina4::Router.group("api/v1")` produces routes like `/api/v1/users` but they do not match.
+**Problem:** `Tina4::Router.group("api/v1")` produces routes that do not match.
 
-**Cause:** The group prefix should start with `/` for consistency. While Tina4 may auto-correct this, it is better to be explicit.
+**Cause:** The group prefix needs a leading `/`.
 
-**Fix:** Always start group prefixes with `/`: `Tina4::Router.group("/api/v1")`.
+**Fix:** Start group prefixes with `/`: `Tina4::Router.group("/api/v1")`.

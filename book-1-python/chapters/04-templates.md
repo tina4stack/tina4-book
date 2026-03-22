@@ -2,17 +2,17 @@
 
 ## 1. Beyond JSON -- Rendering HTML
 
-So far, every route we have built returns JSON. That is great for APIs, but most web applications also need to serve HTML pages -- product listings, dashboards, login forms, email templates. Tina4 uses the **Frond** template engine for this.
+Every route so far returns JSON. That works for APIs. But web applications need HTML -- product listings, dashboards, login forms, email templates. Tina4 uses the **Frond** template engine for this.
 
-Frond is a zero-dependency template engine built from scratch. It uses syntax compatible with Twig, Jinja2, and Nunjucks. If you have used any of those, you already know most of what Frond can do. If you have not, the syntax is simple: `{{ }}` for outputting values, `{% %}` for logic, and `{# #}` for comments.
+Frond is a zero-dependency template engine built from scratch. Its syntax is compatible with Twig, Jinja2, and Nunjucks. If you know any of those, you know Frond. If you do not, the syntax is three things: `{{ }}` for output, `{% %}` for logic, `{# #}` for comments.
 
-Imagine you are building an online store. You need a product catalog page that shows items in a grid, highlights featured products, formats prices correctly, and inherits from a shared layout. That is exactly what we will build in this chapter.
+Picture an online store. A product catalog page. Items in a grid. Featured products highlighted. Prices formatted. Layout inherited from a shared template. That is what this chapter builds.
 
 ---
 
 ## 2. The @template Decorator
 
-The simplest way to render a template is with the `@template` decorator. It maps a URL directly to a template file:
+The shortest path to a rendered template:
 
 ```python
 from tina4_python.core.router import template
@@ -39,9 +39,9 @@ Create `src/templates/about.html`:
 </html>
 ```
 
-Visit `http://localhost:7145/about` and you will see the rendered HTML page.
+Visit `http://localhost:7145/about` and the rendered page appears.
 
-The `@template` decorator is shorthand for creating a route that calls `response.render()`. The function returns a dictionary, and those values become the template variables. You can also use `response.render()` directly in any route handler -- the `@template` decorator is just a convenience.
+The `@template` decorator maps a URL to a template file. The function returns a dictionary. Those values become template variables. You can also use `response.render()` in any route handler -- `@template` is shorthand.
 
 ---
 
@@ -65,7 +65,7 @@ With data `{"name": "Alice", "balance": 150.50}`, this renders:
 
 ### Accessing Nested Properties
 
-Use dot notation for dictionaries and object attributes:
+Dot notation for dictionaries and object attributes:
 
 ```html
 <p>{{ user.name }}</p>
@@ -97,7 +97,7 @@ Renders:
 
 ### Auto-Escaping
 
-By default, Frond escapes HTML characters in output to prevent XSS attacks:
+Frond escapes HTML characters in output by default. XSS attacks die here:
 
 ```html
 <p>{{ user_input }}</p>
@@ -109,7 +109,7 @@ With `{"user_input": "<script>alert('hacked')</script>"}`, this renders:
 <p>&lt;script&gt;alert(&#39;hacked&#39;)&lt;/script&gt;</p>
 ```
 
-The script tag is escaped and will display as text, not execute. If you need to output raw HTML (and you trust the source), use the `|safe` filter:
+The script tag is escaped. Displayed as text. Never executes. If you need raw HTML (and you trust the source), use the `|safe` filter:
 
 ```html
 <div>{{ trusted_html | safe }}</div>
@@ -119,7 +119,7 @@ The script tag is escaped and will display as text, not execute. If you need to 
 
 ## 4. Filters
 
-Filters transform output. Apply them with the pipe `|` character:
+Filters transform output. The pipe `|` applies them:
 
 ```html
 {{ name | upper }}          {# ALICE #}
@@ -190,7 +190,7 @@ Filters chain left to right:
 
 ### The default Filter
 
-Use `|default` to provide a fallback when a variable is empty or undefined:
+A fallback when a variable is empty or undefined:
 
 ```html
 {{ username | default("Guest") }}
@@ -214,7 +214,7 @@ Use `|default` to provide a fallback when a variable is empty or undefined:
 {% endif %}
 ```
 
-You can use comparisons and logical operators:
+Comparisons and logical operators:
 
 ```html
 {% if price > 100 and in_stock %}
@@ -241,7 +241,7 @@ You can use comparisons and logical operators:
 {% endfor %}
 ```
 
-Inside a for loop, you have access to the `loop` variable:
+Inside a for loop, the `loop` variable gives you context:
 
 | Variable | Description |
 |----------|-------------|
@@ -263,7 +263,7 @@ Inside a for loop, you have access to the `loop` variable:
 
 ### for / else
 
-The `{% else %}` block inside a `{% for %}` runs when the list is empty:
+The `{% else %}` block inside `{% for %}` runs when the list is empty:
 
 ```html
 {% for product in products %}
@@ -290,7 +290,7 @@ The `~` operator concatenates strings.
 
 ## 6. Template Inheritance
 
-Template inheritance is how you avoid duplicating layout HTML across every page. You create a base template with blocks, then child templates override those blocks.
+Template inheritance kills duplication. A base template defines blocks. Child templates override them.
 
 ### Base Template
 
@@ -347,7 +347,7 @@ When Frond renders `home.html`:
 1. It sees `{% extends "base.html" %}` and loads the base template.
 2. The `{% block title %}` in `home.html` replaces the one in `base.html`.
 3. The `{% block content %}` in `home.html` replaces the one in `base.html`.
-4. Blocks not overridden (`head`, `scripts`) keep their default content (empty in this case).
+4. Blocks not overridden (`head`, `scripts`) keep their default content (empty here).
 
 ### Calling Parent Blocks
 
@@ -382,7 +382,7 @@ Pull in another template file:
 {% include "partials/footer.html" %}
 ```
 
-You can pass variables to included templates:
+Pass variables to included templates:
 
 ```html
 {% include "partials/product-card.html" with {"product": featured_product} %}
@@ -390,7 +390,7 @@ You can pass variables to included templates:
 
 ### macro -- Reusable Template Functions
 
-Macros are like functions for templates. Define them once, use them many times:
+Macros are functions for templates. Define once, use everywhere:
 
 Create `src/templates/macros/forms.html`:
 
@@ -415,7 +415,7 @@ Create `src/templates/macros/forms.html`:
 {% endmacro %}
 ```
 
-Use them in your templates:
+Use them:
 
 ```html
 {% import "macros/forms.html" as forms %}
@@ -428,13 +428,13 @@ Use them in your templates:
 </form>
 ```
 
-This renders a complete form with consistent markup. Change the macro once and every form in your application updates.
+Consistent markup. Change the macro once and every form in your application updates.
 
 ---
 
 ## 8. Comments
 
-Use `{# #}` for template comments. These are stripped from the output:
+Use `{# #}` for template comments. Stripped from output:
 
 ```html
 {# This comment will not appear in the HTML source #}
@@ -446,15 +446,15 @@ Use `{# #}` for template comments. These are stripped from the output:
 #}
 ```
 
-Unlike HTML comments (`<!-- -->`), Frond comments are never sent to the browser.
+Unlike HTML comments (`<!-- -->`), Frond comments never reach the browser.
 
 ---
 
 ## 9. tina4css
 
-The `tina4.css` file is Tina4's built-in CSS utility framework. It ships with every Tina4 project and provides layout utilities, typography, spacing, and common UI patterns. You do not need to install Bootstrap or Tailwind for basic layouts.
+The `tina4.css` file is Tina4's built-in CSS utility framework. It ships with every project. Layout utilities. Typography. Spacing. Common UI patterns. No Bootstrap. No Tailwind. No separate download.
 
-Some common tina4css classes:
+Some common classes:
 
 ```html
 {# Grid layout #}
@@ -477,7 +477,7 @@ Some common tina4css classes:
 <p class="text-lg text-gray-600">Large gray text</p>
 ```
 
-The full tina4css reference is in Book 0. For this chapter, the inline styles in our examples work just fine.
+The full tina4css reference is in Book 0. For this chapter, inline styles in the examples work fine.
 
 ---
 
@@ -660,7 +660,7 @@ async def product_detail(request, response):
 
 **Problem:** Your rendered HTML has unexpected blank lines or spaces.
 
-**Cause:** Template tags like `{% if %}` and `{% for %}` produce whitespace on the line they occupy.
+**Cause:** Template tags produce whitespace on the line they occupy.
 
 **Fix:** Use whitespace control with `{%-` and `-%}` to strip whitespace around tags:
 
@@ -676,15 +676,15 @@ async def product_detail(request, response):
 
 **Cause:** You used `{{ user.name }}` but did not pass `user` in the template data.
 
-**Fix:** Use the `|default` filter: `{{ user.name | default("Guest") }}`. Or check if the variable is defined: `{% if user is defined %}{{ user.name }}{% endif %}`.
+**Fix:** Use the `|default` filter: `{{ user.name | default("Guest") }}`. Or check first: `{% if user is defined %}{{ user.name }}{% endif %}`.
 
 ### 3. Extends must be the first tag
 
-**Problem:** `{% extends "base.html" %}` does not work and the page renders without the layout.
+**Problem:** `{% extends "base.html" %}` has no effect and the page renders without the layout.
 
-**Cause:** `{% extends %}` must be the very first tag in the template. If there is any text, HTML, or other tags before it, Frond treats the template as standalone.
+**Cause:** `{% extends %}` must be the first tag in the template. Any text, HTML, or tags before it cause Frond to treat the template as standalone.
 
-**Fix:** Move `{% extends "base.html" %}` to the very first line of the file, with no content before it.
+**Fix:** Move `{% extends "base.html" %}` to the first line. No content before it.
 
 ### 4. Macro not found
 
@@ -700,13 +700,13 @@ async def product_detail(request, response):
 
 **Cause:** The variable `price` is a string, not a number. Filters expect specific types.
 
-**Fix:** Make sure you pass the correct types from your route handler. Use `float(price)` in Python before passing it to the template, or convert in the template: `{{ price | float | number_format(2) }}`.
+**Fix:** Pass correct types from your route handler. Use `float(price)` in Python before passing to the template, or convert in the template: `{{ price | float | number_format(2) }}`.
 
 ### 6. Escaped HTML when you want raw output
 
-**Problem:** Your HTML content shows as text with visible `<tags>` instead of rendering as HTML.
+**Problem:** Your HTML content shows as text with visible `<tags>` instead of rendering.
 
-**Cause:** Frond auto-escapes all `{{ }}` output to prevent XSS attacks.
+**Cause:** Frond auto-escapes all `{{ }}` output to prevent XSS.
 
 **Fix:** Use the `|safe` filter: `{{ trusted_html | safe }}`. Only use this with content you trust -- never with user input.
 

@@ -2,11 +2,11 @@
 
 ## 1. From Lists to Real Data
 
-Up to now, every example in this book stored data in Python lists. That works for tutorials, but the moment you restart the server, everything is gone. A real application needs a database.
+Every example so far stored data in Python lists. Restart the server. Data gone. A real application needs a database.
 
-Tina4 Python makes database access simple. You set a `DATABASE_URL` in your `.env`, create a `Database()` connection, and run SQL. No ORM required (we will add that in Chapter 6). Just write the SQL you already know.
+Tina4 Python makes this painless. Set a `DATABASE_URL` in your `.env`. Create a `Database()` connection. Run SQL. No ORM required (Chapter 6 adds that). Write the SQL you already know.
 
-Imagine you are building a notes application. Users create, edit, and delete notes. The notes need to survive server restarts, support searching, and handle concurrent users. That is what a database gives you.
+Picture a notes application. Users create, edit, and delete notes. Those notes need to survive restarts, support searching, and handle concurrent users. That is what a database provides.
 
 ---
 
@@ -20,7 +20,7 @@ Set your database connection in `.env`:
 DATABASE_URL=sqlite:///data/app.db
 ```
 
-That is the default -- a SQLite database stored in the `data/` directory. You do not need to install anything extra for SQLite; it comes with Python.
+That is the default -- a SQLite database stored in `data/`. SQLite comes with Python. No install required.
 
 Tina4 supports six database engines:
 
@@ -33,7 +33,7 @@ Tina4 supports six database engines:
 | Firebird | `firebird://user:pass@host:3050/path/to/db.fdb` | `firebird-driver` |
 | ODBC | `odbc://DSN_NAME` | `pyodbc` |
 
-To switch databases, just change the URL. Your Python code stays the same because all drivers implement the same adapter interface.
+Switch databases by changing the URL. Your Python code stays the same. All drivers implement the same adapter interface.
 
 ### Installing Database Drivers
 
@@ -66,7 +66,7 @@ from tina4_python.database.connection import Database
 db = Database()
 ```
 
-That is it. `Database()` reads `DATABASE_URL` from your `.env` and connects automatically. If the SQLite database file does not exist, it creates one.
+That is it. `Database()` reads `DATABASE_URL` from your `.env` and connects. If the SQLite database file does not exist, it creates one.
 
 You can also pass a URL directly:
 
@@ -153,7 +153,7 @@ async def create_note(request, response):
 
 ## 5. Parameterised Queries
 
-Never concatenate user input into SQL strings. Always use parameterised queries:
+Never concatenate user input into SQL strings. Parameterised queries are the wall between you and SQL injection:
 
 ```python
 # WRONG -- SQL injection vulnerability
@@ -172,13 +172,13 @@ db.fetch(
 )
 ```
 
-Tina4 automatically handles parameter escaping and type conversion for all database engines.
+Tina4 handles parameter escaping and type conversion for all database engines.
 
 ---
 
 ## 6. Transactions
 
-When you need multiple operations to succeed or fail together, use transactions:
+Multiple operations must succeed or fail together. Transactions enforce that contract:
 
 ```python
 @post("/api/transfer")
@@ -230,13 +230,13 @@ The three transaction methods:
 - `db.commit()` -- save all changes since the transaction started
 - `db.rollback()` -- undo all changes since the transaction started
 
-If you do not use transactions, each `execute()` call is auto-committed individually.
+Without transactions, each `execute()` call auto-commits on its own.
 
 ---
 
 ## 7. Batch Operations with execute_many
 
-When inserting or updating many rows at once, use `execute_many()` for better performance:
+Inserting or updating many rows at once calls for `execute_many()`. It batches operations for speed:
 
 ```python
 @post("/api/notes/import")
@@ -270,13 +270,13 @@ curl -X POST http://localhost:7145/api/notes/import \
 {"message":"Imported 3 notes"}
 ```
 
-`execute_many()` is significantly faster than calling `execute()` in a loop because it batches the operations.
+`execute_many()` runs far faster than `execute()` in a loop. One round trip instead of many.
 
 ---
 
 ## 8. Insert, Update, and Delete Helpers
 
-Tina4 provides shorthand methods for common operations:
+Tina4 provides shorthand methods that cut the boilerplate:
 
 ### insert
 
@@ -305,13 +305,13 @@ affected = db.delete("notes", "id = :id", {"id": 1})
 
 Returns the number of deleted rows.
 
-These helpers save you from writing boilerplate INSERT/UPDATE/DELETE SQL, but you can always fall back to `execute()` for complex queries.
+These helpers eliminate boilerplate INSERT/UPDATE/DELETE SQL. For complex queries, `execute()` is always there.
 
 ---
 
 ## 9. Migrations
 
-Migrations are SQL files that version your database schema. Instead of manually creating tables, you write migration files that can be applied (and rolled back) in order.
+Migrations are SQL files that version your database schema. Write them once. Apply them in order. Roll them back when needed.
 
 ### Creating a Migration
 
@@ -382,7 +382,7 @@ Done.
 
 ## 10. Query Caching
 
-For expensive queries that do not change often, Tina4 provides built-in query caching:
+Expensive queries that return the same result on every call deserve caching. Tina4 builds it in:
 
 ```python
 from tina4_python.database.connection import Database
@@ -396,7 +396,7 @@ categories = db.fetch(
 )
 ```
 
-The first call runs the SQL and caches the result. Subsequent calls within the TTL return the cached result without hitting the database.
+The first call runs the SQL and caches the result. Subsequent calls within the TTL skip the database entirely.
 
 To invalidate the cache when data changes:
 

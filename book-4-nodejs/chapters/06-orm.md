@@ -2,15 +2,15 @@
 
 ## 1. From SQL to Objects
 
-In Chapter 5 you wrote raw SQL for every operation. That works, but it gets tedious. You end up writing the same `INSERT INTO products (name, price, ...) VALUES (:name, :price, ...)` patterns over and over. The ORM (Object-Relational Mapper) lets you work with TypeScript classes instead. You define a class, map it to a table, and call methods like `save()`, `load()`, and `delete()`.
+In Chapter 5 you wrote raw SQL for every operation. It works. It gets tedious. The same `INSERT INTO products (name, price, ...) VALUES (:name, :price, ...)` pattern over and over. The ORM (Object-Relational Mapper) replaces that repetition with TypeScript classes. Define a class. Map it to a table. Call `save()`, `load()`, and `delete()`.
 
-Tina4's ORM is minimal by design. It does not try to hide SQL completely -- it gives you convenient methods for common operations and stays out of the way when you need raw queries.
+Tina4's ORM is minimal by design. It does not hide SQL. It gives you convenient methods for common operations and steps aside when you need raw queries.
 
 ---
 
 ## 2. Defining a Model
 
-ORM models live in `src/orm/`. Every `.ts` file in that directory is auto-loaded, just like route files.
+ORM models live in `src/orm/`. Every `.ts` file in that directory is auto-loaded. Same discovery pattern as route files.
 
 Create `src/orm/Product.ts`:
 
@@ -31,7 +31,7 @@ export class Product extends BaseModel {
 }
 ```
 
-That is a complete model. Let us break it down:
+That is a complete model. Here is what each piece does:
 
 - **Extends `BaseModel`** -- This gives you `save()`, `load()`, `delete()`, `select()`, and other methods.
 - **Public properties** -- Each property maps to a database column. The property name is `camelCase` and the column name is `snake_case`. Tina4 converts between them automatically: `inStock` maps to `in_stock`, `createdAt` maps to `created_at`.
@@ -105,7 +105,7 @@ curl -X POST http://localhost:7148/api/products \
 
 ### toDict() and toObject()
 
-`toDict()` returns the model data as a plain object with `snake_case` keys (matching the database column names). `toObject()` returns the data with `camelCase` keys (matching the TypeScript property names). Use `toDict()` for API responses and `toObject()` for internal TypeScript usage.
+`toDict()` returns the model data as a plain object with `snake_case` keys -- matching the database column names. `toObject()` returns `camelCase` keys -- matching the TypeScript property names. Use `toDict()` for API responses. Use `toObject()` for internal TypeScript usage.
 
 ### Updating an Existing Record
 
@@ -318,7 +318,7 @@ Router.get("/api/users/:id:int", async (req, res) => {
 
 ## 9. Eager Loading
 
-Avoid the N+1 query problem by eager-loading relationships:
+The N+1 query problem kills performance. Eager loading stops it cold:
 
 ```typescript
 const user = new User();
@@ -365,7 +365,7 @@ With `softDelete = true`:
 
 ## 11. Auto-CRUD
 
-Add `static autoCrud = true` to automatically generate REST endpoints:
+Add `static autoCrud = true` and Tina4 generates REST endpoints for you:
 
 ```typescript
 import { BaseModel } from "tina4-nodejs";

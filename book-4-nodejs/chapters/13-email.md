@@ -2,7 +2,9 @@
 
 ## 1. Every App Sends Email
 
-Your SaaS app needs signup confirmations, password resets, and weekly digest emails. Tina4's `Messenger` class handles SMTP configuration, HTML templates, attachments, and reliable delivery. In development mode, emails are intercepted and shown in the dev dashboard.
+Signup confirmations. Password resets. Weekly digests. Every application sends email.
+
+Tina4's `Messenger` class handles SMTP configuration, HTML templates, attachments, and delivery. In development mode, Tina4 intercepts all outgoing emails and shows them in the dev dashboard. Nothing leaves the server until you say so.
 
 ---
 
@@ -163,9 +165,9 @@ Router.get("/api/inbox", async (req, res) => {
 
 ## 9. Dev Mode: Email Interception
 
-When `TINA4_DEBUG=true`, all outgoing emails are intercepted and shown in the dev dashboard. Navigate to `/tina4/console` to see intercepted emails.
+When `TINA4_DEBUG=true`, Tina4 catches all outgoing emails and holds them in the dev dashboard. Navigate to `/tina4/console` to inspect them. No email reaches a real inbox during development.
 
-Override with `TINA4_MAIL_INTERCEPT=false`.
+Override with `TINA4_MAIL_INTERCEPT=false` if you need real delivery in debug mode.
 
 ---
 

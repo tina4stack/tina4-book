@@ -2,9 +2,11 @@
 
 ## 1. From 800ms to 3ms
 
-Your product catalog page runs 12 database queries and takes 800 milliseconds to render. Every visitor triggers the same queries, the same template rendering, the same JSON serialization -- for data that changes maybe once a day. After adding caching, the first request takes 800ms and the next 10,000 requests take 3ms each. That is a 266x improvement for one line of configuration.
+Your product catalog page runs 12 database queries. 800 milliseconds to render. Every visitor triggers the same queries, the same template rendering, the same JSON serialization -- for data that changes once a day.
 
-Caching stores the result of expensive operations so they can be reused without recomputing. Tina4 provides caching at multiple levels: response caching (entire HTTP responses), database query caching, and a direct cache API for custom use cases.
+Add caching. The first request takes 800ms. The next 10,000 take 3ms each. A 266x improvement from one line of configuration.
+
+Caching stores the result of expensive operations for reuse. Tina4 provides three levels: response caching (entire HTTP responses), database query caching, and a direct cache API for custom use cases.
 
 ---
 
@@ -366,7 +368,7 @@ fresh_data = db.fetch_all("SELECT * FROM products", no_cache=True)
 
 ## 8. Cache Invalidation Strategies
 
-The hardest problem in caching is knowing when to invalidate (clear) the cache. Stale cache serves outdated data. Premature invalidation reduces cache effectiveness.
+Cache invalidation is the hard problem. Stale cache serves outdated data. Premature invalidation throws away performance gains. Three strategies handle this.
 
 ### Strategy 1: Time-Based Expiry (TTL)
 
@@ -510,9 +512,9 @@ curl http://localhost:7145/api/cache/stats
 }
 ```
 
-A hit rate above 90% means your caching strategy is working well. Below 80% suggests your TTLs are too short, your cache is too small, or you are caching data that is not accessed frequently enough to benefit.
+Hit rate above 90%: your caching strategy works. Below 80%: TTLs are too short, cache is too small, or you are caching data that is not accessed often enough to benefit.
 
-The dev dashboard at `/tina4/console` also shows cache statistics, including per-key hit counts and miss counts, so you can identify which keys benefit most from caching.
+The dev dashboard at `/tina4/console` shows cache statistics too -- per-key hit counts and miss counts. You see which keys earn their keep.
 
 ---
 

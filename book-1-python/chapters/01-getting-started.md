@@ -2,13 +2,13 @@
 
 ## 1. What Is Tina4 Python
 
-Tina4 Python is a zero-dependency web framework for Python 3.12+ that gives you routing, an ORM, a template engine, authentication, queues, WebSocket, and 70 other features in a single package under 5,000 lines of code.
+Tina4 Python is a zero-dependency web framework for Python 3.12+. One package. Under 5,000 lines of code. Routing, ORM, template engine, authentication, queues, WebSocket, and 70 other features -- all built in.
 
-It is part of the Tina4 family -- four identical frameworks in Python, PHP, Ruby, and Node.js. Everything you learn here transfers directly to any of the other three languages. The project structure is the same. The template syntax is the same. The CLI commands are the same. The `.env` variables are the same.
+It belongs to the Tina4 family -- four identical frameworks in Python, PHP, Ruby, and Node.js. Everything you learn here transfers to the other three. Same project structure. Same template syntax. Same CLI commands. Same `.env` variables.
 
-Tina4 Python uses `snake_case` for method and function names (`fetch_one()`, `soft_delete()`, `has_many()`) following Python community conventions. Class names are `PascalCase`. Constants are `UPPER_SNAKE_CASE`. Route handlers are `async def` functions decorated with `@get`, `@post`, and friends.
+Tina4 Python follows Python convention: `snake_case` for methods and functions (`fetch_one()`, `soft_delete()`, `has_many()`), `PascalCase` for classes, `UPPER_SNAKE_CASE` for constants. Route handlers are `async def` functions decorated with `@get`, `@post`, and friends.
 
-By the end of this chapter, you will have a working Tina4 Python project with an API endpoint and a rendered HTML page.
+By the end of this chapter, you will have a running Tina4 Python project with an API endpoint and a rendered HTML page.
 
 ---
 
@@ -16,7 +16,7 @@ By the end of this chapter, you will have a working Tina4 Python project with an
 
 ### What You Need
 
-Before installing Tina4, make sure you have:
+Three tools. Nothing else.
 
 1. **Python 3.12 or later** -- check with:
 
@@ -79,7 +79,7 @@ tina4 0.1.0
 
 ### Creating a New Project
 
-Use the Tina4 CLI to scaffold a new project:
+One command. One package. No dependency tree.
 
 ```bash
 tina4 init my-store
@@ -117,7 +117,7 @@ Project created! Next steps:
   tina4 serve
 ```
 
-Now install the Python dependencies:
+Install the Python dependencies:
 
 ```bash
 cd my-store
@@ -130,7 +130,7 @@ Installed 1 package in 0.3s
  + tina4-python==3.0.0
 ```
 
-That is right -- **one package**. No dependency tree. No version conflicts. Just `tina4-python`.
+One package. No dependency tree. No version conflicts. Just `tina4-python`.
 
 ### Starting the Dev Server
 
@@ -152,7 +152,7 @@ tina4 serve
   Press Ctrl+C to stop
 ```
 
-Open your browser to `http://localhost:7145`. You should see the Tina4 welcome page.
+Open your browser to `http://localhost:7145`. The Tina4 welcome page greets you.
 
 Open `http://localhost:7145/health` in your browser or curl it:
 
@@ -176,7 +176,7 @@ Your Tina4 Python project is running.
 
 ## 3. Project Structure Walkthrough
 
-Let us look at what `tina4 init` created:
+Here is what `tina4 init` created:
 
 ```
 my-store/
@@ -210,17 +210,15 @@ my-store/
 
 **Key directories:**
 
-- **`src/routes/`** -- Every `.py` file here is auto-loaded at startup. Put your route definitions here. Organize into subdirectories if you want.
-- **`src/orm/`** -- Every `.py` file here is auto-loaded. Put your ORM model classes here.
+- **`src/routes/`** -- Every `.py` file here is auto-loaded at startup. Drop your route definitions here. Organize into subdirectories if you want.
+- **`src/orm/`** -- Every `.py` file here is auto-loaded. Drop your ORM model classes here.
 - **`src/templates/`** -- Frond looks here when you call `response.render("my-page.html", data)`.
-- **`src/public/`** -- Files served directly. `src/public/images/logo.png` is available at `/images/logo.png`.
-- **`data/`** -- The default SQLite database (`app.db`) lives here. Gitignored because databases should not be in version control.
+- **`src/public/`** -- Files served directly. `src/public/images/logo.png` lives at `/images/logo.png`.
+- **`data/`** -- The default SQLite database (`app.db`) lives here. Gitignored because databases do not belong in version control.
 
 ---
 
 ## 4. Your First Route
-
-Let us create an API endpoint that returns a JSON greeting.
 
 Create the file `src/routes/greeting.py`:
 
@@ -237,7 +235,7 @@ async def greeting(request, response):
     })
 ```
 
-Save the file. If the dev server is running with live reload, it picks up the change automatically. If not, restart the server with `tina4 serve`.
+Save the file. The dev server picks up the change through live reload. If not, restart with `tina4 serve`.
 
 ### Test It
 
@@ -266,7 +264,7 @@ curl http://localhost:7145/api/greeting/Alice
 {"message":"Hello, Alice!","timestamp":"2026-03-22T14:30:00.000000"}
 ```
 
-Notice the difference: the browser shows pretty-printed JSON (because of browser extensions or dev mode), while curl shows compact JSON. You can force pretty output by adding `?pretty=true`:
+The browser shows pretty-printed JSON (browser extensions or dev mode). Curl shows compact JSON. Force pretty output with `?pretty=true`:
 
 ```bash
 curl "http://localhost:7145/api/greeting/Alice?pretty=true"
@@ -281,15 +279,17 @@ curl "http://localhost:7145/api/greeting/Alice?pretty=true"
 
 ### Understanding What Happened
 
+Five steps. No magic.
+
 1. You created a file in `src/routes/`. Tina4 auto-discovered it at startup.
 2. `@get("/api/greeting/{name}")` registered a GET route with a path parameter `{name}`.
-3. When you requested `/api/greeting/Alice`, the router matched the pattern and called your handler function.
-4. `request.params["name"]` gave you the value `"Alice"` from the URL.
-5. `response.json(...)` serialized the dictionary to JSON, set `Content-Type: application/json`, and returned a `200 OK` response.
+3. When you requested `/api/greeting/Alice`, the router matched the pattern and called your handler.
+4. `request.params["name"]` gave you `"Alice"` from the URL.
+5. `response.json(...)` serialized the dictionary to JSON, set `Content-Type: application/json`, and returned a `200 OK`.
 
 ### Adding More HTTP Methods
 
-Let us add a POST endpoint. Update `src/routes/greeting.py`:
+Update `src/routes/greeting.py`:
 
 ```python
 from tina4_python.core.router import get, post
@@ -342,7 +342,7 @@ The HTTP status code is `201 Created` (the second argument to `response.json()`)
 
 ## 5. Your First Template
 
-Tina4 uses the **Frond** template engine -- a zero-dependency, Twig-compatible engine built from scratch. If you have used Twig, Jinja2, or Nunjucks, this will feel familiar.
+Tina4 uses the **Frond** template engine -- a zero-dependency, Twig-compatible engine built from scratch. If you have used Twig, Jinja2, or Nunjucks, Frond will feel familiar.
 
 ### Create a Base Layout
 
@@ -382,7 +382,7 @@ Create `src/templates/base.html`:
 </html>
 ```
 
-This base layout defines two blocks (`title` and `content`) that child templates can override. It includes `tina4.css` (the built-in CSS framework) and `frond.js` (the built-in JS helper library).
+This base layout defines two blocks (`title` and `content`) that child templates override. It includes `tina4.css` (the built-in CSS framework) and `frond.js` (the built-in JS helper library).
 
 ### Create a Product Listing Page
 
@@ -457,16 +457,18 @@ async def products_page(request, response):
 
 ### See It in the Browser
 
-Open `http://localhost:7145/products` in your browser. You should see:
+Open `http://localhost:7145/products`. You should see:
 
-- A dark navigation bar at the top with "Home" and "Products" links
+- A dark navigation bar with "Home" and "Products" links
 - The heading "Our Products"
 - A subheading showing "Showing 4 products"
-- Four product cards, each with a name, description, price, and stock badge
+- Four product cards, each with name, description, price, and stock badge
 - The "Monitor Stand" card shows a red "Out of Stock" badge
 - The other three show green "In Stock" badges
 
 ### How Template Rendering Works
+
+Eight steps. All automatic.
 
 1. `response.render("products.html", {"products": products})` tells Frond to render `src/templates/products.html` with the given data.
 2. Frond sees `{% extends "base.html" %}` and loads the base template.
@@ -474,12 +476,12 @@ Open `http://localhost:7145/products` in your browser. You should see:
 4. `{{ product.name }}` outputs the value, auto-escaped for HTML safety.
 5. `{{ product.price | number_format(2) }}` formats the number with 2 decimal places.
 6. `{% for product in products %}` loops through the list.
-7. `{% if product.in_stock %}` conditionally renders the stock badge.
-8. `{{ products | length }}` returns the count of items in the list.
+7. `{% if product.in_stock %}` renders the stock badge conditionally.
+8. `{{ products | length }}` returns the item count.
 
 ### About tina4css
 
-The `tina4.css` file included in the base template is Tina4's built-in CSS utility framework. It provides layout utilities, typography, and common UI patterns without needing Bootstrap or Tailwind. It is auto-provided when you scaffold a project -- you do not need to download it separately.
+The `tina4.css` file is Tina4's built-in CSS utility framework. Layout utilities. Typography. Common UI patterns. No Bootstrap. No Tailwind. No download. It ships with every scaffolded project.
 
 ---
 
@@ -518,7 +520,7 @@ For the complete `.env` reference with all 68 variables, see Book 0, Chapter 4.
 
 ## 7. The Dev Dashboard
 
-With `TINA4_DEBUG=true`, Tina4 provides a built-in development dashboard. First, enable it by adding a console token to your `.env`:
+With `TINA4_DEBUG=true`, Tina4 provides a built-in development dashboard. Enable it by adding a console token to your `.env`:
 
 ```env
 TINA4_DEBUG=true
@@ -532,7 +534,7 @@ Restart the server and navigate to:
 http://localhost:7145/tina4/console
 ```
 
-Enter your token (`my-dev-token`) when prompted. You will see:
+Enter your token (`my-dev-token`) when prompted. The dashboard shows:
 
 - **System Overview** -- framework version, Python version, uptime, memory usage, database status
 - **Request Inspector** -- recent HTTP requests with method, path, status, duration, and request ID. Click any request to see full headers, body, database queries, and template renders.
@@ -541,9 +543,9 @@ Enter your token (`my-dev-token`) when prompted. You will see:
 - **WebSocket Monitor** -- active WebSocket connections with metadata
 - **Routes** -- all registered routes with their methods, paths, and middleware
 
-The console is a powerful debugging tool. It shows you exactly what your application is doing without adding print statements or log calls to your code.
+The console shows you what your application is doing without adding print statements or log calls.
 
-Additionally, when you visit any HTML page (like `/products`), you will see a **debug overlay** -- a toolbar at the bottom of the page showing:
+When you visit any HTML page (like `/products`), a **debug overlay** appears -- a toolbar at the bottom showing:
 
 - Request details (method, URL, duration)
 - Database queries executed (with timing)
@@ -551,7 +553,7 @@ Additionally, when you visit any HTML page (like `/products`), you will see a **
 - Session data
 - Recent log entries
 
-This overlay is only visible when `TINA4_DEBUG=true`. It is never shown in production.
+This overlay is only visible when `TINA4_DEBUG=true`. Production never sees it.
 
 ---
 
@@ -593,10 +595,10 @@ Create a page at `GET /store` that:
 
 1. Displays a list of at least 5 products (hardcoded for now)
 2. Each product has: name, category, price, and a boolean `featured` flag
-3. Featured products should be visually highlighted (different background color, border, or badge)
-4. The page should show the total number of products and the number of featured products
-5. Use template inheritance -- create a layout template and a page template that extends it
-6. Include `tina4.css` and `frond.js`
+3. Featured products get a visual highlight (different background color, border, or badge)
+4. The page shows the total number of products and the number of featured products
+5. Uses template inheritance -- a layout template and a page template that extends it
+6. Includes `tina4.css` and `frond.js`
 
 **Your products data should look like this in your route handler:**
 
@@ -614,7 +616,7 @@ products = [
 
 - A page titled "Our Store"
 - Text showing "5 products, 3 featured"
-- A list of product cards with name, category, price, and a "Featured" badge on the highlighted items
+- A list of product cards with name, category, price, and a "Featured" badge on highlighted items
 - Featured products have a distinct visual style (your choice -- different border color, background, star icon, etc.)
 
 ---
@@ -775,7 +777,7 @@ async def store_page(request, response):
 
 **Problem:** You created a route file but nothing happens when you visit the URL.
 
-**Cause:** The file is not in `src/routes/`. Double-check the path. It must be inside `src/routes/` (or a subdirectory of it), and the file must end with `.py`.
+**Cause:** The file is not in `src/routes/`. It must be inside `src/routes/` (or a subdirectory), and the file must end with `.py`.
 
 **Fix:** Move the file to `src/routes/your-file.py` and restart the server.
 
@@ -783,9 +785,9 @@ async def store_page(request, response):
 
 **Problem:** `NameError: name 'get' is not defined` or similar.
 
-**Cause:** You forgot to import the route decorator at the top of the file.
+**Cause:** You forgot to import the route decorator.
 
-**Fix:** Make sure your route file starts with the correct import: `from tina4_python.core.router import get, post` (include whichever decorators you need).
+**Fix:** Start your route file with the correct import: `from tina4_python.core.router import get, post` (include whichever decorators you need).
 
 ### 3. Handler not async
 
@@ -793,7 +795,7 @@ async def store_page(request, response):
 
 **Cause:** You defined the handler with `def` instead of `async def`. Tina4 Python expects all route handlers to be async.
 
-**Fix:** Change `def greeting(request, response):` to `async def greeting(request, response):`. Every route handler must be an `async def`.
+**Fix:** Change `def greeting(request, response):` to `async def greeting(request, response):`. Every route handler must be `async def`.
 
 ### 4. Template not found
 
@@ -809,7 +811,7 @@ async def store_page(request, response):
 
 **Cause:** Another process (or another Tina4 instance) is using port 7145.
 
-**Fix:** Either stop the other process, or change the port:
+**Fix:** Stop the other process, or change the port:
 
 ```env
 TINA4_PORT=8080
@@ -821,14 +823,14 @@ Or use the CLI flag: `tina4 serve --port 8080`.
 
 **Problem:** You edited a file but the browser shows the old version.
 
-**Cause:** In some setups, live reload may not be active. Also, browser caching can serve stale versions.
+**Cause:** Live reload may not be active. Browser caching can serve stale versions.
 
-**Fix:** Hard-refresh the browser (`Ctrl+Shift+R` or `Cmd+Shift+R`). If that does not help, restart the dev server with `Ctrl+C` and `tina4 serve`.
+**Fix:** Hard-refresh the browser (`Ctrl+Shift+R` or `Cmd+Shift+R`). If that fails, restart the dev server with `Ctrl+C` and `tina4 serve`.
 
 ### 7. .env not loaded
 
-**Problem:** Environment variables seem to have no effect.
+**Problem:** Environment variables have no effect.
 
-**Cause:** The `.env` file must be at the project root (same directory as `pyproject.toml`). If it is in a subdirectory, Tina4 will not find it.
+**Cause:** The `.env` file must be at the project root (same directory as `pyproject.toml`). A subdirectory placement hides it from Tina4.
 
 **Fix:** Move `.env` to the project root.

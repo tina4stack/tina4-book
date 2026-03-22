@@ -2,7 +2,7 @@
 
 ## 1. Why Tests Matter More Than You Think
 
-It is Friday afternoon. Your client just reported a critical bug in production. You fix it -- one line of code. But did that fix break anything else? You have 47 routes, 12 ORM models, and 3 middleware functions. Manually clicking through every page would take an hour. Running the test suite takes 2 seconds.
+Friday afternoon. Your client reports a critical bug in production. You fix it -- one line of code. But did that fix break something else? 47 routes. 12 ORM models. 3 middleware functions. Clicking through every page: an hour. Running the test suite: 2 seconds.
 
 ```bash
 tina4 test
@@ -27,9 +27,9 @@ Running tests...
   9 tests, 9 passed, 0 failed (0.34s)
 ```
 
-Everything still works. You deploy with confidence and enjoy your weekend.
+Everything still works. You deploy with confidence. Weekend intact.
 
-Tina4 includes an inline testing framework. No external packages required. No configuration. Write a test, run it, done.
+Tina4 includes an inline testing framework. No external packages. No configuration. Write a test. Run it. Done.
 
 ---
 

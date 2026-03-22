@@ -2,11 +2,11 @@
 
 ## 1. How Routing Works in Tina4
 
-Every web application maps URLs to code. You type `/products` in your browser, the framework finds the function that handles `/products`, runs it, and sends back the result. That mapping is called routing.
+Every web application maps URLs to code. A browser requests `/products`. The framework finds the handler for `/products`, runs it, sends back the result. That mapping is routing.
 
-In Tina4 Python, you define routes in Python files inside `src/routes/`. Every `.py` file in that directory (and its subdirectories) is auto-loaded when the server starts. You do not need to register files or update a central config -- just drop a file in and it works.
+In Tina4 Python, routes live in Python files inside `src/routes/`. Every `.py` file in that directory (and its subdirectories) is auto-loaded at startup. No registration file. No central config. Drop a file in. It works.
 
-Here is the simplest possible route:
+The simplest route:
 
 ```python
 from tina4_python.core.router import get
@@ -22,13 +22,13 @@ Save that as `src/routes/hello.py`, start the server with `tina4 serve`, and vis
 {"message":"Hello, World!"}
 ```
 
-That is it. One decorator registers the route, one function handles the request.
+One decorator. One function. Done.
 
 ---
 
 ## 2. HTTP Methods
 
-Tina4 supports all five standard HTTP methods. Each one has a corresponding decorator:
+Tina4 supports all five standard HTTP methods. Each has a decorator:
 
 ```python
 from tina4_python.core.router import get, post, put, patch, delete
@@ -101,13 +101,13 @@ curl -X DELETE http://localhost:7145/products/42
 {"action":"delete product 42"}
 ```
 
-Use `GET` for reading, `POST` for creating, `PUT` for full replacement, `PATCH` for partial updates, and `DELETE` for removal. This follows the REST convention and makes your API predictable.
+`GET` reads. `POST` creates. `PUT` replaces. `PATCH` patches. `DELETE` removes. REST convention. Predictable API.
 
 ---
 
 ## 3. Path Parameters
 
-Path parameters let you capture values from the URL. Wrap the parameter name in curly braces:
+Path parameters capture values from the URL. Wrap the parameter name in curly braces:
 
 ```python
 from tina4_python.core.router import get
@@ -131,11 +131,11 @@ curl http://localhost:7145/users/5/posts/99
 {"user_id":"5","post_id":"99"}
 ```
 
-Notice that `user_id` came back as the string `"5"`, not the integer `5`. Path parameters are always strings by default.
+Notice `user_id` came back as the string `"5"`, not the integer `5`. Path parameters are strings by default.
 
 ### Typed Parameters
 
-You can enforce a type by adding a colon and the type after the parameter name:
+Enforce a type by adding a colon and the type after the parameter name:
 
 ```python
 from tina4_python.core.router import get
@@ -157,7 +157,7 @@ curl http://localhost:7145/orders/42
 {"order_id":42,"type":"int"}
 ```
 
-If you pass a non-integer value, the route will not match and you will get a 404:
+Pass a non-integer value and the route does not match. A 404:
 
 ```bash
 curl http://localhost:7145/orders/abc
@@ -180,7 +180,7 @@ Supported types:
 
 ## 4. Query Parameters
 
-Query parameters are the key-value pairs after the `?` in a URL. Access them via `request.query`:
+Query parameters are the key-value pairs after the `?` in a URL. Access them through `request.query`:
 
 ```python
 from tina4_python.core.router import get
@@ -207,13 +207,13 @@ curl "http://localhost:7145/search?q=keyboard&page=2&limit=20"
 {"query":"keyboard","page":2,"limit":20,"offset":20}
 ```
 
-If a query parameter is missing, `request.query.get("key")` returns `None`, so always use `.get()` with a default value.
+If a query parameter is missing, `request.query.get("key")` returns `None`. Use `.get()` with a default value.
 
 ---
 
 ## 5. Route Groups
 
-When you have a set of routes that share a common prefix, use `group()` to avoid repeating yourself:
+A set of routes sharing a common prefix belongs in a `group()`:
 
 ```python
 from tina4_python.core.router import get, post, group
@@ -239,7 +239,7 @@ def api_v1():
         return response.json({"products": []})
 ```
 
-The routes above register as `/api/v1/users`, `/api/v1/users/{id}`, and `/api/v1/products`. You write short paths inside the group, and Tina4 prepends the prefix automatically.
+These routes register as `/api/v1/users`, `/api/v1/users/{id}`, and `/api/v1/products`. Short paths inside the group. Tina4 prepends the prefix.
 
 ```bash
 curl http://localhost:7145/api/v1/users
@@ -257,7 +257,7 @@ curl http://localhost:7145/api/v1/products
 {"products":[]}
 ```
 
-Groups can be nested:
+Groups nest:
 
 ```python
 from tina4_python.core.router import get, group
@@ -298,11 +298,11 @@ curl http://localhost:7145/api/v2/status
 
 ## 6. Middleware on Routes
 
-Middleware is code that runs before (or after) your route handler. Use it for authentication, logging, rate limiting, input validation, or anything that should happen on multiple routes. We will cover middleware in depth in Chapter 8, but here is how it works with routes.
+Middleware is code that runs before or after your route handler. Authentication. Logging. Rate limiting. Input validation. Anything that belongs on multiple routes. Chapter 8 covers middleware in depth. Here is how it connects to routes.
 
 ### Middleware on a Single Route
 
-Use the `@middleware` decorator to attach middleware to a route:
+Attach middleware with the `@middleware` decorator:
 
 ```python
 from tina4_python.core.router import get, middleware
@@ -325,11 +325,11 @@ async def get_data(request, response):
     return response.json({"data": [1, 2, 3]})
 ```
 
-The middleware function receives `request`, `response`, and `next_handler`. Call `await next_handler(request, response)` to continue to the route handler. If you do not call `next_handler`, the route handler never runs -- useful for blocking unauthorized requests.
+The middleware function receives `request`, `response`, and `next_handler`. Call `await next_handler(request, response)` to continue to the route handler. Skip that call and the handler never runs -- the chain stops cold. Useful for blocking unauthorized requests.
 
 ### Blocking Middleware
 
-Here is middleware that checks for an API key:
+Middleware that checks for an API key:
 
 ```python
 from tina4_python.core.router import get, middleware
@@ -356,7 +356,7 @@ curl http://localhost:7145/api/secret
 {"error":"Invalid API key"}
 ```
 
-The response status is `401 Unauthorized`.
+Status: `401 Unauthorized`.
 
 ```bash
 curl http://localhost:7145/api/secret -H "X-API-Key: my-secret-key"
@@ -368,7 +368,7 @@ curl http://localhost:7145/api/secret -H "X-API-Key: my-secret-key"
 
 ### Multiple Middleware
 
-Chain multiple middleware by passing them as arguments:
+Chain multiple middleware as arguments:
 
 ```python
 @get("/api/important")
@@ -377,17 +377,17 @@ async def important_data(request, response):
     return response.json({"data": "important stuff"})
 ```
 
-Middleware runs in order: `log_request` first, then `require_api_key`, then the route handler. If any middleware does not call `next_handler`, the chain stops there.
+Middleware runs left to right: `log_request` first, then `require_api_key`, then the route handler. If any middleware skips `next_handler`, the chain stops there.
 
 ---
 
 ## 7. Route Decorators: @noauth and @secured
 
-Tina4 provides two special decorators for controlling authentication on routes.
+Two decorators control authentication at the route level.
 
 ### @noauth -- Public Routes
 
-When your application has global authentication middleware, use `@noauth` to mark specific routes as public:
+When your application has global authentication middleware, `@noauth` marks a route as public:
 
 ```python
 from tina4_python.core.router import get, noauth
@@ -401,11 +401,11 @@ async def public_info(request, response):
     })
 ```
 
-The `@noauth` decorator tells Tina4 to skip authentication checks for this route, even if global auth middleware is configured in `.env` or applied to the parent group.
+`@noauth` tells Tina4 to skip authentication checks for this route, even if global auth middleware is configured in `.env` or applied to the parent group.
 
 ### @secured -- Protected GET Routes
 
-The `@secured` decorator explicitly marks a GET route as requiring authentication:
+`@secured` marks a GET route as requiring authentication:
 
 ```python
 from tina4_python.core.router import get, secured
@@ -419,7 +419,7 @@ async def profile(request, response):
     })
 ```
 
-By default, `POST`, `PUT`, `PATCH`, and `DELETE` routes are considered secured. `GET` routes are not -- they are public unless you add `@secured`. This matches the common pattern where reading data is public but modifying data requires authentication.
+By default, `POST`, `PUT`, `PATCH`, and `DELETE` routes are secured. `GET` routes are public unless you add `@secured`. This matches the common pattern: reading data is public, modifying data requires authentication.
 
 ---
 
@@ -459,7 +459,7 @@ curl http://localhost:7145/docs/api/authentication/jwt
 
 ### Catch-All Route (Custom 404)
 
-Register a catch-all to handle any unmatched URL:
+A catch-all handles any unmatched URL:
 
 ```python
 from tina4_python.core.router import get
@@ -472,9 +472,9 @@ async def not_found(request, response):
     }, 404)
 ```
 
-This route should be defined last (or in a file that sorts alphabetically after your other route files) so it does not shadow your real routes. Tina4 matches routes in the order they are registered -- the first match wins.
+Define this route last (or in a file that sorts alphabetically after your other route files). Tina4 matches routes in registration order -- first match wins.
 
-Alternatively, you can create a custom 404 page by placing a template at `src/templates/errors/404.html`:
+You can also create a custom 404 page by placing a template at `src/templates/errors/404.html`:
 
 ```html
 {% extends "base.html" %}
@@ -488,13 +488,13 @@ Alternatively, you can create a custom 404 page by placing a template at `src/te
 {% endblock %}
 ```
 
-Tina4 automatically uses this template for any unmatched route when the template file exists.
+Tina4 uses this template for any unmatched route when the file exists.
 
 ---
 
 ## 9. Route Listing via CLI
 
-As your application grows, you will want to see all registered routes at a glance. Use the Tina4 CLI:
+As your application grows, see all registered routes at a glance:
 
 ```bash
 tina4 routes
@@ -518,9 +518,9 @@ GET      /search                       -                   public
 GET      /docs/*                       -                   public
 ```
 
-The `Auth` column shows whether a route is public, secured (default for non-GET methods), explicitly `@noauth`, or explicitly `@secured`.
+The `Auth` column shows whether a route is public, secured (default for non-GET methods), `@noauth`, or `@secured`.
 
-You can also filter by method:
+Filter by method:
 
 ```bash
 tina4 routes --method POST
@@ -533,7 +533,7 @@ POST     /products                     -                   secured
 POST     /api/v1/users                 -                   secured
 ```
 
-Or search for a specific path pattern:
+Search for a path pattern:
 
 ```bash
 tina4 routes --filter users
@@ -551,7 +551,7 @@ POST     /api/v1/users                 -                   secured
 
 ## 10. Organizing Route Files
 
-You are free to organize route files any way you like. Tina4 loads every `.py` file in `src/routes/` recursively. Here are two common patterns:
+Organize route files any way you want. Tina4 loads every `.py` file in `src/routes/` recursively. Two common patterns:
 
 ### Pattern 1: One File Per Resource
 
@@ -579,13 +579,13 @@ src/routes/
     └── about.py
 ```
 
-Both patterns work identically. The directory structure has no effect on the URL paths -- only the route definitions inside the files matter. Choose whichever pattern keeps your project navigable.
+Both work identically. The directory structure has no effect on URL paths -- only the route definitions inside the files matter. Choose whichever keeps your project navigable.
 
 ---
 
 ## 11. Exercise: Build a Full CRUD API for Products
 
-Build a complete REST API for managing products. All data is stored in a Python list (no database yet -- we will add that in Chapter 5).
+Build a complete REST API for managing products. All data stored in a Python list (no database yet -- Chapter 5 adds that).
 
 ### Requirements
 
@@ -797,11 +797,11 @@ Not found:
 
 **Cause:** Tina4 treats `/products` and `/products/` as different routes by default.
 
-**Fix:** Pick one convention and stick with it. If you want both to work, register the route without a trailing slash -- Tina4 will redirect `/products/` to `/products` automatically when `TINA4_TRAILING_SLASH_REDIRECT=true` is set in `.env`.
+**Fix:** Pick one convention and stick with it. If you want both to work, register the route without a trailing slash -- Tina4 redirects `/products/` to `/products` when `TINA4_TRAILING_SLASH_REDIRECT=true` is set in `.env`.
 
 ### 2. Parameter names must be unique in a path
 
-**Problem:** `/users/{id}/posts/{id}` does not work as expected -- both parameters have the same name.
+**Problem:** `/users/{id}/posts/{id}` behaves wrong -- both parameters share a name.
 
 **Cause:** The second `{id}` overwrites the first in `request.params`.
 
@@ -813,23 +813,23 @@ Not found:
 
 **Cause:** Both patterns match `/items/42`. The first one registered wins.
 
-**Fix:** Use typed parameters to disambiguate: `@get("/items/{id:int}")` will only match integers, leaving `/items/export` free for the other route. Alternatively, restructure your paths: `/items/{id:int}` and `/items/actions/{action}`.
+**Fix:** Use typed parameters to disambiguate: `@get("/items/{id:int}")` matches integers only, leaving `/items/export` free for the other route. Or restructure your paths: `/items/{id:int}` and `/items/actions/{action}`.
 
 ### 4. Route handler must return a response
 
 **Problem:** Your route handler runs but the browser shows an empty page or a 500 error.
 
-**Cause:** You forgot the `return` statement. Without `return`, the handler returns `None` and Tina4 does not know what to send back.
+**Cause:** You forgot the `return` statement. Without `return`, the handler returns `None` and Tina4 has nothing to send back.
 
-**Fix:** Always `return response.json(...)` or `return response.html(...)` or `return response.render(...)`. Every handler must return something.
+**Fix:** Every handler must return something: `return response.json(...)` or `return response.html(...)` or `return response.render(...)`.
 
 ### 5. Decorator order matters
 
-**Problem:** Your `@middleware` decorator does not seem to work, or your `@noauth` has no effect.
+**Problem:** Your `@middleware` decorator has no effect, or your `@noauth` is ignored.
 
-**Cause:** Python decorators are applied bottom-up. If you stack decorators in the wrong order, the route may not register correctly.
+**Cause:** Python decorators apply bottom-up. Wrong stacking order breaks registration.
 
-**Fix:** Always put the route decorator (`@get`, `@post`, etc.) first (closest to the function), then additional decorators above it:
+**Fix:** Put the route decorator (`@get`, `@post`, etc.) first (closest to the function), then additional decorators above it:
 
 ```python
 @middleware(require_api_key)  # Applied second (wraps the route)
@@ -842,14 +842,14 @@ async def secret(request, response):
 
 **Problem:** Your route handler raises a `TypeError` about a coroutine or the response is a coroutine object instead of JSON.
 
-**Cause:** You used `def` instead of `async def` for your handler.
+**Cause:** You used `def` instead of `async def`.
 
-**Fix:** Every route handler in Tina4 Python must be `async def`. This is because Tina4 Python runs on an async server. Change `def my_handler(request, response):` to `async def my_handler(request, response):`.
+**Fix:** Every route handler in Tina4 Python must be `async def`. The framework runs on an async server. Change `def my_handler(request, response):` to `async def my_handler(request, response):`.
 
 ### 7. Group prefix must start with a slash
 
-**Problem:** `@group("api/v1")` produces routes like `/api/v1/users` but they do not match.
+**Problem:** `@group("api/v1")` produces routes that do not match.
 
-**Cause:** The group prefix should start with `/` for consistency. While Tina4 may auto-correct this, it is better to be explicit.
+**Cause:** The group prefix should start with `/` for consistency.
 
-**Fix:** Always start group prefixes with `/`: `@group("/api/v1")`.
+**Fix:** Start group prefixes with `/`: `@group("/api/v1")`.

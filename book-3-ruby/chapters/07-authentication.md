@@ -2,15 +2,15 @@
 
 ## 1. Locking the Door
 
-Up to now, every endpoint you have built is public. Anyone with the URL can read, create, update, and delete data. That is fine for a tutorial, but a real application needs to know who is making a request and whether they are allowed to make it.
+Every endpoint you have built is public. Anyone with the URL can read, create, update, and delete data. Fine for a tutorial. Reckless for production. A real application needs to know who is making a request and whether they have permission.
 
-This chapter covers Tina4's authentication system: JWT tokens, password hashing, middleware-based route protection, CSRF tokens for forms, and session management.
+This chapter covers Tina4's authentication system. JWT tokens. Password hashing. Middleware-based route protection. CSRF tokens for forms. Session management.
 
 ---
 
 ## 2. JWT Tokens
 
-Tina4 uses JSON Web Tokens (JWT) for authentication. A JWT is a signed string that contains a payload (like a user ID and role). The server creates the token at login, the client sends it with every request, and the server verifies it without needing to look anything up in a database.
+Tina4 uses JSON Web Tokens (JWT) for authentication. A JWT is a signed string containing a payload -- user ID, role, whatever you need. The server mints the token at login. The client sends it with every request. The server verifies it without touching the database.
 
 ### Generating a Token
 
@@ -90,7 +90,7 @@ Keep this key secret. If someone gets it, they can forge tokens.
 
 ## 3. Password Hashing
 
-Never store passwords in plain text. Tina4 provides two methods for secure password handling:
+Plain text passwords are a security breach waiting to happen. Tina4 provides two methods for secure password handling:
 
 ### Hashing a Password
 

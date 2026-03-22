@@ -2,19 +2,21 @@
 
 ## 1. State in a Stateless World
 
-Your e-commerce site needs a shopping cart that persists across page loads, remembers the user's language preference, and flashes success or error messages after form submissions. HTTP is stateless -- every request is independent, with no memory of what came before. Sessions and cookies solve this by giving the server a way to remember who is making requests and what they have been doing.
+Your e-commerce site needs a shopping cart that persists across page loads. It remembers the user's language preference. It flashes success messages after form submissions. But HTTP has no memory. Every request arrives fresh. No context. No history.
+
+Sessions and cookies give the server memory. They teach it to remember who is making requests and what they have been doing.
 
 ---
 
 ## 2. How Sessions Work
 
-When a user visits your site for the first time, Tina4 generates a unique session ID, stores it in a cookie on the user's browser, and creates a server-side storage entry keyed by that ID. On every subsequent request, the browser sends the cookie, Tina4 looks up the session data, and makes it available via `req.session`.
+A user visits your site for the first time. Tina4 generates a unique session ID, stores it in a cookie on the user's browser, and creates a server-side storage entry keyed by that ID. Every subsequent request carries the cookie. Tina4 looks up the session data and attaches it to `req.session`.
 
 ---
 
 ## 3. File Sessions (Default)
 
-Out of the box, Tina4 stores sessions in files. No configuration needed.
+Tina4 stores sessions in files out of the box. Zero configuration.
 
 ```typescript
 import { Router } from "tina4-nodejs";

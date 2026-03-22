@@ -2,7 +2,7 @@
 
 ## 1. Why Tests Matter More Than You Think
 
-It is Friday afternoon. Your client just reported a critical bug in production. You fix it -- one line of code. But did that fix break anything else? You have 47 routes, 12 ORM models, and 3 middleware functions. Manually clicking through every page would take an hour. Running the test suite takes 2 seconds.
+Friday afternoon. Your client reports a critical bug in production. You fix it -- one line of code. But did that fix break something else? You have 47 routes, 12 ORM models, and 3 middleware functions. Click through every page? An hour. Run the test suite? 2 seconds.
 
 ```bash
 tina4 test
@@ -27,9 +27,9 @@ Running tests...
   9 tests, 9 passed, 0 failed (0.34s)
 ```
 
-Everything still works. You deploy with confidence and enjoy your weekend.
+Everything passes. You deploy with confidence. Weekend intact.
 
-Tina4 supports RSpec for testing. Tests live in the `tests/` directory. Every `_spec.rb` file is auto-discovered when you run `tina4 test`.
+Tina4 uses RSpec for testing. Tests live in `tests/`. Every `_spec.rb` file is auto-discovered when you run `tina4 test`.
 
 ---
 

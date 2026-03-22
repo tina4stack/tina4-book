@@ -2,9 +2,9 @@
 
 ## 1. State in a Stateless World
 
-Your e-commerce site needs a shopping cart that persists across page loads, remembers the user's language preference, and flashes success or error messages after form submissions. HTTP is stateless -- every request is independent, with no memory of what came before. Sessions and cookies solve this by giving the server a way to remember who is making requests and what they have been doing.
+Your e-commerce site needs a shopping cart that persists across page loads. A language preference that sticks. Flash messages after form submissions. But HTTP is stateless. Every request arrives with no memory of what came before. Sessions and cookies give the server a way to remember.
 
-In Chapter 7 you saw a brief introduction to sessions for authentication. This chapter goes deeper: session backends, flash messages, cookies, remember-me tokens, and security configuration.
+Chapter 7 introduced sessions for authentication. This chapter goes deeper. Session backends. Flash messages. Cookies. Remember-me tokens. Security configuration.
 
 ---
 
@@ -184,7 +184,7 @@ end
 
 ## 8. Flash Messages
 
-Flash messages are session data that exists for exactly one request. You set a flash message before redirecting, and it is available on the very next request. After that next request reads it, it is gone.
+Flash messages are session data that lives for one request. Set a flash before redirecting. The next request reads it. Then it vanishes.
 
 ### Setting a Flash Message
 

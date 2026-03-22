@@ -2,15 +2,15 @@
 
 ## 1. Debugging at 2am
 
-It is 2am. Your production monitoring just pinged you -- a 500 error on the checkout endpoint. You pull up the dev dashboard, find the failing request in the request inspector, and see the full stack trace with source code context. Line 47 of `src/routes/checkout.php` -- a null reference on the shipping address because the user did not fill in the form. You add a null check, push the fix, and go back to sleep. Total time: 30 seconds.
+2am. Your production monitoring pings you. A 500 error on the checkout endpoint. You pull up the dev dashboard. Find the failing request in the request inspector. See the full stack trace with source code context. Line 47 of `src/routes/checkout.php` -- a null reference on the shipping address because the user did not fill in the form. Add a null check. Push the fix. Back to sleep. Total time: 30 seconds.
 
-Tina4's dev tools are not an afterthought bolted on later. They are built into the framework from day one. When `TINA4_DEBUG=true`, you get a full development dashboard, an error overlay with source code, live reload, a request inspector, a SQL query runner, and more -- all without installing any additional packages.
+Tina4's dev tools are not an afterthought. They are built into the framework from day one. When `TINA4_DEBUG=true`, you get a full development dashboard, an error overlay with source code, live reload, a request inspector, a SQL query runner, and more. No additional packages.
 
 ---
 
 ## 2. Enabling the Dev Dashboard
 
-The dev dashboard is available when you enable the console in your `.env`:
+Enable the console in your `.env`:
 
 ```env
 TINA4_DEBUG=true
@@ -24,15 +24,15 @@ Restart your server and navigate to:
 http://localhost:7145/tina4/console
 ```
 
-Enter your console token (`my-dev-token`) when prompted. You are now in the dev dashboard.
+Enter your console token (`my-dev-token`) when prompted. You are in the dev dashboard.
 
-The console token protects the dashboard from unauthorized access. In development, any simple string works. In shared environments, use a strong random token. In production, set `TINA4_DEBUG=false` and the entire dashboard is disabled.
+The console token protects the dashboard from unauthorized access. In development, any string works. In shared environments, use a strong random token. In production, set `TINA4_DEBUG=false` and the entire dashboard disappears.
 
 ---
 
 ## 3. Dashboard Overview
 
-The dev dashboard has several sections, accessible from the navigation tabs at the top:
+The dev dashboard has several sections. Navigation tabs at the top:
 
 ### System Overview
 
@@ -46,13 +46,13 @@ The landing page shows at a glance:
 - **Environment** -- Current `.env` variables (sensitive values are masked)
 - **Project structure** -- Directory listing of your project with file counts
 
-This is the first thing to check when something feels off. Is the database connected? Is the right PHP version running? Are the environment variables loaded?
+Check here first when something feels off. Is the database connected? Is the right PHP version running? Are the environment variables loaded?
 
 ---
 
 ## 4. The Dev Toolbar
 
-When you visit any HTML page in your application (like `/products` or `/admin`), a debug toolbar appears at the bottom of the page. It is a thin bar that expands when you click on it.
+Visit any HTML page in your application (like `/products` or `/admin`). A debug toolbar appears at the bottom. Thin bar. Expands when you click on it.
 
 The toolbar shows:
 
@@ -87,7 +87,7 @@ This is useful for API endpoints that return JSON -- the toolbar is only meaning
 
 ## 5. Error Overlay
 
-When an unhandled exception occurs, Tina4 does not show a generic "500 Internal Server Error" page. Instead, it shows a detailed error overlay with:
+An unhandled exception occurs. Tina4 does not show a generic "500 Internal Server Error" page. It shows a detailed error overlay with:
 
 - **Exception type and message** -- What went wrong, in plain language
 - **Stack trace** -- Every function call that led to the error, from the entry point to the crash
@@ -134,13 +134,13 @@ The highlighted line (line 4) makes it immediately obvious: `$user` is null and 
 
 ### Error Overlay in Production
 
-When `TINA4_DEBUG=false`, the error overlay is disabled. Instead, users see a clean error page (`src/templates/errors/500.html` if it exists, or a generic message). The full error details are written to the log file at `logs/error.log`.
+When `TINA4_DEBUG=false`, the error overlay is disabled. Users see a clean error page (`src/templates/errors/500.html` if it exists, or a generic message). Full error details go to `logs/error.log`.
 
 ---
 
 ## 6. Request Inspector
 
-The request inspector in the dev dashboard records every HTTP request to your application. It shows:
+The request inspector records every HTTP request to your application:
 
 - **Method and URL** -- GET /api/products, POST /api/users, etc.
 - **Status code** -- 200, 201, 404, 500, etc. (color-coded: green for 2xx, yellow for 4xx, red for 5xx)
@@ -173,13 +173,13 @@ The inspector supports filtering:
 
 ### Request Replay
 
-Click the "Replay" button on any request to re-send the exact same request. This is invaluable for debugging -- you can reproduce an error without manually constructing the curl command.
+Click "Replay" on any request to re-send it. Reproduce an error without constructing the curl command by hand.
 
 ---
 
 ## 7. SQL Query Runner
 
-The dev dashboard includes an interactive SQL query runner. Navigate to the "SQL" tab and you can:
+The dev dashboard includes an interactive SQL query runner. Navigate to the "SQL" tab:
 
 - **Execute queries** directly against your database
 - **See results** in a formatted table
@@ -207,7 +207,7 @@ Results (3 rows, 2.1ms):
 | Wireless Keyboard | 79.99  | 1        |
 ```
 
-This is faster than opening a separate database client. You can test queries, check data, and debug issues without leaving the browser.
+Faster than opening a separate database client. Test queries, check data, debug issues -- all without leaving the browser.
 
 ### Safety
 
@@ -217,7 +217,7 @@ The query runner is read-write in development. You can run INSERT, UPDATE, and D
 
 ## 8. Live Reload
 
-When you edit a file and save it, the browser updates automatically. No manual refresh needed.
+Edit a file. Save it. The browser updates. No manual refresh.
 
 ### How It Works
 

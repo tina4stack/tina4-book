@@ -2,9 +2,11 @@
 
 ## 1. The Problem GraphQL Solves
 
-Your mobile app needs a list of products with just name and price -- 2KB. Your REST API returns all 20 fields -- 50KB. GraphQL solves this: the client asks for exactly the fields it needs.
+Your mobile app needs a list of products with name and price. 2KB. Your REST API returns all 20 fields. 50KB. Twenty-five times the payload the client needs.
 
-Tina4 includes a built-in GraphQL engine. No external packages.
+GraphQL flips control. The client asks for the fields it wants. The server returns nothing else.
+
+Tina4 includes a built-in GraphQL engine. Zero external packages.
 
 ---
 
@@ -21,7 +23,7 @@ Tina4 includes a built-in GraphQL engine. No external packages.
 
 ## 3. Enabling GraphQL
 
-GraphQL is available by default at `/graphql`. Test:
+GraphQL runs at `/graphql` by default. Test:
 
 ```bash
 curl -X POST http://localhost:7148/graphql \
@@ -172,7 +174,7 @@ curl -X POST http://localhost:7148/graphql \
 TINA4_GRAPHQL_AUTO_SCHEMA=true
 ```
 
-Every ORM model with `static autoCrud = true` gets GraphQL types and resolvers automatically.
+Every ORM model with `static autoCrud = true` gets GraphQL types and resolvers generated for it. Zero manual schema writing.
 
 ---
 

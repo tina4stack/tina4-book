@@ -2,7 +2,7 @@
 
 ## 1. Locking the Door
 
-Up to now, every endpoint you have built is public. Anyone with the URL can read, create, update, and delete data. That is fine for a tutorial, but a real application needs to know who is making a request and whether they are allowed to make it.
+Every endpoint built so far is public. Anyone with the URL can read, create, update, delete. That works for a tutorial. A real application needs to know who is making a request and whether they are allowed.
 
 This chapter covers Tina4's authentication system: JWT tokens, password hashing, middleware-based route protection, CSRF tokens for forms, and session management.
 
@@ -10,7 +10,7 @@ This chapter covers Tina4's authentication system: JWT tokens, password hashing,
 
 ## 2. JWT Tokens
 
-Tina4 uses JSON Web Tokens (JWT) for authentication. A JWT is a signed string that contains a payload (like a user ID and role). The server creates the token at login, the client sends it with every request, and the server verifies it without needing to look anything up in a database.
+Tina4 uses JSON Web Tokens for authentication. A JWT is a signed string containing a payload -- user ID, role, expiry. The server creates it at login. The client sends it with every request. The server verifies it without touching the database.
 
 ### Generating a Token
 
@@ -27,23 +27,23 @@ $payload = [
 $token = Auth::getToken($payload);
 ```
 
-`getToken()` signs the payload with a secret key and returns a JWT string like:
+`getToken()` signs the payload with a secret key. Returns a JWT string:
 
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo0MiwiZW1haWwiOiJhbGljZUBleGFtcGxlLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTcxMTExMjYwMCwiZXhwIjoxNzExMTE2MjAwfQ.abc123signature
 ```
 
-The token has three parts separated by dots: header, payload, and signature. The signature ensures the token has not been tampered with.
+Three parts separated by dots: header, payload, signature. The signature ensures the token has not been tampered with.
 
 ### Token Expiry
 
-By default, tokens expire after 1 hour. Configure this in `.env`:
+Tokens expire after 1 hour by default. Configure in `.env`:
 
 ```env
 TINA4_JWT_EXPIRY=3600
 ```
 
-The value is in seconds. Common settings:
+Value in seconds:
 
 | Value | Duration |
 |-------|----------|
@@ -56,7 +56,7 @@ The value is in seconds. Common settings:
 
 ```php
 $isValid = Auth::validToken($token);
-// Returns true if the token is valid and not expired, false otherwise
+// true if valid and not expired, false otherwise
 ```
 
 ### Reading the Payload
@@ -65,7 +65,7 @@ $isValid = Auth::validToken($token);
 $payload = Auth::getPayload($token);
 ```
 
-Returns the original payload array:
+Returns the original payload:
 
 ```php
 [
@@ -77,23 +77,23 @@ Returns the original payload array:
 ]
 ```
 
-If the token is invalid or expired, `getPayload()` returns `null`.
+Invalid or expired token: `null`.
 
 ### The Secret Key
 
-Tina4 uses a secret key to sign and verify tokens. On first run, it automatically generates a random key and stores it in `secrets/jwt.key`. You can also set it explicitly:
+Tina4 signs and verifies tokens with a secret key. First run generates a random key at `secrets/jwt.key`. You can set it explicitly:
 
 ```env
 TINA4_JWT_SECRET=my-very-long-and-random-secret-key-at-least-32-chars
 ```
 
-Keep this key secret. If someone gets it, they can forge tokens.
+Guard this key. Anyone who has it can forge tokens.
 
 ---
 
 ## 3. Password Hashing
 
-Never store passwords in plain text. Tina4 provides two functions for secure password handling:
+Passwords in plain text are a breach waiting to happen. Tina4 provides two functions for secure password handling.
 
 ### Hashing a Password
 
@@ -104,13 +104,13 @@ $hash = Auth::hashPassword("my-secure-password");
 // Returns: "$2y$10$abc123...long-hash-string..."
 ```
 
-This uses PHP's `password_hash()` with bcrypt under the hood. Each hash includes a random salt, so hashing the same password twice produces different results.
+Uses PHP's `password_hash()` with bcrypt. Each hash includes a random salt. Hashing the same password twice produces different results.
 
 ### Checking a Password
 
 ```php
 $isCorrect = Auth::checkPassword("my-secure-password", $storedHash);
-// Returns true if the password matches the hash
+// true if the password matches
 ```
 
 ### Registration Example
@@ -124,7 +124,6 @@ use Tina4\Database;
 Route::post("/api/register", function ($request, $response) {
     $body = $request->body;
 
-    // Validate input
     if (empty($body["name"]) || empty($body["email"]) || empty($body["password"])) {
         return $response->json(["error" => "Name, email, and password are required"], 400);
     }
@@ -135,16 +134,13 @@ Route::post("/api/register", function ($request, $response) {
 
     $db = Database::getConnection();
 
-    // Check if email already exists
     $existing = $db->fetchOne("SELECT id FROM users WHERE email = :email", ["email" => $body["email"]]);
     if ($existing !== null) {
         return $response->json(["error" => "Email already registered"], 409);
     }
 
-    // Hash the password
     $passwordHash = Auth::hashPassword($body["password"]);
 
-    // Create the user
     $db->execute(
         "INSERT INTO users (name, email, password_hash) VALUES (:name, :email, :hash)",
         [
@@ -180,7 +176,7 @@ curl -X POST http://localhost:7145/api/register \
 
 ## 4. The Login Flow
 
-Here is the complete login flow: the client sends credentials, the server validates them, and returns a JWT token.
+Client sends credentials. Server validates them. Server returns a JWT.
 
 ```php
 <?php
@@ -200,7 +196,6 @@ Route::post("/api/login", function ($request, $response) {
 
     $db = Database::getConnection();
 
-    // Find the user
     $user = $db->fetchOne(
         "SELECT id, name, email, password_hash FROM users WHERE email = :email",
         ["email" => $body["email"]]
@@ -210,12 +205,10 @@ Route::post("/api/login", function ($request, $response) {
         return $response->json(["error" => "Invalid email or password"], 401);
     }
 
-    // Check the password
     if (!Auth::checkPassword($body["password"], $user["password_hash"])) {
         return $response->json(["error" => "Invalid email or password"], 401);
     }
 
-    // Generate a token
     $token = Auth::getToken([
         "user_id" => $user["id"],
         "email" => $user["email"],
@@ -234,7 +227,7 @@ Route::post("/api/login", function ($request, $response) {
 });
 ```
 
-Notice the `@noauth` annotation. The login endpoint must be public -- you cannot require a token to get a token.
+The `@noauth` annotation is critical. The login endpoint must be public. You cannot require a token to get a token.
 
 ```bash
 curl -X POST http://localhost:7145/api/login \
@@ -254,13 +247,13 @@ curl -X POST http://localhost:7145/api/login \
 }
 ```
 
-The client stores this token (in localStorage, a cookie, or memory) and sends it with subsequent requests.
+The client stores the token and sends it with subsequent requests.
 
 ---
 
 ## 5. Using Tokens in Requests
 
-The client sends the token in the `Authorization` header with the `Bearer` prefix:
+The token travels in the `Authorization` header with the `Bearer` prefix:
 
 ```bash
 curl http://localhost:7145/api/profile \
@@ -273,7 +266,7 @@ curl http://localhost:7145/api/profile \
 
 ### Auth Middleware
 
-Create a reusable auth middleware:
+A reusable gate:
 
 ```php
 <?php
@@ -359,11 +352,11 @@ Every route in the group requires a valid token.
 
 ## 7. @noauth and @secured Decorators
 
-As introduced in Chapter 2, these decorators control authentication at the route level.
+Two decorators for route-level authentication control. Introduced in Chapter 2. Here they are in context.
 
 ### @noauth -- Skip Authentication
 
-Use `@noauth` for public endpoints that should bypass any global or group-level auth:
+Public endpoints that bypass global or group-level auth:
 
 ```php
 /**
@@ -390,14 +383,13 @@ Route::post("/api/register", function ($request, $response) {
 
 ### @secured -- Require Authentication for GET Routes
 
-By default, POST, PUT, PATCH, and DELETE routes are considered secured. GET routes are public. Use `@secured` to explicitly protect a GET route:
+POST, PUT, PATCH, DELETE are secured by default. GET is public. Use `@secured` to protect a GET route:
 
 ```php
 /**
  * @secured
  */
 Route::get("/api/me", function ($request, $response) {
-    // This GET route requires authentication
     return $response->json($request->user);
 });
 ```
@@ -412,7 +404,6 @@ use Tina4\Auth;
 
 function requireRole($role) {
     return function ($request, $response, $next) use ($role) {
-        // First check authentication
         $authHeader = $request->headers["Authorization"] ?? "";
         if (empty($authHeader) || !str_starts_with($authHeader, "Bearer ")) {
             return $response->json(["error" => "Authorization required"], 401);
@@ -425,7 +416,6 @@ function requireRole($role) {
 
         $payload = Auth::getPayload($token);
 
-        // Check role
         if (($payload["role"] ?? "") !== $role) {
             return $response->json(["error" => "Forbidden. Required role: " . $role], 403);
         }
@@ -436,13 +426,12 @@ function requireRole($role) {
 }
 ```
 
-Note that `requireRole()` returns a closure. To use it as middleware, you need to register the returned function:
+`requireRole()` returns a closure. Register the returned function as middleware:
 
 ```php
 $adminOnly = requireRole("admin");
 
 Route::delete("/api/users/{id:int}", function ($request, $response) {
-    // Only admins can delete users
     return $response->json(["deleted" => true]);
 }, $adminOnly);
 ```
@@ -451,11 +440,11 @@ Route::delete("/api/users/{id:int}", function ($request, $response) {
 
 ## 8. CSRF Protection
 
-For traditional form-based applications (not SPAs), Tina4 provides CSRF protection with form tokens.
+For traditional form-based applications (not SPAs), Tina4 provides CSRF protection.
 
 ### Generating a Token
 
-In your template, include the CSRF token in every form:
+Include the CSRF token in every form:
 
 ```html
 <form method="POST" action="/profile/update">
@@ -470,7 +459,7 @@ In your template, include the CSRF token in every form:
 </form>
 ```
 
-`{{ form_token() }}` renders a hidden input field:
+`{{ form_token() }}` renders a hidden input:
 
 ```html
 <input type="hidden" name="_token" value="abc123randomtoken456">
@@ -478,15 +467,12 @@ In your template, include the CSRF token in every form:
 
 ### Validating the Token
 
-In your route handler, check the token:
-
 ```php
 <?php
 use Tina4\Route;
 use Tina4\Auth;
 
 Route::post("/profile/update", function ($request, $response) {
-    // Validate CSRF token
     if (!Auth::validateFormToken($request->body["_token"] ?? "")) {
         return $response->json(["error" => "Invalid form token. Please refresh and try again."], 403);
     }
@@ -496,27 +482,27 @@ Route::post("/profile/update", function ($request, $response) {
 });
 ```
 
-The CSRF token is tied to the user's session and expires after a single use. This prevents cross-site request forgery attacks where a malicious site tricks the user's browser into submitting a form.
+The token is tied to the user's session and expires after one use. A malicious site cannot forge it.
 
 ### When to Use CSRF Tokens
 
-Use CSRF tokens for:
+Use them for:
 - HTML forms submitted by browsers
-- Any POST/PUT/DELETE from server-rendered pages
+- POST/PUT/DELETE from server-rendered pages
 
-You do not need CSRF tokens for:
-- API endpoints that use JWT (the Bearer token already proves the request is intentional)
-- Single-page applications that use `fetch()` with custom headers (the `Authorization` header cannot be set by cross-origin forms)
+Skip them for:
+- API endpoints using JWT (the Bearer token proves intent)
+- SPAs using `fetch()` with custom headers (the `Authorization` header cannot be set by cross-origin forms)
 
 ---
 
 ## 9. Sessions
 
-Tina4 supports server-side sessions for storing per-user state between requests. Sessions work alongside JWT tokens -- use JWTs for API authentication and sessions for stateful web pages.
+Server-side sessions store per-user state between requests. Use JWTs for API authentication. Use sessions for stateful web pages.
 
 ### Session Configuration
 
-Set the session backend in `.env`:
+Set the backend in `.env`:
 
 ```env
 # File-based sessions (default)
@@ -538,11 +524,11 @@ TINA4_SESSION_HOST=localhost
 TINA4_SESSION_PORT=6379
 ```
 
-File-based sessions work out of the box with no additional dependencies. Use Redis or Valkey for production deployments with multiple servers, so sessions are shared across instances.
+File sessions work out of the box. Redis or Valkey for multi-server production deployments where sessions must be shared across instances.
 
 ### Using Sessions
 
-Access session data via `$request->session`:
+Access session data through `$request->session`:
 
 ```php
 <?php
@@ -568,7 +554,6 @@ Route::get("/dashboard", function ($request, $response) {
 });
 
 Route::post("/logout", function ($request, $response) {
-    // Clear all session data
     $request->session = [];
 
     return $response->redirect("/login");
@@ -578,7 +563,7 @@ Route::post("/logout", function ($request, $response) {
 ### Session Options
 
 ```env
-TINA4_SESSION_LIFETIME=3600       # Session lifetime in seconds (default: 3600)
+TINA4_SESSION_LIFETIME=3600       # Expires after 1 hour of inactivity
 TINA4_SESSION_NAME=tina4_session  # Cookie name for the session ID
 ```
 
@@ -586,19 +571,19 @@ TINA4_SESSION_NAME=tina4_session  # Cookie name for the session ID
 
 ## 10. Exercise: Build Login, Register, and Profile
 
-Build a complete authentication system with registration, login, profile viewing, and password changing.
+A complete authentication system. Registration, login, profile viewing, password changing.
 
 ### Requirements
 
-1. Create a `users` table migration with: `id`, `name`, `email` (unique), `password_hash`, `role` (default "user"), `created_at`
+1. Create a `users` table migration: `id`, `name`, `email` (unique), `password_hash`, `role` (default "user"), `created_at`
 
 2. Build these endpoints:
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| `POST` | `/api/register` | @noauth | Create an account. Validate name, email, password (min 8 chars). |
-| `POST` | `/api/login` | @noauth | Login. Return JWT token. |
-| `GET` | `/api/profile` | secured | Get current user's profile from token. |
+| `POST` | `/api/register` | @noauth | Create account. Validate name, email, password (min 8 chars). |
+| `POST` | `/api/login` | @noauth | Login. Return JWT. |
+| `GET` | `/api/profile` | secured | Get profile from token. |
 | `PUT` | `/api/profile` | secured | Update name and email. |
 | `PUT` | `/api/profile/password` | secured | Change password. Require current password. |
 
@@ -617,7 +602,7 @@ curl -X POST http://localhost:7145/api/login \
   -H "Content-Type: application/json" \
   -d '{"email": "alice@example.com", "password": "securePass123"}'
 
-# Save the token from login response, then:
+# Save the token, then:
 
 # Get profile
 curl http://localhost:7145/api/profile \
@@ -635,7 +620,7 @@ curl -X PUT http://localhost:7145/api/profile/password \
   -H "Content-Type: application/json" \
   -d '{"current_password": "securePass123", "new_password": "evenMoreSecure456"}'
 
-# Try with no token (should fail)
+# No token (should fail)
 curl http://localhost:7145/api/profile
 ```
 
@@ -710,14 +695,9 @@ use Tina4\Database;
 Route::post("/api/register", function ($request, $response) {
     $body = $request->body;
 
-    // Validate input
     $errors = [];
-    if (empty($body["name"])) {
-        $errors[] = "Name is required";
-    }
-    if (empty($body["email"])) {
-        $errors[] = "Email is required";
-    }
+    if (empty($body["name"])) $errors[] = "Name is required";
+    if (empty($body["email"])) $errors[] = "Email is required";
     if (empty($body["password"])) {
         $errors[] = "Password is required";
     } elseif (strlen($body["password"]) < 8) {
@@ -730,30 +710,21 @@ Route::post("/api/register", function ($request, $response) {
 
     $db = Database::getConnection();
 
-    // Check for existing email
     $existing = $db->fetchOne("SELECT id FROM users WHERE email = :email", ["email" => $body["email"]]);
     if ($existing !== null) {
         return $response->json(["error" => "Email already registered"], 409);
     }
 
-    // Create user
     $hash = Auth::hashPassword($body["password"]);
 
     $db->execute(
         "INSERT INTO users (name, email, password_hash) VALUES (:name, :email, :hash)",
-        [
-            "name" => $body["name"],
-            "email" => $body["email"],
-            "hash" => $hash
-        ]
+        ["name" => $body["name"], "email" => $body["email"], "hash" => $hash]
     );
 
     $user = $db->fetchOne("SELECT id, name, email, role, created_at FROM users WHERE id = last_insert_rowid()");
 
-    return $response->json([
-        "message" => "Registration successful",
-        "user" => $user
-    ], 201);
+    return $response->json(["message" => "Registration successful", "user" => $user], 201);
 });
 
 /**
@@ -787,16 +758,10 @@ Route::post("/api/login", function ($request, $response) {
     return $response->json([
         "message" => "Login successful",
         "token" => $token,
-        "user" => [
-            "id" => $user["id"],
-            "name" => $user["name"],
-            "email" => $user["email"],
-            "role" => $user["role"]
-        ]
+        "user" => ["id" => $user["id"], "name" => $user["name"], "email" => $user["email"], "role" => $user["role"]]
     ]);
 });
 
-// Get current user profile
 Route::get("/api/profile", function ($request, $response) {
     $db = Database::getConnection();
 
@@ -812,13 +777,11 @@ Route::get("/api/profile", function ($request, $response) {
     return $response->json($user);
 }, "authMiddleware");
 
-// Update profile
 Route::put("/api/profile", function ($request, $response) {
     $db = Database::getConnection();
     $body = $request->body;
     $userId = $request->user["user_id"];
 
-    // Check for email uniqueness if email is being changed
     if (!empty($body["email"])) {
         $existing = $db->fetchOne(
             "SELECT id FROM users WHERE email = :email AND id != :id",
@@ -833,25 +796,14 @@ Route::put("/api/profile", function ($request, $response) {
 
     $db->execute(
         "UPDATE users SET name = :name, email = :email WHERE id = :id",
-        [
-            "name" => $body["name"] ?? $current["name"],
-            "email" => $body["email"] ?? $current["email"],
-            "id" => $userId
-        ]
+        ["name" => $body["name"] ?? $current["name"], "email" => $body["email"] ?? $current["email"], "id" => $userId]
     );
 
-    $updated = $db->fetchOne(
-        "SELECT id, name, email, role, created_at FROM users WHERE id = :id",
-        ["id" => $userId]
-    );
+    $updated = $db->fetchOne("SELECT id, name, email, role, created_at FROM users WHERE id = :id", ["id" => $userId]);
 
-    return $response->json([
-        "message" => "Profile updated",
-        "user" => $updated
-    ]);
+    return $response->json(["message" => "Profile updated", "user" => $updated]);
 }, "authMiddleware");
 
-// Change password
 Route::put("/api/profile/password", function ($request, $response) {
     $db = Database::getConnection();
     $body = $request->body;
@@ -873,80 +825,23 @@ Route::put("/api/profile/password", function ($request, $response) {
 
     $newHash = Auth::hashPassword($body["new_password"]);
 
-    $db->execute(
-        "UPDATE users SET password_hash = :hash WHERE id = :id",
-        ["hash" => $newHash, "id" => $userId]
-    );
+    $db->execute("UPDATE users SET password_hash = :hash WHERE id = :id", ["hash" => $newHash, "id" => $userId]);
 
     return $response->json(["message" => "Password changed successfully"]);
 }, "authMiddleware");
 ```
 
-**Expected output for register:**
+**Expected output for register:** `201 Created` with user data.
 
-```json
-{
-  "message": "Registration successful",
-  "user": {
-    "id": 1,
-    "name": "Alice",
-    "email": "alice@example.com",
-    "role": "user",
-    "created_at": "2026-03-22 16:00:00"
-  }
-}
-```
+**Expected output for login:** `200 OK` with token and user data.
 
-(Status: `201 Created`)
+**Expected output for profile without token:** `401 Unauthorized`.
 
-**Expected output for login:**
+**Expected output for profile with token:** `200 OK` with user data.
 
-```json
-{
-  "message": "Login successful",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "id": 1,
-    "name": "Alice",
-    "email": "alice@example.com",
-    "role": "user"
-  }
-}
-```
+**Expected output for wrong current password:** `401 Unauthorized`.
 
-**Expected output for profile without token:**
-
-```json
-{"error":"Authorization required. Send: Authorization: Bearer <token>"}
-```
-
-(Status: `401 Unauthorized`)
-
-**Expected output for profile with token:**
-
-```json
-{
-  "id": 1,
-  "name": "Alice",
-  "email": "alice@example.com",
-  "role": "user",
-  "created_at": "2026-03-22 16:00:00"
-}
-```
-
-**Expected output for password change with wrong current password:**
-
-```json
-{"error":"Current password is incorrect"}
-```
-
-(Status: `401 Unauthorized`)
-
-**Expected output for successful password change:**
-
-```json
-{"message":"Password changed successfully"}
-```
+**Expected output for successful password change:** `{"message":"Password changed successfully"}`.
 
 ---
 
@@ -954,56 +849,54 @@ Route::put("/api/profile/password", function ($request, $response) {
 
 ### 1. Token Expiry Confusion
 
-**Problem:** Tokens that worked yesterday now return 401.
+**Problem:** Tokens that worked yesterday return 401 today.
 
-**Cause:** The default token lifetime is 1 hour. After that, the token is invalid even if the signature is correct.
+**Cause:** Default lifetime is 1 hour. After that, the token is invalid.
 
-**Fix:** Issue a new token at login. If your application needs long-lived sessions, use refresh tokens: a short-lived access token (15 minutes) paired with a long-lived refresh token (7 days) that can be used to get a new access token without re-entering credentials.
+**Fix:** Issue a new token at login. For long-lived sessions, use refresh tokens: a short-lived access token (15 minutes) paired with a long-lived refresh token (7 days).
 
 ### 2. Secret Key Management
 
-**Problem:** Tokens generated on one server are invalid on another, or tokens stop working after a deployment.
+**Problem:** Tokens from one server fail on another. Or tokens stop working after deployment.
 
-**Cause:** Each server generated its own random `secrets/jwt.key` file. Or the key file was deleted/regenerated during deployment.
+**Cause:** Each server generated its own `secrets/jwt.key`. Or the key was regenerated during deployment.
 
-**Fix:** Set `TINA4_JWT_SECRET` in `.env` explicitly and use the same value across all servers. Store it in your deployment secrets manager (not in version control). If the key changes, all existing tokens become invalid and users must log in again.
+**Fix:** Set `TINA4_JWT_SECRET` in `.env` and use the same value across all servers. Store it in your secrets manager. Not in version control. Key change invalidates all tokens. Users must log in again.
 
 ### 3. CORS with Authentication
 
-**Problem:** Frontend requests with the `Authorization` header fail with a CORS error, even though `CORS_ORIGINS=*` is set.
+**Problem:** Frontend requests with `Authorization` header fail with CORS error, even with `CORS_ORIGINS=*`.
 
-**Cause:** When the browser sends an `Authorization` header, it first sends a preflight `OPTIONS` request. The server must respond to the OPTIONS request with the correct CORS headers, including `Access-Control-Allow-Headers: Authorization`.
+**Cause:** The browser sends a preflight `OPTIONS` request. The server must respond with CORS headers including `Access-Control-Allow-Headers: Authorization`.
 
-**Fix:** Tina4 handles preflight requests automatically. Make sure `CORS_ORIGINS` is set correctly. If it is still failing, check that you are not overriding CORS headers in middleware.
+**Fix:** Tina4 handles preflight requests. Verify `CORS_ORIGINS` is set. Check that middleware is not overriding CORS headers.
 
 ### 4. Storing Tokens in localStorage
 
-**Problem:** Your token is stolen via an XSS attack because it was stored in `localStorage`.
+**Problem:** Token stolen via XSS because it lived in `localStorage`.
 
-**Cause:** Any JavaScript on the page can read `localStorage`, including injected scripts from an XSS vulnerability.
+**Cause:** Any JavaScript on the page reads `localStorage`, including injected scripts.
 
-**Fix:** Store tokens in `httpOnly` cookies when possible -- they cannot be accessed by JavaScript. For SPAs that must use `localStorage`, implement strict Content Security Policy headers and sanitize all user input.
+**Fix:** Use `httpOnly` cookies when possible -- invisible to JavaScript. For SPAs that must use `localStorage`, enforce strict Content Security Policy headers. Sanitize all input.
 
 ### 5. Forgetting @noauth on Login
 
-**Problem:** Your login endpoint returns 401 -- you cannot log in because the endpoint requires authentication.
+**Problem:** Login endpoint returns 401. Cannot log in.
 
-**Cause:** If you have global auth middleware, the login endpoint needs the `@noauth` annotation to bypass it.
+**Cause:** Global auth middleware blocks the login endpoint. You need a token to get a token. A catch-22.
 
-**Fix:** Add `@noauth` to your login and register routes. Without it, users cannot authenticate because authentication is required to authenticate -- a catch-22.
+**Fix:** Add `@noauth` to login and register routes.
 
 ### 6. Password Hash Column Too Short
 
-**Problem:** Registration fails with a database error about the password hash being too long.
+**Problem:** Registration fails with a database error about truncation.
 
-**Cause:** bcrypt hashes are 60 characters long. If your `password_hash` column is defined as `VARCHAR(50)`, it gets truncated.
+**Cause:** bcrypt hashes are 60 characters. `VARCHAR(50)` truncates them.
 
-**Fix:** Use `TEXT` for the password hash column, or at minimum `VARCHAR(255)`. Never constrain the hash length.
+**Fix:** Use `TEXT` for the password hash column. Or at minimum `VARCHAR(255)`.
 
 ### 7. Token in URL Query Parameters
 
-**Problem:** Tokens in URLs like `/api/profile?token=eyJ...` leak through browser history, server logs, and the Referer header.
+**Problem:** Tokens in URLs like `/api/profile?token=eyJ...` leak through browser history, server logs, and Referer headers.
 
-**Cause:** Query parameters are visible in many places where headers are not.
-
-**Fix:** Always send tokens in the `Authorization` header, never in the URL. The only exception is WebSocket connections, where the initial HTTP upgrade request cannot carry custom headers -- use a short-lived token for that case.
+**Fix:** Always send tokens in the `Authorization` header. The only exception: WebSocket connections where the upgrade request cannot carry custom headers. Use a short-lived token for that case.

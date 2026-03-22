@@ -2,7 +2,9 @@
 
 ## 1. From Development to Production
 
-You have built the app. It works perfectly on `localhost:7148`. Now it needs to run 24/7, handle thousands of concurrent users, survive server restarts, and not leak memory. This chapter covers everything for production deployment.
+You have built the app. It runs on `localhost:7148`. Now it needs to run 24/7. Handle thousands of concurrent users. Survive server restarts. Not leak memory.
+
+This chapter covers everything for production deployment.
 
 ---
 
@@ -133,7 +135,7 @@ Or set workers to `auto` to match CPU cores:
 TINA4_CLUSTER_WORKERS=auto
 ```
 
-This spawns multiple worker processes, each handling requests independently. If a worker crashes, the cluster master respawns it automatically.
+This spawns multiple worker processes. Each handles requests independently. A worker crashes. The cluster master respawns it. No downtime.
 
 ---
 
@@ -243,7 +245,7 @@ curl http://localhost:7148/health
 
 ### Broken File Check
 
-In production, Tina4 monitors a `.broken` file. If the file exists, the health check returns `503`. Use this for graceful shutdown during deployments:
+Tina4 watches for a `.broken` file in production. When the file exists, the health check returns `503`. A signal to the load balancer: stop sending traffic.
 
 ```bash
 touch .broken          # Health check returns 503

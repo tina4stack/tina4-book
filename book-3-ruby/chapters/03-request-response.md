@@ -2,7 +2,7 @@
 
 ## 1. The Two Objects You Always Get
 
-Every route handler in Tina4 receives two arguments: `request` and `response`. The request tells you what the client sent. The response is how you send something back. Together they are the entire HTTP conversation.
+Every route handler in Tina4 receives two arguments: `request` and `response`. The request carries what the client sent. The response is how you answer. Together, they are the entire HTTP conversation.
 
 ```ruby
 Tina4::Router.get("/echo") do |request, response|
@@ -22,13 +22,13 @@ curl http://localhost:7147/echo
 {"method":"GET","path":"/echo","your_ip":"127.0.0.1"}
 ```
 
-That is the pattern for every route: inspect the request, build the response, return it.
+The pattern for every route: inspect the request, build the response, return it.
 
 ---
 
 ## 2. The Request Object
 
-The `request` object gives you access to everything the client sent. Here is the complete list of properties.
+The `request` object opens everything the client sent. Here is the complete inventory.
 
 ### method
 
@@ -71,7 +71,7 @@ request.query["sort"] # "price"
 
 ### body
 
-The parsed request body. For JSON requests, this is a hash. For form submissions, it contains the form fields:
+The parsed request body. JSON requests become a hash. Form submissions contain the form fields:
 
 ```ruby
 # POST with {"name": "Widget", "price": 9.99}
@@ -81,7 +81,7 @@ request.body["price"] # 9.99
 
 ### headers
 
-Request headers as a hash. Header names are normalized to their original casing:
+Request headers as a hash. Header names keep their original casing:
 
 ```ruby
 request.headers["Content-Type"]  # "application/json"
@@ -97,11 +97,11 @@ The client's IP address:
 request.ip # "127.0.0.1"
 ```
 
-Tina4 respects `X-Forwarded-For` and `X-Real-IP` headers when behind a reverse proxy.
+Tina4 respects `X-Forwarded-For` and `X-Real-IP` headers behind a reverse proxy.
 
 ### cookies
 
-Cookies sent by the client:
+Cookies the client sent:
 
 ```ruby
 request.cookies["session_id"]  # "abc123"
@@ -110,7 +110,7 @@ request.cookies["preferences"] # "dark-mode"
 
 ### files
 
-Uploaded files (covered in detail in section 7):
+Uploaded files (section 7 covers the details):
 
 ```ruby
 request.files["avatar"] # File object with name, type, size, tmp_path
@@ -118,7 +118,7 @@ request.files["avatar"] # File object with name, type, size, tmp_path
 
 ### Inspecting the Full Request
 
-Here is a route that dumps everything:
+A route that dumps everything:
 
 ```ruby
 Tina4::Router.post("/debug/request") do |request, response|
@@ -166,11 +166,11 @@ curl -X POST "http://localhost:7147/debug/request?page=1" \
 
 ## 3. The Response Object
 
-The `response` object is your toolkit for sending data back to the client. Every method on it returns the response, so you can chain calls together.
+The `response` object is your toolkit for sending data back. Every method returns the response, so you can chain calls.
 
 ### json -- JSON Response
 
-The most common response for APIs. Pass any hash or value and it becomes JSON:
+The workhorse for APIs. Pass any hash or value and it becomes JSON:
 
 ```ruby
 response.json({ name: "Alice", age: 30 })
@@ -186,17 +186,17 @@ Pass a status code as the second argument:
 response.json({ id: 7, name: "Widget" }, 201)
 ```
 
-This returns `201 Created` with the JSON body.
+Returns `201 Created` with the JSON body.
 
 ### html -- Raw HTML Response
 
-Return an HTML string directly:
+Return an HTML string:
 
 ```ruby
 response.html("<h1>Hello</h1><p>This is HTML.</p>")
 ```
 
-Sets `Content-Type: text/html; charset=utf-8` automatically.
+Sets `Content-Type: text/html; charset=utf-8`.
 
 ### text -- Plain Text Response
 
@@ -210,7 +210,7 @@ Sets `Content-Type: text/plain; charset=utf-8`.
 
 ### render -- Template Response
 
-Render a Frond template with data (covered in depth in Chapter 4):
+Render a Frond template with data (Chapter 4 goes deep):
 
 ```ruby
 response.render("products.html", {
@@ -219,17 +219,17 @@ response.render("products.html", {
 })
 ```
 
-Tina4 looks for the template in `src/templates/`, renders it with the provided data, and returns the HTML.
+Tina4 finds the template in `src/templates/`, renders it, returns the HTML.
 
 ### redirect -- Redirect Response
 
-Send the client to a different URL:
+Send the client elsewhere:
 
 ```ruby
 response.redirect("/login")
 ```
 
-This sends a `302 Found` redirect by default. Pass a different status code for permanent redirects:
+Sends a `302 Found` by default. Pass a different status for permanent redirects:
 
 ```ruby
 response.redirect("/new-location", 301)
@@ -237,15 +237,15 @@ response.redirect("/new-location", 301)
 
 ### file -- File Download Response
 
-Send a file to the client for download:
+Send a file for download:
 
 ```ruby
 response.file("/path/to/report.pdf")
 ```
 
-This sets the appropriate `Content-Type` based on the file extension and adds a `Content-Disposition` header so the browser downloads the file rather than displaying it.
+Tina4 sets the right `Content-Type` from the file extension and adds `Content-Disposition` so the browser downloads instead of displaying.
 
-You can set a custom filename:
+Custom filename:
 
 ```ruby
 response.file("/path/to/report.pdf", "monthly-report-march-2026.pdf")
@@ -255,7 +255,7 @@ response.file("/path/to/report.pdf", "monthly-report-march-2026.pdf")
 
 ## 4. Status Codes
 
-Every response method accepts a status code. Here are the most common ones you will use:
+Every response method accepts a status code. The ones you will use most:
 
 | Code | Meaning | When to Use |
 |------|---------|-------------|
@@ -270,15 +270,15 @@ Every response method accepts a status code. Here are the most common ones you w
 | `404` | Not Found | Resource does not exist. |
 | `409` | Conflict | Duplicate or conflicting data. |
 | `422` | Unprocessable Entity | Valid JSON but fails business rules. |
-| `500` | Internal Server Error | Something went wrong on the server. |
+| `500` | Internal Server Error | Something broke on the server. |
 
-You can also set the status explicitly with the `status` method and chain it:
+Set the status with chaining:
 
 ```ruby
 response.status(201).json({ id: 7, created: true })
 ```
 
-This is equivalent to `response.json({ id: 7, created: true }, 201)` but some developers find the chained form more readable.
+Equivalent to `response.json({ id: 7, created: true }, 201)`. Some developers prefer the chained form.
 
 ---
 
@@ -305,17 +305,17 @@ curl -v http://localhost:7147/api/data 2>&1 | grep "< X-"
 < X-Rate-Limit-Remaining: 57
 ```
 
-Headers are case-insensitive in HTTP, but it is conventional to use `Title-Case` for custom headers and prefix them with `X-`.
+Convention: `Title-Case` for custom headers, prefixed with `X-`.
 
 ### CORS Headers
 
-Tina4 handles CORS automatically based on the `CORS_ORIGINS` setting in `.env`. The default `*` allows all origins. For production, restrict it:
+Tina4 handles CORS based on the `CORS_ORIGINS` setting in `.env`. The default `*` allows all origins. For production, restrict:
 
 ```env
 CORS_ORIGINS=https://myapp.com,https://admin.myapp.com
 ```
 
-You rarely need to set CORS headers manually, but you can if needed:
+Manual override when needed:
 
 ```ruby
 response
@@ -350,7 +350,7 @@ Cookie options:
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `http_only` | bool | `false` | Cannot be accessed by JavaScript |
+| `http_only` | bool | `false` | JavaScript cannot access it |
 | `secure` | bool | `false` | Only sent over HTTPS |
 | `same_site` | string | `"Lax"` | `"Strict"`, `"Lax"`, or `"None"` |
 | `max_age` | int | session | Lifetime in seconds |
@@ -371,7 +371,7 @@ Tina4::Router.get("/profile") do |request, response|
 end
 ```
 
-Delete a cookie by setting its `max_age` to `0`:
+Delete a cookie by setting `max_age` to `0`:
 
 ```ruby
 response
@@ -383,7 +383,7 @@ response
 
 ## 7. File Uploads
 
-Uploaded files are available via `request.files`. Each file is an object with properties for the file's metadata and a temporary path.
+Uploaded files live in `request.files`. Each file is an object with metadata and a temporary path.
 
 ### Handling a Single File Upload
 
@@ -422,7 +422,7 @@ curl -X POST http://localhost:7147/api/upload \
 
 ### Saving the Uploaded File
 
-The uploaded file is stored in a temporary location. Move it to a permanent location:
+The uploaded file sits in a temporary location. Move it somewhere permanent:
 
 ```ruby
 Tina4::Router.post("/api/upload") do |request, response|
@@ -479,7 +479,7 @@ curl -X POST http://localhost:7147/api/upload \
 }
 ```
 
-The uploaded file is now available at `http://localhost:7147/uploads/img_a1b2c3d4e5f6a7b8.jpg`.
+The file now lives at `http://localhost:7147/uploads/img_a1b2c3d4e5f6a7b8.jpg`.
 
 ### Handling Multiple Files
 
@@ -513,7 +513,7 @@ end
 
 ## 8. File Downloads
 
-Send files to the client using `response.file`:
+Send files with `response.file`:
 
 ```ruby
 Tina4::Router.get("/api/reports/{filename}") do |request, response|
@@ -528,9 +528,9 @@ Tina4::Router.get("/api/reports/{filename}") do |request, response|
 end
 ```
 
-The browser will download the file. Tina4 automatically detects the MIME type from the file extension and sets the appropriate headers.
+The browser downloads the file. Tina4 detects the MIME type from the extension and sets the right headers.
 
-To force a specific download filename:
+Force a specific download filename:
 
 ```ruby
 response.file(filepath, "Q1-2026-Sales-Report.pdf")
@@ -540,7 +540,7 @@ response.file(filepath, "Q1-2026-Sales-Report.pdf")
 
 ## 9. Content Negotiation
 
-Sometimes the same endpoint should return different formats based on what the client asks for. Check the `Accept` header:
+The same endpoint can return different formats based on what the client asks for. Check the `Accept` header:
 
 ```ruby
 Tina4::Router.get("/api/products/{id:int}") do |request, response|
@@ -584,7 +584,7 @@ Product #1: Wireless Keyboard - $79.99
 ```
 
 ```bash
-# HTML (would render the template)
+# HTML (renders the template)
 curl http://localhost:7147/api/products/1 -H "Accept: text/html"
 ```
 
@@ -597,7 +597,7 @@ curl http://localhost:7147/api/products/1 -H "Accept: text/html"
 
 ## 10. Exercise: Build an Image Upload API
 
-Build an API that handles image uploads and serves them back. Create two endpoints:
+Build an API that handles image uploads and serves them back.
 
 ### Requirements
 
@@ -608,11 +608,11 @@ Build an API that handles image uploads and serves them back. Create two endpoin
 
 Rules:
 
-1. Only accept JPEG, PNG, and WebP files
+1. Accept JPEG, PNG, and WebP only
 2. Maximum file size: 2MB
 3. Save files to `src/public/uploads/` with a unique filename
-4. Return the original filename, the saved filename, file size in KB, and the URL
-5. The GET endpoint should serve the file directly (not JSON)
+4. Return original filename, saved filename, file size in KB, and the URL
+5. The GET endpoint serves the file (not JSON)
 
 ### Test with:
 
@@ -742,7 +742,7 @@ end
 
 (Status: `400 Bad Request`)
 
-**The GET endpoint** returns the raw image file with the correct `Content-Type` header. The browser displays the image directly, and curl with `--output` saves it to disk.
+**The GET endpoint** returns the raw image file with the correct `Content-Type` header. The browser displays it. Curl with `--output` saves it to disk.
 
 ---
 
@@ -750,59 +750,59 @@ end
 
 ### 1. Forgetting the response method
 
-**Problem:** Your handler runs (you can see log output) but the browser shows an empty response or a 500 error.
+**Problem:** Handler runs (log output confirms it) but the browser gets an empty response or 500 error.
 
-**Cause:** You did not call `response.json`, `response.html`, or another response method. Ruby returns the last expression in a block, but if the last expression is not a response, Tina4 cannot send it to the client.
+**Cause:** No call to `response.json`, `response.html`, or another response method. Ruby returns the last expression in a block, but if it is not a response, Tina4 has nothing to send.
 
-**Fix:** Always end your handler with a response method call: `response.json(...)`, `response.html(...)`, or `response.render(...)`.
+**Fix:** End every handler with a response method call.
 
 ### 2. Body Is Nil for JSON Requests
 
-**Problem:** `request.body` is `nil` or empty even though you are sending JSON.
+**Problem:** `request.body` is `nil` or empty even though you sent JSON.
 
-**Cause:** You forgot the `Content-Type: application/json` header in your request. Without it, Tina4 does not know to parse the body as JSON.
+**Cause:** Missing `Content-Type: application/json` header. Without it, Tina4 does not parse the body as JSON.
 
-**Fix:** Always include `-H "Content-Type: application/json"` when sending JSON with curl. In frontend JavaScript, `fetch()` with `JSON.stringify()` requires `headers: {"Content-Type": "application/json"}`.
+**Fix:** Include `-H "Content-Type: application/json"` with curl. In frontend JavaScript, `fetch()` with `JSON.stringify()` needs `headers: {"Content-Type": "application/json"}`.
 
 ### 3. Content-Type Mismatch
 
-**Problem:** You call `response.json` but the client receives HTML, or you call `response.html` but the client gets plain text.
+**Problem:** `response.json` sends HTML, or `response.html` sends plain text.
 
-**Cause:** A middleware or error handler is overwriting the response. Or you are using `puts` instead of a response method.
+**Cause:** A middleware or error handler is overwriting the response. Or you used `puts` instead of a response method.
 
-**Fix:** Make sure your handler uses `response.json(...)`, `response.html(...)`, or another response method. Do not use `puts` -- it bypasses the response object entirely.
+**Fix:** Use `response.json(...)`, `response.html(...)`, or another response method. `puts` bypasses the response object entirely.
 
 ### 4. File Uploads Return Empty
 
-**Problem:** `request.files` is empty even though you are uploading a file.
+**Problem:** `request.files` is empty despite uploading a file.
 
-**Cause:** The form is not using `enctype="multipart/form-data"`, or the curl command is using `-d` instead of `-F`.
+**Cause:** The form lacks `enctype="multipart/form-data"`, or curl uses `-d` instead of `-F`.
 
-**Fix:** For HTML forms, use `<form enctype="multipart/form-data">`. For curl, use `-F "field=@file.jpg"` (with `@`), not `-d`.
+**Fix:** HTML forms need `<form enctype="multipart/form-data">`. Curl needs `-F "field=@file.jpg"` (with `@`), not `-d`.
 
 ### 5. Redirect Loops
 
 **Problem:** The browser shows "too many redirects" or hangs.
 
-**Cause:** You have a route that redirects to another route, which redirects back to the first one. For example, `/login` redirects to `/dashboard`, and `/dashboard` redirects to `/login` because the user is not authenticated.
+**Cause:** A route redirects to another route, which redirects back. Example: `/login` redirects to `/dashboard`, and `/dashboard` redirects to `/login` because the user is not authenticated.
 
-**Fix:** Check your redirect logic carefully. Use the browser's network inspector to trace the redirect chain. Make sure your auth check does not redirect authenticated users away from pages they should access.
+**Fix:** Trace the redirect chain with the browser's network inspector. Make sure auth checks do not redirect authenticated users away from pages they can access.
 
 ### 6. Cookie Not Set
 
-**Problem:** You called `response.cookie(...)` but the browser does not show the cookie.
+**Problem:** `response.cookie(...)` was called but the browser shows no cookie.
 
-**Cause:** If `secure` is `true`, the cookie is only sent over HTTPS. During local development with `http://localhost`, the cookie is silently dropped.
+**Cause:** `secure: true` means the cookie travels over HTTPS only. Local development uses `http://localhost`, so the cookie is dropped.
 
-**Fix:** Set `secure: false` during development, or use `secure: ENV["TINA4_DEBUG"] != "true"` to auto-switch based on environment.
+**Fix:** Set `secure: false` during development, or use `secure: ENV["TINA4_DEBUG"] != "true"` to auto-switch.
 
 ### 7. Large Request Body Rejected
 
-**Problem:** POST requests with large bodies return a 413 error.
+**Problem:** POST requests with large bodies return 413.
 
-**Cause:** The request body exceeds the configured maximum size.
+**Cause:** The body exceeds the configured maximum size.
 
-**Fix:** Increase `TINA4_MAX_BODY_SIZE` in `.env`. The default is `10mb`. For file upload endpoints, you may need `50mb` or more:
+**Fix:** Increase `TINA4_MAX_BODY_SIZE` in `.env`. Default is `10mb`. For file uploads, you may need `50mb` or more:
 
 ```env
 TINA4_MAX_BODY_SIZE=50mb

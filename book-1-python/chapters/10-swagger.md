@@ -2,11 +2,11 @@
 
 ## 1. Self-Documenting APIs
 
-You have built routes, handled requests, connected databases, and added authentication. Now you need to tell other developers (or your future self) how to use your API. What endpoints exist? What parameters do they accept? What does the response look like?
+Routes built. Requests handled. Database connected. Authentication locked down. Now other developers need to know how to use your API. What endpoints exist. What parameters they accept. What the response looks like.
 
-Tina4 Python auto-generates Swagger/OpenAPI documentation from your routes. You add a few decorators, and Tina4 produces an interactive API reference that other developers can explore and test directly in the browser.
+Tina4 Python auto-generates Swagger/OpenAPI documentation from your routes. Add a few decorators. Tina4 produces an interactive API reference that developers explore and test in the browser.
 
-Imagine you are handing off your API to a frontend team. Instead of writing a separate document that gets outdated the moment you change a route, you point them to `/swagger` and they see every endpoint with examples, parameter descriptions, and the ability to try each one live.
+Picture handing your API to a frontend team. No separate document that rots the moment you change a route. You point them to `/swagger`. They see every endpoint. Examples. Parameter descriptions. A "Try it out" button on each one.
 
 ---
 

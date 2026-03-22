@@ -2,13 +2,13 @@
 
 ## 1. What Is Tina4 PHP
 
-Tina4 PHP is a zero-dependency web framework for PHP 8.1+ that gives you routing, an ORM, a template engine, authentication, queues, WebSocket, and 70 other features in a single Composer package under 5,000 lines of code.
+Tina4 PHP is a zero-dependency web framework for PHP 8.1+. One Composer package. Under 5,000 lines of code. Routing, an ORM, a template engine, authentication, queues, WebSocket, and 70 other features -- all included.
 
-It is part of the Tina4 family -- four identical frameworks in Python, PHP, Ruby, and Node.js. Everything you learn here transfers directly to any of the other three languages. The project structure is the same. The template syntax is the same. The CLI commands are the same. The `.env` variables are the same.
+It belongs to the Tina4 family: four identical frameworks in Python, PHP, Ruby, and Node.js. Learn one, know all four. Same project structure. Same template syntax. Same CLI commands. Same `.env` variables.
 
-Tina4 PHP uses `camelCase` for method names (`fetchOne()`, `softDelete()`, `hasMany()`) following PHP community conventions. Class names are `PascalCase`. Constants are `UPPER_SNAKE_CASE`.
+Tina4 PHP follows PHP conventions. Method names are `camelCase` -- `fetchOne()`, `softDelete()`, `hasMany()`. Class names are `PascalCase`. Constants are `UPPER_SNAKE_CASE`.
 
-By the end of this chapter, you will have a working Tina4 PHP project with an API endpoint and a rendered HTML page.
+By the end of this chapter you will have a working project with an API endpoint and a rendered HTML page.
 
 ---
 
@@ -16,7 +16,7 @@ By the end of this chapter, you will have a working Tina4 PHP project with an AP
 
 ### What You Need
 
-Before installing Tina4, make sure you have:
+Four things. Nothing exotic.
 
 1. **PHP 8.1 or later** -- check with:
 
@@ -62,7 +62,7 @@ curl -fsSL https://raw.githubusercontent.com/tina4stack/tina4/main/install.sh | 
 irm https://raw.githubusercontent.com/tina4stack/tina4/main/install.ps1 | iex
 ```
 
-Verify the CLI is installed:
+Verify:
 
 ```bash
 tina4 --version
@@ -80,7 +80,7 @@ tina4 0.1.0
 - `ext-sqlite3` (for the default SQLite database)
 - `ext-fileinfo`
 
-Check if they are available:
+Check:
 
 ```bash
 php -m | grep -E "json|mbstring|openssl|sqlite3|fileinfo"
@@ -98,13 +98,11 @@ If any are missing, install them via your OS package manager (e.g., `apt install
 
 ### Creating a New Project
 
-Use the Tina4 CLI to scaffold a new project:
+One command. The CLI scaffolds everything.
 
 ```bash
 tina4 init my-store
 ```
-
-You should see:
 
 ```
 Creating Tina4 project in ./my-store ...
@@ -136,7 +134,7 @@ Project created! Next steps:
   tina4 serve
 ```
 
-Now install the PHP dependencies:
+Install the PHP dependencies:
 
 ```bash
 cd my-store
@@ -150,7 +148,7 @@ Generating autoload files
 1 package installed
 ```
 
-That is right -- **one package**. No dependency tree. No version conflicts. Just `tina4/tina4-php`.
+One package. No dependency tree. No version conflicts. Just `tina4/tina4-php`.
 
 ### Starting the Dev Server
 
@@ -172,9 +170,9 @@ tina4 serve
   Press Ctrl+C to stop
 ```
 
-Open your browser to `http://localhost:7145`. You should see the Tina4 welcome page.
+Open your browser to `http://localhost:7145`. The Tina4 welcome page appears.
 
-Open `http://localhost:7145/health` in your browser or curl it:
+Hit the health check:
 
 ```bash
 curl http://localhost:7145/health
@@ -190,13 +188,13 @@ curl http://localhost:7145/health
 }
 ```
 
-Your Tina4 PHP project is running.
+The server is running. The database is connected. Time to write code.
 
 ---
 
 ## 3. Project Structure Walkthrough
 
-Let us look at what `tina4 init` created:
+Here is what `tina4 init` created:
 
 ```
 my-store/
@@ -229,21 +227,19 @@ my-store/
 └── tests/                  # Your test files
 ```
 
-**Key directories:**
+Five directories matter:
 
-- **`src/routes/`** -- Every `.php` file here is auto-loaded at startup. Put your route definitions here. Organize into subdirectories if you want.
-- **`src/orm/`** -- Every `.php` file here is auto-loaded. Put your ORM model classes here.
+- **`src/routes/`** -- Every `.php` file here is auto-loaded at startup. Route definitions go here. Subdirectories are fine.
+- **`src/orm/`** -- Every `.php` file here is auto-loaded. ORM model classes go here.
 - **`src/templates/`** -- Frond looks here when you call `$response->render("my-page.html", $data)`.
-- **`src/public/`** -- Files served directly. `src/public/images/logo.png` is available at `/images/logo.png`.
-- **`data/`** -- The default SQLite database (`app.db`) lives here. Gitignored because databases should not be in version control.
+- **`src/public/`** -- Files served directly. `src/public/images/logo.png` becomes `/images/logo.png`.
+- **`data/`** -- The default SQLite database (`app.db`) lives here. Gitignored. Databases do not belong in version control.
 
 ---
 
 ## 4. Your First Route
 
-Let us create an API endpoint that returns a JSON greeting.
-
-Create the file `src/routes/greeting.php`:
+Create `src/routes/greeting.php`:
 
 ```php
 <?php
@@ -258,17 +254,13 @@ Route::get("/api/greeting/{name}", function ($request, $response) {
 });
 ```
 
-Save the file. If the dev server is running with live reload, it picks up the change automatically. If not, restart the server with `tina4 serve`.
+Save the file. The dev server picks it up. No restart needed if live reload is active. Otherwise, restart with `tina4 serve`.
 
 ### Test It
-
-Open your browser to:
 
 ```
 http://localhost:7145/api/greeting/Alice
 ```
-
-You should see:
 
 ```json
 {
@@ -277,7 +269,7 @@ You should see:
 }
 ```
 
-Or use curl:
+Or with curl:
 
 ```bash
 curl http://localhost:7145/api/greeting/Alice
@@ -287,7 +279,7 @@ curl http://localhost:7145/api/greeting/Alice
 {"message":"Hello, Alice!","timestamp":"2026-03-22T14:30:00+00:00"}
 ```
 
-Notice the difference: the browser shows pretty-printed JSON (because of browser extensions or dev mode), while curl shows compact JSON. You can force pretty output by adding `?pretty=true`:
+The browser pretty-prints. Curl shows compact JSON. Force pretty output with `?pretty=true`:
 
 ```bash
 curl "http://localhost:7145/api/greeting/Alice?pretty=true"
@@ -302,15 +294,19 @@ curl "http://localhost:7145/api/greeting/Alice?pretty=true"
 
 ### Understanding What Happened
 
-1. You created a file in `src/routes/`. Tina4 auto-discovered it at startup.
+Five things, in order:
+
+1. You created a file in `src/routes/`. Tina4 discovered it at startup.
 2. `Route::get("/api/greeting/{name}", ...)` registered a GET route with a path parameter `{name}`.
-3. When you requested `/api/greeting/Alice`, the router matched the pattern and called your handler function.
-4. `$request->params["name"]` gave you the value `"Alice"` from the URL.
-5. `$response->json(...)` serialized the array to JSON, set `Content-Type: application/json`, and returned a `200 OK` response.
+3. A request arrived at `/api/greeting/Alice`. The router matched the pattern. Your handler ran.
+4. `$request->params["name"]` extracted `"Alice"` from the URL.
+5. `$response->json(...)` serialized the array to JSON, set `Content-Type: application/json`, and returned `200 OK`.
+
+No base controller. No service provider. No bootstrapping ritual.
 
 ### Adding More HTTP Methods
 
-Let us add a POST endpoint. Update `src/routes/greeting.php`:
+Update `src/routes/greeting.php`:
 
 ```php
 <?php
@@ -357,13 +353,13 @@ curl -X POST http://localhost:7145/api/greeting \
 {"message":"Hola, Carlos!","language":"es"}
 ```
 
-The HTTP status code is `201 Created` (the second argument to `$response->json()`).
+Status code: `201 Created`. The second argument to `$response->json()` sets it.
 
 ---
 
 ## 5. Your First Template
 
-Tina4 uses the **Frond** template engine -- a zero-dependency, Twig-compatible engine built from scratch. If you have used Twig, Jinja2, or Nunjucks, this will feel familiar.
+Tina4 uses **Frond** -- a zero-dependency, Twig-compatible template engine built from scratch. If you know Twig, Jinja2, or Nunjucks, this will feel familiar.
 
 ### Create a Base Layout
 
@@ -403,7 +399,7 @@ Create `src/templates/base.html`:
 </html>
 ```
 
-This base layout defines two blocks (`title` and `content`) that child templates can override. It includes `tina4.css` (the built-in CSS framework) and `frond.js` (the built-in JS helper library).
+Two blocks: `title` and `content`. Child templates override what they need. The rest stays.
 
 ### Create a Product Listing Page
 
@@ -482,60 +478,62 @@ Route::get("/products", function ($request, $response) {
 
 ### See It in the Browser
 
-Open `http://localhost:7145/products` in your browser. You should see:
+Open `http://localhost:7145/products`. You see:
 
-- A dark navigation bar at the top with "Home" and "Products" links
+- A dark navigation bar with "Home" and "Products" links
 - The heading "Our Products"
-- A subheading showing "Showing 4 products"
-- Four product cards, each with a name, description, price, and stock badge
-- The "Monitor Stand" card shows a red "Out of Stock" badge
+- A subheading: "Showing 4 products"
+- Four product cards. Name, description, price, stock badge.
+- The Monitor Stand shows a red "Out of Stock" badge
 - The other three show green "In Stock" badges
 
 ### How Template Rendering Works
 
-1. `$response->render("products.html", ["products" => $products])` tells Frond to render `src/templates/products.html` with the given data.
+The chain is short:
+
+1. `$response->render("products.html", ["products" => $products])` tells Frond to render `src/templates/products.html`.
 2. Frond sees `{% extends "base.html" %}` and loads the base template.
 3. The `{% block content %}` in `products.html` replaces the same block in `base.html`.
 4. `{{ product.name }}` outputs the value, auto-escaped for HTML safety.
 5. `{{ product.price | number_format(2) }}` formats the number with 2 decimal places.
 6. `{% for product in products %}` loops through the array.
-7. `{% if product.in_stock %}` conditionally renders the stock badge.
-8. `{{ products | length }}` returns the count of items in the array.
+7. `{% if product.in_stock %}` renders the correct badge.
+8. `{{ products | length }}` returns the count.
 
 ### About tina4css
 
-The `tina4.css` file included in the base template is Tina4's built-in CSS utility framework. It provides layout utilities, typography, and common UI patterns without needing Bootstrap or Tailwind. It is auto-provided when you scaffold a project -- you do not need to download it separately.
+The `tina4.css` file is Tina4's built-in CSS utility framework. Layout utilities, typography, common UI patterns -- no Bootstrap or Tailwind required. It ships with every scaffolded project. Nothing to download.
 
 ---
 
 ## 6. Understanding .env
 
-Open the `.env` file at the root of your project:
+Open `.env` at the project root:
 
 ```env
 TINA4_DEBUG=true
 ```
 
-That is likely all you see. The scaffold creates a minimal `.env` with debug mode enabled. Everything else uses defaults.
+That is likely everything. The scaffold creates a minimal `.env` with debug mode enabled. Everything else uses sensible defaults.
 
-The important defaults for development:
+The defaults that matter for development:
 
-| Variable | Default Value | What It Means |
-|----------|---------------|---------------|
-| `TINA4_PORT` | `7145` | Server runs on port 7145 |
-| `DATABASE_URL` | `sqlite:///data/app.db` | SQLite database in the `data/` directory |
-| `TINA4_LOG_LEVEL` | `ALL` | All log messages are output |
-| `CORS_ORIGINS` | `*` | All origins allowed (fine for development) |
+| Variable | Default Value | What It Does |
+|----------|---------------|--------------|
+| `TINA4_PORT` | `7145` | Server port |
+| `DATABASE_URL` | `sqlite:///data/app.db` | SQLite database in `data/` |
+| `TINA4_LOG_LEVEL` | `ALL` | All log messages output |
+| `CORS_ORIGINS` | `*` | All origins allowed |
 | `TINA4_RATE_LIMIT` | `60` | 60 requests per minute per IP |
 
-To change the port, add it to `.env`:
+Change the port by adding one line:
 
 ```env
 TINA4_DEBUG=true
 TINA4_PORT=8080
 ```
 
-Restart the server (`Ctrl+C`, then `tina4 serve`). It now runs on port 8080.
+Restart the server. It runs on port 8080.
 
 For the complete `.env` reference with all 68 variables, see Book 0, Chapter 4.
 
@@ -543,7 +541,7 @@ For the complete `.env` reference with all 68 variables, see Book 0, Chapter 4.
 
 ## 7. The Dev Dashboard
 
-With `TINA4_DEBUG=true`, Tina4 provides a built-in development dashboard. First, enable it by adding a console token to your `.env`:
+`TINA4_DEBUG=true` unlocks a built-in development dashboard. Enable it:
 
 ```env
 TINA4_DEBUG=true
@@ -551,24 +549,24 @@ TINA4_CONSOLE=true
 TINA4_CONSOLE_TOKEN=my-dev-token
 ```
 
-Restart the server and navigate to:
+Restart and navigate to:
 
 ```
 http://localhost:7145/tina4/console
 ```
 
-Enter your token (`my-dev-token`) when prompted. You will see:
+Enter your token. The dashboard opens.
+
+Six panels. Each one saves you from adding print statements:
 
 - **System Overview** -- framework version, PHP version, uptime, memory usage, database status
-- **Request Inspector** -- recent HTTP requests with method, path, status, duration, and request ID. Click any request to see full headers, body, database queries, and template renders.
+- **Request Inspector** -- recent HTTP requests with method, path, status, duration, request ID. Click any request for full headers, body, database queries, and template renders.
 - **Error Log** -- unhandled exceptions with stack traces and occurrence counts
-- **Queue Manager** -- queue status (pending, reserved, failed, dead-letter messages)
+- **Queue Manager** -- pending, reserved, failed, dead-letter messages
 - **WebSocket Monitor** -- active WebSocket connections with metadata
-- **Routes** -- all registered routes with their methods, paths, and middleware
+- **Routes** -- all registered routes with methods, paths, and middleware
 
-The console is a powerful debugging tool. It shows you exactly what your application is doing without adding print statements or log calls to your code.
-
-Additionally, when you visit any HTML page (like `/products`), you will see a **debug overlay** -- a toolbar at the bottom of the page showing:
+When you visit any HTML page (like `/products`), a **debug overlay** appears at the bottom:
 
 - Request details (method, URL, duration)
 - Database queries executed (with timing)
@@ -576,21 +574,21 @@ Additionally, when you visit any HTML page (like `/products`), you will see a **
 - Session data
 - Recent log entries
 
-This overlay is only visible when `TINA4_DEBUG=true`. It is never shown in production.
+This overlay exists only when `TINA4_DEBUG=true`. Production never sees it.
 
 ---
 
 ## 8. Exercise: Greeting API + Product List Template
 
-Build the following two features from scratch, without looking at the examples above.
+Build both features from scratch. No peeking at the examples above.
 
 ### Exercise Part A: Greeting API
 
 Create an API endpoint at `GET /api/greet` that:
 
 1. Accepts a query parameter `name` (e.g., `/api/greet?name=Sarah`)
-2. If `name` is missing, defaults to `"Stranger"`
-3. Returns JSON like:
+2. Defaults to `"Stranger"` if `name` is missing
+3. Returns JSON:
 
 ```json
 {
@@ -599,7 +597,7 @@ Create an API endpoint at `GET /api/greet` that:
 }
 ```
 
-4. The `time_of_day` should be calculated from the server's current hour:
+4. Calculates `time_of_day` from the server's current hour:
    - 5:00 - 11:59 = "morning"
    - 12:00 - 16:59 = "afternoon"
    - 17:00 - 20:59 = "evening"
@@ -616,14 +614,14 @@ curl "http://localhost:7145/api/greet"
 
 Create a page at `GET /store` that:
 
-1. Displays a list of at least 5 products (hardcoded for now)
+1. Displays at least 5 products (hardcoded)
 2. Each product has: name, category, price, and a boolean `featured` flag
-3. Featured products should be visually highlighted (different background color, border, or badge)
-4. The page should show the total number of products and the number of featured products
-5. Use template inheritance -- create a layout template and a page template that extends it
-6. Include `tina4.css` and `frond.js`
+3. Featured products are visually distinct (different background, border, or badge)
+4. The page shows total product count and featured count
+5. Uses template inheritance -- a layout template and a page template that extends it
+6. Includes `tina4.css` and `frond.js`
 
-**Your products data should look like this in your route handler:**
+**Your products data:**
 
 ```php
 $products = [
@@ -637,10 +635,10 @@ $products = [
 
 **Expected browser output:**
 
-- A page titled "Our Store"
-- Text showing "5 products, 3 featured"
-- A list of product cards with name, category, price, and a "Featured" badge on the highlighted items
-- Featured products have a distinct visual style (your choice -- different border color, background, star icon, etc.)
+- Page titled "Our Store"
+- Text: "5 products, 3 featured"
+- Product cards with name, category, price, and a "Featured" badge on highlighted items
+- Featured products have a distinct visual style
 
 ---
 
@@ -784,14 +782,14 @@ Route::get("/store", function ($request, $response) {
 });
 ```
 
-**Open `http://localhost:7145/store` in your browser.** You should see:
+**Open `http://localhost:7145/store`.** You see:
 
 - A dark header reading "Our Store"
-- Text showing "5 products, 3 featured"
+- Text: "5 products, 3 featured"
 - Five product cards in a grid
 - Three cards (Espresso Machine, Standing Desk, Noise-Canceling Headphones) have a yellow border, light yellow background, and a "Featured" badge
-- Two cards (Yoga Mat, Water Bottle) have a standard white background with gray border
-- Each card shows the product name, category, and price formatted with two decimal places
+- Two cards (Yoga Mat, Water Bottle) have a white background with gray border
+- Each card shows name, category, and price formatted to two decimal places
 
 ---
 
@@ -799,43 +797,43 @@ Route::get("/store", function ($request, $response) {
 
 ### 1. File not auto-discovered
 
-**Problem:** You created a route file but nothing happens when you visit the URL.
+**Problem:** You created a route file but the URL returns 404.
 
-**Cause:** The file is not in `src/routes/`. Double-check the path. It must be inside `src/routes/` (or a subdirectory of it), and the file must end with `.php`.
+**Cause:** The file is not in `src/routes/`. It must be inside `src/routes/` (or a subdirectory), and the filename must end with `.php`.
 
-**Fix:** Move the file to `src/routes/your-file.php` and restart the server.
+**Fix:** Move the file to `src/routes/your-file.php`. Restart the server.
 
 ### 2. "Class not found" errors
 
 **Problem:** `Class 'Tina4\Route' not found` or similar.
 
-**Cause:** Missing `use` statement or Composer autoload is out of date.
+**Cause:** Missing `use` statement or stale autoload.
 
-**Fix:** Make sure your route file starts with `<?php` and includes `use Tina4\Route;`. Run `composer dump-autoload` if the error persists.
+**Fix:** Start the file with `<?php` and include `use Tina4\Route;`. Run `composer dump-autoload` if the error persists.
 
 ### 3. JSON response shows HTML
 
-**Problem:** Your JSON endpoint returns HTML instead of JSON.
+**Problem:** Your JSON endpoint returns HTML.
 
-**Cause:** You returned a string instead of using `$response->json()`. If you return a plain string, Tina4 treats it as HTML.
+**Cause:** You returned a string instead of using `$response->json()`. Plain strings are treated as HTML.
 
-**Fix:** Always use `$response->json($data)` for JSON endpoints, not `echo json_encode($data)`.
+**Fix:** Use `$response->json($data)` for JSON endpoints. Never `echo json_encode($data)`.
 
 ### 4. Template not found
 
-**Problem:** `Template "my-page.html" not found` error.
+**Problem:** `Template "my-page.html" not found`.
 
-**Cause:** The template file is not in `src/templates/`, or there is a typo in the filename.
+**Cause:** The file is not in `src/templates/`, or the filename has a typo.
 
 **Fix:** Check that the file exists at `src/templates/my-page.html`. The name in `$response->render()` is relative to `src/templates/`.
 
 ### 5. Port already in use
 
-**Problem:** `Error: Address already in use (port 7145)`
+**Problem:** `Error: Address already in use (port 7145)`.
 
-**Cause:** Another process (or another Tina4 instance) is using port 7145.
+**Cause:** Another process occupies port 7145.
 
-**Fix:** Either stop the other process, or change the port:
+**Fix:** Stop the other process, or change the port:
 
 ```env
 TINA4_PORT=8080
@@ -847,15 +845,15 @@ Or use the CLI flag: `tina4 serve --port 8080`.
 
 **Problem:** You edited a file but the browser shows the old version.
 
-**Cause:** In some setups, live reload may not be active. Also, browser caching can serve stale versions.
+**Cause:** Live reload may not be active. Browser caching can serve stale content.
 
-**Fix:** Hard-refresh the browser (`Ctrl+Shift+R` or `Cmd+Shift+R`). If that does not help, restart the dev server with `Ctrl+C` and `tina4 serve`.
+**Fix:** Hard-refresh (`Ctrl+Shift+R` or `Cmd+Shift+R`). If that fails, restart the dev server.
 
 ### 7. .env not loaded
 
-**Problem:** Environment variables seem to have no effect.
+**Problem:** Environment variables have no effect.
 
-**Cause:** The `.env` file must be at the project root (same directory as `composer.json`). If it is in a subdirectory, Tina4 will not find it.
+**Cause:** The `.env` file must be at the project root (same directory as `composer.json`). A subdirectory will not work.
 
 **Fix:** Move `.env` to the project root.
 
@@ -865,4 +863,4 @@ Or use the CLI flag: `tina4 serve --port 8080`.
 
 **Cause:** `TINA4_DEBUG=true` in production.
 
-**Fix:** Set `TINA4_DEBUG=false` in your production `.env`. This hides all debug information, enables HTML minification, and activates `.broken` file health checks.
+**Fix:** Set `TINA4_DEBUG=false` in your production `.env`. This hides debug information, enables HTML minification, and activates `.broken` file health checks.

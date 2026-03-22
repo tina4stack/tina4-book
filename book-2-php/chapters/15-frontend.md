@@ -2,17 +2,17 @@
 
 ## 1. The Problem with Frontend Toolchains
 
-Your client wants a beautiful dashboard. You know the drill -- install Node.js, run `npm install`, wait for 200MB of `node_modules` to download, configure webpack or Vite, set up PostCSS, add a CSS framework, maybe Tailwind with its purge config, and then pray nothing breaks when you upgrade a dependency six months from now.
+Your client wants a dashboard. You know the drill. Install Node.js. Run `npm install`. Wait for 200MB of `node_modules` to download. Configure webpack or Vite. Set up PostCSS. Add a CSS framework. Maybe Tailwind with its purge config. Pray nothing breaks when you upgrade a dependency six months from now.
 
-Tina4 takes a different approach. The framework ships with **tina4css** -- a Bootstrap-compatible CSS framework -- and **frond.js** -- a lightweight JavaScript helper library. Both are included automatically when you scaffold a project. No npm. No webpack. No build step for development. Just link the files and start building.
+Tina4 takes a different approach. The framework ships with **tina4css** -- a Bootstrap-compatible CSS framework -- and **frond.js** -- a lightweight JavaScript helper library. Both arrive when you scaffold a project. No npm. No webpack. No build step. Link the files and start building.
 
-By the end of this chapter, you will have a complete admin dashboard with a sidebar, navigation, cards, tables, modals, and dark mode support -- all without touching npm.
+By the end of this chapter, you will have a complete admin dashboard with sidebar, navigation, cards, tables, modals, and dark mode support. Zero npm dependencies.
 
 ---
 
 ## 2. What Ships with Tina4
 
-When you run `tina4 init`, two files appear in your project:
+Run `tina4 init`. Two files appear in your project:
 
 ```
 src/public/
@@ -31,13 +31,13 @@ Include them in any template:
 <script src="/js/frond.js"></script>
 ```
 
-That is all you need. No CDN, no package manager, no version conflicts.
+That is everything. No CDN. No package manager. No version conflicts.
 
 ---
 
 ## 3. The Grid System
 
-tina4css uses a 12-column responsive grid, compatible with Bootstrap's class names. If you already know Bootstrap, you already know tina4css.
+tina4css uses a 12-column responsive grid, compatible with Bootstrap's class names. Know Bootstrap? You know tina4css.
 
 ```html
 <div class="container">
@@ -183,7 +183,7 @@ Use `navbar-light bg-light` for a light theme, or `navbar-dark bg-primary` for a
 </table>
 ```
 
-Table variants: `table-bordered`, `table-striped`, `table-hover`, `table-sm` (compact), `table-responsive` (wraps in a scrollable container on small screens).
+Table variants: `table-bordered`, `table-striped`, `table-hover`, `table-sm` (compact), `table-responsive` (wraps in a scrollable container on small screens). Mix and match.
 
 ### Badges
 
@@ -263,7 +263,7 @@ tina4css includes the JavaScript needed for modal toggling. No jQuery required.
 
 ## 5. SCSS Customization
 
-The SCSS source lives in `src/public/scss/tina4.scss`. If you want to customize colors, fonts, or spacing, edit this file and compile it to CSS.
+The SCSS source lives in `src/public/scss/tina4.scss`. Customize colors, fonts, or spacing here. Compile to CSS when ready.
 
 ### Variables
 
@@ -312,7 +312,7 @@ Compiling SCSS...
 Done.
 ```
 
-This reads all `.scss` files from `src/public/scss/` and writes compiled CSS to `src/public/css/`. No Sass gem, no Node, no additional dependencies -- the Tina4 CLI includes a built-in SCSS compiler.
+This reads all `.scss` files from `src/public/scss/` and writes compiled CSS to `src/public/css/`. No Sass gem. No Node. No additional dependencies. The Tina4 CLI includes a built-in SCSS compiler.
 
 You can also run it in watch mode during development:
 
@@ -376,7 +376,7 @@ Then reference your custom CSS in your template:
 
 ## 6. frond.js -- The JavaScript Helper
 
-frond.js is a lightweight JavaScript library that ships with Tina4. It provides AJAX helpers, form submission, and JWT token management without requiring jQuery, Axios, or any other library.
+frond.js is a lightweight JavaScript library that ships with Tina4. AJAX helpers. Form submission. JWT token management. No jQuery. No Axios. No other library.
 
 ### AJAX Requests
 
@@ -484,7 +484,7 @@ The element with id `loadingSpinner` will be shown while the request is in fligh
 
 ## 7. Building a Dashboard Layout
 
-Let us build a real admin dashboard. We will create a template layout with a sidebar, a top navbar, and a content area.
+A real admin dashboard. Template layout with sidebar, top navbar, and content area.
 
 ### The Base Layout
 
@@ -759,28 +759,28 @@ Route::get("/admin", function ($request, $response) {
 });
 ```
 
-Start the server and visit `http://localhost:7145/admin`. You should see:
+Start the server. Visit `http://localhost:7145/admin`. You see:
 
-- A dark sidebar on the left with navigation links
-- A top bar with a welcome message and logout button
+- Dark sidebar on the left with navigation links
+- Top bar with a welcome message and logout button
 - Four stat cards showing users, revenue, orders, and conversion rate
-- A recent orders table with color-coded status badges
+- Recent orders table with color-coded status badges
 - Quick action buttons in a card on the right
 - System health progress bars
 
-All of this with zero npm dependencies.
+Zero npm dependencies.
 
 ---
 
 ## 8. Dark Mode Support
 
-tina4css includes built-in dark mode. Add the `data-theme="dark"` attribute to the `<html>` element:
+tina4css includes built-in dark mode. One attribute on the `<html>` element:
 
 ```html
 <html lang="en" data-theme="dark">
 ```
 
-This inverts the color scheme -- light backgrounds become dark, dark text becomes light, and all components adapt automatically.
+Light backgrounds become dark. Dark text becomes light. All components adapt.
 
 ### Toggle with JavaScript
 
@@ -840,7 +840,7 @@ In your SCSS, you can customize the dark mode palette:
 
 ## 9. Responsive Design
 
-tina4css is mobile-first. Components stack vertically on small screens by default and expand horizontally on larger screens.
+tina4css is mobile-first. Components stack on small screens. They expand on larger screens.
 
 ### Responsive Utilities
 
@@ -896,7 +896,7 @@ Directions: `m` (margin), `p` (padding), `t` (top), `b` (bottom), `l` (left), `r
 
 ## 10. Building a Users Page with AJAX
 
-Let us build a users management page that loads data via AJAX using frond.js.
+A users management page. Data loads via AJAX using frond.js.
 
 Create `src/templates/admin/users.html`:
 

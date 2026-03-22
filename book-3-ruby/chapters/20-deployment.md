@@ -2,9 +2,9 @@
 
 ## 1. From Development to Production
 
-You have built the app. It works perfectly on `localhost:7147`. Now it needs to run 24/7 on a real server, handle 10,000 concurrent users, survive server restarts, and not leak memory. The gap between "it works on my machine" and "it works in production" is where most projects stumble.
+The app works on `localhost:7147`. Now it needs to run 24/7 on a real server. Handle 10,000 concurrent users. Survive restarts. Hold steady on memory. The gap between "works on my machine" and "works in production" is where most projects stumble.
 
-This chapter covers everything you need to deploy a Tina4 Ruby application to production: environment configuration, Docker packaging, web server setup, SSL, scaling, monitoring, and graceful shutdown handling.
+This chapter covers everything for a production deployment. Environment configuration. Docker packaging. Web server setup. SSL. Scaling. Monitoring. Graceful shutdown.
 
 ---
 

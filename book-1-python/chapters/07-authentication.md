@@ -2,15 +2,15 @@
 
 ## 1. Locking the Door
 
-Up to now, every endpoint you have built is public. Anyone with the URL can read, create, update, and delete data. That is fine for a tutorial, but a real application needs to know who is making a request and whether they are allowed to make it.
+Every endpoint built so far is public. Anyone with the URL can read, create, update, and delete data. Fine for a tutorial. Unacceptable for production.
 
-This chapter covers Tina4's authentication system: JWT tokens, password hashing, middleware-based route protection, CSRF tokens for forms, and session management.
+A real application needs to know two things: who is making the request, and whether they are allowed to make it. This chapter covers Tina4's authentication system. JWT tokens. Password hashing. Middleware-based route protection. CSRF tokens for forms. Session management.
 
 ---
 
 ## 2. JWT Tokens
 
-Tina4 uses JSON Web Tokens (JWT) for authentication. A JWT is a signed string that contains a payload (like a user ID and role). The server creates the token at login, the client sends it with every request, and the server verifies it without needing to look anything up in a database.
+Tina4 uses JSON Web Tokens (JWT) for authentication. A JWT is a signed string carrying a payload -- user ID, role, expiry. The server mints the token at login. The client sends it with every request. The server verifies the signature without touching the database.
 
 ### Generating a Token
 
@@ -92,7 +92,7 @@ Keep this key secret. If someone gets it, they can forge tokens.
 
 ## 3. Password Hashing
 
-Never store passwords in plain text. Tina4 provides two functions for secure password handling:
+Plain-text passwords are a liability. Tina4 provides two functions for secure password handling:
 
 ### Hashing a Password
 
@@ -176,7 +176,7 @@ curl -X POST http://localhost:7145/api/register \
 
 ## 4. The Login Flow
 
-Here is the complete login flow: the client sends credentials, the server validates them, and returns a JWT token.
+The complete login flow. Client sends credentials. Server validates them. Server returns a JWT token.
 
 ```python
 from tina4_python.core.router import post, noauth
@@ -224,7 +224,7 @@ async def login(request, response):
     })
 ```
 
-Notice the `@noauth` decorator. The login endpoint must be public -- you cannot require a token to get a token.
+Notice `@noauth`. The login endpoint must be public. You cannot require a token to get a token.
 
 ```bash
 curl -X POST http://localhost:7145/api/login \
@@ -432,7 +432,7 @@ async def delete_user(request, response):
 
 ## 8. CSRF Protection
 
-For traditional form-based applications (not SPAs), Tina4 provides CSRF protection with form tokens.
+Traditional form-based applications (not SPAs) need CSRF protection. Tina4 provides it through form tokens.
 
 ### Generating a Token
 
@@ -475,7 +475,7 @@ async def update_profile(request, response):
     return response.redirect("/profile")
 ```
 
-The CSRF token is tied to the user's session and expires after a single use. This prevents cross-site request forgery attacks where a malicious site tricks the user's browser into submitting a form.
+The CSRF token is tied to the session and expires after a single use. A malicious site cannot forge a form submission because it cannot guess the token.
 
 ### When to Use CSRF Tokens
 
@@ -491,7 +491,7 @@ You do not need CSRF tokens for:
 
 ## 9. Sessions
 
-Tina4 supports server-side sessions for storing per-user state between requests. Sessions work alongside JWT tokens -- use JWTs for API authentication and sessions for stateful web pages.
+Tina4 supports server-side sessions for storing per-user state between requests. JWTs handle API authentication. Sessions handle stateful web pages. Both work side by side.
 
 ### Session Configuration
 
@@ -517,7 +517,7 @@ TINA4_SESSION_HOST=localhost
 TINA4_SESSION_PORT=6379
 ```
 
-File-based sessions work out of the box with no additional dependencies. Use Redis or Valkey for production deployments with multiple servers, so sessions are shared across instances.
+File-based sessions work out of the box. No extra dependencies. For production deployments with multiple servers, use Redis or Valkey so sessions are shared across instances.
 
 ### Using Sessions
 

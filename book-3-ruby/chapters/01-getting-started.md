@@ -2,13 +2,13 @@
 
 ## 1. What Is Tina4 Ruby
 
-Tina4 Ruby is a zero-dependency web framework for Ruby 3.1+ that gives you routing, an ORM, a template engine, authentication, queues, WebSocket, and 70 other features in a single gem under 5,000 lines of code.
+Tina4 Ruby is a zero-dependency web framework for Ruby 3.1+. One gem. Under 5,000 lines of code. Routing, ORM, template engine, authentication, queues, WebSocket, and 70 other features -- all built in.
 
-It is part of the Tina4 family -- four identical frameworks in Python, PHP, Ruby, and Node.js. Everything you learn here transfers directly to any of the other three languages. The project structure is the same. The template syntax is the same. The CLI commands are the same. The `.env` variables are the same.
+It belongs to the Tina4 family. Four identical frameworks. Python, PHP, Ruby, Node.js. Everything you learn here transfers to the other three languages. Same project structure. Same template syntax. Same CLI commands. Same `.env` variables.
 
-Tina4 Ruby uses `snake_case` for method names (`fetch_one`, `soft_delete`, `has_many`) following Ruby community conventions. Class names are `PascalCase`. Constants are `UPPER_SNAKE_CASE`.
+Tina4 Ruby follows Ruby conventions. Method names use `snake_case` -- `fetch_one`, `soft_delete`, `has_many`. Class names use `PascalCase`. Constants use `UPPER_SNAKE_CASE`.
 
-By the end of this chapter, you will have a working Tina4 Ruby project with an API endpoint and a rendered HTML page.
+By the end of this chapter, you will have a running Tina4 Ruby project with an API endpoint and a rendered HTML page.
 
 ---
 
@@ -16,7 +16,7 @@ By the end of this chapter, you will have a working Tina4 Ruby project with an A
 
 ### What You Need
 
-Before installing Tina4, make sure you have:
+Four things. Nothing more.
 
 1. **Ruby 3.1 or later** -- check with:
 
@@ -30,21 +30,19 @@ You should see output like:
 ruby 3.3.0 (2023-12-25 revision 5124f9ac75) [arm64-darwin23]
 ```
 
-If you see a version lower than 3.1, upgrade Ruby first.
+Below 3.1? Upgrade first.
 
-2. **Bundler** -- Ruby's dependency manager. Check with:
+2. **Bundler** -- Ruby's dependency manager:
 
 ```bash
 bundle --version
 ```
 
-You should see:
-
 ```
 Bundler version 2.5.6
 ```
 
-If Bundler is not installed, install it with `gem install bundler`.
+Not installed? `gem install bundler`.
 
 3. **The Tina4 CLI** -- a Rust-based binary that manages all four Tina4 frameworks:
 
@@ -59,7 +57,7 @@ curl -fsSL https://raw.githubusercontent.com/tina4stack/tina4/main/install.sh | 
 irm https://raw.githubusercontent.com/tina4stack/tina4/main/install.ps1 | iex
 ```
 
-Verify the CLI is installed:
+Verify:
 
 ```bash
 tina4 --version
@@ -69,7 +67,7 @@ tina4 --version
 tina4 0.1.0
 ```
 
-4. **SQLite3 development libraries** -- these ship with most systems:
+4. **SQLite3 development libraries** -- most systems ship these:
 
 ```bash
 # macOS (already included)
@@ -82,13 +80,11 @@ sudo dnf install sqlite-devel
 
 ### Creating a New Project
 
-Use the Tina4 CLI to scaffold a new project:
+One command:
 
 ```bash
 tina4 init my-store
 ```
-
-You should see:
 
 ```
 Creating Tina4 project in ./my-store ...
@@ -120,7 +116,7 @@ Project created! Next steps:
   tina4 serve
 ```
 
-Now install the Ruby dependencies:
+Install the Ruby dependencies:
 
 ```bash
 cd my-store
@@ -134,7 +130,7 @@ Installing tina4 (3.0.0)
 Bundle complete! 1 Gemfile dependency, 1 gem installed.
 ```
 
-That is right -- **one gem**. No dependency tree. No version conflicts. Just `tina4`.
+One gem. No dependency tree. No version conflicts. Just `tina4`.
 
 ### Starting the Dev Server
 
@@ -156,9 +152,9 @@ tina4 serve
   Press Ctrl+C to stop
 ```
 
-Open your browser to `http://localhost:7147`. You should see the Tina4 welcome page.
+Open `http://localhost:7147`. The Tina4 welcome page appears.
 
-Open `http://localhost:7147/health` in your browser or curl it:
+Hit the health endpoint:
 
 ```bash
 curl http://localhost:7147/health
@@ -174,13 +170,13 @@ curl http://localhost:7147/health
 }
 ```
 
-Your Tina4 Ruby project is running.
+Your project is alive.
 
 ---
 
 ## 3. Project Structure Walkthrough
 
-Let us look at what `tina4 init` created:
+Here is what `tina4 init` built:
 
 ```
 my-store/
@@ -213,21 +209,19 @@ my-store/
 └── tests/                  # Your test files
 ```
 
-**Key directories:**
+Five directories matter:
 
-- **`src/routes/`** -- Every `.rb` file here is auto-loaded at startup. Put your route definitions here. Organize into subdirectories if you want.
-- **`src/orm/`** -- Every `.rb` file here is auto-loaded. Put your ORM model classes here.
+- **`src/routes/`** -- Every `.rb` file here is auto-loaded at startup. Drop your route definitions here. Subdirectories work too.
+- **`src/orm/`** -- Every `.rb` file here is auto-loaded. ORM model classes live here.
 - **`src/templates/`** -- Frond looks here when you call `response.render("my-page.html", data)`.
-- **`src/public/`** -- Files served directly. `src/public/images/logo.png` is available at `/images/logo.png`.
-- **`data/`** -- The default SQLite database (`app.db`) lives here. Gitignored because databases should not be in version control.
+- **`src/public/`** -- Files served directly. `src/public/images/logo.png` maps to `/images/logo.png`.
+- **`data/`** -- The default SQLite database (`app.db`) lives here. Gitignored. Databases do not belong in version control.
 
 ---
 
 ## 4. Your First Route
 
-Let us create an API endpoint that returns a JSON greeting.
-
-Create the file `src/routes/greeting.rb`:
+Create `src/routes/greeting.rb`:
 
 ```ruby
 Tina4::Router.get("/api/greeting/{name}") do |request, response|
@@ -239,17 +233,13 @@ Tina4::Router.get("/api/greeting/{name}") do |request, response|
 end
 ```
 
-Save the file. If the dev server is running with live reload, it picks up the change automatically. If not, restart the server with `tina4 serve`.
+Save the file. The dev server picks up the change. If not, restart with `tina4 serve`.
 
 ### Test It
-
-Open your browser to:
 
 ```
 http://localhost:7147/api/greeting/Alice
 ```
-
-You should see:
 
 ```json
 {
@@ -258,7 +248,7 @@ You should see:
 }
 ```
 
-Or use curl:
+Or curl:
 
 ```bash
 curl http://localhost:7147/api/greeting/Alice
@@ -268,7 +258,7 @@ curl http://localhost:7147/api/greeting/Alice
 {"message":"Hello, Alice!","timestamp":"2026-03-22T14:30:00+00:00"}
 ```
 
-Notice the difference: the browser shows pretty-printed JSON (because of browser extensions or dev mode), while curl shows compact JSON. You can force pretty output by adding `?pretty=true`:
+Force pretty output:
 
 ```bash
 curl "http://localhost:7147/api/greeting/Alice?pretty=true"
@@ -283,15 +273,15 @@ curl "http://localhost:7147/api/greeting/Alice?pretty=true"
 
 ### Understanding What Happened
 
-1. You created a file in `src/routes/`. Tina4 auto-discovered it at startup.
+1. You created a file in `src/routes/`. Tina4 discovered it at startup.
 2. `Tina4::Router.get("/api/greeting/{name}")` registered a GET route with a path parameter `{name}`.
-3. When you requested `/api/greeting/Alice`, the router matched the pattern and called your handler block.
-4. `request.params["name"]` gave you the value `"Alice"` from the URL.
-5. `response.json(...)` serialized the hash to JSON, set `Content-Type: application/json`, and returned a `200 OK` response.
+3. A request to `/api/greeting/Alice` matched the pattern. The router called your handler block.
+4. `request.params["name"]` returned `"Alice"` from the URL.
+5. `response.json(...)` serialized the hash to JSON, set `Content-Type: application/json`, and sent a `200 OK`.
 
 ### Adding More HTTP Methods
 
-Let us add a POST endpoint. Update `src/routes/greeting.rb`:
+Add a POST endpoint. Update `src/routes/greeting.rb`:
 
 ```ruby
 Tina4::Router.get("/api/greeting/{name}") do |request, response|
@@ -323,7 +313,7 @@ Tina4::Router.post("/api/greeting") do |request, response|
 end
 ```
 
-Test the POST endpoint:
+Test:
 
 ```bash
 curl -X POST http://localhost:7147/api/greeting \
@@ -335,13 +325,13 @@ curl -X POST http://localhost:7147/api/greeting \
 {"message":"Hola, Carlos!","language":"es"}
 ```
 
-The HTTP status code is `201 Created` (the second argument to `response.json`).
+Status code: `201 Created`.
 
 ---
 
 ## 5. Your First Template
 
-Tina4 uses the **Frond** template engine -- a zero-dependency, Twig-compatible engine built from scratch. If you have used Twig, Jinja2, or Nunjucks, this will feel familiar.
+Tina4 uses **Frond** -- a zero-dependency, Twig-compatible template engine built from scratch. If you know Twig, Jinja2, or Nunjucks, you know Frond.
 
 ### Create a Base Layout
 
@@ -381,7 +371,7 @@ Create `src/templates/base.html`:
 </html>
 ```
 
-This base layout defines two blocks (`title` and `content`) that child templates can override. It includes `tina4.css` (the built-in CSS framework) and `frond.js` (the built-in JS helper library).
+Two blocks: `title` and `content`. Child templates override only what they need. `tina4.css` provides built-in styling. `frond.js` provides JS helpers. Both ship with every project.
 
 ### Create a Product Listing Page
 
@@ -457,60 +447,60 @@ end
 
 ### See It in the Browser
 
-Open `http://localhost:7147/products` in your browser. You should see:
+Open `http://localhost:7147/products`. You see:
 
-- A dark navigation bar at the top with "Home" and "Products" links
+- A dark nav bar with "Home" and "Products"
 - The heading "Our Products"
-- A subheading showing "Showing 4 products"
-- Four product cards, each with a name, description, price, and stock badge
-- The "Monitor Stand" card shows a red "Out of Stock" badge
-- The other three show green "In Stock" badges
+- "Showing 4 products"
+- Four product cards with name, description, price, and stock badge
+- "Monitor Stand" wears a red "Out of Stock" badge
+- The other three wear green "In Stock" badges
 
 ### How Template Rendering Works
 
-1. `response.render("products.html", { products: products })` tells Frond to render `src/templates/products.html` with the given data.
+1. `response.render("products.html", { products: products })` tells Frond to render `src/templates/products.html`.
 2. Frond sees `{% extends "base.html" %}` and loads the base template.
-3. The `{% block content %}` in `products.html` replaces the same block in `base.html`.
+3. `{% block content %}` in `products.html` replaces the same block in `base.html`.
 4. `{{ product.name }}` outputs the value, auto-escaped for HTML safety.
 5. `{{ product.price | number_format(2) }}` formats the number with 2 decimal places.
 6. `{% for product in products %}` loops through the array.
-7. `{% if product.in_stock %}` conditionally renders the stock badge.
-8. `{{ products | length }}` returns the count of items in the array.
+7. `{% if product.in_stock %}` renders the right badge.
+8. `{{ products | length }}` returns the item count.
 
 ### About tina4css
 
-The `tina4.css` file included in the base template is Tina4's built-in CSS utility framework. It provides layout utilities, typography, and common UI patterns without needing Bootstrap or Tailwind. It is auto-provided when you scaffold a project -- you do not need to download it separately.
+`tina4.css` is Tina4's built-in CSS utility framework. Layout utilities, typography, common UI patterns. No Bootstrap. No Tailwind. No npm. It ships with every scaffolded project.
 
 ---
 
 ## 6. Understanding .env
 
-Open the `.env` file at the root of your project:
+Open `.env` at the project root:
 
 ```env
 TINA4_DEBUG=true
 ```
 
-That is likely all you see. The scaffold creates a minimal `.env` with debug mode enabled. Everything else uses defaults.
+That is it. The scaffold creates a minimal `.env`. Everything else uses defaults.
 
-The important defaults for development:
+The defaults that matter:
 
 | Variable | Default Value | What It Means |
 |----------|---------------|---------------|
 | `TINA4_PORT` | `7147` | Server runs on port 7147 |
-| `DATABASE_URL` | `sqlite:///data/app.db` | SQLite database in the `data/` directory |
-| `TINA4_LOG_LEVEL` | `ALL` | All log messages are output |
-| `CORS_ORIGINS` | `*` | All origins allowed (fine for development) |
+| `DATABASE_URL` | `sqlite:///data/app.db` | SQLite database in `data/` |
+| `TINA4_LOG_LEVEL` | `ALL` | All log messages output |
+| `CORS_ORIGINS` | `*` | All origins allowed (fine for dev) |
 | `TINA4_RATE_LIMIT` | `60` | 60 requests per minute per IP |
 
-To change the port, add it to `.env`:
+Change the port:
 
 ```env
 TINA4_DEBUG=true
 TINA4_PORT=8080
 ```
 
-Restart the server (`Ctrl+C`, then `tina4 serve`). It now runs on port 8080.
+Restart the server. It now runs on 8080.
 
 For the complete `.env` reference with all 68 variables, see Book 0, Chapter 4.
 
@@ -518,7 +508,7 @@ For the complete `.env` reference with all 68 variables, see Book 0, Chapter 4.
 
 ## 7. The Dev Dashboard
 
-With `TINA4_DEBUG=true`, Tina4 provides a built-in development dashboard. First, enable it by adding a console token to your `.env`:
+With `TINA4_DEBUG=true`, Tina4 provides a built-in development dashboard. Enable it:
 
 ```env
 TINA4_DEBUG=true
@@ -526,24 +516,24 @@ TINA4_CONSOLE=true
 TINA4_CONSOLE_TOKEN=my-dev-token
 ```
 
-Restart the server and navigate to:
+Restart and navigate to:
 
 ```
 http://localhost:7147/tina4/console
 ```
 
-Enter your token (`my-dev-token`) when prompted. You will see:
+Enter your token. The dashboard shows:
 
-- **System Overview** -- framework version, Ruby version, uptime, memory usage, database status
-- **Request Inspector** -- recent HTTP requests with method, path, status, duration, and request ID. Click any request to see full headers, body, database queries, and template renders.
+- **System Overview** -- framework version, Ruby version, uptime, memory, database status
+- **Request Inspector** -- recent HTTP requests with method, path, status, duration, and request ID. Click any request for full headers, body, queries, and template renders.
 - **Error Log** -- unhandled exceptions with stack traces and occurrence counts
-- **Queue Manager** -- queue status (pending, reserved, failed, dead-letter messages)
-- **WebSocket Monitor** -- active WebSocket connections with metadata
-- **Routes** -- all registered routes with their methods, paths, and middleware
+- **Queue Manager** -- pending, reserved, failed, dead-letter messages
+- **WebSocket Monitor** -- active connections with metadata
+- **Routes** -- all registered routes with methods, paths, and middleware
 
-The console is a powerful debugging tool. It shows you exactly what your application is doing without adding print statements or log calls to your code.
+The console is a debugging powerhouse. It shows you what your application does without print statements.
 
-Additionally, when you visit any HTML page (like `/products`), you will see a **debug overlay** -- a toolbar at the bottom of the page showing:
+HTML pages also get a **debug overlay** -- a toolbar at the bottom showing:
 
 - Request details (method, URL, duration)
 - Database queries executed (with timing)
@@ -551,21 +541,21 @@ Additionally, when you visit any HTML page (like `/products`), you will see a **
 - Session data
 - Recent log entries
 
-This overlay is only visible when `TINA4_DEBUG=true`. It is never shown in production.
+The overlay vanishes when `TINA4_DEBUG=false`. Production users never see it.
 
 ---
 
 ## 8. Exercise: Greeting API + Product List Template
 
-Build the following two features from scratch, without looking at the examples above.
+Build two features from scratch. No peeking at the examples above.
 
 ### Exercise Part A: Greeting API
 
 Create an API endpoint at `GET /api/greet` that:
 
 1. Accepts a query parameter `name` (e.g., `/api/greet?name=Sarah`)
-2. If `name` is missing, defaults to `"Stranger"`
-3. Returns JSON like:
+2. Defaults to `"Stranger"` if `name` is missing
+3. Returns JSON:
 
 ```json
 {
@@ -574,13 +564,13 @@ Create an API endpoint at `GET /api/greet` that:
 }
 ```
 
-4. The `time_of_day` should be calculated from the server's current hour:
+4. Calculates `time_of_day` from the server's current hour:
    - 5:00 - 11:59 = "morning"
    - 12:00 - 16:59 = "afternoon"
    - 17:00 - 20:59 = "evening"
    - 21:00 - 4:59 = "night"
 
-**Test your endpoint with:**
+**Test:**
 
 ```bash
 curl "http://localhost:7147/api/greet?name=Sarah"
@@ -591,14 +581,14 @@ curl "http://localhost:7147/api/greet"
 
 Create a page at `GET /store` that:
 
-1. Displays a list of at least 5 products (hardcoded for now)
+1. Displays at least 5 products (hardcoded)
 2. Each product has: name, category, price, and a boolean `featured` flag
-3. Featured products should be visually highlighted (different background color, border, or badge)
-4. The page should show the total number of products and the number of featured products
-5. Use template inheritance -- create a layout template and a page template that extends it
-6. Include `tina4.css` and `frond.js`
+3. Featured products get a visual highlight (different background, border, or badge)
+4. The page shows total product count and featured count
+5. Uses template inheritance -- a layout template and a page that extends it
+6. Includes `tina4.css` and `frond.js`
 
-**Your products data should look like this in your route handler:**
+**Product data for your route handler:**
 
 ```ruby
 products = [
@@ -613,9 +603,9 @@ products = [
 **Expected browser output:**
 
 - A page titled "Our Store"
-- Text showing "5 products, 3 featured"
-- A list of product cards with name, category, price, and a "Featured" badge on the highlighted items
-- Featured products have a distinct visual style (your choice -- different border color, background, star icon, etc.)
+- "5 products, 3 featured"
+- Product cards with name, category, price, and "Featured" badge on highlighted items
+- Featured products wear a distinct visual style
 
 ---
 
@@ -753,14 +743,14 @@ Tina4::Router.get("/store") do |request, response|
 end
 ```
 
-**Open `http://localhost:7147/store` in your browser.** You should see:
+**Open `http://localhost:7147/store`.** You see:
 
 - A dark header reading "Our Store"
-- Text showing "5 products, 3 featured"
+- "5 products, 3 featured"
 - Five product cards in a grid
-- Three cards (Espresso Machine, Standing Desk, Noise-Canceling Headphones) have a yellow border, light yellow background, and a "Featured" badge
-- Two cards (Yoga Mat, Water Bottle) have a standard white background with gray border
-- Each card shows the product name, category, and price formatted with two decimal places
+- Three cards (Espresso Machine, Standing Desk, Noise-Canceling Headphones) wear a yellow border, light yellow background, and "Featured" badge
+- Two cards (Yoga Mat, Water Bottle) wear a standard white background with gray border
+- Each card shows name, category, and price formatted to 2 decimal places
 
 ---
 
@@ -768,70 +758,70 @@ end
 
 ### 1. File not auto-discovered
 
-**Problem:** You created a route file but nothing happens when you visit the URL.
+**Problem:** You created a route file but the URL returns nothing.
 
-**Cause:** The file is not in `src/routes/`. Double-check the path. It must be inside `src/routes/` (or a subdirectory of it), and the file must end with `.rb`.
+**Cause:** The file is not in `src/routes/`. It must live inside `src/routes/` (or a subdirectory), and must end with `.rb`.
 
 **Fix:** Move the file to `src/routes/your-file.rb` and restart the server.
 
 ### 2. "Uninitialized constant" errors
 
-**Problem:** `NameError: uninitialized constant Tina4::Router` or similar.
+**Problem:** `NameError: uninitialized constant Tina4::Router`.
 
-**Cause:** The Tina4 gem is not loaded, or the file is not being required by the framework.
+**Cause:** The Tina4 gem is not loaded.
 
-**Fix:** Make sure your `Gemfile` includes `gem "tina4"` and you have run `bundle install`. Route files in `src/routes/` are auto-loaded -- you do not need `require` statements.
+**Fix:** Confirm your `Gemfile` includes `gem "tina4"` and you ran `bundle install`. Route files in `src/routes/` auto-load -- no `require` statements needed.
 
 ### 3. JSON response shows HTML
 
-**Problem:** Your JSON endpoint returns HTML instead of JSON.
+**Problem:** Your JSON endpoint returns HTML.
 
-**Cause:** You returned a string instead of using `response.json`. If you return a plain string, Tina4 treats it as HTML.
+**Cause:** You returned a string instead of calling `response.json`. Plain strings become HTML in Tina4.
 
-**Fix:** Always use `response.json(data)` for JSON endpoints, not `puts data.to_json`.
+**Fix:** Use `response.json(data)` for JSON endpoints. Not `puts data.to_json`.
 
 ### 4. Template not found
 
-**Problem:** `Template "my-page.html" not found` error.
+**Problem:** `Template "my-page.html" not found`.
 
-**Cause:** The template file is not in `src/templates/`, or there is a typo in the filename.
+**Cause:** The template file is not in `src/templates/`, or the filename has a typo.
 
 **Fix:** Check that the file exists at `src/templates/my-page.html`. The name in `response.render` is relative to `src/templates/`.
 
 ### 5. Port already in use
 
-**Problem:** `Error: Address already in use (port 7147)`
+**Problem:** `Error: Address already in use (port 7147)`.
 
-**Cause:** Another process (or another Tina4 instance) is using port 7147.
+**Cause:** Another process owns port 7147.
 
-**Fix:** Either stop the other process, or change the port:
+**Fix:** Stop the other process, or change the port:
 
 ```env
 TINA4_PORT=8080
 ```
 
-Or use the CLI flag: `tina4 serve --port 8080`.
+Or: `tina4 serve --port 8080`.
 
 ### 6. Changes not reflected
 
 **Problem:** You edited a file but the browser shows the old version.
 
-**Cause:** In some setups, live reload may not be active. Also, browser caching can serve stale versions.
+**Cause:** Live reload may not be active. Browser caching can serve stale versions.
 
-**Fix:** Hard-refresh the browser (`Ctrl+Shift+R` or `Cmd+Shift+R`). If that does not help, restart the dev server with `Ctrl+C` and `tina4 serve`.
+**Fix:** Hard-refresh (`Ctrl+Shift+R` or `Cmd+Shift+R`). If that fails, restart with `Ctrl+C` and `tina4 serve`.
 
 ### 7. .env not loaded
 
-**Problem:** Environment variables seem to have no effect.
+**Problem:** Environment variables have no effect.
 
-**Cause:** The `.env` file must be at the project root (same directory as `Gemfile`). If it is in a subdirectory, Tina4 will not find it.
+**Cause:** The `.env` file must sit at the project root (same directory as `Gemfile`).
 
 **Fix:** Move `.env` to the project root.
 
 ### 8. Debug mode in production
 
-**Problem:** Your production site shows stack traces and query details.
+**Problem:** Production shows stack traces and query details.
 
 **Cause:** `TINA4_DEBUG=true` in production.
 
-**Fix:** Set `TINA4_DEBUG=false` in your production `.env`. This hides all debug information, enables HTML minification, and activates `.broken` file health checks.
+**Fix:** Set `TINA4_DEBUG=false`. This hides debug information, enables HTML minification, and activates `.broken` file health checks.

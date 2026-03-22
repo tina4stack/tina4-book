@@ -2,9 +2,9 @@
 
 ## 1. Getting a New Developer Up to Speed
 
-A new developer joins your team. You hand them the repo URL, and by 10am they have a running project, a new database model, CRUD routes, a migration, and a deployment to staging. All from the command line.
+A new developer joins your team. You hand them the repo URL. By 10am they have a running project, a new database model, CRUD routes, a migration, and a deployment to staging. All from the command line.
 
-The Tina4 CLI is a single Rust binary that manages all four Tina4 frameworks (PHP, Python, Ruby, Node.js). The commands are identical across languages.
+The Tina4 CLI is a single Rust binary. It manages all four Tina4 frameworks: PHP, Python, Ruby, and Node.js. Same commands across all languages.
 
 ---
 
@@ -199,7 +199,7 @@ System Check
 tina4 build
 ```
 
-Compiles TypeScript to JavaScript, bundles for production, and optimizes:
+Compiles TypeScript to JavaScript. Bundles for production. Optimizes:
 
 ```
 Building for production...

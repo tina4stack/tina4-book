@@ -2,18 +2,19 @@
 
 ## 1. Do Not Make the User Wait
 
-Your app sends welcome emails on signup, generates PDF invoices, and resizes uploaded images. Each of these tasks takes between two and thirty seconds. If you do them inside the HTTP request, the user stares at a loading spinner. Queues solve this by moving slow work to a background process.
+Your app sends welcome emails on signup. Generates PDF invoices. Resizes uploaded images. Each task takes 2 to 30 seconds. Run them inside the HTTP request and the user stares at a spinner.
 
-Tina4 has a built-in queue system that works out of the box with SQLite. No Redis, no RabbitMQ, no external services.
+Queues move slow work to a background process. The user gets a response in milliseconds. The work still happens -- just not during the request.
+
+Tina4 has a built-in queue system. Works out of the box with SQLite. No Redis. No RabbitMQ. No external services.
 
 ---
 
 ## 2. Why Queues Matter
 
-Without queues: 6530ms response time.
-With queues: 33ms response time. The work still gets done -- just not during the HTTP request.
+Without queues: 6530ms response time. With queues: 33ms. Same work done. Different timing.
 
-Beyond speed, queues provide retry logic, rate limiting, fault isolation, and scaling.
+Queues also deliver retry logic, rate limiting, fault isolation, and horizontal scaling.
 
 ---
 
@@ -155,7 +156,7 @@ TINA4_QUEUE_USERNAME=guest
 TINA4_QUEUE_PASSWORD=guest
 ```
 
-Your code does not change. Same `Queue.produce()` and `Queue.consume()` calls.
+Your code stays identical. Same `Queue.produce()` and `Queue.consume()` calls. The backend is an implementation detail.
 
 ---
 

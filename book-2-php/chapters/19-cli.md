@@ -2,15 +2,15 @@
 
 ## 1. Getting a New Developer Up to Speed
 
-A new developer joins your team on Monday morning. You hand them the repo URL, and by 10am they have a running project, a new database model, CRUD routes, a migration, and a deployment to staging. All from the command line. No hunting through documentation. No copy-pasting boilerplate from old projects. The Tina4 CLI handles the scaffolding.
+A new developer joins your team on Monday morning. You hand them the repo URL. By 10am they have a running project, a new database model, CRUD routes, a migration, and a deployment to staging. All from the command line. No hunting through documentation. No copy-pasting boilerplate from old projects. The CLI handles the scaffolding.
 
-The Tina4 CLI is a single Rust binary that manages all four Tina4 frameworks (PHP, Python, Ruby, Node.js). The commands are identical across languages. Once you learn the CLI for PHP, you know it for Python too.
+The Tina4 CLI is a single Rust binary. It manages all four Tina4 frameworks (PHP, Python, Ruby, Node.js). The commands are identical across languages. Learn the CLI for PHP. You know it for Python.
 
 ---
 
 ## 2. tina4 init -- Project Scaffolding
 
-You saw this in Chapter 1, but let us look at it in detail.
+You saw this in Chapter 1. Now the details.
 
 ```bash
 tina4 init my-project
@@ -76,14 +76,14 @@ Creating Tina4 PHP project in ./my-project ...
 
 ### Init into an Existing Directory
 
-If you already have a project and want to add Tina4 structure:
+Already have a project? Add Tina4 structure:
 
 ```bash
 cd existing-project
 tina4 init .
 ```
 
-The CLI only creates files and directories that do not already exist. It never overwrites existing files.
+The CLI creates only files and directories that do not exist. It never overwrites.
 
 ---
 
@@ -348,7 +348,7 @@ Route::group("/api", function () {
 });
 ```
 
-The generator reads the model's properties and creates appropriate routes with type casting and null checks. You can customize the generated code immediately -- it is regular PHP, not magic.
+The generator reads the model's properties and creates routes with type casting and null checks. Customize the generated code immediately. It is regular PHP, not magic.
 
 ### Options
 
@@ -393,7 +393,7 @@ ALTER TABLE orders ADD COLUMN email TEXT DEFAULT '';
 ALTER TABLE orders DROP COLUMN email;
 ```
 
-The timestamp prefix (`20260322101500`) ensures migrations run in order. Each migration runs exactly once -- the framework tracks which migrations have been applied.
+The timestamp prefix (`20260322101500`) ensures migrations run in order. Each migration runs once. The framework tracks which ones have been applied.
 
 ---
 
@@ -481,7 +481,7 @@ If something is wrong, the doctor tells you:
          Make sure the data/ directory exists and is writable.
 ```
 
-The doctor checks everything a new developer might get wrong and provides specific fix instructions for each issue.
+The doctor checks everything a new developer might get wrong. Specific fix instructions for each issue.
 
 ---
 
@@ -550,7 +550,7 @@ tina4 routes --filter orders
 tina4 routes --middleware requireAuth
 ```
 
-This is invaluable when debugging routing issues. If a route is not matching, check `tina4 routes` to see if it was registered and what middleware is attached.
+When debugging routing issues, check here first. If a route is not matching, `tina4 routes` shows whether it was registered and what middleware is attached.
 
 ---
 

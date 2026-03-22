@@ -2,15 +2,17 @@
 
 ## 1. From 800ms to 3ms
 
-Your product catalog page runs 12 database queries and takes 800 milliseconds to render. Every visitor triggers the same queries, the same template rendering, the same JSON serialization -- for data that changes maybe once a day. After adding caching, the first request takes 800ms and the next 10,000 requests take 3ms each. That is a 266x improvement for one line of configuration.
+Your product catalog page runs 12 database queries. It takes 800 milliseconds to render. Every visitor triggers the same queries, the same template rendering, the same JSON serialization -- for data that changes once a day.
 
-Caching stores the result of expensive operations so they can be reused without recomputing. Tina4 provides caching at multiple levels: response caching (entire HTTP responses), database query caching, and a direct cache API for custom use cases.
+Add caching. The first request takes 800ms. The next 10,000 take 3ms each. A 266x improvement. One line of configuration.
+
+Caching stores the result of expensive operations for reuse. Tina4 provides caching at multiple levels: response caching (entire HTTP responses), database query caching, and a direct cache API for custom use cases.
 
 ---
 
 ## 2. Response Caching with ResponseCache Middleware
 
-The fastest way to cache is at the HTTP response level. The `ResponseCache` middleware stores the complete response (headers and body) and serves it directly on subsequent requests without calling your route handler at all.
+The fastest cache is at the HTTP response level. The `ResponseCache` middleware stores the complete response -- headers and body -- and serves it on subsequent requests without calling your route handler at all.
 
 ```php
 <?php
@@ -32,7 +34,7 @@ Route::get("/api/products", function ($request, $response) {
 }, "ResponseCache:300");
 ```
 
-The `"ResponseCache:300"` middleware caches the response for 300 seconds (5 minutes). During those 5 minutes:
+`"ResponseCache:300"` caches the response for 300 seconds (5 minutes). During those 5 minutes:
 
 - The first request runs the handler (800ms)
 - The next 10,000 requests serve the cached response (3ms each)
@@ -70,11 +72,11 @@ curl http://localhost:7145/api/products
 }
 ```
 
-Notice the `generated_at` timestamp is the same. The handler did not run -- the response came from cache.
+Same `generated_at` timestamp. The handler did not run. The response came from cache.
 
 ### Cache Headers
 
-The `ResponseCache` middleware automatically sets cache-related headers:
+The `ResponseCache` middleware sets cache-related headers:
 
 ```
 X-Cache: HIT
@@ -82,13 +84,13 @@ X-Cache-TTL: 247
 Cache-Control: public, max-age=300
 ```
 
-- `X-Cache: HIT` or `X-Cache: MISS` tells you whether the response came from cache
-- `X-Cache-TTL` shows the remaining time-to-live in seconds
-- `Cache-Control` enables browser and CDN caching
+- `X-Cache: HIT` or `X-Cache: MISS` -- whether the response came from cache
+- `X-Cache-TTL` -- remaining time-to-live in seconds
+- `Cache-Control` -- enables browser and CDN caching
 
 ### Caching with Query Parameters
 
-By default, the cache key includes the full URL with query parameters. `/api/products?page=1` and `/api/products?page=2` are cached separately:
+The cache key includes the full URL with query parameters. `/api/products?page=1` and `/api/products?page=2` are cached separately:
 
 ```php
 Route::get("/api/products", function ($request, $response) {
@@ -121,7 +123,7 @@ Do not use `ResponseCache` on:
 - **Authenticated endpoints**: Unless the cache is scoped per user
 
 ```php
-// GOOD: Public, rarely changing data
+// GOOD: Public, stable data
 Route::get("/api/categories", function ($request, $response) {
     return $response->json(["categories" => []]);
 }, "ResponseCache:3600"); // Cache for 1 hour
@@ -139,17 +141,17 @@ Route::get("/api/profile", function ($request, $response) {
 Tina4's cache system stores data in memory by default. No configuration needed.
 
 ```env
-# This is the default -- you do not need to set it explicitly
+# This is the default -- you do not need to set it
 TINA4_CACHE_BACKEND=memory
 ```
 
-Memory cache is the fastest option (no disk I/O, no network calls) but it resets when the server restarts. It is ideal for development and single-server deployments where losing the cache on restart is acceptable.
+Memory cache is the fastest option. No disk I/O. No network calls. But it resets when the server restarts. Ideal for development and single-server deployments where losing the cache on restart is acceptable.
 
 ---
 
 ## 4. Redis Cache
 
-For production deployments where you want cache persistence across server restarts and shared cache across multiple server instances, use Redis:
+For production: cache persistence across server restarts. Shared cache across multiple server instances. Use Redis:
 
 ```env
 TINA4_CACHE_BACKEND=redis
@@ -159,40 +161,40 @@ TINA4_CACHE_PASSWORD=your-redis-password
 TINA4_CACHE_PREFIX=myapp:cache:
 ```
 
-Your code does not change. The `cache_get`, `cache_set`, and `ResponseCache` middleware all work identically. Only the storage backend changes.
+Your code does not change. `cache_get`, `cache_set`, and `ResponseCache` all work the same. Only the storage backend changes.
 
 ### Why Redis?
 
 - Cache survives server restarts
-- Shared across multiple server instances (behind a load balancer)
+- Shared across multiple server instances behind a load balancer
 - Sub-millisecond reads and writes
-- Built-in key expiry (TTL cleanup is automatic)
+- Built-in key expiry. TTL cleanup is automatic
 - Same Redis instance can serve sessions, cache, and queues
 
 ---
 
 ## 5. File Cache
 
-If you want cache persistence but do not have Redis, use file-based caching:
+Cache persistence without Redis. File-based caching:
 
 ```env
 TINA4_CACHE_BACKEND=file
 TINA4_CACHE_PATH=/path/to/cache/directory
 ```
 
-File cache stores each cache entry as a file on disk. It is slower than memory or Redis but survives server restarts without extra infrastructure.
+Each cache entry becomes a file on disk. Slower than memory or Redis, but survives server restarts without extra infrastructure.
 
 ### When to Use File Cache
 
-- You need cache persistence but cannot run Redis
-- Your hosting environment is limited (shared hosting, no external services)
+- You need persistence but cannot run Redis
+- Your hosting is limited (shared hosting, no external services)
 - Cache entries are large and you do not want them in memory
 
 ---
 
 ## 6. Direct Cache API
 
-For custom caching logic, use the `cache_get`, `cache_set`, and `cache_delete` functions directly:
+For custom caching logic, use `cache_get`, `cache_set`, and `cache_delete` directly.
 
 ### cache_set
 
@@ -250,7 +252,7 @@ cache_delete("product:44");
 
 ### Real-World Pattern: Cache-Aside
 
-The most common caching pattern is cache-aside (also called lazy loading):
+The most common caching pattern. Also called lazy loading:
 
 ```php
 <?php
@@ -323,14 +325,14 @@ Second call (cache hit):
 
 ## 7. Database Query Caching
 
-Tina4 can cache database query results automatically. Enable it in `.env`:
+Tina4 caches database query results when enabled in `.env`:
 
 ```env
 TINA4_DB_CACHE=true
 TINA4_DB_CACHE_TTL=300
 ```
 
-With database caching enabled, identical queries return cached results instead of hitting the database:
+Identical queries return cached results instead of hitting the database:
 
 ```php
 <?php
@@ -348,7 +350,7 @@ Route::get("/api/categories", function ($request, $response) {
 });
 ```
 
-The cache key is derived from the SQL query and its parameters. Different queries or different parameters produce different cache keys:
+The cache key derives from the SQL query and its parameters. Different queries or different parameters produce different cache keys:
 
 ```php
 // These are cached separately:
@@ -359,14 +361,14 @@ $db->fetchAll("SELECT * FROM products WHERE category = :cat", ["cat" => "Fitness
 ### When to Use DB Cache
 
 - Read-heavy applications where the same queries run repeatedly
-- Reference data that changes infrequently (categories, countries, settings)
+- Reference data that changes rarely (categories, countries, settings)
 - Dashboard queries that aggregate large datasets
 
 ### When Not to Use DB Cache
 
 - Write-heavy applications where data changes constantly
 - Queries with real-time requirements (inventory counts, live prices)
-- Queries that must always return the latest data
+- Queries that must return the latest data
 
 ### Skipping Cache for Specific Queries
 
@@ -379,11 +381,11 @@ $freshData = $db->fetchAll("SELECT * FROM products", [], ["no_cache" => true]);
 
 ## 8. Cache Invalidation Strategies
 
-The hardest problem in caching is knowing when to invalidate (clear) the cache. Stale cache serves outdated data. Premature invalidation reduces cache effectiveness.
+The hardest problem in caching: knowing when to clear the cache. Stale cache serves outdated data. Premature invalidation reduces cache effectiveness.
 
 ### Strategy 1: Time-Based Expiry (TTL)
 
-The simplest strategy. Set a TTL and let the cache expire naturally:
+The simplest approach. Set a TTL. Let the cache expire on its own:
 
 ```php
 cache_set("products:featured", $featuredProducts, 600); // Expires in 10 minutes
@@ -426,7 +428,7 @@ Route::put("/api/products/{id:int}", function ($request, $response) {
 });
 ```
 
-This is the most accurate strategy -- the cache is always fresh after a write. The downside is you must remember to invalidate everywhere the data could be cached.
+The most accurate strategy. The cache is always fresh after a write. The downside: you must remember to invalidate everywhere the data could be cached.
 
 ### Strategy 3: Write-Through Cache
 
@@ -452,23 +454,23 @@ Route::put("/api/products/{id:int}", function ($request, $response) {
 });
 ```
 
-This ensures the cache always has the latest data. No cache miss after an update -- the next read comes from the already-warm cache.
+The cache always has the latest data. No cache miss after an update. The next read comes from the already-warm cache.
 
 ---
 
 ## 9. TTL Management
 
-Choosing the right TTL depends on how often the data changes and how acceptable stale data is:
+Choosing the right TTL depends on change frequency and tolerance for stale data:
 
 | Data Type | Suggested TTL | Reasoning |
 |-----------|---------------|-----------|
 | Static config (categories, countries) | 3600 (1 hour) | Changes rarely, stale data is harmless |
 | Product catalog | 300 (5 min) | Updates several times per day |
-| User profile | 60 (1 min) | Users expect changes to appear quickly |
+| User profile | 60 (1 min) | Users expect changes to appear fast |
 | Search results | 120 (2 min) | Balance between freshness and performance |
 | Dashboard stats | 30 (30 sec) | Near-real-time but expensive to compute |
 | Exchange rates | 60 (1 min) | Updates frequently, slight delay is acceptable |
-| Shopping cart | 0 (no cache) | Must always reflect current state |
+| Shopping cart | 0 (no cache) | Must reflect current state |
 
 ### Dynamic TTL
 
@@ -503,7 +505,7 @@ function getCachedProduct($id) {
 
 ## 10. Cache Statistics
 
-Monitor cache performance to verify that caching is actually helping:
+Monitor cache performance. Verify that caching helps:
 
 ```php
 <?php
@@ -533,9 +535,9 @@ curl http://localhost:7145/api/cache/stats
 }
 ```
 
-A hit rate above 90% means your caching strategy is working well. Below 80% suggests your TTLs are too short, your cache is too small, or you are caching data that is not accessed frequently enough to benefit.
+A hit rate above 90% means your caching strategy works. Below 80% suggests TTLs are too short, the cache is too small, or you are caching data that is accessed too infrequently to benefit.
 
-The dev dashboard at `/tina4/console` also shows cache statistics, including per-key hit counts and miss counts, so you can identify which keys benefit most from caching.
+The dev dashboard at `/tina4/console` also shows cache statistics, including per-key hit counts and miss counts.
 
 ---
 
@@ -593,10 +595,10 @@ Route::get("/api/catalog", function ($request, $response) {
 }, "ResponseCache:60"); // Layer 3: HTTP response cache (60 seconds)
 ```
 
-This creates three cache layers:
+Three cache layers:
 
-1. **ResponseCache** (60 seconds): The entire HTTP response is cached. No PHP code runs at all.
-2. **Application cache** (300 seconds): If the response cache expired but the app cache is still fresh, skip the database queries.
+1. **ResponseCache** (60 seconds): The entire HTTP response is cached. No PHP code runs.
+2. **Application cache** (300 seconds): If the response cache expired but the app cache is fresh, skip the database queries.
 3. **DB query cache** (if enabled): Individual query results are cached even if the application cache missed.
 
 The first visitor after a full cache expiry waits 800ms. Everyone else gets the response in under 5ms.
@@ -819,7 +821,7 @@ curl "http://localhost:7145/api/store/products?category=Electronics&page=1"
 }
 ```
 
-Notice: same `generated_at`, but `source` changed from `"database"` to `"cache"`. The handler did not run.
+Same `generated_at`. Source changed from `"database"` to `"cache"`. The handler did not run.
 
 **Expected output -- after creating a product:**
 
@@ -843,7 +845,7 @@ curl -X POST http://localhost:7145/api/store/products \
 }
 ```
 
-The next request to the same URL will be a cache miss again, because the POST invalidated the cache.
+The next request to the same URL is a cache miss again. The POST invalidated the cache.
 
 ---
 
@@ -853,39 +855,39 @@ The next request to the same URL will be a cache miss again, because the POST in
 
 **Problem:** User A's profile is served to User B because the response was cached.
 
-**Cause:** `ResponseCache` caches by URL only. If `/api/profile` returns different data per user but all requests hit the same URL, the first user's response is served to everyone.
+**Cause:** `ResponseCache` caches by URL only. `/api/profile` returns different data per user, but all requests hit the same URL. The first user's response is served to everyone.
 
-**Fix:** Do not use `ResponseCache` on user-specific endpoints. Use the direct cache API with user-specific keys instead: `cache_set("profile:" . $userId, $data, 300)`.
+**Fix:** Do not use `ResponseCache` on user-specific endpoints. Use the direct cache API with user-specific keys: `cache_set("profile:" . $userId, $data, 300)`.
 
 ### 2. Cache Stampede
 
-**Problem:** When a popular cache key expires, hundreds of requests hit the database simultaneously (all experiencing a cache miss at the same moment).
+**Problem:** A popular cache key expires. Hundreds of requests hit the database at once. All experience a cache miss at the same moment.
 
-**Cause:** All requests see the cache miss and all try to rebuild the cache independently.
+**Cause:** All requests see the miss. All try to rebuild the cache independently.
 
-**Fix:** Use cache locking or "stale-while-revalidate". One request rebuilds the cache while others serve the stale value. Tina4's `ResponseCache` handles this automatically by serving the expired response to concurrent requests while one request refreshes it.
+**Fix:** Use cache locking or "stale-while-revalidate." One request rebuilds the cache. Others serve the stale value. Tina4's `ResponseCache` handles this by serving the expired response to concurrent requests while one request refreshes it.
 
 ### 3. Memory Cache Lost on Restart
 
 **Problem:** After restarting the server, performance drops until the cache warms up.
 
-**Cause:** Memory cache is lost when the process restarts. Every request is a cache miss until data is cached again.
+**Cause:** Memory cache dies when the process restarts. Every request is a cache miss until data populates again.
 
-**Fix:** For production, use Redis cache (`TINA4_CACHE_BACKEND=redis`). It persists across server restarts. Alternatively, implement a cache warmup script that pre-populates the cache with frequently accessed data.
+**Fix:** For production, use Redis cache (`TINA4_CACHE_BACKEND=redis`). It persists across restarts. Or implement a cache warmup script that pre-populates the cache with frequently accessed data.
 
 ### 4. Stale Data After Database Update
 
-**Problem:** You updated a product's price in the database, but the API still returns the old price.
+**Problem:** You updated a product's price in the database. The API still returns the old price.
 
-**Cause:** The cache still has the old data and has not expired yet.
+**Cause:** The cache holds the old data. It has not expired yet.
 
-**Fix:** Always invalidate (or update) the cache when you modify the underlying data. Use `cache_delete("product:" . $id)` after an update, or use write-through caching with `cache_set()` to update the cache with the new value.
+**Fix:** Always invalidate or update the cache when you modify the underlying data. Use `cache_delete("product:" . $id)` after an update, or use write-through caching with `cache_set()` to write the new value.
 
 ### 5. Cache Key Collisions
 
 **Problem:** Two different queries return the same cached data.
 
-**Cause:** Your cache keys are not specific enough. Using `"products"` as a key for both the full list and a filtered list causes collisions.
+**Cause:** Cache keys are not specific enough. Using `"products"` as a key for both the full list and a filtered list causes collisions.
 
 **Fix:** Include all relevant parameters in the cache key: `"products:category:Electronics:page:1:limit:20"`. Or use an MD5 hash of the parameters: `"products:" . md5(json_encode($params))`.
 
@@ -893,14 +895,14 @@ The next request to the same URL will be a cache miss again, because the POST in
 
 **Problem:** Caching makes certain requests slower, not faster.
 
-**Cause:** The cached object is very large. Serializing and deserializing it takes more time than re-computing it.
+**Cause:** The cached object is large. Serializing and deserializing it takes more time than re-computing it.
 
-**Fix:** Only cache data that is expensive to compute. If the original operation takes 5ms and cache serialization takes 10ms, caching is counterproductive. Profile before and after caching to verify the improvement.
+**Fix:** Only cache data that is expensive to compute. If the original operation takes 5ms and cache serialization takes 10ms, caching is counterproductive. Profile before and after to verify the improvement.
 
 ### 7. Forgetting to Set TTL
 
-**Problem:** Cache entries never expire and the server's memory grows until it crashes.
+**Problem:** Cache entries never expire. Server memory grows until it crashes.
 
 **Cause:** You called `cache_set("key", $value)` without a TTL. The entry lives forever (or until the server restarts).
 
-**Fix:** Always set a TTL: `cache_set("key", $value, 300)`. Even for data that "never changes," set a long TTL like 86400 (24 hours). This provides a safety net against stale data and prevents unbounded memory growth.
+**Fix:** Always set a TTL: `cache_set("key", $value, 300)`. Even for data that "never changes," set a long TTL -- 86400 (24 hours). This provides a safety net against stale data and prevents unbounded memory growth.

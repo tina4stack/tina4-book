@@ -2,21 +2,23 @@
 
 ## 1. The 47-Endpoint Problem
 
-Your team has 47 API endpoints and the frontend developer keeps asking "what does this endpoint accept?" Swagger solves this permanently. It generates interactive API documentation from annotations in your route files. The docs are always up to date because they come from the code itself.
+Your team has 47 API endpoints. The frontend developer asks "what does this endpoint accept?" again. And again.
 
-Tina4 auto-generates a Swagger UI at `/swagger` from doc-block annotations on your routes. No build step. No extra tooling.
+Swagger kills that question. It generates interactive API documentation from annotations in your route files. The docs stay current because they live in the code.
+
+Tina4 builds a Swagger UI at `/swagger` from doc-block annotations on your routes. No build step. No extra tooling.
 
 ---
 
 ## 2. What Swagger/OpenAPI Is
 
-OpenAPI is a specification format for describing REST APIs. Swagger is the toolset that reads OpenAPI specs and generates documentation. Tina4 builds this spec automatically from JSDoc comments in your TypeScript code.
+OpenAPI is a specification format for describing REST APIs. Swagger is the toolset that reads OpenAPI specs and renders documentation. Tina4 builds the spec from JSDoc comments in your TypeScript code. No manual spec writing.
 
 ---
 
 ## 3. Enabling Swagger
 
-Swagger is available out of the box when `TINA4_DEBUG=true`. Navigate to:
+Swagger runs when `TINA4_DEBUG=true`. Navigate to:
 
 ```
 http://localhost:7148/swagger
@@ -142,7 +144,7 @@ Router.post("/api/products", async (req, res) => {
 
 ## 8. Try-It-Out from the Swagger UI
 
-The Swagger UI includes a "Try it out" button on every endpoint that sends actual HTTP requests to your running server.
+The Swagger UI puts a "Try it out" button on every endpoint. Click it and the UI sends a real HTTP request to your running server. Live testing without curl.
 
 ---
 

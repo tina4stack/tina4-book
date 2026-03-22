@@ -2,9 +2,9 @@
 
 ## 1. Every App Sends Email
 
-Your SaaS app needs to send signup confirmations, password resets, and weekly digest emails -- with attachments, HTML templates, and reliable delivery. Email is one of those features that every application needs but nobody enjoys implementing. SMTP configuration, plain text fallbacks, attachment encoding, connection timeouts, bounce handling -- the details pile up fast.
+Signup confirmations. Password resets. Weekly digests. Attachments, HTML templates, reliable delivery. Every application needs email. Nobody enjoys building it. SMTP configuration. Plain text fallbacks. Attachment encoding. Connection timeouts. Bounce handling. The details compound.
 
-Tina4's `Messenger` class handles all of this. Configure it via `.env`, create a Messenger instance, and send. In development mode, emails are intercepted and shown in the dev dashboard so you can inspect them without setting up a real SMTP server.
+Tina4's `Messenger` class owns all of this. Configure via `.env`. Create an instance. Send. In development mode, emails are intercepted and shown in the dev dashboard -- inspect them without touching a real SMTP server.
 
 ---
 

@@ -2,7 +2,7 @@
 
 ## 1. The Two Objects You Always Get
 
-Every route handler in Tina4 receives two arguments: `req` and `res`. The request tells you what the client sent. The response is how you send something back. Together they are the entire HTTP conversation.
+Every route handler in Tina4 receives two arguments: `req` and `res`. The request tells you what the client sent. The response is how you talk back. Together they are the entire HTTP conversation.
 
 ```typescript
 import { Router } from "tina4-nodejs";
@@ -24,13 +24,13 @@ curl http://localhost:7148/echo
 {"method":"GET","path":"/echo","your_ip":"127.0.0.1"}
 ```
 
-That is the pattern for every route: inspect the request, build the response, return it.
+The pattern for every route: inspect the request, build the response, return it.
 
 ---
 
 ## 2. The Request Object
 
-The `req` object gives you access to everything the client sent. Here is the complete list of properties.
+The `req` object gives you everything the client sent. Here is the complete inventory.
 
 ### method
 
@@ -73,7 +73,7 @@ req.query.sort // "price"
 
 ### body
 
-The parsed request body. For JSON requests, this is an object. For form submissions, it contains the form fields:
+The parsed request body. JSON requests produce an object. Form submissions contain form fields:
 
 ```typescript
 // POST with {"name": "Widget", "price": 9.99}
@@ -120,7 +120,7 @@ req.files.avatar // File object with name, type, size, tmpPath
 
 ### Inspecting the Full Request
 
-Here is a route that dumps everything:
+A route that dumps everything:
 
 ```typescript
 import { Router } from "tina4-nodejs";
@@ -170,11 +170,11 @@ curl -X POST "http://localhost:7148/debug/request?page=1" \
 
 ## 3. The Response Object
 
-The `res` object is your toolkit for sending data back to the client. Every method on it returns the response, so you can chain calls together.
+The `res` object is your toolkit for sending data back to the client. Every method returns the response, so you can chain calls.
 
 ### json() -- JSON Response
 
-The most common response for APIs. Pass any object or value and it becomes JSON:
+The workhorse for APIs. Pass any object or value and it becomes JSON:
 
 ```typescript
 return res.json({ name: "Alice", age: 30 });
@@ -209,7 +209,7 @@ Or return raw HTML:
 return res.html("<h1>Hello</h1><p>This is HTML.</p>");
 ```
 
-Sets `Content-Type: text/html; charset=utf-8` automatically.
+Sets `Content-Type: text/html; charset=utf-8`.
 
 ### text() -- Plain Text Response
 
@@ -243,9 +243,9 @@ Send a file to the client for download:
 return res.file("/path/to/report.pdf");
 ```
 
-This sets the appropriate `Content-Type` based on the file extension and adds a `Content-Disposition` header so the browser downloads the file.
+Tina4 sets the appropriate `Content-Type` based on the file extension and adds a `Content-Disposition` header so the browser downloads the file.
 
-You can set a custom filename:
+Set a custom filename:
 
 ```typescript
 return res.file("/path/to/report.pdf", "monthly-report-march-2026.pdf");
@@ -255,14 +255,14 @@ return res.file("/path/to/report.pdf", "monthly-report-march-2026.pdf");
 
 ## 4. Status Codes
 
-Every response method can be chained with `status()`. Here are the most common ones:
+Every response method chains with `status()`. The most common ones:
 
 | Code | Meaning | When to Use |
 |------|---------|-------------|
 | `200` | OK | Default. Successful GET, PUT, PATCH. |
 | `201` | Created | Successful POST that created a resource. |
 | `204` | No Content | Successful DELETE. No body needed. |
-| `301` | Moved Permanently | URL has permanently changed. |
+| `301` | Moved Permanently | URL has changed forever. |
 | `302` | Found | Temporary redirect. |
 | `400` | Bad Request | Invalid input from the client. |
 | `401` | Unauthorized | Missing or invalid authentication. |
@@ -270,7 +270,7 @@ Every response method can be chained with `status()`. Here are the most common o
 | `404` | Not Found | Resource does not exist. |
 | `409` | Conflict | Duplicate or conflicting data. |
 | `422` | Unprocessable Entity | Valid JSON but fails business rules. |
-| `500` | Internal Server Error | Something went wrong on the server. |
+| `500` | Internal Server Error | Something broke on the server. |
 
 ```typescript
 return res.status(201).json({ id: 7, created: true });
@@ -294,7 +294,7 @@ Router.get("/api/data", async (req, res) => {
 
 ### CORS Headers
 
-Tina4 handles CORS automatically based on the `CORS_ORIGINS` setting in `.env`. The default `*` allows all origins. For production, restrict it:
+Tina4 handles CORS based on the `CORS_ORIGINS` setting in `.env`. The default `*` allows all origins. For production, lock it down:
 
 ```env
 CORS_ORIGINS=https://myapp.com,https://admin.myapp.com
@@ -346,7 +346,7 @@ return res
 
 ## 7. File Uploads
 
-Uploaded files are available via `req.files`. Each file is an object with properties for the file's metadata and a temporary path.
+Uploaded files arrive via `req.files`. Each file is an object with metadata and a temporary path.
 
 ### Handling a Single File Upload
 
@@ -503,7 +503,7 @@ Build an API that handles image uploads and serves them back.
 
 Rules:
 
-1. Only accept JPEG, PNG, and WebP files
+1. Accept JPEG, PNG, and WebP files only
 2. Maximum file size: 2MB
 3. Save files to `src/public/uploads/` with a unique filename
 4. Return the original filename, the saved filename, file size in KB, and the URL
@@ -606,25 +606,25 @@ Router.get("/api/images/:filename", async (req, res) => {
 
 ### 1. Forgetting `return`
 
-**Problem:** Your handler runs (you can see log output) but the browser shows an empty response or a 500 error.
+**Problem:** Your handler runs (log output appears) but the browser shows an empty response or a 500 error.
 
 **Cause:** You wrote `res.json({...})` without `return`.
 
-**Fix:** Always write `return res.json({...})`. The response object needs to be returned from the handler for Tina4 to send it to the client.
+**Fix:** Write `return res.json({...})`. The response object must be returned from the handler for Tina4 to send it.
 
 ### 2. Body Is Undefined for JSON Requests
 
 **Problem:** `req.body` is `undefined` or empty even though you are sending JSON.
 
-**Cause:** You forgot the `Content-Type: application/json` header in your request. Without it, Tina4 does not know to parse the body as JSON.
+**Cause:** Missing `Content-Type: application/json` header. Without it, Tina4 does not parse the body as JSON.
 
-**Fix:** Always include `-H "Content-Type: application/json"` when sending JSON with curl. In frontend JavaScript, `fetch()` with `JSON.stringify()` requires `headers: {"Content-Type": "application/json"}`.
+**Fix:** Include `-H "Content-Type: application/json"` when sending JSON with curl. In frontend JavaScript, `fetch()` with `JSON.stringify()` requires `headers: {"Content-Type": "application/json"}`.
 
 ### 3. File Uploads Return Empty
 
 **Problem:** `req.files` is empty even though you are uploading a file.
 
-**Cause:** The form is not using `enctype="multipart/form-data"`, or the curl command is using `-d` instead of `-F`.
+**Cause:** The form is not using `enctype="multipart/form-data"`, or the curl command uses `-d` instead of `-F`.
 
 **Fix:** For HTML forms, use `<form enctype="multipart/form-data">`. For curl, use `-F "field=@file.jpg"` (with `@`), not `-d`.
 
@@ -632,15 +632,15 @@ Router.get("/api/images/:filename", async (req, res) => {
 
 **Problem:** The browser shows "too many redirects" or hangs.
 
-**Cause:** You have a route that redirects to another route, which redirects back to the first one.
+**Cause:** Route A redirects to route B, which redirects back to route A.
 
-**Fix:** Check your redirect logic carefully. Use the browser's network inspector to trace the redirect chain.
+**Fix:** Trace the redirect chain in the browser's network inspector. Break the cycle.
 
 ### 5. Cookie Not Set
 
 **Problem:** You called `res.cookie(...)` but the browser does not show the cookie.
 
-**Cause:** If `secure` is `true`, the cookie is only sent over HTTPS. During local development with `http://localhost`, the cookie is silently dropped.
+**Cause:** `secure: true` means the cookie travels only over HTTPS. Local development uses `http://localhost`. The cookie is dropped.
 
 **Fix:** Set `secure: false` during development.
 
@@ -656,6 +656,6 @@ Router.get("/api/images/:filename", async (req, res) => {
 
 **Problem:** `req.headers["Content-Type"]` is `undefined` even though the header was sent.
 
-**Cause:** Node.js normalizes all header names to lowercase. The header is available as `req.headers["content-type"]`.
+**Cause:** Node.js normalizes all header names to lowercase.
 
-**Fix:** Always use lowercase header names when reading from `req.headers`.
+**Fix:** Use lowercase header names: `req.headers["content-type"]`.

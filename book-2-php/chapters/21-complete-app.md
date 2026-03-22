@@ -2,9 +2,9 @@
 
 ## 1. Putting It All Together
 
-Over the last 20 chapters, you have learned routing, templates, databases, ORM, authentication, middleware, queues, WebSocket, caching, frontend, GraphQL, testing, dev tools, CLI scaffolding, and deployment. Now let us use all of it to build a real application from scratch.
+Twenty chapters. Routing, templates, databases, ORM, authentication, middleware, queues, WebSocket, caching, frontend, GraphQL, testing, dev tools, CLI scaffolding, deployment. Now all of it works together in one application.
 
-We are building **TaskFlow** -- a task management system with:
+**TaskFlow** -- a task management system:
 
 - User registration and JWT authentication
 - Task creation, assignment, and tracking
@@ -14,7 +14,7 @@ We are building **TaskFlow** -- a task management system with:
 - A full test suite
 - Docker deployment
 
-This is not a toy project. It is a complete, production-ready application that demonstrates every major Tina4 feature working together.
+Not a toy project. A complete, production-ready application. Every major Tina4 feature in one codebase.
 
 ---
 
@@ -972,7 +972,7 @@ Route::get("/admin", function ($request, $response) {
 
 ## 7. Step 5: Real-Time Updates via WebSocket
 
-Add real-time task updates so all connected dashboard users see changes instantly.
+Real-time task updates. All connected dashboard users see changes the moment they happen.
 
 Create `src/routes/websocket.php`:
 
@@ -1053,13 +1053,13 @@ ws.onclose = function () {
 };
 ```
 
-Now when any user creates, updates, or deletes a task, all connected dashboard users see the change immediately.
+Any user creates, updates, or deletes a task. All connected dashboard users see the change.
 
 ---
 
 ## 8. Step 6: Email Notifications on Task Assignment
 
-When a task is assigned to a user, send them an email notification.
+A task is assigned to a user. Send them an email notification.
 
 Create `src/routes/notifications.php`:
 
@@ -1121,7 +1121,7 @@ For development, you can use a local mail trap like MailHog or Mailtrap.io so em
 
 ## 9. Step 7: Add Caching for the Dashboard
 
-The dashboard stats query runs on every page load. With many tasks, this can be slow. Add caching so the stats are computed once and served from cache for subsequent requests.
+The dashboard stats query runs on every page load. With many tasks, this gets slow. Cache the stats. Compute once. Serve from cache for subsequent requests.
 
 Update the dashboard stats route:
 
@@ -1542,13 +1542,13 @@ taskflow/
     └── TaskFlowTest.php
 ```
 
-Every file has a purpose. Every directory follows the convention. A new developer can look at this structure and know exactly where to find things.
+Every file has a purpose. Every directory follows the convention. A new developer looks at this structure and knows where to find things.
 
 ---
 
 ## 13. What to Build Next
 
-TaskFlow is a solid foundation. Here are ideas for extending it:
+TaskFlow is a solid foundation. Ideas for extending it:
 
 **Features:**
 - **Task comments** -- Add a Comment model with a `task_id` foreign key. Display comments on the task detail page.
@@ -1572,18 +1572,16 @@ TaskFlow is a solid foundation. Here are ideas for extending it:
 
 ## 14. Closing Thoughts -- The Tina4 Philosophy
 
-You have just built a complete application -- user auth, CRUD, real-time updates, email, caching, tests, deployment -- and your project has exactly one dependency: `tina4/tina4-php`.
+You built a complete application. User auth. CRUD. Real-time updates. Email. Caching. Tests. Deployment. Your project has one dependency: `tina4/tina4-php`.
 
-No ORM package. No template engine package. No authentication library. No WebSocket server. No caching library. No testing framework. No CLI tool. No CSS framework. No JavaScript helpers. They are all built in.
-
-This is the Tina4 philosophy:
+No ORM package. No template engine package. No authentication library. No WebSocket server. No caching library. No testing framework. No CLI tool. No CSS framework. No JavaScript helpers. All built in.
 
 **One framework. Zero dependencies. Everything you need.**
 
-The same patterns you used here work identically in Python, Ruby, and Node.js. The project structure is the same. The CLI commands are the same. The `.env` variables are the same. The template syntax is the same. Learn Tina4 once, use it everywhere.
+The same patterns work in Python, Ruby, and Node.js. Same project structure. Same CLI commands. Same `.env` variables. Same template syntax. Learn Tina4 once. Use it everywhere.
 
-Your `vendor/` directory is small. Your `composer.lock` has one entry. When PHP 9.0 ships, you update one package and everything works. No dependency tree to untangle. No abandoned transitive dependency to replace. No security advisory for a package four levels deep that you did not even know you were using.
+Your `vendor/` directory is small. Your `composer.lock` has one entry. When PHP 9.0 ships, you update one package. Everything works. No dependency tree to untangle. No abandoned transitive dependency to replace. No security advisory for a package four levels deep that you never knew you were using.
 
-Simple does not mean limited. TaskFlow has authentication, real-time WebSocket, email, caching, GraphQL, and a test suite. It deploys in a Docker container and handles thousands of concurrent users. It does all of this in under 5,000 lines of framework code.
+Simple does not mean limited. TaskFlow has authentication, real-time WebSocket, email, caching, GraphQL, and a test suite. It deploys in a Docker container. It handles thousands of concurrent users. All of this runs on under 5,000 lines of framework code.
 
 Build things. Ship them. Keep it simple.

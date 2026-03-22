@@ -2,9 +2,11 @@
 
 ## 1. From Arrays to Real Data
 
-In Chapters 2 and 3, all our data lived in TypeScript arrays that reset every time the server restarted. That is fine for learning routing and responses, but real applications need persistent storage. This chapter covers Tina4's database layer -- raw queries, parameterised queries, transactions, schema inspection, helper methods, and migrations.
+In Chapters 2 and 3, all your data lived in TypeScript arrays. Server restart. Data gone. That works for learning routing and responses. Real applications need persistent storage.
 
-Tina4 supports five database engines: SQLite, PostgreSQL, MySQL, Microsoft SQL Server, and Firebird. The API is the same across all of them. You switch databases by changing one line in `.env`.
+This chapter covers Tina4's database layer: raw queries, parameterised queries, transactions, schema inspection, helper methods, and migrations.
+
+Tina4 speaks to five database engines: SQLite, PostgreSQL, MySQL, Microsoft SQL Server, and Firebird. The API is identical across all of them. One line in `.env` switches the engine.
 
 ---
 
@@ -12,13 +14,13 @@ Tina4 supports five database engines: SQLite, PostgreSQL, MySQL, Microsoft SQL S
 
 ### The Default: SQLite
 
-When you scaffold a project with `tina4 init`, Tina4 creates a SQLite database at `data/app.db`. The default `.env` includes:
+When you scaffold a project with `tina4 init`, Tina4 drops a SQLite database at `data/app.db`. The default `.env` includes:
 
 ```env
 TINA4_DEBUG=true
 ```
 
-With no explicit `DATABASE_URL`, Tina4 defaults to `sqlite:///data/app.db`. That is why the health check at `/health` already shows `"database": "connected"` without any configuration.
+With no explicit `DATABASE_URL`, Tina4 defaults to `sqlite:///data/app.db`. That is why the health check at `/health` shows `"database": "connected"` with zero configuration.
 
 ### Connection Strings for Other Databases
 
@@ -91,7 +93,7 @@ curl http://localhost:7148/api/test-db
 {"answer": 2}
 ```
 
-`Database.getConnection()` returns the active database connection. You call methods like `fetch()`, `execute()`, and `fetchOne()` on this object. All database methods are async and return Promises.
+`Database.getConnection()` returns the active database connection. Call `fetch()`, `execute()`, and `fetchOne()` on this object. All database methods are async. All return Promises.
 
 ---
 
@@ -156,7 +158,7 @@ Router.get("/api/products", async (req, res) => {
 
 ## 5. Parameterised Queries
 
-Never concatenate user input into SQL strings. This is how SQL injection attacks happen:
+Never concatenate user input into SQL strings. That door leads to SQL injection:
 
 ```typescript
 // NEVER do this:
@@ -367,7 +369,7 @@ await db.delete("products", "id = :id", { id: 7 });
 
 ## 10. Migrations
 
-Migrations are versioned SQL scripts that evolve your database schema over time.
+Migrations are versioned SQL scripts. They evolve your database schema over time. Each migration runs once. Never again.
 
 ### Creating a Migration
 
@@ -426,7 +428,7 @@ Enable query caching in `.env`:
 TINA4_DB_CACHE=true
 ```
 
-When enabled, identical queries with identical parameters return cached results. The cache is automatically invalidated when you call `execute()`, `insert()`, `update()`, or `delete()` on the same table.
+Identical queries with identical parameters return cached results. The cache invalidates itself when you call `execute()`, `insert()`, `update()`, or `delete()` on the same table.
 
 ```typescript
 // Force a fresh query (bypass cache)

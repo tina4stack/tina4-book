@@ -2,9 +2,9 @@
 
 ## 1. From 800ms to 3ms
 
-Your product catalog page runs 12 database queries and takes 800 milliseconds to render. Every visitor triggers the same queries, the same template rendering, the same JSON serialization -- for data that changes maybe once a day. After adding caching, the first request takes 800ms and the next 10,000 requests take 3ms each. That is a 266x improvement for one line of configuration.
+Your product catalog page runs 12 database queries. 800 milliseconds to render. Every visitor triggers the same queries, the same template rendering, the same JSON serialization -- for data that changes once a day. Add caching. The first request takes 800ms. The next 10,000 take 3ms each. A 266x improvement from one line of configuration.
 
-Caching stores the result of expensive operations so they can be reused without recomputing. Tina4 provides caching at multiple levels: response caching (entire HTTP responses), database query caching, and a direct cache API for custom use cases.
+Caching stores the result of expensive operations for reuse. Tina4 provides three levels: response caching (entire HTTP responses), database query caching, and a direct cache API for custom use cases.
 
 ---
 

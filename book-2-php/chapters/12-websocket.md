@@ -2,17 +2,19 @@
 
 ## 1. The Refresh Button Problem
 
-Your project management app needs live updates. When someone moves a card from "In Progress" to "Done", everyone else on the team should see it instantly -- no page refresh, no polling, no waiting. Traditional HTTP is request-response: the client asks, the server answers. The server cannot push data to the client on its own.
+Your project management app needs live updates. Someone moves a card from "In Progress" to "Done." Everyone else should see it. No page refresh. No polling. No waiting.
 
-WebSocket solves this by establishing a persistent, bi-directional connection between the browser and the server. Once connected, either side can send messages at any time. The connection stays open until explicitly closed.
+HTTP is a conversation with amnesia. The client asks, the server answers, the connection dies. The server cannot reach back.
 
-Tina4 treats WebSocket like routing. You define a WebSocket handler the same way you define an HTTP route. The path determines which handler processes the connection.
+WebSocket fixes this. It opens a persistent, two-way channel between browser and server. Either side sends messages at any time. The connection holds until someone closes it.
+
+Tina4 treats WebSocket the same as routing. Define a handler. Assign a path. Done.
 
 ---
 
 ## 2. What WebSocket Is
 
-HTTP works like this:
+HTTP works this way:
 
 ```
 Client: "Give me /api/products"
@@ -21,7 +23,7 @@ Client: "Give me /api/products" (new connection)
 Server: "Here are the products" (connection closes)
 ```
 
-WebSocket works like this:
+WebSocket works this way:
 
 ```
 Client: "I want to upgrade to WebSocket on /ws/chat"
@@ -34,18 +36,18 @@ Server: "Alice says: Goodbye!"
 Client: (closes connection)
 ```
 
-Key differences:
+Four differences matter:
 
 - **Persistent**: The connection stays open. No repeated handshakes.
-- **Bi-directional**: The server can push data without the client asking.
-- **Low overhead**: After the initial handshake, messages are tiny (no HTTP headers per message).
+- **Bi-directional**: The server pushes data without the client asking.
+- **Low overhead**: After the initial handshake, messages are tiny. No HTTP headers per message.
 - **Real-time**: Messages arrive within milliseconds.
 
 ---
 
 ## 3. Router::websocket() -- WebSocket as a Route
 
-In Tina4, you define WebSocket handlers using `Route::websocket()`:
+Define WebSocket handlers with `Route::websocket()`:
 
 ```php
 <?php
@@ -58,11 +60,11 @@ Route::websocket("/ws/echo", function ($connection, $event, $data) {
 });
 ```
 
-This is the simplest WebSocket handler: it receives a message and sends it back with "Echo: " prepended. The handler receives three arguments:
+The simplest handler. It receives a message and sends it back with "Echo: " prepended. Three arguments arrive:
 
-- **$connection**: The WebSocket connection object. Use it to send messages.
+- **$connection**: The WebSocket connection object. Send messages through it.
 - **$event**: The event type: `"open"`, `"message"`, or `"close"`.
-- **$data**: The message data (only present for `"message"` events).
+- **$data**: The message data. Present only for `"message"` events.
 
 ### Starting the Server
 
@@ -79,13 +81,13 @@ tina4 serve
   Press Ctrl+C to stop
 ```
 
-Both HTTP and WebSocket share the same port. The server detects the protocol upgrade request and routes it to the correct handler.
+Both protocols share the same port. The server detects the upgrade request and routes to the correct handler.
 
 ---
 
 ## 4. Connection Events
 
-Every WebSocket connection goes through three lifecycle events:
+Every WebSocket connection passes through three lifecycle events.
 
 ### Open
 
@@ -158,7 +160,7 @@ Route::websocket("/ws/notifications", function ($connection, $event, $data) {
 
 ### A Complete Handler
 
-Here is a handler that responds to all three events:
+All three events in one handler:
 
 ```php
 <?php
@@ -199,7 +201,7 @@ Route::websocket("/ws/chat", function ($connection, $event, $data) {
 
 ## 5. Sending to a Single Client
 
-`$connection->send()` sends a message to the specific client that triggered the event:
+`$connection->send()` targets the specific client that triggered the event:
 
 ```php
 Route::websocket("/ws/private", function ($connection, $event, $data) {
@@ -227,7 +229,7 @@ Route::websocket("/ws/private", function ($connection, $event, $data) {
 });
 ```
 
-Only the client that sent the message receives the response. Other connected clients do not see it.
+Only the sender receives the response. Other connected clients see nothing.
 
 ---
 
@@ -271,11 +273,11 @@ Route::websocket("/ws/announcements", function ($connection, $event, $data) {
 });
 ```
 
-When one client sends a message, every client connected to `/ws/announcements` receives it. This is the foundation for chat rooms, live dashboards, and collaborative editing.
+One client sends a message. Every client connected to `/ws/announcements` receives it. Chat rooms, live dashboards, collaborative editing -- they all start here.
 
 ### Broadcast Excluding Sender
 
-Sometimes you want to send to everyone except the client that triggered the event:
+Send to everyone except the client that triggered the event:
 
 ```php
 if ($event === "message") {
@@ -297,13 +299,13 @@ if ($event === "message") {
 }
 ```
 
-The second argument to `broadcast()` excludes the sender when set to `true`. The sender gets a "sent" confirmation, and everyone else gets the "message".
+The second argument to `broadcast()` excludes the sender when set to `true`. The sender gets a "sent" confirmation. Everyone else gets the "message."
 
 ---
 
 ## 7. Path-Scoped Isolation
 
-Different WebSocket paths are completely isolated. Clients connected to `/ws/chat/room-1` do not see messages from `/ws/chat/room-2`:
+Different WebSocket paths are walls. Clients connected to `/ws/chat/room-1` never see messages from `/ws/chat/room-2`:
 
 ```php
 <?php
@@ -353,15 +355,15 @@ ws://localhost:7145/ws/chat/random     -- random chat
 ws://localhost:7145/ws/chat/dev-team   -- dev team chat
 ```
 
-Broadcasting in `/ws/chat/general` only reaches clients connected to `/ws/chat/general`. The `dev-team` and `random` rooms are separate.
+Broadcasting in `/ws/chat/general` reaches only clients in `/ws/chat/general`. The `dev-team` and `random` rooms are separate worlds.
 
-This gives you chat rooms, project-specific notifications, and per-user channels without any extra configuration. The URL path is the isolation boundary.
+Chat rooms. Project-specific notifications. Per-user channels. No extra configuration. The URL path is the isolation boundary.
 
 ---
 
 ## 8. Building a Live Chat
 
-Here is a complete chat application with usernames, typing indicators, and message history:
+A complete chat application with usernames, typing indicators, and message history.
 
 ### WebSocket Handler
 
@@ -446,7 +448,7 @@ Route::websocket("/ws/livechat/{room}", function ($connection, $event, $data) us
 
 ## 9. Live Notifications
 
-WebSocket is great for pushing notifications to users in real time:
+WebSocket pushes notifications to users in real time:
 
 ```php
 <?php
@@ -495,13 +497,13 @@ Route::post("/api/orders/{orderId:int}/ship", function ($request, $response) {
 });
 ```
 
-The `Route::pushToWebSocket()` method lets your HTTP handlers send messages to WebSocket clients. This bridges the gap between traditional request-response endpoints and real-time notifications.
+`Route::pushToWebSocket()` bridges the gap. Your HTTP handlers send messages to WebSocket clients. Request-response meets real-time.
 
 ---
 
 ## 10. Connecting from JavaScript
 
-Tina4 provides `frond.js`, a built-in JavaScript helper library that includes WebSocket support:
+Tina4 ships `frond.js`, a built-in JavaScript helper library with WebSocket support.
 
 ### Basic Connection
 
@@ -551,7 +553,7 @@ Tina4 provides `frond.js`, a built-in JavaScript helper library that includes We
 
 ### Auto-Reconnect
 
-`frond.js` automatically reconnects when the connection drops:
+`frond.js` reconnects when the connection drops:
 
 ```javascript
 const ws = frond.ws("/ws/notifications/42", {
@@ -571,7 +573,7 @@ ws.on("reconnect_failed", function () {
 
 ### Using Native WebSocket
 
-If you prefer not to use `frond.js`, the native WebSocket API works too:
+The native WebSocket API works too:
 
 ```javascript
 const ws = new WebSocket("ws://localhost:7145/ws/chat/general");
@@ -595,13 +597,13 @@ ws.onerror = function (error) {
 };
 ```
 
-The advantage of `frond.js` is auto-reconnect, message buffering during reconnection, and a cleaner event API.
+The advantage of `frond.js`: auto-reconnect, message buffering during reconnection, a cleaner event API.
 
 ---
 
 ## 11. A Complete Chat Page
 
-Here is a full chat page using templates and WebSocket:
+A full chat page using templates and WebSocket.
 
 Create `src/templates/chat.html`:
 
@@ -705,7 +707,7 @@ Route::get("/chat/{room}", function ($request, $response) {
 });
 ```
 
-Visit `http://localhost:7145/chat/general` in two browser tabs. Type in one tab and watch the message appear in the other instantly.
+Open `http://localhost:7145/chat/general` in two browser tabs. Type in one. Watch the message appear in the other.
 
 ---
 
@@ -888,19 +890,19 @@ Open `http://localhost:7145/room/test` in two browser tabs. Set different userna
 
 ### 1. WebSocket Needs a Persistent Server
 
-**Problem:** WebSocket connections drop immediately or do not work at all.
+**Problem:** WebSocket connections drop or fail to connect.
 
-**Cause:** You are running behind a traditional PHP-FPM + Nginx setup. PHP-FPM processes terminate after each HTTP request, so there is no persistent process to maintain WebSocket connections.
+**Cause:** You are running behind a traditional PHP-FPM + Nginx setup. PHP-FPM processes terminate after each HTTP request. No persistent process exists to maintain WebSocket connections.
 
-**Fix:** Use `tina4 serve` which runs a persistent server that handles both HTTP and WebSocket. For production, run the Tina4 server directly (not behind PHP-FPM). You can still use Nginx as a reverse proxy, but it must be configured for WebSocket proxying with `proxy_set_header Upgrade $http_upgrade` and `proxy_set_header Connection "upgrade"`.
+**Fix:** Use `tina4 serve`. It runs a persistent server handling both HTTP and WebSocket. For production, run the Tina4 server directly -- not behind PHP-FPM. Nginx can still serve as a reverse proxy, but it must be configured for WebSocket: `proxy_set_header Upgrade $http_upgrade` and `proxy_set_header Connection "upgrade"`.
 
 ### 2. Messages Are Strings, Not Objects
 
 **Problem:** `$data` in the message handler is a string, not a PHP array.
 
-**Cause:** WebSocket transmits raw strings. If the client sends JSON, you receive the JSON string, not a decoded array.
+**Cause:** WebSocket transmits raw strings. JSON from the client arrives as a JSON string, not a decoded array.
 
-**Fix:** Always `json_decode($data, true)` when you expect JSON messages. Always `json_encode()` when you send structured data. WebSocket does not know about content types -- it is just bytes.
+**Fix:** Always `json_decode($data, true)` when you expect JSON. Always `json_encode()` when you send structured data. WebSocket does not know about content types. It moves bytes.
 
 ### 3. Connection Count Is Per-Path
 
@@ -908,36 +910,36 @@ Open `http://localhost:7145/room/test` in two browser tabs. Set different userna
 
 **Cause:** Connection count is scoped to the WebSocket path. Clients on `/ws/chat/room-1` are counted separately from `/ws/chat/room-2`.
 
-**Fix:** This is by design. Each path is an isolated group. If you need a global connection count across all paths, maintain a counter in a shared variable.
+**Fix:** This is by design. Each path is an isolated group. For a global connection count across all paths, maintain a counter in a shared variable.
 
 ### 4. Broadcasting Does Not Scale Across Servers
 
 **Problem:** Users connected to different server instances do not see each other's messages.
 
-**Cause:** `$connection->broadcast()` only sends to clients connected to the same server process. With multiple server instances behind a load balancer, each instance has its own set of connections.
+**Cause:** `$connection->broadcast()` sends only to clients on the same server process. Multiple instances behind a load balancer each maintain their own connection sets.
 
-**Fix:** Use a pub/sub backend like Redis to relay messages across server instances. Each server subscribes to a Redis channel, and broadcast messages are published to Redis so all servers receive them.
+**Fix:** Use a pub/sub backend. Redis works well. Each server subscribes to a Redis channel. Broadcast messages publish to Redis. All servers receive them.
 
 ### 5. Large Messages Cause Disconnects
 
 **Problem:** The connection drops when sending a large message.
 
-**Cause:** WebSocket servers typically have a maximum message size. The default is usually around 1MB. If your message exceeds this, the server closes the connection.
+**Cause:** WebSocket servers enforce a maximum message size. The default is around 1MB. Exceed it, and the server closes the connection.
 
-**Fix:** Keep messages small (under 64KB is a good target). For large data transfers, use HTTP endpoints instead of WebSocket. WebSocket is designed for small, frequent messages -- not bulk data transfer.
+**Fix:** Keep messages small. Under 64KB is a good target. For large data transfers, use HTTP endpoints. WebSocket is built for small, frequent messages -- not bulk data.
 
 ### 6. Memory Leak from Tracking Connected Users
 
-**Problem:** The server's memory usage grows over time and eventually crashes.
+**Problem:** Server memory grows over time and crashes.
 
-**Cause:** You store user data in a PHP array (like `$chatUsers`) but do not clean it up when users disconnect. If the `close` event handler does not remove the user from the array, the array grows indefinitely.
+**Cause:** User data stored in a PHP array (like `$chatUsers`) is not cleaned up when users disconnect. The `close` handler does not remove them. The array grows without limit.
 
-**Fix:** Always clean up in the `close` handler. Remove disconnected users from tracking arrays: `unset($chatUsers[$connection->id])`. Test by connecting and disconnecting repeatedly to verify memory stays stable.
+**Fix:** Always clean up in the `close` handler. Remove disconnected users from tracking arrays: `unset($chatUsers[$connection->id])`. Test by connecting and disconnecting repeatedly. Verify memory stays stable.
 
 ### 7. No Authentication on WebSocket Connect
 
 **Problem:** Anyone can connect to your WebSocket endpoint and see all messages.
 
-**Cause:** The WebSocket upgrade request does not carry your JWT token in the `Authorization` header (browsers do not support custom headers on WebSocket connections).
+**Cause:** The WebSocket upgrade request does not carry your JWT token in the `Authorization` header. Browsers do not support custom headers on WebSocket connections.
 
-**Fix:** Pass the token as a query parameter: `ws://localhost:7145/ws/chat?token=eyJ...`. In your `open` handler, validate the token and disconnect if invalid. Use a short-lived token specifically for WebSocket connections. Alternatively, authenticate via an HTTP endpoint first, store the session, and check the session cookie during the WebSocket upgrade.
+**Fix:** Pass the token as a query parameter: `ws://localhost:7145/ws/chat?token=eyJ...`. In your `open` handler, validate the token and disconnect if invalid. Use a short-lived token for WebSocket connections. Or authenticate via HTTP first, store the session, and check the session cookie during the upgrade.

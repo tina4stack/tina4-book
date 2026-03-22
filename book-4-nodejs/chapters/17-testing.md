@@ -2,7 +2,7 @@
 
 ## 1. Why Tests Matter More Than You Think
 
-It is Friday afternoon. Your client reported a critical bug. You fix it -- one line. But did that fix break anything else? Running the test suite takes 2 seconds.
+Friday afternoon. Your client reported a critical bug. You fix it -- one line. But did that fix break something else? The test suite answers in 2 seconds.
 
 ```bash
 npm test
@@ -25,7 +25,7 @@ Running tests...
   7 tests, 7 passed, 0 failed (0.34s)
 ```
 
-Tina4 includes an inline testing framework. No external packages. No Jest configuration.
+Tina4 ships an inline testing framework. No external packages. No Jest configuration. No setup ceremony.
 
 ---
 
@@ -225,7 +225,7 @@ export class ProductModelTest extends Test {
 
 ## 7. Test Database Isolation
 
-Tina4 automatically creates a test database (`data/test.db`) when running tests. Each test class gets a clean database.
+Tina4 creates a test database (`data/test.db`) when running tests. Each test class gets a clean database. No leftover data from previous runs.
 
 ```env
 # In .env.test (optional)

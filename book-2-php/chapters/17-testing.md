@@ -2,7 +2,7 @@
 
 ## 1. Why Tests Matter More Than You Think
 
-It is Friday afternoon. Your client just reported a critical bug in production. You fix it -- one line of code. But did that fix break anything else? You have 47 routes, 12 ORM models, and 3 middleware functions. Manually clicking through every page would take an hour. Running the test suite takes 2 seconds.
+Friday afternoon. Your client reports a critical bug in production. You fix it. One line of code. But did that fix break anything else? You have 47 routes, 12 ORM models, and 3 middleware functions. Manually clicking through every page takes an hour. Running the test suite takes 2 seconds.
 
 ```bash
 tina4 test
@@ -27,15 +27,15 @@ Running tests...
   9 tests, 9 passed, 0 failed (0.34s)
 ```
 
-Everything still works. You deploy with confidence and enjoy your weekend.
+Everything still works. Deploy with confidence. Enjoy your weekend.
 
-Tina4 includes an inline testing framework. No external packages required. No PHPUnit configuration. Write a test, run it, done.
+Tina4 includes an inline testing framework. No external packages. No PHPUnit configuration. Write a test. Run it. Done.
 
 ---
 
 ## 2. Your First Test
 
-Tests live in the `tests/` directory. Every `.php` file in that directory is auto-discovered when you run `tina4 test`.
+Tests live in the `tests/` directory. Every `.php` file there is auto-discovered when you run `tina4 test`.
 
 Create `tests/BasicTest.php`:
 
@@ -172,7 +172,7 @@ $this->assertNotNull(null, "Is null");          // FAIL
 
 ## 4. Testing ORM Models
 
-Let us test a Product model. The test creates records, loads them, updates them, and deletes them.
+Test a Product model. Create records. Load them. Update them. Delete them.
 
 Create `tests/ProductTest.php`:
 
@@ -322,7 +322,7 @@ TINA4_TEST_DATABASE_URL=sqlite:///data/test.db
 
 ## 5. Testing Routes
 
-Tina4 provides a test client for making HTTP requests to your routes without starting a server.
+Tina4 provides a test client for HTTP requests to your routes. No server needed.
 
 Create `tests/RouteTest.php`:
 
@@ -592,7 +592,7 @@ class UserTest extends Test
 }
 ```
 
-`setUp()` runs before every test method, and `tearDown()` runs after every test method, regardless of whether the test passed or failed. This keeps tests isolated -- each test starts with a clean state.
+`setUp()` runs before every test method. `tearDown()` runs after every test method. Pass or fail, the cleanup runs. Each test starts with a clean state.
 
 ---
 
@@ -754,7 +754,7 @@ pecl install pcov
 
 ### Test One Thing Per Test
 
-Each test method should verify one behavior. If it fails, you know exactly what broke.
+Each test method verifies one behavior. When it fails, you know what broke.
 
 ```php
 // Good: each test verifies one thing
@@ -791,7 +791,7 @@ $this->assertEqual($user->name, "Alice", "Failed");
 
 ### Isolate Tests
 
-Each test should create its own data and clean up after itself. Never depend on data from another test or from the development database.
+Each test creates its own data and cleans up after itself. Never depend on data from another test or from the development database.
 
 ```php
 // Good: creates its own data

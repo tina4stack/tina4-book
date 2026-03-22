@@ -2,13 +2,13 @@
 
 ## 1. The Problem GraphQL Solves
 
-Your mobile app needs a list of products. Each product has a name, price, 20 image URLs, a full description, 15 review objects, and 8 other fields you do not need right now. With REST, you call `GET /api/products` and receive all of it -- 50KB of JSON when you only needed 2KB. On a spotty mobile connection, that wasted bandwidth matters.
+Your mobile app needs a list of products. Each product carries a name, price, 20 image URLs, a full description, 15 review objects, and 8 fields you do not need. REST sends all of it -- 50KB of JSON when you needed 2KB. On a mobile connection, that waste stings.
 
-Now your web dashboard needs the same products, but it also needs the category, stock status, and supplier info. With REST, you either make three requests (products, categories, suppliers) and stitch them together on the client, or you build a custom endpoint like `GET /api/products?include=category,supplier` and handle the query parameter parsing on the server.
+Now your web dashboard needs the same products plus category, stock status, and supplier info. REST forces you to make three requests and stitch them together, or build a custom endpoint with query parameter parsing.
 
-GraphQL solves both problems. The client asks for exactly the fields it needs, and the server returns exactly those fields. One endpoint, one request, one response with the right shape.
+GraphQL ends both problems. The client asks for the fields it needs. The server returns those fields. One endpoint. One request. One response shaped to fit.
 
-Tina4 includes a built-in GraphQL engine. No external packages. No Strawberry. No Ariadne. It is part of the framework.
+Tina4 includes a built-in GraphQL engine. No external packages. No Strawberry. No Ariadne. Part of the framework.
 
 ---
 
@@ -378,7 +378,7 @@ curl -X POST http://localhost:7145/graphql \
 
 ## 7. Nested Types and Relationships
 
-GraphQL's real power comes from traversing relationships in a single query. Let us add authors and comments to a blog schema.
+The real power of GraphQL: traversing relationships in a single query. Authors, posts, comments -- all in one request.
 
 Update `src/graphql/schema.graphql`:
 

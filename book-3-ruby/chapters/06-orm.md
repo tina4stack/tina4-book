@@ -2,9 +2,9 @@
 
 ## 1. From SQL to Objects
 
-In Chapter 5 you wrote raw SQL for every operation. That works, but it gets tedious. You end up writing the same `INSERT INTO products (name, price, ...) VALUES (:name, :price, ...)` patterns over and over. The ORM (Object-Relational Mapper) lets you work with Ruby classes instead. You define a class, map it to a table, and call methods like `save`, `load`, and `delete`.
+Chapter 5 was raw SQL for every operation. It works. It also gets tedious. The same `INSERT INTO products (name, price, ...) VALUES (:name, :price, ...)` patterns, over and over. The ORM lets you work with Ruby classes instead. Define a class. Map it to a table. Call `save`, `load`, `delete`.
 
-Tina4's ORM is minimal by design. It does not try to hide SQL completely -- it gives you convenient methods for common operations and stays out of the way when you need raw queries.
+Tina4's ORM is minimal by design. It does not hide SQL. It gives you convenience for common operations and steps aside when you need raw queries.
 
 ---
 
@@ -447,7 +447,7 @@ curl http://localhost:7147/api/users/1
 
 ## 10. Eager Loading
 
-Calling relationship methods inside a loop creates the N+1 query problem. If you load 100 users and then call `user.posts` for each one, that is 101 queries (1 for users + 100 for posts).
+Calling relationship methods inside a loop creates the N+1 query problem. Load 100 users. Call `user.posts` for each one. That is 101 queries -- 1 for users, 100 for posts.
 
 Use the `include` parameter with `select` to eager-load relationships:
 
@@ -549,7 +549,7 @@ all_posts = post.select("*", "", {}, "", 0, 0, [], true)  # eighth arg = include
 
 ## 12. Auto-CRUD
 
-One of Tina4's most powerful features is auto-CRUD -- it automatically generates REST endpoints for any ORM model.
+Auto-CRUD generates REST endpoints for any ORM model. No route files needed.
 
 Add the `auto_crud` declaration to your model:
 

@@ -2,11 +2,11 @@
 
 ## 1. The Refresh Button Problem
 
-Your project management app needs live updates. When someone moves a card from "In Progress" to "Done", everyone else on the team should see it instantly -- no page refresh, no polling, no waiting. Traditional HTTP is request-response: the client asks, the server answers. The server cannot push data to the client on its own.
+Your project management app needs live updates. Someone moves a card from "In Progress" to "Done." Everyone else on the team should see it. No page refresh. No polling. No waiting.
 
-WebSocket solves this by establishing a persistent, bi-directional connection between the browser and the server. Once connected, either side can send messages at any time. The connection stays open until explicitly closed.
+Traditional HTTP is request-response. The client asks. The server answers. The server cannot push data on its own. WebSocket breaks that wall. A persistent, bi-directional connection between browser and server. Either side sends messages at any time. The connection stays open until one side closes it.
 
-Tina4 treats WebSocket like routing. You define a WebSocket handler the same way you define an HTTP route -- with a decorator. The path determines which handler processes the connection.
+Tina4 treats WebSocket the same way it treats routing. A decorator. A handler. The path determines which handler processes the connection.
 
 ---
 
@@ -340,7 +340,7 @@ ws://localhost:7145/ws/chat/dev-team   -- dev team chat
 
 Broadcasting in `/ws/chat/general` only reaches clients connected to `/ws/chat/general`. The `dev-team` and `random` rooms are separate.
 
-This gives you chat rooms, project-specific notifications, and per-user channels without any extra configuration. The URL path is the isolation boundary.
+Chat rooms. Project-specific notifications. Per-user channels. No extra configuration. The URL path is the isolation boundary.
 
 ---
 
@@ -566,7 +566,7 @@ ws.onerror = function (error) {
 };
 ```
 
-The advantage of `frond.js` is auto-reconnect, message buffering during reconnection, and a cleaner event API.
+`frond.js` gives you auto-reconnect, message buffering during reconnection, and a cleaner event API. Native WebSocket does not.
 
 ---
 

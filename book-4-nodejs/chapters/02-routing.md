@@ -2,13 +2,13 @@
 
 ## 1. How Routing Works in Tina4
 
-Every web application maps URLs to code. You type `/products` in your browser, the framework finds the function that handles `/products`, runs it, and sends back the result. That mapping is called routing.
+Every web application maps URLs to code. A browser requests `/products`. The framework finds the handler for `/products`. Runs it. Sends back the result. That mapping is routing.
 
-In Tina4 Node.js, you define routes in TypeScript files inside `src/routes/`. Every `.ts` file in that directory (and its subdirectories) is auto-loaded when the server starts. You do not need to register files or update a central config -- just drop a file in and it works.
+In Tina4 Node.js, you define routes in TypeScript files inside `src/routes/`. Every `.ts` file in that directory -- and its subdirectories -- is auto-loaded when the server starts. No registration files. No central config. Drop a file in. It works.
 
-Tina4 supports two routing styles: **explicit registration** with the `Router` class, and **file-based routing** where the file path maps to the URL.
+Tina4 supports two routing styles: **explicit registration** with the `Router` class, and **file-based routing** where the file path becomes the URL.
 
-Here is the simplest possible route using explicit registration:
+The simplest possible route using explicit registration:
 
 ```typescript
 import { Router } from "tina4-nodejs";
@@ -24,7 +24,7 @@ Save that as `src/routes/hello.ts`, start the server with `tina4 serve`, and vis
 {"message":"Hello, World!"}
 ```
 
-And the same thing using file-based routing. Create `src/routes/hello/get.ts`:
+The same thing using file-based routing. Create `src/routes/hello/get.ts`:
 
 ```typescript
 export default async (req, res) => {
@@ -119,13 +119,13 @@ curl -X DELETE http://localhost:7148/products/42
 {"action":"delete product 42"}
 ```
 
-Use `GET` for reading, `POST` for creating, `PUT` for full replacement, `PATCH` for partial updates, and `DELETE` for removal. This follows the REST convention and makes your API predictable.
+`GET` reads. `POST` creates. `PUT` replaces. `PATCH` patches. `DELETE` removes. REST convention. Predictable API.
 
 ---
 
 ## 3. Path Parameters
 
-Path parameters let you capture values from the URL. Prefix the parameter name with a colon:
+Path parameters capture values from the URL. Prefix the parameter name with a colon:
 
 ```typescript
 import { Router } from "tina4-nodejs";
@@ -155,11 +155,11 @@ curl http://localhost:7148/users/5/posts/99
 {"user_id":"5","post_id":"99"}
 ```
 
-Notice that `user_id` came back as the string `"5"`, not the integer `5`. Path parameters are always strings by default.
+Notice `user_id` came back as the string `"5"`, not the integer `5`. Path parameters are strings by default.
 
 ### Typed Parameters
 
-You can enforce a type by adding a colon and the type after the parameter name:
+Enforce a type by adding a colon and the type after the parameter name:
 
 ```typescript
 import { Router } from "tina4-nodejs";
@@ -181,7 +181,7 @@ curl http://localhost:7148/orders/42
 {"order_id":42,"type":"number"}
 ```
 
-If you pass a non-integer value, the route will not match and you will get a 404:
+Pass a non-integer value and the route refuses to match. You get a 404:
 
 ```bash
 curl http://localhost:7148/orders/abc
@@ -231,13 +231,13 @@ curl "http://localhost:7148/search?q=keyboard&page=2&limit=20"
 {"query":"keyboard","page":2,"limit":20,"offset":20}
 ```
 
-If a query parameter is missing, `req.query.key` will be `undefined`, so always use the nullish coalescing operator (`??`) to provide defaults.
+A missing query parameter yields `undefined` from `req.query.key`. The nullish coalescing operator (`??`) provides defaults.
 
 ---
 
 ## 5. Route Groups
 
-When you have a set of routes that share a common prefix, use `Router.group()` to avoid repeating yourself:
+A set of routes sharing a common prefix belongs in a group. `Router.group()` eliminates repetition:
 
 ```typescript
 import { Router } from "tina4-nodejs";
@@ -263,7 +263,7 @@ Router.group("/api/v1", () => {
 });
 ```
 
-The routes above register as `/api/v1/users`, `/api/v1/users/:id`, and `/api/v1/products`. You write short paths inside the group, and Tina4 prepends the prefix automatically.
+The routes register as `/api/v1/users`, `/api/v1/users/:id`, and `/api/v1/products`. Short paths inside the group. Tina4 prepends the prefix.
 
 ```bash
 curl http://localhost:7148/api/v1/users
@@ -273,7 +273,7 @@ curl http://localhost:7148/api/v1/users
 {"users":[]}
 ```
 
-Groups can be nested:
+Groups nest:
 
 ```typescript
 import { Router } from "tina4-nodejs";
@@ -313,7 +313,7 @@ curl http://localhost:7148/api/v2/status
 
 ## 6. Middleware on Routes
 
-Middleware is code that runs before (or after) your route handler. Use it for authentication, logging, rate limiting, input validation, or anything that should happen on multiple routes.
+Middleware is code that runs before (or after) your route handler. Authentication. Logging. Rate limiting. Input validation. Anything that belongs on multiple routes.
 
 ### Middleware on a Single Route
 
@@ -339,11 +339,11 @@ Router.get("/api/data", async (req, res) => {
 }, "logRequest");
 ```
 
-The middleware function receives `req`, `res`, and `next`. Call `next(req, res)` to continue to the route handler. If you do not call `next`, the route handler never runs -- useful for blocking unauthorized requests.
+The middleware function receives `req`, `res`, and `next`. Call `next(req, res)` to continue to the route handler. Skip the call and the handler never runs -- the chain stops. A locked gate for unauthorized requests.
 
 ### Blocking Middleware
 
-Here is middleware that checks for an API key:
+Middleware that checks for an API key:
 
 ```typescript
 import { Router } from "tina4-nodejs";
@@ -381,7 +381,7 @@ curl http://localhost:7148/api/secret -H "X-API-Key: my-secret-key"
 
 ### Middleware on a Group
 
-Apply middleware to an entire group by passing it as the third argument to `Router.group()`:
+Apply middleware to an entire group:
 
 ```typescript
 import { Router } from "tina4-nodejs";
@@ -419,7 +419,7 @@ Tina4 provides two special decorators for controlling authentication on routes.
 
 ### @noauth -- Public Routes
 
-When your application has global authentication middleware, use the `@noauth` annotation to mark specific routes as public:
+When your application has global authentication middleware, `@noauth` marks specific routes as public:
 
 ```typescript
 import { Router, noauth } from "tina4-nodejs";
@@ -435,11 +435,11 @@ Router.get("/api/public/info", async (req, res) => {
 });
 ```
 
-The `@noauth` decorator tells Tina4 to skip authentication checks for this route, even if global auth middleware is configured in `.env`.
+The `@noauth` decorator tells Tina4 to skip authentication checks for this route, even with global auth middleware configured in `.env`.
 
 ### @secured -- Protected GET Routes
 
-The `@secured` annotation explicitly marks a GET route as requiring authentication:
+The `@secured` annotation marks a GET route as requiring authentication:
 
 ```typescript
 import { Router } from "tina4-nodejs";
@@ -507,9 +507,9 @@ Router.get("/*", async (req, res) => {
 });
 ```
 
-This route should be defined last so it does not shadow your real routes. Tina4 matches routes in the order they are registered -- the first match wins.
+Define this route last. Tina4 matches routes in registration order -- first match wins.
 
-Alternatively, you can create a custom 404 page by placing a template at `src/templates/errors/404.html`:
+You can also create a custom 404 page by placing a template at `src/templates/errors/404.html`:
 
 ```html
 {% extends "base.html" %}
@@ -523,13 +523,13 @@ Alternatively, you can create a custom 404 page by placing a template at `src/te
 {% endblock %}
 ```
 
-Tina4 automatically uses this template for any unmatched route when the template file exists.
+Tina4 uses this template for any unmatched route when the file exists.
 
 ---
 
 ## 9. Route Listing via CLI
 
-As your application grows, you will want to see all registered routes at a glance. Use the Tina4 CLI:
+As your application grows, you need visibility into all registered routes. The CLI provides it:
 
 ```bash
 tina4 routes
@@ -555,7 +555,7 @@ GET      /search                       -                   public
 GET      /docs/*                       -                   public
 ```
 
-You can filter by method or search for a path pattern:
+Filter by method or search for a path pattern:
 
 ```bash
 tina4 routes --method POST
@@ -566,7 +566,7 @@ tina4 routes --filter users
 
 ## 10. Organizing Route Files
 
-You are free to organize route files any way you like. Tina4 loads every `.ts` file in `src/routes/` recursively. Here are two common patterns:
+Organize route files however you want. Tina4 loads every `.ts` file in `src/routes/` recursively. Two common patterns:
 
 ### Pattern 1: One File Per Resource
 
@@ -601,13 +601,13 @@ src/routes/
     └── about/get.ts
 ```
 
-Both patterns work identically. Choose whichever pattern keeps your project navigable.
+Both patterns work identically. Choose whichever keeps your project navigable.
 
 ---
 
 ## 11. Exercise: Build a Full CRUD API for Products
 
-Build a complete REST API for managing products. All data is stored in a TypeScript array (no database yet -- we will add that in Chapter 5).
+Build a complete REST API for managing products. All data lives in a TypeScript array (no database yet -- that comes in Chapter 5).
 
 ### Requirements
 
@@ -803,11 +803,11 @@ Not found (Status: `404 Not Found`):
 
 **Cause:** Tina4 treats `/products` and `/products/` as different routes by default.
 
-**Fix:** Pick one convention and stick with it. If you want both to work, register the route without a trailing slash -- Tina4 will redirect `/products/` to `/products` automatically when `TINA4_TRAILING_SLASH_REDIRECT=true` is set in `.env`.
+**Fix:** Pick one convention and stick with it. Set `TINA4_TRAILING_SLASH_REDIRECT=true` in `.env` and Tina4 redirects `/products/` to `/products`.
 
 ### 2. Parameter Names Must Be Unique in a Path
 
-**Problem:** `/users/:id/posts/:id` does not work as expected -- both parameters have the same name.
+**Problem:** `/users/:id/posts/:id` gives wrong results -- both parameters share the same name.
 
 **Cause:** The second `:id` overwrites the first in `req.params`.
 
@@ -819,36 +819,36 @@ Not found (Status: `404 Not Found`):
 
 **Cause:** Both patterns match `/items/42`. The first one registered wins.
 
-**Fix:** Use typed parameters to disambiguate: `Router.get("/items/:id:int", ...)` will only match integers, leaving `/items/export` free for the other route.
+**Fix:** Use typed parameters to disambiguate: `Router.get("/items/:id:int", ...)` matches integers only, leaving `/items/export` free for the other route.
 
 ### 4. Route Handler Must Return a Response
 
 **Problem:** Your route handler runs but the browser shows an empty page or a 500 error.
 
-**Cause:** You forgot the `return` statement. Without `return`, the handler returns `undefined` and Tina4 does not know what to send back.
+**Cause:** You forgot the `return` statement. Without `return`, the handler produces `undefined` and Tina4 has nothing to send back.
 
-**Fix:** Always `return res.json(...)` or `return res.html(...)`. Every handler must return something.
+**Fix:** Every handler must `return res.json(...)` or `return res.html(...)`.
 
 ### 5. Async Handlers
 
 **Problem:** Your handler calls an async function but the response returns before it completes.
 
-**Cause:** You forgot to `await` the async operation. The handler returns immediately while the async work is still running.
+**Cause:** You forgot to `await` the async operation. The handler returns before the work finishes.
 
-**Fix:** Always `await` async operations inside handlers. All Tina4 route handlers should be `async` functions.
+**Fix:** `await` all async operations inside handlers. All Tina4 route handlers should be `async` functions.
 
 ### 6. Middleware Function Must Be a Named Function
 
 **Problem:** Passing an anonymous arrow function as middleware causes an error.
 
-**Cause:** Tina4 expects middleware to be referenced by function name (a string), not as an inline closure.
+**Cause:** Tina4 expects middleware referenced by function name (a string), not as an inline closure.
 
 **Fix:** Define your middleware as a named function and pass the name as a string: `"myMiddleware"`, not `(req, res, next) => { ... }`.
 
 ### 7. Group Prefix Must Start with a Slash
 
-**Problem:** `Router.group("api/v1", ...)` produces routes like `/api/v1/users` but they do not match.
+**Problem:** `Router.group("api/v1", ...)` produces routes that do not match.
 
-**Cause:** The group prefix should start with `/` for consistency.
+**Cause:** The group prefix needs a leading `/`.
 
-**Fix:** Always start group prefixes with `/`: `Router.group("/api/v1", ...)`.
+**Fix:** Start group prefixes with `/`: `Router.group("/api/v1", ...)`.

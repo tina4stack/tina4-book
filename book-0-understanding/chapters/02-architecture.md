@@ -2,7 +2,7 @@
 
 ## The Request Lifecycle
 
-Every HTTP request that hits a Tina4 application follows the same path, regardless of which language is running on the backend. Understanding this path is the single most important thing you can learn about Tina4.
+A request arrives. Seven stages later, a response leaves. Every Tina4 application follows this path -- Python, PHP, Ruby, Node.js. The language changes. The architecture does not.
 
 ```
 Client sends HTTP request
@@ -46,7 +46,7 @@ Client sends HTTP request
   Client receives HTTP response
 ```
 
-Let us walk through each stage.
+Learn this diagram. Everything else in Tina4 is a footnote to it.
 
 ### 1. Server
 
@@ -59,11 +59,11 @@ The server accepts TCP connections and parses raw HTTP into structured data. Eac
 | Ruby | WEBrick / Puma |
 | Node.js | `node:http` |
 
-You never interact with the server directly. Tina4 handles this.
+You never touch this layer. Tina4 owns it. The server starts, listens, and hands off parsed requests. Your code lives further down the chain.
 
 ### 2. Request
 
-The framework builds a `Request` object with everything you need:
+The framework assembles a `Request` object. Everything the handler needs is already unpacked and waiting:
 
 ```
 request.body        # Parsed JSON or form data
@@ -80,9 +80,11 @@ request.cookies     # Parsed cookies
 request.is_json     # True if Content-Type contains "json"
 ```
 
+No parsing. No extraction. No guessing where the data lives. One object. Twelve properties. Everything accounted for.
+
 ### 3. Router
 
-The router matches the request's method and path against registered routes. Routes are registered in files under `src/routes/`:
+The router listens. A request arrives. Method and path are matched against registered routes. Routes live in files under `src/routes/`:
 
 ```php
 // PHP
@@ -121,20 +123,20 @@ The router supports:
 - **Route groups:** Prefix multiple routes with a common path and middleware
 - **Route caching:** Cache the response for a given TTL
 
-If no route matches, Tina4 checks `src/public/` for a static file. If that also fails, it returns a 404.
+No match on a registered route? The router checks `src/public/` for a static file. Still nothing? A 404 goes back to the client.
 
 ### 4. Middleware
 
-Middleware functions run before (and optionally after) your handler. They form a pipeline -- each middleware can modify the request, short-circuit the response, or pass control to the next function.
+Middleware functions form a pipeline. Each one inspects the request, decides whether to pass it forward, and optionally modifies what comes back. Think of it as a series of gates. A request must pass through every gate before it reaches your handler.
 
-Tina4 includes built-in middleware for:
+Tina4 ships four built-in middleware:
 
-- **CORS** -- configured via environment variables, runs automatically
-- **Rate limiting** -- 60 requests/minute per IP by default
-- **Auth gating** -- attach `.secure()` to a route to require a valid JWT
-- **Request ID tracking** -- generates or reads `X-Request-ID` header
+- **CORS** -- configured via environment variables, runs on every request
+- **Rate limiting** -- 60 requests per minute per IP, out of the box
+- **Auth gating** -- attach `.secure()` to a route to demand a valid JWT
+- **Request ID tracking** -- generates or reads the `X-Request-ID` header
 
-You can write your own middleware:
+You write your own the same way:
 
 ```php
 // PHP
@@ -153,13 +155,15 @@ function logRequests($request, $response, $next) {
 Route::get("/api/users", $handler)->middleware([logRequests]);
 ```
 
+A middleware receives the request, calls `$next` to continue the chain, and returns the result. Skip the `$next` call and the request stops right there. Short-circuit. The handler never runs. This is how auth guards work -- no valid token, no entry.
+
 ### 5. Handler
 
-This is your code. The handler receives a `Request` and a `Response` and returns a response. What you do in between is your business. Tina4 does not dictate your application architecture.
+This is your territory. The handler receives a `Request` and a `Response`. What happens in between is your decision. Tina4 does not impose an application architecture. No base controllers. No service containers. No required inheritance. You receive two objects. You return a response.
 
 ### 6. Response
 
-The `Response` object provides methods for every common response type:
+The `Response` object covers every common output:
 
 ```
 response.json(data, statusCode)       # JSON with auto Content-Type
@@ -174,23 +178,25 @@ response.header(name, value)          # Set response header (chainable)
 response.cookie(name, value, options) # Set a cookie
 ```
 
+Ten methods. JSON, HTML, text, XML, redirects, files, templates, status codes, headers, cookies. Pick the one that fits. Chain what needs chaining.
+
 ### 7. Response Pipeline
 
-After your handler returns, the response passes through an automatic pipeline:
+Your handler finishes. The response is not done yet. It passes through an automatic pipeline -- five stages that optimize every response without a single line of configuration:
 
-1. **Frond rendering** -- if you called `response.render()`, the template is compiled and executed
-2. **HTML minification** -- in production (`TINA4_DEBUG=false`), whitespace is collapsed, comments stripped
-3. **JSON compaction** -- JSON is always compact unless `?pretty=true` is in the query string
-4. **gzip compression** -- if the client sends `Accept-Encoding: gzip` and the response is over 1KB
-5. **ETag generation** -- a hash of the response body is set as an `ETag` header; subsequent requests with a matching `If-None-Match` get a `304 Not Modified` with zero body
+1. **Frond rendering** -- if you called `response.render()`, the template compiles and executes
+2. **HTML minification** -- in production (`TINA4_DEBUG=false`), whitespace collapses, comments vanish. 15-25% smaller output.
+3. **JSON compaction** -- JSON ships compact. Add `?pretty=true` to the query string during development for readable output.
+4. **gzip compression** -- the client sends `Accept-Encoding: gzip` and the response exceeds 1KB? Compressed.
+5. **ETag generation** -- a hash of the response body becomes an `ETag` header. The next request with a matching `If-None-Match` gets a `304 Not Modified`. Zero bytes transferred.
 
-This pipeline is automatic. You never need to configure it. It just works.
+Five optimizations. Zero configuration. Every response benefits.
 
 ---
 
 ## Project Structure
 
-Every Tina4 project follows the same directory layout, regardless of language:
+Every Tina4 project follows the same directory layout. Python, PHP, Ruby, Node.js -- the folders are identical. A developer who has seen one Tina4 project has seen them all.
 
 ```
 my-project/
@@ -217,11 +223,11 @@ my-project/
 └── tests/                  # Test files
 ```
 
-Let us look at each directory in detail.
+Fourteen directories. Each one has a single purpose. No overlap. No ambiguity.
 
 ### `src/routes/` -- Where Your API Lives
 
-Drop any file in this directory and Tina4 auto-discovers the route definitions inside it. You can organize files however you want:
+Drop a file here. Tina4 finds the route definitions inside it. Organize however you want:
 
 ```
 src/routes/
@@ -232,11 +238,11 @@ src/routes/
     └── reports.php     # Admin report routes
 ```
 
-Or use a single file. Or twenty files. Tina4 reads them all. The file name does not affect the route path -- only the route definition inside the file matters.
+One file or twenty. Nested folders or flat. Tina4 reads them all. The file name does not affect the route path. Only the route definition inside the file matters. Name it `products.php` or `banana.php` -- the URL comes from the code, not the filename.
 
 ### `src/orm/` -- Where Your Models Live
 
-ORM model classes go here. Again, auto-discovered:
+ORM model classes go here. Auto-discovered on startup:
 
 ```
 src/orm/
@@ -245,6 +251,8 @@ src/orm/
 ├── OrderItem.php
 └── User.php
 ```
+
+Drop a class that extends the ORM base. Tina4 registers it. Auto-CRUD endpoints, route model binding, relationship resolution -- all of it flows from discovery.
 
 ### `src/migrations/` -- Database Schema Changes
 
@@ -258,15 +266,15 @@ src/migrations/
 └── 20260320090000_create_products_table.down.sql
 ```
 
-The `.sql` file runs on `tina4 migrate`. The `.down.sql` file runs on `tina4 migrate:rollback`. Tina4 tracks which migrations have run in a `tina4_migrations` table.
+The `.sql` file runs on `tina4 migrate`. The `.down.sql` file runs on `tina4 migrate:rollback`. Tina4 tracks which migrations have run in a `tina4_migrations` table. Forward and back. Always reversible.
 
 ### `src/seeds/` -- Test Data
 
-Seed files populate your database with test or default data. Run them with `tina4 seed`.
+Seed files populate your database with test or default data. Run them with `tina4 seed`. Fifty built-in fake data generators handle the rest -- names, emails, addresses, phone numbers, dates.
 
 ### `src/templates/` -- Frond Templates
 
-Templates use the Frond engine (covered in the next section). They support inheritance, includes, filters, loops, and conditionals:
+Templates use the Frond engine. Inheritance, includes, filters, loops, conditionals -- all covered in detail later. The structure is yours to decide:
 
 ```
 src/templates/
@@ -285,27 +293,27 @@ src/templates/
 
 ### `src/public/` -- Static Files
 
-Files here are served directly at the root URL path. A file at `src/public/images/logo.png` is available at `/images/logo.png`. No route registration needed.
+Files here are served at the root URL path. A file at `src/public/images/logo.png` appears at `/images/logo.png`. No route registration. No configuration. Drop it in. It serves.
 
-The framework auto-provides `frond.js` in `src/public/js/` and keeps it in sync with the installed framework version.
+The framework auto-provides `frond.js` in `src/public/js/` and keeps it in sync with the installed framework version. You never manage this file.
 
 ### `data/` -- Runtime Data
 
-SQLite databases are stored here by default (`data/app.db`). The `.broken/` subdirectory holds error marker files used by the health check. This directory is in `.gitignore`.
+SQLite databases live here by default (`data/app.db`). The `.broken/` subdirectory holds error marker files used by the health check. This entire directory belongs in `.gitignore`. Runtime data stays on the machine that runs the application.
 
 ### `logs/` -- Log Files
 
-Structured log files with automatic rotation. In `.gitignore`.
+Structured log files with automatic rotation. In `.gitignore`. Compressed after two days. Deleted after thirty. The framework handles all of it.
 
 ### `secrets/` -- JWT Keys
 
-Private and public keys for RS256 JWT signing. In `.gitignore`.
+Private and public keys for RS256 JWT signing. In `.gitignore`. Generated once, deployed with your application, never committed to source control.
 
 ---
 
 ## .env Driven Configuration
 
-Every piece of Tina4 configuration lives in a single `.env` file at the project root. No YAML. No TOML. No JSON config objects. One file, one format.
+One file controls everything. Not YAML. Not TOML. Not JSON config objects. A `.env` file at the project root. Key-value pairs. Plain text.
 
 ```env
 # .env
@@ -315,21 +323,17 @@ DATABASE_URL=sqlite:///data/app.db
 JWT_SECRET=change-me-in-production
 ```
 
+Four lines. A working application.
+
 ### The Priority Chain
 
-Tina4 resolves configuration values using a three-level priority chain:
+Tina4 resolves every configuration value through a three-level chain:
 
 ```
 Constructor argument  >  .env file  >  Hardcoded default
 ```
 
-For example, the database connection:
-
-1. If you pass a connection string directly in code: `new Database("sqlite:///custom.db")` -- that wins.
-2. If you do not, Tina4 reads `DATABASE_URL` from `.env`.
-3. If `.env` does not have it either, the default is `sqlite:///data/app.db`.
-
-This pattern applies to **every** configurable value in the framework. You always have three ways to set something, and they always resolve in the same order.
+The constructor wins. Always. The `.env` file is second. The hardcoded default is the safety net. This pattern applies to every configurable value in the framework. No exceptions.
 
 ### Example: Priority Chain in Practice
 
@@ -350,16 +354,18 @@ $app = new Tina4\App();
 // Server starts on port 7145 (the default)
 ```
 
+Three levels. Predictable resolution. Every time.
+
 ### is_truthy() -- Boolean Environment Values
 
-Tina4 needs to interpret string values from `.env` as booleans. The `is_truthy()` function accepts these values as `true`:
+Environment variables are strings. Booleans do not exist in `.env` files. Tina4 bridges this gap with `is_truthy()`. Four values mean `true`:
 
 - `true` (any case: `True`, `TRUE`, `tRuE`)
 - `1`
 - `yes` (any case)
 - `on` (any case)
 
-Everything else is `false`, including empty strings and unset variables. This means all of these are equivalent:
+Everything else is `false`. Empty strings. Unset variables. Typos. If it is not on the list, it is `false`.
 
 ```env
 TINA4_DEBUG=true
@@ -369,7 +375,7 @@ TINA4_DEBUG=yes
 TINA4_DEBUG=on
 ```
 
-And all of these disable debug mode:
+All equivalent. All enable debug mode.
 
 ```env
 TINA4_DEBUG=false
@@ -380,47 +386,53 @@ TINA4_DEBUG=
 # or simply omit the line
 ```
 
+All disable it. No ambiguity.
+
 ---
 
 ## Dev Mode vs. Production Mode
 
-The entire behavior of a Tina4 application changes based on a single variable: `TINA4_DEBUG`.
+One variable. Two personalities. `TINA4_DEBUG` controls everything.
 
 ### Dev Mode (`TINA4_DEBUG=true`)
 
-When debug mode is on:
+The framework opens up. Every diagnostic tool activates:
 
-- **Debug overlay** is injected into every HTML response -- a toolbar at the bottom of the page showing request details, database queries, template render times, session data, and logs
-- **Full stack traces** appear in the browser when errors occur, with source code context, the request that caused the error, and the database queries that ran
-- **Swagger UI** is auto-registered at `/swagger`
-- **Admin console** is available at `/tina4/console` (if `TINA4_CONSOLE_TOKEN` is set)
+- **Debug overlay** injects into every HTML response -- a toolbar showing request details, database queries, template render times, session data, and logs
+- **Full stack traces** appear in the browser with source code context, the triggering request, and the queries that ran
+- **Swagger UI** auto-registers at `/swagger`
+- **Admin console** becomes available at `/tina4/console` (when `TINA4_CONSOLE_TOKEN` is set)
 - **Live reload** watches for file changes and refreshes the browser
 - **SQL query logging** writes every query to `logs/query.log`
 - **Pretty JSON** is available via `?pretty=true` on any JSON endpoint
-- **404 pages** show a helpful "route not found" message listing similar registered routes
+- **404 pages** show helpful route-not-found messages listing similar registered routes
+
+Development mode assumes you want to see everything. It shows you everything.
 
 ### Production Mode (`TINA4_DEBUG=false`)
 
-When debug mode is off:
+The framework locks down. Every diagnostic tool disappears:
 
-- **No debug overlay** -- responses are clean
-- **Generic error pages** -- no stack traces, no source code, no query details
-- **HTML minification** -- comments stripped, whitespace collapsed (15-25% smaller)
-- **.broken files** -- unhandled exceptions create marker files in `data/.broken/` that cause the health check to return `503 Service Unavailable`, triggering container restarts
-- **No Swagger UI** -- unless explicitly enabled
-- **No admin console** -- unless explicitly enabled with a token
-- **No query logging** -- unless explicitly enabled
-- **Compact JSON** only -- no `?pretty=true`
+- **No debug overlay** -- responses ship clean
+- **Generic error pages** -- no stack traces, no source code, no query details reach the browser
+- **HTML minification** -- comments stripped, whitespace collapsed, 15-25% smaller output
+- **.broken files** -- unhandled exceptions create marker files in `data/.broken/` that flip the health check to `503 Service Unavailable`, triggering container restarts
+- **No Swagger UI** -- unless you force it on
+- **No admin console** -- unless you set a token and enable it
+- **No query logging** -- unless you enable it
+- **Compact JSON only** -- no `?pretty=true`
 
-The default is `TINA4_DEBUG=false`. You must explicitly enable debug mode. This means forgetting to set it does the safe thing.
+Production mode assumes you want to expose nothing. It exposes nothing.
 
-**Common mistake:** Deploying with `TINA4_DEBUG=true` in production. This exposes stack traces, database queries, and session data to anyone with a browser. Always set `TINA4_DEBUG=false` in production. Always.
+The default is `TINA4_DEBUG=false`. Forget to set it? The safe thing happens. Your application starts locked down.
+
+**One mistake will undo all of this:** deploying with `TINA4_DEBUG=true`. Stack traces, database queries, session data -- visible to anyone with a browser. Set `TINA4_DEBUG=false` in production. Always.
 
 ---
 
 ## The Frond Template Engine
 
-Frond is Tina4's built-in, zero-dependency template engine. It uses a syntax intentionally similar to Twig, so developers familiar with Twig, Jinja2, or Nunjucks will feel at home. But Frond is built from scratch in each language -- no third-party template library is involved.
+Frond is Tina4's template engine. Zero dependencies. Built from scratch in each language. The syntax borrows from Twig -- developers who know Twig, Jinja2, or Nunjucks will recognize every construct. But no third-party template library runs underneath. Frond is Tina4's own.
 
 ### Basic Syntax
 
@@ -442,7 +454,7 @@ Frond is Tina4's built-in, zero-dependency template engine. It uses a syntax int
 <p>{{ items | join(", ") }}</p>      <!-- apple, banana, cherry -->
 ```
 
-There are over 55 filters available, covering strings, numbers, dates, arrays, encoding, and formatting.
+Fifty-five filters. Strings, numbers, dates, arrays, encoding, formatting. If you need to transform data in a template, a filter exists.
 
 **Control structures:**
 ```html
@@ -506,17 +518,17 @@ There are over 55 filters available, covering strings, numbers, dates, arrays, e
 {% endcache %}
 ```
 
-Frond is covered in depth in each language-specific book. The key point for now: the template syntax is identical across all four languages. A template written for a Python backend works without changes on PHP, Ruby, or Node.js.
+One fact matters above all others: the template syntax is identical across all four languages. A template written for a Python backend works on PHP, Ruby, and Node.js without a single change. The backend is invisible to the frontend. Frond guarantees that.
 
 ---
 
 ## How Auto-Discovery Works
 
-Tina4 uses auto-discovery to find routes, models, and templates without explicit registration. Here is how it works:
+Tina4 finds your code without being told where to look. No registration files. No import chains. No bootstrapping rituals. Drop files in the right directories. The framework discovers them.
 
 ### Routes
 
-On startup, Tina4 scans every file in `src/routes/` (recursively). In each file, it looks for route registration calls -- `get()`, `post()`, `put()`, `delete()`, `any()`. Each call registers a route with the router.
+On startup, Tina4 scans every file in `src/routes/` -- recursively, through every subdirectory. It finds route registration calls: `get()`, `post()`, `put()`, `delete()`, `any()`. Each call registers a route with the router.
 
 ```
 Startup
@@ -529,23 +541,21 @@ Startup
   └── Router now has all routes in memory
 ```
 
-The scan happens once at startup. In dev mode with live reload, the scan re-runs when files change.
+The scan happens once at startup. In dev mode with live reload, the scan re-runs when files change. New route file saved? The router rebuilds. No restart needed.
 
-**Important:** The file name and path within `src/routes/` do not determine the URL path. Only the route definition inside the file matters. You could put all your routes in one file called `everything.php` and it would work fine. The directory structure is for your organization, not the framework's.
+**The file name and path within `src/routes/` do not determine the URL.** Only the route definition inside the file matters. Put all your routes in one file called `everything.php` and it works. Spread them across fifty files in nested folders and it works. The directory structure is for your organization. The framework ignores it.
 
 ### Models
 
-ORM model classes in `src/orm/` are auto-discovered the same way. The framework scans for classes that extend the ORM base class and registers them. This enables features like auto-CRUD (generating REST endpoints from models) and route model binding (resolving URL parameters to model instances).
+ORM model classes in `src/orm/` follow the same pattern. The framework scans for classes that extend the ORM base class and registers them. This powers auto-CRUD -- REST endpoints generated from models. It powers route model binding -- URL parameters resolved to model instances. Discovery makes both possible without a single line of registration code.
 
 ### Templates
 
-Templates are not "discovered" in the same sense -- they are loaded on demand when `response.render()` is called. But the framework knows to look in `src/templates/` without being told. If you reference `"products/list.html"`, it resolves to `src/templates/products/list.html`.
+Templates work differently. They are not discovered at startup -- they are loaded on demand when `response.render()` is called. But the framework knows where to look without being told. Reference `"products/list.html"` and Tina4 resolves it to `src/templates/products/list.html`. No path configuration. No template registry.
 
 ### Static Files
 
-When the router cannot match a request to a registered route, it falls back to `src/public/`. If a file exists at the matching path, it is served with the correct MIME type. If not, the framework checks its own built-in assets (frond.js, tina4css, Swagger UI). If nothing matches, a 404 is returned.
-
-The lookup order:
+When the router cannot match a request to a registered route, it falls back to the filesystem. The lookup follows a strict order:
 
 ```
 1. Registered route?          → Run handler
@@ -553,6 +563,8 @@ The lookup order:
 3. Framework built-in asset?  → Serve framework file
 4. Nothing matches            → 404 response
 ```
+
+Four steps. Tried in order. The first match wins. A file at `src/public/css/style.css` serves at `/css/style.css` with the correct MIME type. No route needed. No configuration needed. The file exists, so it serves.
 
 ---
 

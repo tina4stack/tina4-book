@@ -2,15 +2,15 @@
 
 ## 1. The Gatekeepers
 
-Your API needs CORS headers for the React frontend, rate limiting for the public endpoints, and auth checking for admin routes -- all without cluttering your route handlers. Middleware solves this. It lets you wrap routes with reusable logic that runs before (or after) the handler. Each middleware does one job and passes control to the next layer.
+Your API needs CORS headers for the React frontend. Rate limiting for the public endpoints. Auth checking for admin routes. All without cluttering route handlers.
 
-In Chapter 2 you saw a brief introduction to middleware. This chapter goes deep: built-in middleware, custom middleware, execution order, short-circuiting, and real-world patterns.
+Middleware solves this. Each middleware is a gatekeeper. It does one job and passes control to the next layer. Chapter 2 introduced the concept. This chapter goes deep: built-in middleware, custom middleware, execution order, short-circuiting, and real-world patterns.
 
 ---
 
 ## 2. What Middleware Is
 
-A middleware function sits between the incoming HTTP request and your route handler. It receives the request, the response, and a `next` function:
+A middleware function stands between the incoming HTTP request and your route handler. It receives the request, the response, and a `next` function:
 
 ```typescript
 async function passthrough(req, res, next) {
@@ -214,7 +214,7 @@ Group middleware always runs before route middleware.
 
 ## 9. Short-Circuiting
 
-When middleware does not call `next`, the chain stops:
+When middleware does not call `next`, the chain dies:
 
 ```typescript
 async function requireAuth(req, res, next) {

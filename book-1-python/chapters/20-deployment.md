@@ -2,9 +2,9 @@
 
 ## 1. From Development to Production
 
-You have built the app. It works perfectly on `localhost:7145`. Now it needs to run 24/7 on a real server, handle 10,000 concurrent users, survive server restarts, and not leak memory. The gap between "it works on my machine" and "it works in production" is where most projects stumble.
+The app works on `localhost:7145`. Now it needs to run 24/7 on a real server. Handle 10,000 concurrent users. Survive server restarts. Not leak memory. The gap between "works on my machine" and "works in production" is where projects stumble.
 
-This chapter covers everything you need to deploy a Tina4 Python application to production: environment configuration, ASGI server setup, Docker packaging, health checks, graceful shutdown, log rotation, and scaling.
+This chapter covers everything for a production deployment: environment configuration, ASGI server setup, Docker packaging, health checks, graceful shutdown, log rotation, and scaling.
 
 ---
 
@@ -49,7 +49,7 @@ TINA4_CONSOLE=false
 
 ### Sensitive Values
 
-Never commit production secrets to version control. The `.env` file is gitignored by default. For deployment, use environment variables from your hosting platform, CI/CD secrets, or a secrets management tool.
+Production secrets never go into version control. The `.env` file is gitignored by default. For deployment, use environment variables from your hosting platform, CI/CD secrets, or a secrets manager.
 
 ```bash
 # Docker: pass env vars at runtime
@@ -145,7 +145,7 @@ workers = (2 * multiprocessing.cpu_count()) + 1
 
 ## 4. Docker Deployment
 
-Docker is the most portable way to deploy. Your app runs the same way on your laptop, in CI, and on the production server.
+Docker is the most portable deployment path. Your app runs the same way on your laptop, in CI, and on the production server.
 
 ### Dockerfile
 
@@ -318,9 +318,9 @@ This endpoint:
 
 ## 6. Graceful Shutdown
 
-When you deploy a new version, the old process needs to stop. Graceful shutdown finishes processing active requests before terminating.
+Deploy a new version. The old process must stop. Graceful shutdown finishes active requests before terminating.
 
-Tina4 handles graceful shutdown automatically when it receives a `SIGTERM` signal (the standard shutdown signal from Docker, Kubernetes, and systemd):
+Tina4 handles this when it receives a `SIGTERM` signal (the standard shutdown signal from Docker, Kubernetes, and systemd):
 
 1. Stop accepting new connections
 2. Wait for active requests to complete (up to 30 seconds)
@@ -393,7 +393,7 @@ This keeps at most 50MB of logs (5 files of 10MB each).
 
 ## 8. Reverse Proxy with Nginx
 
-For production, run Tina4 behind Nginx. Nginx handles:
+In production, Tina4 runs behind Nginx. Nginx handles:
 
 - SSL/TLS termination (HTTPS)
 - Static file serving (faster than Python)

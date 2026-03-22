@@ -2,9 +2,9 @@
 
 ## 1. From SQL to Objects
 
-In Chapter 5 you wrote raw SQL for every operation. That works, but it gets tedious. You end up writing the same `INSERT INTO products (name, price, ...) VALUES (:name, :price, ...)` patterns over and over. The ORM (Object-Relational Mapper) lets you work with PHP classes instead. You define a class, map it to a table, and call methods like `save()`, `load()`, and `delete()`.
+In Chapter 5 you wrote raw SQL for every operation. It works. It also gets tedious. The same `INSERT INTO products (name, price, ...) VALUES (:name, :price, ...)` pattern appears over and over. The ORM (Object-Relational Mapper) replaces that repetition with PHP classes. Define a class. Map it to a table. Call `save()`, `load()`, `delete()`.
 
-Tina4's ORM is minimal by design. It does not try to hide SQL completely -- it gives you convenient methods for common operations and stays out of the way when you need raw queries.
+Tina4's ORM is minimal by design. It does not hide SQL. It gives you convenient methods for common operations and stays out of the way when you need raw queries.
 
 ---
 
@@ -36,19 +36,19 @@ class Product extends ORM
 }
 ```
 
-That is a complete model. Let us break it down:
+A complete model. Here is what each piece does:
 
-- **Extends `ORM`** -- This gives you `save()`, `load()`, `delete()`, `select()`, and other methods.
-- **Public properties** -- Each property maps to a database column. The property name is `camelCase` and the column name is `snake_case`. Tina4 converts between them automatically: `inStock` maps to `in_stock`, `createdAt` maps to `created_at`.
-- **`$tableName`** -- The database table this model maps to. If you omit it, Tina4 infers it from the class name: `Product` becomes `products`, `OrderItem` becomes `order_items`.
+- **Extends `ORM`** -- Gives you `save()`, `load()`, `delete()`, `select()`, and other methods.
+- **Public properties** -- Each one maps to a database column. Property names are `camelCase`. Column names are `snake_case`. Tina4 converts automatically: `inStock` maps to `in_stock`, `createdAt` maps to `created_at`.
+- **`$tableName`** -- The database table. Omit it and Tina4 infers from the class name: `Product` becomes `products`, `OrderItem` becomes `order_items`.
 - **`$primaryKey`** -- The primary key column. Defaults to `"id"`.
-- **Default values** -- Properties with defaults (like `$category = "Uncategorized"`) are used when creating new records without specifying those fields.
+- **Default values** -- Properties like `$category = "Uncategorized"` apply when creating new records without specifying those fields.
 
 ---
 
 ## 3. Field Types
 
-Use PHP type declarations on your properties. Tina4 uses these types when generating DDL and validating data:
+PHP type declarations on properties. Tina4 uses them for DDL generation and data validation:
 
 | PHP Type | Database Type (SQLite) | Database Type (PostgreSQL) | Notes |
 |----------|----------------------|---------------------------|-------|
@@ -60,18 +60,18 @@ Use PHP type declarations on your properties. Tina4 uses these types when genera
 
 ### Nullable Fields
 
-Use PHP's nullable type syntax:
+PHP nullable type syntax:
 
 ```php
 public ?string $description = null;
 public ?float $discount = null;
 ```
 
-A nullable property allows `null` values in the database column.
+The `?` prefix allows `null` in the database column.
 
 ### Primary Keys and Auto-Increment
 
-By default, Tina4 treats the `$primaryKey` field as auto-incrementing. When you call `save()` on a new object (where the primary key is not set), the database generates the ID:
+Tina4 treats `$primaryKey` as auto-incrementing by default. Call `save()` on a new object (primary key not set) and the database generates the ID:
 
 ```php
 $product = new Product();
@@ -88,7 +88,7 @@ echo $product->id; // Auto-generated: 1, 2, 3, ...
 
 ### save() -- Insert or Update
 
-The `save()` method inserts a new record or updates an existing one, depending on whether the primary key is set:
+`save()` inspects the primary key. Not set: INSERT. Already set: UPDATE.
 
 ```php
 <?php
@@ -128,7 +128,7 @@ curl -X POST http://localhost:7145/api/products \
 
 ### Updating an Existing Record
 
-When `id` is already set, `save()` performs an UPDATE:
+When `id` is set, `save()` performs an UPDATE:
 
 ```php
 Route::put("/api/products/{id:int}", function ($request, $response) {
@@ -164,7 +164,7 @@ if (empty($product->id)) {
 }
 ```
 
-`load()` populates the object's properties from the database row matching the primary key. If no row matches, the properties remain at their default values (or unset).
+`load()` populates the object from the database row matching the primary key. No match leaves properties at their defaults (or unset).
 
 ### A Simple Get Endpoint
 
@@ -218,13 +218,13 @@ Route::delete("/api/products/{id:int}", function ($request, $response) {
 });
 ```
 
-`delete()` removes the row from the database. The object still exists in memory but the database row is gone.
+`delete()` removes the row. The object stays in memory. The database row is gone.
 
 ---
 
 ## 7. Querying with select()
 
-The `select()` method lets you find records with filters, ordering, and pagination:
+`select()` finds records with filters, ordering, and pagination.
 
 ### Basic Select
 
@@ -233,7 +233,7 @@ $product = new Product();
 $products = $product->select("*");
 ```
 
-Returns an array of Product objects with all records.
+Returns an array of Product objects. All records.
 
 ### Filtering
 
@@ -257,7 +257,7 @@ $product = new Product();
 $sorted = $product->select("*", "", [], "price DESC");
 ```
 
-The fourth argument is the ORDER BY clause.
+Fourth argument: ORDER BY clause.
 
 ### Pagination
 
@@ -271,7 +271,7 @@ $offset = ($page - 1) * $perPage;
 $products = $product->select("*", "", [], "name ASC", $perPage, $offset);
 ```
 
-The fifth argument is LIMIT, the sixth is OFFSET.
+Fifth argument: LIMIT. Sixth: OFFSET.
 
 ### A Full List Endpoint with Filters
 
@@ -349,16 +349,16 @@ curl "http://localhost:7145/api/products?category=Electronics&sort=price&order=D
 
 ## 8. Creating Tables from Models
 
-Instead of writing a migration manually, you can generate the table from your model:
+Generate the table directly from your model:
 
 ```php
 $product = new Product();
 $product->createTable();
 ```
 
-This reads the properties, types, and defaults from the model class and generates the appropriate `CREATE TABLE` statement for your database engine.
+Tina4 reads the properties, types, and defaults from the class and generates the correct `CREATE TABLE` statement for your database engine.
 
-You can also use the CLI:
+CLI alternative:
 
 ```bash
 tina4 orm:create-table Product
@@ -368,7 +368,7 @@ tina4 orm:create-table Product
 Created table "products" with 7 columns.
 ```
 
-This is convenient during early development. For production, use migrations (Chapter 5) so schema changes are versioned and reversible.
+Convenient during early development. For production, use migrations (Chapter 5) so schema changes are versioned and reversible.
 
 ---
 
@@ -376,7 +376,7 @@ This is convenient during early development. For production, use migrations (Cha
 
 ### hasMany -- One-to-Many
 
-A user has many posts:
+A user has many posts.
 
 Create `src/orm/User.php`:
 
@@ -430,7 +430,7 @@ class Post extends ORM
 }
 ```
 
-The second argument to `hasMany()` is the foreign key column on the related table. `$this->hasMany(Post::class, "user_id")` means: find all rows in `posts` where `user_id` equals this user's ID.
+The second argument to `hasMany()` is the foreign key on the related table. `$this->hasMany(Post::class, "user_id")` means: find all rows in `posts` where `user_id` equals this user's ID.
 
 ### hasOne -- One-to-One
 
@@ -441,11 +441,11 @@ public function profile(): ?Profile
 }
 ```
 
-`hasOne()` works like `hasMany()` but returns a single object instead of an array.
+Same as `hasMany()` but returns a single object.
 
 ### belongsTo -- Inverse Relationship
 
-The inverse of `hasMany`. A post belongs to a user:
+A post belongs to a user:
 
 ```php
 public function user(): ?User
@@ -496,16 +496,16 @@ curl http://localhost:7145/api/users/1
 
 ## 10. Eager Loading
 
-Calling relationship methods inside a loop creates the N+1 query problem. If you load 100 users and then call `$user->posts()` for each one, that is 101 queries (1 for users + 100 for posts).
+Calling relationship methods inside a loop creates the N+1 problem. Load 100 users, call `$user->posts()` for each one: 101 queries. One for users. One hundred for posts.
 
-Use the `include` parameter with `select()` to eager-load relationships:
+Use the `include` parameter with `select()` to eager-load:
 
 ```php
 $user = new User();
 $users = $user->select("*", "", [], "name ASC", 20, 0, ["posts"]);
 ```
 
-The seventh argument is an array of relationship names to include. This runs just 2 queries (one for users, one for all related posts) and stitches the results together.
+The seventh argument is an array of relationship names. Two queries total: one for users, one for all related posts. Tina4 stitches the results together.
 
 ### toArray() with Nested Includes
 
@@ -544,20 +544,20 @@ return $response->json($result);
 
 ### Nested Eager Loading
 
-Load multiple levels deep with dot notation:
+Dot notation loads multiple levels deep:
 
 ```php
 $user = new User();
 $users = $user->select("*", "", [], "", 0, 0, ["posts", "posts.comments"]);
 ```
 
-This loads users, their posts, and each post's comments in 3 queries total.
+Users, their posts, and each post's comments. Three queries total.
 
 ---
 
 ## 11. Soft Delete
 
-If your model has a `deletedAt` property, Tina4 supports soft delete -- marking records as deleted without actually removing them from the database:
+Add a `deletedAt` property and Tina4 marks records as deleted instead of removing them:
 
 ```php
 <?php
@@ -578,9 +578,9 @@ class Post extends ORM
 
 With `$softDelete = true`:
 
-- `$post->delete()` sets `deleted_at` to the current timestamp instead of deleting the row
-- `select()` automatically excludes rows where `deleted_at` is not null
-- `$post->forceDelete()` permanently removes the row
+- `$post->delete()` sets `deleted_at` to the current timestamp. The row stays.
+- `select()` excludes rows where `deleted_at` is not null.
+- `$post->forceDelete()` removes the row permanently.
 
 ### Restoring Soft-Deleted Records
 
@@ -602,7 +602,7 @@ $allPosts = $post->select("*", "", [], "", 0, 0, [], true); // eighth arg = incl
 
 ## 12. NumericField for Prices
 
-When working with money, floating-point arithmetic causes rounding errors. Use the `NumericField` type for precise decimal values:
+Floating-point arithmetic causes rounding errors with money. Use `NumericField` for precise decimals:
 
 ```php
 <?php
@@ -621,15 +621,13 @@ class Product extends ORM
 }
 ```
 
-`NumericField` maps to `DECIMAL` or `NUMERIC` in the database and handles precision correctly. When you access `$product->price`, you get a value that compares and calculates accurately for financial operations.
+`NumericField` maps to `DECIMAL` or `NUMERIC` in the database. Precision stays intact for financial operations.
 
 ---
 
 ## 13. Auto-CRUD
 
-One of Tina4's most powerful features is auto-CRUD -- it automatically generates REST endpoints for any ORM model.
-
-Add the `$autoCrud` property to your model:
+Tina4 generates REST endpoints from any ORM model. Add one property:
 
 ```php
 <?php
@@ -649,7 +647,7 @@ class Product extends ORM
 }
 ```
 
-With `$autoCrud = true`, Tina4 automatically registers these routes:
+`$autoCrud = true` registers five routes:
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -659,7 +657,7 @@ With `$autoCrud = true`, Tina4 automatically registers these routes:
 | `PUT` | `/api/products/{id}` | Update a record |
 | `DELETE` | `/api/products/{id}` | Delete a record |
 
-The endpoint prefix is derived from the table name: `products` becomes `/api/products`.
+The endpoint prefix comes from the table name: `products` becomes `/api/products`.
 
 ```bash
 curl http://localhost:7145/api/products
@@ -677,19 +675,19 @@ curl http://localhost:7145/api/products
 }
 ```
 
-Auto-CRUD supports query parameters for filtering, sorting, and pagination out of the box:
+Filtering, sorting, and pagination work out of the box:
 
 ```bash
 curl "http://localhost:7145/api/products?category=Electronics&sort=price&order=desc&page=1&per_page=10"
 ```
 
-You can still define custom routes alongside auto-CRUD. Your custom routes take precedence over the auto-generated ones.
+Custom routes still work alongside auto-CRUD. Your custom routes take precedence.
 
 ---
 
 ## 14. Exercise: Build a Blog
 
-Build a blog with three models: User, Post, and Comment. Use relationships, eager loading, and auto-CRUD.
+Three models: User, Post, Comment. Relationships, eager loading, and auto-CRUD.
 
 ### Requirements
 
@@ -729,7 +727,7 @@ Build a blog with three models: User, Post, and Comment. Use relationships, eage
 | `GET` | `/api/blog/posts/{id:int}` | Get a post with author and comments (eager load both) |
 | `POST` | `/api/blog/posts/{id:int}/comments` | Add a comment to a post |
 
-4. Enable auto-CRUD on the User model for admin access at `/api/users`.
+4. Enable auto-CRUD on User for admin access at `/api/users`.
 
 ### Test with:
 
@@ -1027,56 +1025,56 @@ Route::post("/api/blog/posts/{id:int}/comments", function ($request, $response) 
 
 ### 1. Table Naming Convention
 
-**Problem:** Your model class is `OrderItem` but queries fail because the table does not exist.
+**Problem:** Model class is `OrderItem`. Queries fail because the table does not exist.
 
-**Cause:** Tina4 converts `OrderItem` to `order_items` (plural, snake_case). If your table is named `order_item` (singular), it will not match.
+**Cause:** Tina4 converts `OrderItem` to `order_items` (plural, snake_case). Your table is `order_item` (singular).
 
-**Fix:** Set `$tableName` explicitly: `public string $tableName = "order_item";`. Or rename your table to match the convention.
+**Fix:** Set `$tableName` explicitly: `public string $tableName = "order_item";`. Or rename the table.
 
 ### 2. Null Handling
 
-**Problem:** A field that should be nullable causes errors when the value is null.
+**Problem:** A nullable field causes errors when the value is null.
 
-**Cause:** The PHP property is declared as `string` instead of `?string`. PHP 8.1+ enforces type declarations strictly.
+**Cause:** Property declared as `string` instead of `?string`. PHP 8.1+ enforces type declarations.
 
-**Fix:** Use nullable types: `public ?string $description = null;`. The `?` prefix allows null values.
+**Fix:** Use nullable types: `public ?string $description = null;`.
 
 ### 3. Relationship Foreign Key Direction
 
-**Problem:** You write `$this->hasMany(Post::class, "id")` and get wrong results.
+**Problem:** `$this->hasMany(Post::class, "id")` gives wrong results.
 
-**Cause:** The foreign key argument is the column on the related table, not the current table. `hasMany(Post::class, "user_id")` means "find posts where posts.user_id = this.id", not "find posts where posts.id = this.user_id".
+**Cause:** The foreign key argument is the column on the related table, not the current table. `hasMany(Post::class, "user_id")` means "find posts where posts.user_id = this.id".
 
-**Fix:** The foreign key is always on the "many" side. For `hasMany`, it is the column on the child table. For `belongsTo`, it is the column on the current table.
+**Fix:** The foreign key is always on the "many" side. For `hasMany`, it is on the child table. For `belongsTo`, it is on the current table.
 
 ### 4. camelCase to snake_case Mapping
 
-**Problem:** You have a property `$userId` but the database column is `user_id`. Queries return null for this field.
+**Problem:** Property `$userId` maps to column `user_id`. But your column is `userid` (no underscore). The field reads as null.
 
-**Cause:** Tina4 automatically converts between `camelCase` (PHP) and `snake_case` (database). If your database column is `userid` (no underscore), the mapping breaks.
+**Cause:** Tina4 auto-converts `camelCase` to `snake_case`. `userId` becomes `user_id`. If the column is `userid`, the mapping fails.
 
-**Fix:** Use consistent naming. PHP properties should be `camelCase` and database columns should be `snake_case`. If your column names differ, you may need to adjust them or override the mapping.
+**Fix:** Consistent naming. PHP: `camelCase`. Database: `snake_case`. Adjust column names or override the mapping.
 
 ### 5. Forgetting save()
 
-**Problem:** You set properties on a model but the database does not change.
+**Problem:** Properties changed on the model. Database unchanged.
 
-**Cause:** You forgot to call `$model->save()`. Setting properties only changes the in-memory object.
+**Cause:** No `$model->save()` call. Setting properties only changes the in-memory object.
 
-**Fix:** Always call `save()` after modifying properties that should be persisted.
+**Fix:** Call `save()` after modifying any property you want persisted.
 
 ### 6. Auto-CRUD Endpoint Conflicts
 
-**Problem:** Your custom route at `/api/products/{id}` does not work after enabling auto-CRUD on the Product model.
+**Problem:** Custom route at `/api/products/{id}` stops working after enabling auto-CRUD.
 
-**Cause:** Both your custom route and the auto-CRUD route match the same path. The first one registered wins.
+**Cause:** Both routes match the same path. First registered wins.
 
-**Fix:** Custom routes defined in `src/routes/` files are loaded before auto-CRUD routes, so they take precedence. If that is not the behavior you want, use a different path for your custom route (e.g., `/api/shop/products/{id}`).
+**Fix:** Custom routes in `src/routes/` load before auto-CRUD routes. They take precedence. If you want different behavior, use a different path for the custom route.
 
 ### 7. select() Returns Objects, Not Arrays
 
-**Problem:** You try to use array syntax (`$result["name"]`) on the result of `select()` and get an error.
+**Problem:** Array syntax `$result["name"]` on the result of `select()` throws an error.
 
-**Cause:** `select()` returns an array of model objects, not associative arrays. Each item is an instance of your model class.
+**Cause:** `select()` returns model objects, not associative arrays.
 
-**Fix:** Access properties with object syntax: `$result->name`. Or convert to an array with `$result->toArray()`.
+**Fix:** Use object syntax: `$result->name`. Or convert: `$result->toArray()`.

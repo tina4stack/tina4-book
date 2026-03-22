@@ -2,9 +2,9 @@
 
 ## 1. Debugging at 2am
 
-It is 2am. Your production monitoring just pinged you -- a 500 error on the checkout endpoint. You pull up the dev dashboard, find the failing request in the request inspector, and see the full stack trace with source code context. Line 47 of `src/routes/checkout.py` -- an `AttributeError` on the shipping address because the user did not fill in the form. You add a None check, push the fix, and go back to sleep. Total time: 30 seconds.
+2am. Production monitoring pings you -- a 500 error on checkout. You pull up the dev dashboard. Find the failing request in the request inspector. See the full stack trace with source code context. Line 47 of `src/routes/checkout.py` -- an `AttributeError` on the shipping address because the user skipped the form field. You add a None check. Push the fix. Go back to sleep. Total time: 30 seconds.
 
-Tina4's dev tools are not an afterthought bolted on later. They are built into the framework from day one. When `TINA4_DEBUG=true`, you get a full development dashboard, an error overlay with source code, live reload, a request inspector, a SQL query runner, and more -- all without installing any additional packages.
+Tina4's dev tools are not an afterthought. They are built into the framework from day one. When `TINA4_DEBUG=true`, you get a development dashboard, an error overlay with source code, live reload, a request inspector, a SQL query runner, and more -- all without installing extra packages.
 
 ---
 
@@ -26,7 +26,7 @@ http://localhost:7145/tina4/console
 
 Enter your console token (`my-dev-token`) when prompted. You are now in the dev dashboard.
 
-The console token protects the dashboard from unauthorized access. In development, any simple string works. In shared environments, use a strong random token. In production, set `TINA4_DEBUG=false` and the entire dashboard is disabled.
+The console token guards the dashboard from unauthorized access. In development, any string works. In shared environments, use a strong random token. In production, set `TINA4_DEBUG=false` and the entire dashboard disappears.
 
 ---
 
@@ -241,7 +241,7 @@ The request inspector in the dev dashboard shows every HTTP request that has hit
 - **Headers** -- Request and response headers
 - **Queries** -- All database queries executed during the request
 
-This is invaluable for debugging API calls. Instead of adding `print()` statements everywhere, just check the request inspector to see exactly what happened.
+No more `print()` statements scattered through your code. The inspector shows what happened. Every request. Every detail.
 
 ### Filtering Requests
 

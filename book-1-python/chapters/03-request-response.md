@@ -2,9 +2,9 @@
 
 ## 1. The Two Objects You Use Everywhere
 
-Every route handler in Tina4 Python receives two arguments: `request` and `response`. The request object carries everything the client sent. The response object is a callable that builds what you send back. Understanding these two objects well means you can handle any HTTP scenario.
+Every route handler receives two arguments: `request` and `response`. The request carries everything the client sent. The response builds what you send back. Master these two objects and you handle any HTTP scenario.
 
-Imagine you are building a file-sharing service. A user uploads a document, you validate the file type, check their session, and return either a success JSON response or an error page. Every step of that interaction flows through `request` and `response`.
+Picture a file-sharing service. A user uploads a document. You validate the file type. You check their session. You return a success JSON or an error page. Every step flows through `request` and `response`.
 
 ---
 
@@ -95,7 +95,7 @@ curl "http://localhost:7145/search?q=laptop&page=2&sort=price"
 
 ### request.body
 
-The parsed request body. For JSON requests, this is a dictionary. For form submissions, it contains the form fields:
+The parsed request body. JSON requests become a dictionary. Form submissions contain form fields:
 
 ```python
 @post("/api/feedback")
@@ -187,7 +187,7 @@ curl http://localhost:7145/api/cookies -b "session_id=abc123; theme=dark"
 
 ### request.files
 
-For multipart file uploads, `request.files` is a dictionary of uploaded files:
+For multipart file uploads, `request.files` holds the uploaded files:
 
 ```python
 @post("/api/upload")
@@ -244,7 +244,7 @@ async def upload_and_save(request, response):
 
 ## 3. The Response Object
 
-The `response` object is a callable with methods for building HTTP responses. Every route handler must return a response.
+The `response` object builds HTTP responses. Every route handler must return one.
 
 ### response.json()
 
@@ -347,7 +347,7 @@ async def download_report(request, response):
     return response.file("data/reports/monthly-report.pdf")
 ```
 
-Tina4 auto-detects the content type from the file extension. The browser will display or download the file depending on the content type.
+Tina4 auto-detects the content type from the file extension. The browser displays or downloads the file based on content type.
 
 To force a download (instead of inline display):
 
@@ -389,7 +389,7 @@ return response.json({"error": "Server error"}, 500)
 
 ### Setting Response Headers
 
-Add custom headers to the response:
+Add custom headers:
 
 ```python
 @get("/api/data")
@@ -451,7 +451,7 @@ Cookie options:
 
 ## 4. Real-World Example: File Upload with Validation
 
-Here is a complete file upload endpoint that validates file type, size, and returns appropriate error messages:
+A complete file upload endpoint that validates type, size, and returns appropriate errors:
 
 ```python
 from tina4_python.core.router import post
@@ -695,33 +695,33 @@ async def list_submissions(request, response):
 
 **Problem:** Accessing `request.body` in a GET handler returns `None` or an empty dict.
 
-**Cause:** GET requests do not have a body by convention. Browsers and curl do not send one.
+**Cause:** GET requests carry no body by convention. Browsers and curl do not send one.
 
-**Fix:** Use `request.query` for GET request parameters, not `request.body`. The body is only populated for POST, PUT, and PATCH requests.
+**Fix:** Use `request.query` for GET parameters. The body is only populated for POST, PUT, and PATCH requests.
 
 ### 2. Forgetting to parse Content-Type
 
 **Problem:** `request.body` is an empty dictionary even though you sent JSON.
 
-**Cause:** You did not set `Content-Type: application/json` in your request. Without it, Tina4 does not know to parse the body as JSON.
+**Cause:** You did not set `Content-Type: application/json` in your request. Without it, Tina4 does not parse the body as JSON.
 
-**Fix:** Always include `-H "Content-Type: application/json"` when sending JSON via curl. In JavaScript fetch, set `headers: {"Content-Type": "application/json"}`.
+**Fix:** Include `-H "Content-Type: application/json"` when sending JSON via curl. In JavaScript fetch, set `headers: {"Content-Type": "application/json"}`.
 
 ### 3. File upload with wrong field name
 
 **Problem:** `request.files["photo"]` raises a `KeyError`.
 
-**Cause:** The form field name in the HTML or curl command does not match the key you are looking up.
+**Cause:** The form field name does not match the key you look up.
 
 **Fix:** Check that the form uses `<input type="file" name="photo">` and curl uses `-F "photo=@file.jpg"`. The string after `-F` must match the key in `request.files`.
 
 ### 4. response.redirect() in AJAX calls
 
-**Problem:** Your JavaScript `fetch()` call gets a redirect response but does not navigate to the new page.
+**Problem:** Your JavaScript `fetch()` call gets a redirect response but the browser does not navigate.
 
-**Cause:** `fetch()` follows redirects silently and returns the final response. It does not cause the browser to navigate.
+**Cause:** `fetch()` follows redirects silently and returns the final response. It does not trigger browser navigation.
 
-**Fix:** For AJAX calls, return a JSON response with the redirect URL and handle the navigation in JavaScript: `window.location.href = data.redirect_url`. Use `response.redirect()` only for traditional form submissions and browser navigation.
+**Fix:** For AJAX calls, return a JSON response with the redirect URL and handle navigation in JavaScript: `window.location.href = data.redirect_url`. Use `response.redirect()` only for traditional form submissions and browser navigation.
 
 ### 5. Cookie not being set
 
@@ -729,7 +729,7 @@ async def list_submissions(request, response):
 
 **Cause:** If you set `secure: True`, the cookie is only sent over HTTPS. On `http://localhost`, the browser ignores it.
 
-**Fix:** During development on HTTP, set `"secure": False`. Only enable `"secure": True` in production where HTTPS is configured.
+**Fix:** During development on HTTP, set `"secure": False`. Enable `"secure": True` only in production where HTTPS is configured.
 
 ### 6. Large file uploads fail silently
 
@@ -737,13 +737,13 @@ async def list_submissions(request, response):
 
 **Cause:** The default maximum upload size may be smaller than your file.
 
-**Fix:** Set `TINA4_MAX_UPLOAD_SIZE` in your `.env` file (value in bytes). For example, `TINA4_MAX_UPLOAD_SIZE=52428800` for 50 MB.
+**Fix:** Set `TINA4_MAX_UPLOAD_SIZE` in your `.env` file (value in bytes). For 50 MB: `TINA4_MAX_UPLOAD_SIZE=52428800`.
 
 ### 7. Chaining response methods in wrong order
 
 **Problem:** Setting headers or cookies after calling `response.json()` has no effect.
 
-**Cause:** `response.json()` finalizes and returns the response. Anything after it does not get applied.
+**Cause:** `response.json()` finalizes and returns the response. Anything after it is too late.
 
 **Fix:** Chain headers and cookies before the final response method:
 

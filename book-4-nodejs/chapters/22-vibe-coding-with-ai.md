@@ -2,19 +2,19 @@
 
 ## Why Tina4 is Built for AI-Assisted Development
 
-Imagine telling your AI assistant: "Add a product catalog with search, pagination, and category filtering." In most frameworks, the AI would need to know which packages to install, which config files to create, which naming conventions to follow, and how to wire everything together. It would hallucinate half of it.
+Tell your AI assistant: "Add a product catalog with search, pagination, and category filtering." In most frameworks, the AI needs to know which packages to install, which config files to create, which naming conventions to follow, and how to wire everything together. It hallucinates half of it.
 
-With Tina4, the AI reads one file -- `CLAUDE.md` -- and knows everything. Every method signature, every import path, every convention. It generates correct, runnable code on the first try because there is only one way to do things in Tina4.
+With Tina4, the AI reads one file -- `CLAUDE.md` -- and knows everything. Every method signature. Every import path. Every convention. It generates correct, runnable code on the first try because there is only one way to do things in Tina4.
 
-This is not accidental. Tina4 was designed from the ground up to be the best framework for AI-assisted development.
+This is not accidental. Tina4 was built from the ground up as the best framework for AI-assisted development.
 
 ---
 
 ## The Zero-Dependency Advantage
 
-When an AI generates code for Express, it might suggest `express-session` or `cookie-session` or `connect-redis` -- all exist, all work differently. Which one? The AI has to guess.
+When an AI generates code for Express, it might suggest `express-session` or `cookie-session` or `connect-redis`. All exist. All work differently. The AI guesses.
 
-With Tina4, there is one cache. One queue. One ORM. One template engine. No ambiguity, no alternatives, no "it depends on which package you installed."
+With Tina4, there is one cache. One queue. One ORM. One template engine. No ambiguity. No alternatives. No "it depends on which package you installed."
 
 ```typescript
 // There is only one way to cache in Tina4
@@ -64,7 +64,7 @@ For frontend development -- tina4-js signals, Tina4Element components, reactive 
 
 ## The Convention Advantage
 
-AI thrives on convention. When every Tina4 project follows the same structure, the AI never has to ask "where should I put this?"
+AI thrives on convention. Every Tina4 project follows the same structure. The AI never asks "where should I put this?"
 
 ```
 src/
@@ -107,7 +107,7 @@ All correct. All runnable. First try.
 
 **Claude adds** `const mail = new Messenger(); await mail.send(...)` -- because it knows Messenger reads from `.env`.
 
-No research. No Stack Overflow. No "which package should I use?" Just describe what you want, the AI builds it.
+No research. No Stack Overflow. No "which package should I use?" Describe what you want. The AI builds it.
 
 ---
 
@@ -140,7 +140,7 @@ Router.get("/api/products/:id:int", async (req, res) => {
 });
 ```
 
-TypeScript's type system prevents the AI from generating code that would fail at runtime. Property types, method signatures, and return types all guide the AI toward correct code.
+TypeScript's type system is a guardrail. It prevents the AI from generating code that fails at runtime. Property types, method signatures, and return types steer the AI toward correct code.
 
 ---
 
@@ -164,9 +164,9 @@ Run `tina4 doctor` to see which tools are detected.
 
 ## The AI Chat in Dev Dashboard
 
-The dev dashboard at `/tina4/console` includes an AI chat tab. Enter your API key and chat with Claude or GPT about your code directly from the browser.
+The dev dashboard at `/tina4/console` includes an AI chat tab. Enter your API key. Chat with Claude or GPT about your code directly from the browser.
 
-The AI has full context of your Tina4 project. Ask it:
+The AI has full context of your Tina4 project. Ask it anything:
 
 - "Why is my /api/users route returning 500?"
 - "How do I add WebSocket support?"
@@ -216,10 +216,10 @@ Each prompt should generate correct, runnable TypeScript code on the first try.
 
 ## The Philosophy
 
-Tina4 is not just compatible with AI coding tools. It was designed from the ground up to make AI-assisted development effortless.
+Tina4 was not retrofitted for AI coding tools. It was designed for them from the ground up.
 
-Convention over configuration means the AI always knows where things go. Zero dependencies means the AI never has to choose between packages. A single CLAUDE.md file means the AI has complete framework knowledge. And identical APIs across 4 languages means the AI's knowledge transfers instantly.
+Convention over configuration means the AI knows where things go. Zero dependencies means the AI never chooses between packages. A single CLAUDE.md file means the AI has complete framework knowledge. Identical APIs across 4 languages means that knowledge transfers instantly.
 
-The future of web development is collaborative -- you describe the intent, the AI writes the code, you review and refine. Tina4 is built for that future.
+You describe the intent. The AI writes the code. You review and refine. Tina4 is the ground the partnership stands on.
 
 *This is not a framework. This is a partnership.*

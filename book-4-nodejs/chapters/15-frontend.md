@@ -2,13 +2,15 @@
 
 ## 1. Beyond JSON APIs
 
-Your API returns perfect JSON. Now someone has to build the interface. Tina4 includes two frontend tools: **tina4css** (a utility CSS framework) and **frond.js** (a reactive JavaScript library). Both ship with every project -- no npm installs, no build tools, no webpack.
+Your API returns perfect JSON. Now someone has to build the interface.
+
+Tina4 ships two frontend tools: **tina4css** (a utility CSS framework) and **frond.js** (a reactive JavaScript library). Both arrive with every project. No npm installs. No build tools. No webpack.
 
 ---
 
 ## 2. tina4css -- The Built-In CSS Framework
 
-`tina4.css` is available at `/css/tina4.css`. It provides layout, typography, buttons, cards, forms, alerts, and utility classes.
+`tina4.css` lives at `/css/tina4.css`. It delivers layout, typography, buttons, cards, forms, alerts, and utility classes.
 
 ### Layout
 
@@ -54,7 +56,7 @@ Your API returns perfect JSON. Now someone has to build the interface. Tina4 inc
 
 ## 3. frond.js -- Reactive JavaScript
 
-`frond.js` is available at `/js/frond.js`. It provides reactive data binding, DOM manipulation, HTTP fetch helpers, and WebSocket support.
+`frond.js` lives at `/js/frond.js`. It delivers reactive data binding, DOM manipulation, HTTP fetch helpers, and WebSocket support.
 
 ### Reactive Data Binding
 
@@ -204,7 +206,7 @@ src/public/css/custom.css  → /css/custom.css
 
 ## 7. Integrating with React, Vue, or Svelte
 
-Tina4 serves as the API backend. Configure your frontend build tool to output to `src/public/`:
+Tina4 is the API backend. Point your frontend build tool's output to `src/public/`:
 
 ```env
 # Vue

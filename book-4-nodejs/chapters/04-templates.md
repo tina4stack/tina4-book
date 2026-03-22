@@ -2,11 +2,11 @@
 
 ## 1. Why Templates
 
-In Chapter 1, you saw `res.html("products.html", data)` and it produced a full HTML page. That rendering was done by **Frond**, Tina4's built-in template engine. Frond is a zero-dependency, Twig-compatible engine that ships with the framework. If you have used Twig, Jinja2, or Nunjucks, you already know 90% of Frond.
+In Chapter 1, you saw `res.html("products.html", data)` produce a full HTML page. That rendering was done by **Frond**, Tina4's built-in template engine. Zero dependencies. Twig-compatible. Built from scratch. If you know Twig, Jinja2, or Nunjucks, you know 90% of Frond.
 
-Templates live in `src/templates/`. When you call `res.html("page.html", data)`, Frond loads `src/templates/page.html`, processes the tags and expressions, and returns the final HTML.
+Templates live in `src/templates/`. Call `res.html("page.html", data)` and Frond loads `src/templates/page.html`, processes the tags and expressions, and returns the final HTML.
 
-This chapter covers every feature of the template engine so you can build real pages.
+This chapter covers every feature of the template engine. After this, you build real pages.
 
 ---
 
@@ -50,7 +50,7 @@ Hello, Alice!
 
 ### Accessing Nested Data
 
-Use dot notation for nested objects:
+Dot notation reaches into nested objects:
 
 ```typescript
 const data = {
@@ -79,7 +79,7 @@ Alice lives in Cape Town, South Africa.
 
 ### Expressions
 
-You can use basic expressions inside `{{ }}`:
+Basic expressions work inside `{{ }}`:
 
 ```html
 <p>Total: ${{ price * quantity }}</p>
@@ -93,7 +93,7 @@ The `~` operator concatenates strings.
 
 ## 3. Template Inheritance
 
-Template inheritance is the most powerful feature. Define a base layout once, then extend it in every page.
+Template inheritance is the engine's most powerful feature. Define a base layout once. Extend it in every page.
 
 ### Base Layout
 
@@ -162,7 +162,7 @@ Router.get("/about", async (req, res) => {
 
 ### Using `{{ parent() }}`
 
-Add to a block rather than replace it entirely:
+Add to a block rather than replace it:
 
 ```html
 {% extends "base.twig" %}
@@ -182,7 +182,7 @@ Add to a block rather than replace it entirely:
 
 ## 4. Includes
 
-Break your templates into reusable pieces with `{% include %}`:
+Break templates into reusable pieces with `{% include %}`:
 
 Create `src/templates/partials/header.twig`:
 
@@ -341,7 +341,7 @@ Handle empty lists with `{% else %}`:
 
 ## 7. Filters
 
-Filters transform values. Apply them with the `|` (pipe) character:
+Filters transform values. Apply them with the `|` (pipe) character.
 
 ### Text Filters
 
@@ -382,13 +382,13 @@ Filters transform values. Apply them with the `|` (pipe) character:
 
 ### The `escape` and `raw` Filters
 
-By default, all `{{ }}` output is auto-escaped for HTML safety. If you trust the content and need raw HTML:
+All `{{ }}` output is auto-escaped for HTML safety. If you trust the content and need raw HTML:
 
 ```html
 {{ trusted_html | raw }}
 ```
 
-Use `raw` sparingly. Only apply it to content you fully control, never to user input.
+Use `raw` with caution. Apply it only to content you control. Never to user input.
 
 ### Chaining Filters
 
@@ -401,7 +401,7 @@ Use `raw` sparingly. Only apply it to content you fully control, never to user i
 
 ## 8. Macros
 
-Macros are reusable template functions. Define once, call many times.
+Macros are reusable template functions. Define once. Call many times.
 
 ### Defining a Macro
 
@@ -454,7 +454,7 @@ Create `src/templates/macros.twig`:
 
 ### {% raw %} -- Literal Output
 
-When you need to output literal `{{ }}` (for example, in a Vue.js template):
+When you need to output literal `{{ }}` (for a Vue.js template, for example):
 
 ```html
 {% raw %}
@@ -502,7 +502,7 @@ export default async (req, res) => {
 };
 ```
 
-Tina4 automatically renders `src/templates/catalog.twig` with the returned data. This keeps the route handler clean -- it just returns data, and the framework handles the rendering.
+Tina4 renders `src/templates/catalog.twig` with the returned data. The route handler stays clean -- it returns data, the framework handles rendering.
 
 ---
 
@@ -682,7 +682,7 @@ Router.get("/catalog", async (req, res) => {
 
 - Header shows "3 products in Kitchen"
 - The Kitchen filter button is active
-- Only three cards: Espresso Machine, Blender, Cast Iron Skillet
+- Three cards: Espresso Machine, Blender, Cast Iron Skillet
 
 ---
 
@@ -692,7 +692,7 @@ Router.get("/catalog", async (req, res) => {
 
 **Problem:** Template inheritance does not work. The page renders without the base layout.
 
-**Cause:** `{% extends "base.twig" %}` must be the very first tag in the template.
+**Cause:** `{% extends "base.twig" %}` must be the first tag in the template. No exceptions.
 
 **Fix:** Make `{% extends %}` the absolute first thing in the file.
 
@@ -700,7 +700,7 @@ Router.get("/catalog", async (req, res) => {
 
 **Problem:** `{{ username }}` renders as empty instead of showing an error.
 
-**Cause:** Frond silently outputs nothing for undefined variables. This is by design.
+**Cause:** Frond outputs nothing for undefined variables. By design.
 
 **Fix:** Use the `default` filter: `{{ username | default("Guest") }}`.
 
@@ -710,7 +710,7 @@ Router.get("/catalog", async (req, res) => {
 
 **Cause:** Auto-escaping converts `<` to `&lt;` for security.
 
-**Fix:** If the content is trusted, use `{{ content | raw }}`. Never use `raw` on user-supplied input.
+**Fix:** For trusted content, use `{{ content | raw }}`. Never use `raw` on user-supplied input.
 
 ### 4. Variable Scope in Includes
 
@@ -718,11 +718,11 @@ Router.get("/catalog", async (req, res) => {
 
 **Cause:** Loop variables are scoped to the loop.
 
-**Fix:** Use `{% set %}` before the loop if you need to accumulate values.
+**Fix:** Use `{% set %}` before the loop to accumulate values.
 
 ### 5. Macro Arguments Are Positional
 
-**Problem:** Calling `{{ button("Click", style="danger") }}` does not work as expected.
+**Problem:** Calling `{{ button("Click", style="danger") }}` does not work.
 
 **Cause:** Frond macros use positional arguments, not keyword arguments.
 
@@ -730,11 +730,11 @@ Router.get("/catalog", async (req, res) => {
 
 ### 6. Template File Extension Does Not Matter
 
-**Problem:** You are not sure whether to use `.html`, `.twig`, or `.tpl`.
+**Problem:** Not sure whether to use `.html`, `.twig`, or `.tpl`.
 
 **Cause:** Frond does not care about the file extension. It processes any file in `src/templates/`.
 
-**Fix:** Pick one extension and be consistent. This book uses `.twig` for templates with Twig syntax and `.html` for simple HTML files.
+**Fix:** Pick one extension. Be consistent. This book uses `.twig` for templates with Twig syntax and `.html` for simple HTML files.
 
 ### 7. Filters Are Not JavaScript Functions
 
@@ -742,4 +742,4 @@ Router.get("/catalog", async (req, res) => {
 
 **Cause:** Frond filters follow Twig conventions, not JavaScript conventions.
 
-**Fix:** Use `{{ items | length }}` instead of `count`, `{{ name | upper }}` instead of `toUpperCase`.
+**Fix:** Use `{{ items | length }}` instead of `count`. Use `{{ name | upper }}` instead of `toUpperCase`.

@@ -2,20 +2,22 @@
 
 ## 1. The Gatekeepers
 
-Your API needs CORS headers for the React frontend, rate limiting for the public endpoints, and auth checking for admin routes -- all without cluttering your route handlers. You could copy-paste the same ten lines of CORS code into every handler, but that breaks the moment you forget one. You could pile all the checks into a giant `if` tree at the top of each handler, but that buries the actual business logic under boilerplate.
+Your API needs CORS headers for the React frontend. Rate limiting for public endpoints. Auth checking for admin routes. All without cluttering your handlers.
 
-Middleware solves this. It lets you wrap routes with reusable logic that runs before (or after) the handler. Each middleware does one job -- check a token, set CORS headers, log the request, enforce rate limits -- and passes control to the next layer. Your route handlers stay focused on their actual purpose.
+You could copy-paste 10 lines of CORS code into every handler. That breaks the moment you forget one. You could pile all the checks into a giant `if` tree. That buries business logic under boilerplate.
 
-In Chapter 2 you saw a brief introduction to middleware. This chapter goes deep: built-in middleware, custom middleware, execution order, short-circuiting, and real-world patterns.
+Middleware solves this. Wrap routes with reusable logic that runs before or after the handler. Each middleware does one job -- check a token, set CORS headers, log the request, enforce rate limits -- then passes control to the next layer. Route handlers stay focused on their actual purpose.
+
+Chapter 2 introduced middleware. This chapter goes deep. Built-in middleware. Custom middleware. Execution order. Short-circuiting. Real-world patterns.
 
 ---
 
 ## 2. What Middleware Is
 
-A middleware function sits between the incoming HTTP request and your route handler. It receives the request, the response, and a `next_handler` callable. It can:
+A middleware function sits between the incoming HTTP request and your route handler. It receives the request, the response, and a `next_handler` callable. Three options:
 
 1. Inspect or modify the request before passing it along
-2. Decide not to pass it along (short-circuit)
+2. Block the request entirely (short-circuit)
 3. Inspect or modify the response on the way back
 
 Here is the simplest middleware that does nothing but pass through:

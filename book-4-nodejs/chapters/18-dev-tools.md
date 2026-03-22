@@ -2,9 +2,9 @@
 
 ## 1. Debugging at 2am
 
-It is 2am. Production monitoring pinged you -- a 500 error on checkout. You pull up the dev dashboard, find the failing request, and see the full stack trace with source context. Line 47 of `src/routes/checkout.ts` -- a null reference. You add a null check, push the fix, and go back to sleep. Total time: 30 seconds.
+2am. Production monitoring pings you -- a 500 error on checkout. You pull up the dev dashboard. Find the failing request. Full stack trace with source context. Line 47 of `src/routes/checkout.ts` -- a null reference. Add a null check. Push the fix. Back to sleep. Total time: 30 seconds.
 
-Tina4's dev tools are built into the framework from day one. When `TINA4_DEBUG=true`, you get a full development dashboard, error overlay, live reload, request inspector, and SQL query runner.
+Tina4's dev tools are part of the framework from day one. When `TINA4_DEBUG=true`, you get a development dashboard, error overlay, live reload, request inspector, and SQL query runner.
 
 ---
 
@@ -88,13 +88,13 @@ When you save a `.ts` file in `src/routes/`, the server restarts and your change
 
 ## 6. SQL Query Runner
 
-The dev dashboard includes a SQL query runner. Type any SQL query and execute it against your database directly from the browser:
+The dev dashboard includes a SQL query runner. Type any SQL query. Execute it against your database. Results appear in the browser:
 
 ```sql
 SELECT * FROM products WHERE price > 50 ORDER BY name;
 ```
 
-Results are displayed in a table. This is faster than opening a database client for quick queries.
+Results render in a table. Faster than opening a separate database client for quick queries.
 
 ---
 
@@ -148,7 +148,7 @@ Logs are written to `logs/app.log` and to stdout.
 http://localhost:7148/health
 ```
 
-Returns system status including database connectivity, uptime, and version. Use this for monitoring and load balancer health checks.
+Returns system status: database connectivity, uptime, and version. Your monitoring tools and load balancers hit this endpoint.
 
 ---
 

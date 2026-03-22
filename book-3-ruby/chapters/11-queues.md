@@ -2,11 +2,11 @@
 
 ## 1. Do Not Make the User Wait
 
-Your app sends welcome emails on signup, generates PDF invoices, and resizes uploaded images. Each of these tasks takes between two and thirty seconds. If you do them inside the HTTP request, the user stares at a loading spinner while the server processes their email, renders their invoice, and resizes their photo. That is a terrible experience.
+Your app sends welcome emails on signup. Generates PDF invoices. Resizes uploaded images. Each task takes 2 to 30 seconds. Run them inside the HTTP request and the user stares at a spinner while the server grinds through email delivery, invoice rendering, and image resizing.
 
-Queues solve this by moving slow work to a background process. The HTTP handler drops a job onto a queue and immediately responds to the user. A separate consumer process picks up the job and does the work at its own pace. The user sees "Welcome! Check your email." in under 100 milliseconds, and the email arrives 5 seconds later.
+Queues move slow work to a background process. The HTTP handler drops a job onto a queue and responds to the user in under 100 milliseconds. A separate consumer picks up the job and does the work at its own pace. The user sees "Welcome! Check your email." The email arrives 5 seconds later.
 
-Tina4 has a built-in queue system that works out of the box with SQLite. No Redis, no RabbitMQ, no external services. Just add jobs and process them.
+Tina4's queue system works out of the box with SQLite. No Redis. No RabbitMQ. No external services. Add jobs and process them.
 
 ---
 
@@ -41,7 +41,7 @@ Meanwhile, in the background:
   -> Consumer resizes avatar
 ```
 
-The user's experience goes from 6.5 seconds to 33 milliseconds.
+6.5 seconds becomes 33 milliseconds. The user feels the difference.
 
 ---
 

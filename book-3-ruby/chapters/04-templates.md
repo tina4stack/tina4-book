@@ -2,11 +2,11 @@
 
 ## 1. Why Templates
 
-In Chapter 1, you saw `response.render("products.html", data)` and it produced a full HTML page. That rendering was done by **Frond**, Tina4's built-in template engine. Frond is a zero-dependency, Twig-compatible engine that ships with the framework. If you have used Twig, Jinja2, or Nunjucks, you already know 90% of Frond.
+In Chapter 1, you saw `response.render("products.html", data)` produce a full HTML page. That rendering came from **Frond** -- Tina4's built-in template engine. Frond is zero-dependency and Twig-compatible. It ships with the framework. If you know Twig, Jinja2, or Nunjucks, you know 90% of Frond.
 
 Templates live in `src/templates/`. When you call `response.render("page.html", data)`, Frond loads `src/templates/page.html`, processes the tags and expressions, and returns the final HTML.
 
-This chapter covers every feature of the template engine so you can build real pages.
+This chapter covers every feature of the template engine.
 
 ---
 
@@ -38,7 +38,7 @@ Create `src/templates/welcome.html`:
 </html>
 ```
 
-**Expected browser output:**
+**Browser output:**
 
 ```
 Hello, Alice!
@@ -46,7 +46,7 @@ Hello, Alice!
 
 ### Accessing Nested Data
 
-Use dot notation for nested hashes:
+Dot notation reaches into nested hashes:
 
 ```ruby
 data = {
@@ -75,7 +75,7 @@ Alice lives in Cape Town, South Africa.
 
 ### Expressions
 
-You can use basic expressions inside `{{ }}`:
+Basic expressions work inside `{{ }}`:
 
 ```html
 <p>Total: ${{ price * quantity }}</p>
@@ -89,7 +89,7 @@ The `~` operator concatenates strings.
 
 ## 3. Template Inheritance
 
-Template inheritance is the most powerful feature. Define a base layout once, then extend it in every page.
+Template inheritance is the most powerful feature. Define a base layout once. Extend it in every page.
 
 ### Base Layout
 
@@ -126,7 +126,7 @@ Create `src/templates/base.twig`:
 </html>
 ```
 
-This base defines four blocks: `title`, `head`, `content`, and `scripts`. Child templates override only the blocks they need.
+Four blocks: `title`, `head`, `content`, `scripts`. Child templates override only the blocks they need.
 
 ### Child Template
 
@@ -156,11 +156,11 @@ Tina4::Router.get("/about") do |request, response|
 end
 ```
 
-**Expected browser output:** A full HTML page with the nav, the "About Us" content, and the footer. The `<title>` tag says "About Us". The `head` and `scripts` blocks are empty because the child template did not override them.
+**Browser output:** A full HTML page with the nav, the "About Us" content, and the footer. The `<title>` tag reads "About Us". The `head` and `scripts` blocks stay empty -- the child did not override them.
 
 ### Using `{{ parent() }}`
 
-Sometimes you want to add to a block rather than replace it entirely. Use `{{ parent() }}`:
+Add to a block instead of replacing it:
 
 ```html
 {% extends "base.twig" %}
@@ -176,13 +176,13 @@ Sometimes you want to add to a block rather than replace it entirely. Use `{{ pa
 {% endblock %}
 ```
 
-The `head` block now contains everything from the base template's `head` block plus the extra stylesheet.
+The `head` block now contains everything from the base plus the extra stylesheet.
 
 ---
 
 ## 4. Includes
 
-Break your templates into reusable pieces with `{% include %}`:
+Break templates into reusable pieces with `{% include %}`:
 
 Create `src/templates/partials/header.twig`:
 
@@ -226,11 +226,11 @@ Use them in a page:
 {% endblock %}
 ```
 
-The `product` variable is automatically available inside the included template because it exists in the current scope (the for loop).
+The `product` variable is available inside the included template because it exists in the current scope (the for loop).
 
 ### Passing Variables to Includes
 
-You can pass specific variables with `with`:
+Pass specific variables with `with`:
 
 ```html
 {% include "partials/header.twig" with {"site_name": "Cool Store"} %}
@@ -242,7 +242,7 @@ Use `only` to isolate the included template from the parent scope:
 {% include "partials/header.twig" with {"site_name": "Cool Store"} only %}
 ```
 
-With `only`, the included template can only access `site_name` -- it cannot see any other variables from the parent.
+With `only`, the included template sees `site_name` and nothing else.
 
 ---
 
@@ -302,7 +302,7 @@ Handle empty lists with `{% else %}`:
 {% endfor %}
 ```
 
-If `products` is empty (or not defined), the `else` block renders instead.
+If `products` is empty or undefined, the `else` block renders instead.
 
 ### Looping Over Key-Value Pairs
 
@@ -331,7 +331,7 @@ If `products` is empty (or not defined), the `else` block renders instead.
 
 ### Ternary Operator
 
-For inline conditionals:
+Inline conditionals:
 
 ```html
 <span class="{{ is_active ? 'text-green' : 'text-gray' }}">
@@ -351,7 +351,7 @@ Use `is defined` to check if a variable exists:
 
 ### Truthiness
 
-These values are considered false: `false`, `nil`, `0`, `""` (empty string), `[]` (empty array). Everything else is true.
+These values are false: `false`, `nil`, `0`, `""` (empty string), `[]` (empty array). Everything else is true.
 
 ```html
 {% if items %}
@@ -371,7 +371,7 @@ Filters transform values. Apply them with the `|` (pipe) character:
 {{ name | upper }}
 ```
 
-Here are the most commonly used filters:
+The most useful filters:
 
 ### Text Filters
 
@@ -412,7 +412,7 @@ Here are the most commonly used filters:
 <p>Time: {{ created_at | date("H:i") }}</p>
 ```
 
-With a timestamp or date string as input:
+With a timestamp or date string:
 
 - `date("F j, Y")` outputs `"March 22, 2026"`
 - `date("H:i")` outputs `"14:30"`
@@ -420,7 +420,7 @@ With a timestamp or date string as input:
 
 ### The `default` Filter
 
-Provide a fallback value when a variable is nil or undefined:
+Provide a fallback when a variable is nil or undefined:
 
 ```html
 <p>{{ subtitle | default("No subtitle") }}</p>
@@ -429,7 +429,7 @@ Provide a fallback value when a variable is nil or undefined:
 
 ### The `escape` and `raw` Filters
 
-By default, all `{{ }}` output is auto-escaped for HTML safety. This prevents XSS attacks.
+All `{{ }}` output is auto-escaped for HTML safety. This blocks XSS attacks.
 
 ```html
 {{ user_input }}
@@ -437,13 +437,13 @@ By default, all `{{ }}` output is auto-escaped for HTML safety. This prevents XS
    &lt;script&gt;alert('xss')&lt;/script&gt; #}
 ```
 
-If you trust the content and need raw HTML:
+When you trust the content and need raw HTML:
 
 ```html
 {{ trusted_html | raw }}
 ```
 
-Use `raw` sparingly. Only apply it to content you fully control, never to user input.
+Use `raw` with caution. Only on content you control. Never on user input.
 
 ### Chaining Filters
 
@@ -458,7 +458,7 @@ Filters chain left to right:
 
 ## 8. Macros
 
-Macros are reusable template functions. Think of them as components you define once and call many times.
+Macros are reusable template functions. Components you define once and call many times.
 
 ### Defining a Macro
 
@@ -540,7 +540,7 @@ Import macros in your template:
 
 ### {% raw %} -- Literal Output
 
-When you need to output literal `{{ }}` or `{% %}` (for example, in a Vue.js or Angular template):
+When you need to output literal `{{ }}` or `{% %}` (for Vue.js or Angular templates):
 
 ```html
 {% raw %}
@@ -550,11 +550,11 @@ When you need to output literal `{{ }}` or `{% %}` (for example, in a Vue.js or 
 {% endraw %}
 ```
 
-This outputs the literal text `{{ message }}` without trying to process it as a Frond expression.
+Outputs the literal text `{{ message }}` without processing it as a Frond expression.
 
 ### {% spaceless %} -- Remove Whitespace
 
-Remove whitespace between HTML tags:
+Strip whitespace between HTML tags:
 
 ```html
 {% spaceless %}
@@ -574,7 +574,7 @@ Useful for inline elements where whitespace creates unwanted gaps.
 
 ### {% autoescape %} -- Control Escaping
 
-Override the auto-escaping behavior for a block:
+Override auto-escaping for a block:
 
 ```html
 {% autoescape false %}
@@ -582,11 +582,11 @@ Override the auto-escaping behavior for a block:
 {% endautoescape %}
 ```
 
-Everything inside the block outputs without HTML escaping. Equivalent to using `| raw` on every variable, but more convenient for large blocks of trusted content.
+Everything inside outputs without HTML escaping. Equivalent to `| raw` on every variable, but more convenient for large blocks of trusted content.
 
 ### Comments
 
-Template comments are invisible in the output:
+Template comments stay invisible in the output:
 
 ```html
 {# This comment will not appear in the HTML output #}
@@ -601,7 +601,7 @@ Template comments are invisible in the output:
 
 ## 10. tina4css Integration
 
-Every Tina4 project includes `tina4.css`, a built-in CSS utility framework. It is available at `/css/tina4.css` and provides layout, typography, and common UI patterns without external dependencies.
+Every Tina4 project includes `tina4.css` -- a built-in CSS utility framework available at `/css/tina4.css`. Layout, typography, common UI patterns. No external dependencies.
 
 Include it in your base template:
 
@@ -658,7 +658,7 @@ Include it in your base template:
 <span class="text-primary">Primary color text</span>
 ```
 
-You do not need Bootstrap or Tailwind. If you prefer those, you can replace `tina4.css` with your preferred framework -- just change the `<link>` tag.
+No Bootstrap needed. No Tailwind needed. If you prefer those, swap the `<link>` tag. tina4css stays out of the way.
 
 ---
 
@@ -675,11 +675,11 @@ Build a product catalog page with a base layout, product cards, category filters
 3. Create a page template at `src/templates/catalog.twig` that:
    - Extends the base layout
    - Uses the macros
-   - Shows a heading with the total product count
+   - Shows a heading with total product count
    - Shows category filter buttons (All, and one per unique category)
    - Shows product cards in a grid
    - Shows featured products with a distinct style
-   - Handles the case when no products match the filter
+   - Handles empty filter results
 4. Create a route at `GET /catalog` that accepts an optional `?category=` filter
 
 ### Data
@@ -852,19 +852,19 @@ Tina4::Router.get("/catalog") do |request, response|
 end
 ```
 
-**Expected browser output for `/catalog`:**
+**Browser output for `/catalog`:**
 
 - A dark header with "Product Catalog" and "7 products"
 - Filter buttons: All (active), Fitness, Kitchen, Office
 - A grid of 7 product cards
-- Three cards (Espresso Machine, Standing Desk, Desk Lamp) have a gold border and "Featured" badge
-- The Blender card shows an "Out of Stock" badge in red
+- Three cards (Espresso Machine, Standing Desk, Desk Lamp) wear a gold border and "Featured" badge
+- The Blender card wears a red "Out of Stock" badge
 
-**Expected browser output for `/catalog?category=Kitchen`:**
+**Browser output for `/catalog?category=Kitchen`:**
 
 - Header shows "3 products in Kitchen"
-- The Kitchen filter button is active
-- Only three cards: Espresso Machine, Blender, Cast Iron Skillet
+- Kitchen filter button is active
+- Three cards: Espresso Machine, Blender, Cast Iron Skillet
 
 ---
 
@@ -874,54 +874,54 @@ end
 
 **Problem:** Template inheritance does not work. The page renders without the base layout.
 
-**Cause:** `{% extends "base.twig" %}` must be the very first tag in the template. If there is any text, whitespace, or even a comment before it, inheritance breaks.
+**Cause:** `{% extends "base.twig" %}` must be the first tag in the template. Any text, whitespace, or comment before it breaks inheritance.
 
-**Fix:** Make `{% extends %}` the absolute first thing in the file. Move any `{% from %}` imports to after the extends tag.
+**Fix:** Make `{% extends %}` the absolute first thing in the file. Move `{% from %}` imports after the extends tag.
 
 ### 2. Undefined Variables Show Nothing
 
-**Problem:** `{{ username }}` renders as empty instead of showing an error.
+**Problem:** `{{ username }}` renders as empty instead of raising an error.
 
-**Cause:** Frond silently outputs nothing for undefined variables. This is by design (like Twig), but it can hide bugs.
+**Cause:** Frond outputs nothing for undefined variables. By design. But it can hide bugs.
 
-**Fix:** Use the `default` filter: `{{ username | default("Guest") }}`. Or check first with `{% if username is defined %}`.
+**Fix:** Use the `default` filter: `{{ username | default("Guest") }}`. Or check with `{% if username is defined %}`.
 
 ### 3. Auto-Escaping Prevents HTML Output
 
-**Problem:** You pass HTML content like `"<strong>bold</strong>"` but it appears as literal text in the page.
+**Problem:** You pass HTML content but it appears as literal text in the page.
 
 **Cause:** Auto-escaping converts `<` to `&lt;` and `>` to `&gt;` for security.
 
-**Fix:** If the content is trusted, use `{{ content | raw }}`. Never use `raw` on user-supplied input.
+**Fix:** Trusted content gets `{{ content | raw }}`. Never use `raw` on user-supplied input.
 
 ### 4. Variable Scope in Includes
 
-**Problem:** A variable defined inside a `{% for %}` loop is not accessible after the loop ends.
+**Problem:** A variable defined inside a `{% for %}` loop vanishes after the loop ends.
 
 **Cause:** Loop variables are scoped to the loop. They do not leak into the outer scope.
 
-**Fix:** If you need to accumulate values, use `{% set %}` before the loop and update it inside. Or restructure your template to keep all logic within the loop.
+**Fix:** Use `{% set %}` before the loop and update inside it. Or restructure to keep logic within the loop.
 
 ### 5. Macro Arguments Are Positional
 
-**Problem:** Calling `{{ button("Click", style="danger") }}` does not work as expected.
+**Problem:** `{{ button("Click", style="danger") }}` does not work as expected.
 
-**Cause:** Frond macros use positional arguments, not keyword arguments. The order matters.
+**Cause:** Frond macros use positional arguments. Order matters.
 
-**Fix:** Pass arguments in the order they are defined: `{{ button("Click", "/url", "danger") }}`. If you have many optional arguments, consider passing a single object.
+**Fix:** Pass arguments in the order they are defined: `{{ button("Click", "/url", "danger") }}`. Many optional arguments? Consider passing a single object.
 
 ### 6. Template File Extension Does Not Matter
 
-**Problem:** You are not sure whether to use `.html`, `.twig`, or `.tpl`.
+**Problem:** Should you use `.html`, `.twig`, or `.tpl`?
 
-**Cause:** Frond does not care about the file extension. It processes any file in `src/templates/`.
+**Cause:** Frond does not care about file extensions. It processes any file in `src/templates/`.
 
-**Fix:** Pick one extension and be consistent. This book uses `.twig` for templates with Twig syntax and `.html` for simple HTML files. Both work identically.
+**Fix:** Pick one and stay consistent. This book uses `.twig` for templates with Twig syntax and `.html` for simple HTML. Both work the same.
 
 ### 7. Filters Are Not Ruby Methods
 
-**Problem:** You try `{{ items | count }}` or `{{ name | upcase }}` and get an error.
+**Problem:** `{{ items | count }}` or `{{ name | upcase }}` raises an error.
 
-**Cause:** Frond filters are not Ruby methods. The filter names follow Twig conventions, not Ruby conventions.
+**Cause:** Frond filters follow Twig conventions, not Ruby conventions.
 
-**Fix:** Use `{{ items | length }}` instead of `count` or `size`, `{{ name | upper }}` instead of `upcase`, `{{ text | lower }}` instead of `downcase`. See the filter table in section 7 for the full list.
+**Fix:** Use `{{ items | length }}` not `count`. Use `{{ name | upper }}` not `upcase`. Use `{{ text | lower }}` not `downcase`. See the filter table in section 7.

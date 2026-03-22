@@ -2,9 +2,11 @@
 
 ## 1. From 800ms to 3ms
 
-Your product catalog page runs 12 database queries and takes 800 milliseconds to render. Every visitor triggers the same queries for data that changes maybe once a day. After adding caching, the first request takes 800ms and the next 10,000 requests take 3ms each.
+Your product catalog page runs 12 database queries. 800 milliseconds to render. Every visitor triggers the same queries for data that changes once a day.
 
-Tina4 provides caching at multiple levels: response caching, database query caching, and a direct cache API.
+Add caching. The first request takes 800ms. The next 10,000 take 3ms each.
+
+Tina4 caches at three levels: response caching, database query caching, and a direct cache API.
 
 ---
 
@@ -47,7 +49,7 @@ Do not use `ResponseCache` on POST/PUT/DELETE routes, user-specific endpoints, o
 TINA4_CACHE_BACKEND=memory
 ```
 
-Fastest option. Resets on server restart.
+The fastest option. Data lives in memory. Server restart wipes it clean.
 
 ---
 
@@ -123,7 +125,7 @@ TINA4_DB_CACHE=true
 TINA4_DB_CACHE_TTL=300
 ```
 
-Identical queries return cached results. The cache key includes SQL and parameters.
+Identical queries with identical parameters return cached results. The cache key is the SQL statement plus its parameters. Change either and the cache treats it as a new query.
 
 ---
 

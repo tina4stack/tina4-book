@@ -2,11 +2,11 @@
 
 ## 1. From SQL to Objects
 
-In the last chapter, you wrote SQL queries by hand. That works, but it gets repetitive. Every time you insert a row, you write an INSERT statement. Every time you update, you write an UPDATE. Every time you fetch, you map column names to dictionary keys.
+The last chapter was raw SQL. It works. It also gets repetitive. Every insert: an INSERT statement. Every update: an UPDATE. Every fetch: column names mapped to dictionary keys. Over and over.
 
-Tina4's ORM (Object-Relational Mapper) lets you work with database rows as Python objects. You define a model class with fields, and the ORM handles the SQL for you. It is SQL-first -- you can always drop down to raw SQL when you need to -- but for the 90% case of CRUD operations, the ORM saves you time and reduces errors.
+Tina4's ORM turns database rows into Python objects. Define a model class with fields. The ORM writes the SQL. It remains SQL-first -- you can drop to raw SQL any time -- but for the 90% case of CRUD operations, the ORM handles the grunt work.
 
-Imagine you are building a blog. You have authors, posts, and comments. Authors have many posts. Posts have many comments. Comments belong to posts. Modeling these relationships with raw SQL means writing JOINs and managing foreign keys manually. The ORM makes this declarative.
+Picture a blog. Authors, posts, comments. Authors own many posts. Posts own many comments. Comments belong to posts. Modeling these relationships with raw SQL means JOINs and manual foreign key management. The ORM makes this declarative.
 
 ---
 
@@ -32,7 +32,7 @@ class Note(ORM):
     updated_at = DateTimeField(auto_now=True)
 ```
 
-That is a complete model. Let us break it down:
+A complete model. Here is what each piece does:
 
 - `table_name` -- the database table this model maps to
 - `primary_key` -- the primary key column (defaults to `"id"`)
@@ -80,7 +80,7 @@ You can create the database table directly from your model definition:
 Note.create_table()
 ```
 
-This generates and runs the CREATE TABLE SQL based on your field definitions. It is useful for development and testing. For production, use migrations (Chapter 5) for version-controlled schema changes.
+This generates and runs the CREATE TABLE SQL based on your field definitions. Good for development and testing. For production, use migrations (Chapter 5) for version-controlled schema changes.
 
 ```bash
 tina4 shell
@@ -393,13 +393,13 @@ async def list_authors(request, response):
     return response.json({"authors": data})
 ```
 
-Without eager loading, fetching 10 authors and their posts would run 11 queries (1 for authors + 10 for posts). With eager loading, it runs 2 queries (1 for authors + 1 for all posts).
+Without eager loading, 10 authors and their posts cost 11 queries (1 for authors + 10 for posts). With eager loading: 2 queries. That is the difference between a fast page and a slow one.
 
 ---
 
 ## 7. Soft Delete
 
-Sometimes you want to "delete" a record without actually removing it from the database. Tina4's ORM supports soft delete:
+Sometimes a record needs to disappear from queries without leaving the database. Soft delete handles this:
 
 ```python
 from tina4_python.orm import ORM, IntegerField, StringField, DateTimeField
@@ -441,7 +441,7 @@ all_tasks = Task.select(with_trashed=True)
 
 ## 8. Scopes
 
-Scopes are reusable query filters that you define on the model:
+Scopes are reusable query filters baked into the model:
 
 ```python
 class BlogPost(ORM):
@@ -488,7 +488,7 @@ async def recent_posts(request, response):
 
 ## 9. Input Validation
 
-Field definitions include validation rules. When you call `save()`, the ORM validates before writing to the database:
+Field definitions carry validation rules. Call `validate()` before `save()` and the ORM checks every constraint:
 
 ```python
 from tina4_python.orm import ORM, IntegerField, StringField, NumericField

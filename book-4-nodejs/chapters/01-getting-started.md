@@ -2,21 +2,19 @@
 
 ## 1. What Is Tina4 Node.js
 
-Tina4 Node.js is a zero-dependency web framework for Node.js 20+ and TypeScript that gives you routing, an ORM, a template engine, authentication, queues, WebSocket, and 70 other features in a single npm package under 5,000 lines of code.
+Tina4 Node.js is a zero-dependency web framework. One npm package. Under 5,000 lines of code. It hands you routing, an ORM, a template engine, authentication, queues, WebSocket, and 70 other features. Node.js 20+ and TypeScript.
 
-It is part of the Tina4 family -- four identical frameworks in Python, PHP, Ruby, and Node.js. Everything you learn here transfers directly to any of the other three languages. The project structure is the same. The template syntax is the same. The CLI commands are the same. The `.env` variables are the same.
+It belongs to the Tina4 family -- four identical frameworks in Python, PHP, Ruby, and Node.js. Learn one, know all four. Same project structure. Same template syntax. Same CLI commands. Same `.env` variables.
 
-Tina4 Node.js uses `camelCase` for method names (`fetchOne()`, `softDelete()`, `hasMany()`) following JavaScript and TypeScript conventions. Class names are `PascalCase`. Constants are `UPPER_SNAKE_CASE`.
+Tina4 Node.js uses `camelCase` for method names (`fetchOne()`, `softDelete()`, `hasMany()`). JavaScript convention. Class names are `PascalCase`. Constants are `UPPER_SNAKE_CASE`.
 
-By the end of this chapter, you will have a working Tina4 Node.js project with an API endpoint and a rendered HTML page.
+By the end of this chapter, you will have a working project with an API endpoint and a rendered HTML page.
 
 ---
 
 ## 2. Prerequisites and Installation
 
 ### What You Need
-
-Before installing Tina4, make sure you have:
 
 1. **Node.js 20 or later** -- check with:
 
@@ -30,7 +28,7 @@ You should see output like:
 v20.11.1
 ```
 
-If you see a version lower than 20, upgrade Node.js first.
+Anything below 20 means you need to upgrade first.
 
 2. **npm** -- Node's package manager. Check with:
 
@@ -59,7 +57,7 @@ curl -fsSL https://raw.githubusercontent.com/tina4stack/tina4/main/install.sh | 
 irm https://raw.githubusercontent.com/tina4stack/tina4/main/install.ps1 | iex
 ```
 
-Verify the CLI is installed:
+Verify the CLI:
 
 ```bash
 tina4 --version
@@ -83,7 +81,7 @@ tsx --version
 
 ### Creating a New Project
 
-Use the Tina4 CLI to scaffold a new project:
+The Tina4 CLI scaffolds a new project in one command:
 
 ```bash
 tina4 init my-store
@@ -121,7 +119,7 @@ Project created! Next steps:
   tina4 serve
 ```
 
-Now install the Node.js dependencies:
+Install the Node.js dependencies:
 
 ```bash
 cd my-store
@@ -134,7 +132,7 @@ added 1 package in 2s
 1 package installed
 ```
 
-That is right -- **one package**. No dependency tree. No version conflicts. Just `tina4-nodejs`.
+One package. No dependency tree. No version conflicts. Just `tina4-nodejs`.
 
 ### Starting the Dev Server
 
@@ -156,9 +154,9 @@ tina4 serve
   Press Ctrl+C to stop
 ```
 
-Open your browser to `http://localhost:7148`. You should see the Tina4 welcome page.
+Open your browser to `http://localhost:7148`. The Tina4 welcome page greets you.
 
-Open `http://localhost:7148/health` in your browser or curl it:
+Hit the health endpoint:
 
 ```bash
 curl http://localhost:7148/health
@@ -174,13 +172,13 @@ curl http://localhost:7148/health
 }
 ```
 
-Your Tina4 Node.js project is running.
+Your project is alive.
 
 ---
 
 ## 3. Project Structure Walkthrough
 
-Let us look at what `tina4 init` created:
+Here is what `tina4 init` built:
 
 ```
 my-store/
@@ -218,17 +216,17 @@ my-store/
 
 **Key directories:**
 
-- **`src/routes/`** -- Every `.ts` file here is auto-loaded at startup. Put your route definitions here. Organize into subdirectories if you want. Tina4 also supports file-based routing: a file at `src/routes/api/users/get.ts` automatically maps to `GET /api/users`.
-- **`src/orm/`** -- Every `.ts` file here is auto-loaded. Put your ORM model classes here.
-- **`src/templates/`** -- Frond looks here when you call `res.html()` with a template, or when you export a template from a route.
-- **`src/public/`** -- Files served directly. `src/public/images/logo.png` is available at `/images/logo.png`.
-- **`data/`** -- The default SQLite database (`app.db`) lives here. Gitignored because databases should not be in version control.
+- **`src/routes/`** -- Every `.ts` file here is auto-loaded at startup. Drop your route definitions here. Organize into subdirectories if you want. Tina4 also supports file-based routing: a file at `src/routes/api/users/get.ts` maps to `GET /api/users` with zero configuration.
+- **`src/orm/`** -- Every `.ts` file here is auto-loaded. ORM model classes live here.
+- **`src/templates/`** -- Frond looks here when you call `res.html()` with a template.
+- **`src/public/`** -- Files served directly. `src/public/images/logo.png` becomes `/images/logo.png`.
+- **`data/`** -- The default SQLite database (`app.db`) lives here. Gitignored because databases do not belong in version control.
 
 ---
 
 ## 4. Your First Route
 
-Let us create an API endpoint that returns a JSON greeting.
+Time to build an API endpoint that returns a JSON greeting.
 
 ### Explicit Route Registration
 
@@ -246,11 +244,11 @@ Router.get("/api/greeting/:name", async (req, res) => {
 });
 ```
 
-Save the file. If the dev server is running with live reload, it picks up the change automatically. If not, restart the server with `tina4 serve`.
+Save the file. The dev server picks up the change. If live reload is off, restart with `tina4 serve`.
 
 ### File-Based Routing Alternative
 
-You can also use file-based routing. Create the file `src/routes/api/greeting/[name]/get.ts`:
+Create the file `src/routes/api/greeting/[name]/get.ts`:
 
 ```typescript
 export default async (req, res) => {
@@ -262,7 +260,7 @@ export default async (req, res) => {
 };
 ```
 
-Both approaches produce the same result. File-based routing maps the file path to the URL automatically, with dynamic segments wrapped in brackets (`[name]`).
+Both approaches produce identical results. File-based routing maps the file path to the URL. Dynamic segments go in brackets (`[name]`).
 
 ### Test It
 
@@ -293,15 +291,15 @@ curl http://localhost:7148/api/greeting/Alice
 
 ### Understanding What Happened
 
-1. You created a file in `src/routes/`. Tina4 auto-discovered it at startup.
+1. You created a file in `src/routes/`. Tina4 discovered it at startup.
 2. `Router.get("/api/greeting/:name", ...)` registered a GET route with a path parameter `:name`.
-3. When you requested `/api/greeting/Alice`, the router matched the pattern and called your handler function.
-4. `req.params.name` gave you the value `"Alice"` from the URL.
-5. `res.json(...)` serialized the object to JSON, set `Content-Type: application/json`, and returned a `200 OK` response.
+3. A request to `/api/greeting/Alice` hit the router. Pattern matched. Handler fired.
+4. `req.params.name` delivered the value `"Alice"` from the URL.
+5. `res.json(...)` serialized the object, set `Content-Type: application/json`, and returned `200 OK`.
 
 ### Adding More HTTP Methods
 
-Let us add a POST endpoint. Update `src/routes/greeting.ts`:
+Add a POST endpoint. Update `src/routes/greeting.ts`:
 
 ```typescript
 import { Router } from "tina4-nodejs";
@@ -353,7 +351,7 @@ The HTTP status code is `201 Created` (set by `res.status(201)`).
 
 ## 5. Your First Template
 
-Tina4 uses the **Frond** template engine -- a zero-dependency, Twig-compatible engine built from scratch. If you have used Twig, Jinja2, or Nunjucks, this will feel familiar.
+Tina4 ships with **Frond** -- a zero-dependency, Twig-compatible template engine built from scratch. If you have used Twig, Jinja2, or Nunjucks, Frond will feel familiar.
 
 ### Create a Base Layout
 
@@ -393,7 +391,7 @@ Create `src/templates/base.html`:
 </html>
 ```
 
-This base layout defines two blocks (`title` and `content`) that child templates can override. It includes `tina4.css` (the built-in CSS framework) and `frond.js` (the built-in JS helper library).
+This base layout defines two blocks (`title` and `content`) that child templates override. It includes `tina4.css` (the built-in CSS framework) and `frond.js` (the built-in JS helper library).
 
 ### Create a Product Listing Page
 
@@ -466,7 +464,7 @@ Router.get("/products", async (req, res) => {
 });
 ```
 
-You can also use file-based routing with template exports. Create `src/routes/products/get.ts`:
+File-based routing works here too. Create `src/routes/products/get.ts`:
 
 ```typescript
 export const template = "products.html";
@@ -481,18 +479,18 @@ export default async (req, res) => {
 };
 ```
 
-When you export a `template` constant, Tina4 automatically renders it with the data returned from the handler.
+Export a `template` constant and Tina4 renders it with the data returned from the handler.
 
 ### See It in the Browser
 
-Open `http://localhost:7148/products` in your browser. You should see:
+Open `http://localhost:7148/products`. You should see:
 
 - A dark navigation bar at the top with "Home" and "Products" links
 - The heading "Our Products"
 - A subheading showing "Showing 4 products"
 - Four product cards, each with a name, description, price, and stock badge
-- The "Monitor Stand" card shows a red "Out of Stock" badge
-- The other three show green "In Stock" badges
+- The "Monitor Stand" card wears a red "Out of Stock" badge
+- The other three wear green "In Stock" badges
 
 ### How Template Rendering Works
 
@@ -507,7 +505,7 @@ Open `http://localhost:7148/products` in your browser. You should see:
 
 ### About tina4css
 
-The `tina4.css` file included in the base template is Tina4's built-in CSS utility framework. It provides layout utilities, typography, and common UI patterns without needing Bootstrap or Tailwind. It is auto-provided when you scaffold a project -- you do not need to download it separately.
+The `tina4.css` file in the base template is Tina4's built-in CSS utility framework. Layout utilities, typography, and common UI patterns -- without Bootstrap or Tailwind. Auto-provided at scaffolding time. No separate download needed.
 
 ---
 
@@ -546,7 +544,7 @@ For the complete `.env` reference with all 68 variables, see Book 0, Chapter 4.
 
 ## 7. The Dev Dashboard
 
-With `TINA4_DEBUG=true`, Tina4 provides a built-in development dashboard. First, enable it by adding a console token to your `.env`:
+With `TINA4_DEBUG=true`, Tina4 provides a built-in development dashboard. Enable it by adding a console token to your `.env`:
 
 ```env
 TINA4_DEBUG=true
@@ -560,7 +558,7 @@ Restart the server and navigate to:
 http://localhost:7148/tina4/console
 ```
 
-Enter your token (`my-dev-token`) when prompted. You will see:
+Enter your token (`my-dev-token`) when prompted. The dashboard reveals:
 
 - **System Overview** -- framework version, Node.js version, uptime, memory usage, database status
 - **Request Inspector** -- recent HTTP requests with method, path, status, duration, and request ID. Click any request to see full headers, body, database queries, and template renders.
@@ -569,9 +567,9 @@ Enter your token (`my-dev-token`) when prompted. You will see:
 - **WebSocket Monitor** -- active WebSocket connections with metadata
 - **Routes** -- all registered routes with their methods, paths, and middleware
 
-The console is a powerful debugging tool. It shows you exactly what your application is doing without adding `console.log` statements to your code.
+The console shows you what your application is doing without littering your code with `console.log` statements.
 
-Additionally, when you visit any HTML page (like `/products`), you will see a **debug overlay** -- a toolbar at the bottom of the page showing:
+When you visit any HTML page (like `/products`), a **debug overlay** appears -- a toolbar at the bottom of the page showing:
 
 - Request details (method, URL, duration)
 - Database queries executed (with timing)
@@ -579,13 +577,13 @@ Additionally, when you visit any HTML page (like `/products`), you will see a **
 - Session data
 - Recent log entries
 
-This overlay is only visible when `TINA4_DEBUG=true`. It is never shown in production.
+This overlay lives only in debug mode. Production never sees it.
 
 ---
 
 ## 8. The app.ts Entry Point
 
-The `app.ts` file is the entry point for your application:
+The `app.ts` file is the entry point:
 
 ```typescript
 import { Tina4 } from "tina4-nodejs";
@@ -594,7 +592,7 @@ const app = new Tina4();
 app.start();
 ```
 
-That is the entire file. Tina4 auto-discovers routes, models, and templates from the `src/` directory. You do not need to manually register anything.
+That is the entire file. Tina4 discovers routes, models, and templates from the `src/` directory. You register nothing manually.
 
 To start the server without the CLI:
 
@@ -655,7 +653,7 @@ Create a page at `GET /store` that:
 
 1. Displays a list of at least 5 products (hardcoded for now)
 2. Each product has: name, category, price, and a boolean `featured` flag
-3. Featured products should be visually highlighted (different background color, border, or badge)
+3. Featured products should be highlighted (different background color, border, or badge)
 4. The page should show the total number of products and the number of featured products
 5. Use template inheritance -- create a layout template and a page template that extends it
 6. Include `tina4.css` and `frond.js`
@@ -837,7 +835,7 @@ Router.get("/store", async (req, res) => {
 
 **Problem:** You created a route file but nothing happens when you visit the URL.
 
-**Cause:** The file is not in `src/routes/`. Double-check the path. It must be inside `src/routes/` (or a subdirectory of it), and the file must end with `.ts`.
+**Cause:** The file is not in `src/routes/`. It must be inside `src/routes/` (or a subdirectory of it), and the file must end with `.ts`.
 
 **Fix:** Move the file to `src/routes/your-file.ts` and restart the server.
 
@@ -853,9 +851,9 @@ Router.get("/store", async (req, res) => {
 
 **Problem:** Your JSON endpoint returns HTML instead of JSON.
 
-**Cause:** You returned a string instead of using `res.json()`. If you return a plain string, Tina4 treats it as HTML.
+**Cause:** You returned a string instead of using `res.json()`. A plain string tells Tina4 to treat it as HTML.
 
-**Fix:** Always use `res.json(data)` for JSON endpoints. Do not use `console.log()` as a response mechanism.
+**Fix:** Use `res.json(data)` for JSON endpoints. `console.log()` is not a response mechanism.
 
 ### 4. Template not found
 
@@ -869,9 +867,9 @@ Router.get("/store", async (req, res) => {
 
 **Problem:** `Error: Address already in use (port 7148)`
 
-**Cause:** Another process (or another Tina4 instance) is using port 7148.
+**Cause:** Another process is occupying port 7148.
 
-**Fix:** Either stop the other process, or change the port:
+**Fix:** Stop the other process, or change the port:
 
 ```env
 TINA4_PORT=8080
@@ -883,14 +881,14 @@ Or use the CLI flag: `tina4 serve --port 8080`.
 
 **Problem:** You edited a file but the browser shows the old version.
 
-**Cause:** In some setups, live reload may not be active. Also, browser caching can serve stale versions.
+**Cause:** Live reload may not be active. Browser caching can serve stale versions.
 
-**Fix:** Hard-refresh the browser (`Ctrl+Shift+R` or `Cmd+Shift+R`). If that does not help, restart the dev server with `Ctrl+C` and `tina4 serve`.
+**Fix:** Hard-refresh the browser (`Ctrl+Shift+R` or `Cmd+Shift+R`). If that fails, restart the dev server with `Ctrl+C` and `tina4 serve`.
 
 ### 7. .env not loaded
 
-**Problem:** Environment variables seem to have no effect.
+**Problem:** Environment variables have no effect.
 
-**Cause:** The `.env` file must be at the project root (same directory as `package.json`). If it is in a subdirectory, Tina4 will not find it.
+**Cause:** The `.env` file must be at the project root (same directory as `package.json`).
 
 **Fix:** Move `.env` to the project root.

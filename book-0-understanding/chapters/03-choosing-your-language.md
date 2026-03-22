@@ -1,8 +1,8 @@
 # Chapter 3: Choosing Your Language
 
-Tina4 runs on four languages. The framework API, project structure, template syntax, and CLI commands are identical across all of them. So the question is not "which Tina4 is best?" -- the question is "which language fits your team, your hosting, and your problem?"
+Tina4 runs on four languages. Same API. Same project structure. Same template syntax. Same CLI commands. The framework disappears -- what remains is your team, your hosting, and your problem.
 
-This chapter gives you the information to make that decision.
+This chapter gives you the information to choose.
 
 ---
 
@@ -27,21 +27,21 @@ async def create_product(request, response):
 
 ### Why Choose Python
 
-**Async-native.** Tina4 Python runs on asyncio. Every route handler is an async function by default. If your application calls external APIs, runs database queries, or processes files, async means your server handles thousands of concurrent connections without threads.
+**Async-native.** Tina4 Python runs on asyncio. Every route handler is an async function. External API calls, database queries, file processing -- async means your server handles thousands of concurrent connections without spawning threads. One event loop. Thousands of requests.
 
-**Data science integration.** If your web application sits next to a machine learning pipeline, a data processing job, or a Jupyter notebook, Python is the natural choice. Your API endpoint can import pandas, numpy, or scikit-learn directly. No inter-process communication, no REST calls to a separate service.
+**Data science integration.** Your web application sits next to a machine learning pipeline. Your API endpoint imports pandas, numpy, or scikit-learn directly. No inter-process communication. No REST calls to a separate service. The model runs in the same process as the route handler. Train in a notebook, deploy behind an endpoint.
 
-**Fastest growing community.** Python is the most-taught programming language in universities worldwide. Finding Python developers is easier than finding PHP or Ruby developers, especially among recent graduates.
+**The reference implementation.** Tina4 Python was the first v3 framework to reach 100% completion. When ambiguity exists in the spec, Python's behavior is canonical. Every other implementation follows its lead.
 
-**Reference implementation.** Tina4 Python was the first v3 framework to reach 100% completion. It is the reference implementation -- when there is ambiguity in the spec, the Python behavior is canonical.
+**Largest general-purpose community.** Python is the most-taught programming language in universities worldwide. Finding Python developers is straightforward -- new graduates learn it first, data scientists think in it, and the ecosystem grows faster than any other language.
 
 ### Watch Out For
 
-**GIL limitations.** CPU-bound work in Python is single-threaded due to the Global Interpreter Lock. If your application does heavy computation (image processing, PDF generation), use background tasks or a queue worker process.
+**GIL limitations.** CPU-bound work is single-threaded. The Global Interpreter Lock prevents true parallel execution of Python code. Image processing, PDF generation, heavy computation -- offload these to background tasks or a queue worker process. The event loop handles I/O. The GIL handles everything else, one thread at a time.
 
-**Deployment complexity.** Python deployment is more involved than PHP. You need to manage virtual environments, pip dependencies (even though Tina4 has zero deps, your app might use others), and a process manager like systemd or Docker.
+**Deployment overhead.** Python deployment demands more setup than PHP. Virtual environments, pip dependencies (Tina4 has zero, but your application might not), process managers. Docker simplifies this. Without Docker, plan for systemd units and environment isolation.
 
-**Package naming.** Install with `pip install tina4-python`. The CLI command is `tina4` (auto-detects language). The import is `from tina4_python import ...`.
+**Package naming.** Install with `pip install tina4-python`. The CLI command is `tina4` (auto-detects language). The import is `from tina4_python import ...`. Three different names for the same thing. Learn them once.
 
 ### Quick Start
 
@@ -56,7 +56,7 @@ tina4 serve
 
 ## PHP
 
-**Best for:** Existing PHP teams, shared hosting, CMS-adjacent projects, the largest hosting support.
+**Best for:** Existing PHP teams, shared hosting, CMS-adjacent projects, the widest hosting support on the planet.
 
 ```php
 <?php
@@ -76,23 +76,23 @@ Route::post("/api/products", function ($request, $response) {
 
 ### Why Choose PHP
 
-**Hosting is everywhere.** PHP runs on virtually every web host on the planet. Shared hosting, VPS, dedicated servers, cloud platforms -- if it has a web server, it probably runs PHP. This matters when your client's infrastructure is not negotiable.
+**Hosting is everywhere.** Shared hosting, VPS, dedicated servers, cloud platforms -- if it has a web server, it runs PHP. Every major hosting provider supports it. Every $5/month shared plan includes it. When your client's infrastructure is not negotiable, PHP fits.
 
-**Fastest Tina4.** PHP 8.1+ with JIT compilation makes Tina4 PHP the fastest of the four implementations in raw request throughput. Combined with OPcache (which caches compiled bytecode), PHP serves requests with minimal overhead.
+**Fastest Tina4.** PHP 8.1+ with JIT compilation makes Tina4 PHP the fastest of the four implementations in raw request throughput. Add OPcache (compiled bytecode caching) and the framework overhead approaches zero. Requests arrive. Responses leave. The interpreter barely warms up.
 
-**Mature ecosystem.** PHP has 30 years of web development behind it. The ecosystem for database drivers, payment processing, PDF generation, and image manipulation is enormous. While Tina4 itself has zero dependencies, your application can still use Composer packages alongside it.
+**Thirty years of ecosystem.** Database drivers, payment processing, PDF generation, image manipulation -- PHP has battle-tested libraries for all of it. Tina4 itself has zero dependencies. Your application can still pull in Composer packages when the need is real.
 
-**Familiar to most web developers.** PHP was the first server-side language for a generation of developers. If your team already knows PHP, there is no reason to switch.
+**Monorepo simplicity.** Tina4 PHP v3 is a single Composer package under the `Tina4\` namespace. No split packages. No sub-repositories. One `composer require`. Everything arrives.
 
-**Monorepo simplicity.** Tina4 PHP v3 is a single Composer package under the `Tina4\` namespace. No split packages, no sub-repositories. One `composer require`, and you have everything.
+**Familiar ground.** PHP was the first server-side language for a generation of web developers. If your team writes PHP, Tina4 speaks their language. The learning curve is the framework, not the language.
 
 ### Watch Out For
 
-**No native async.** Standard PHP is synchronous. For WebSocket support and true async behavior, you need the Swoole or OpenSwoole extension. This is not a problem for most web applications, but if you need to hold thousands of persistent connections, make sure Swoole is available.
+**No native async.** Standard PHP is synchronous. One request, one thread, start to finish. For WebSocket support and true async behavior, you need the Swoole or OpenSwoole extension. Most web applications never need this. But if you plan to hold thousands of persistent connections, verify that Swoole is available on your hosting platform before you commit.
 
-**Extension management.** PHP database drivers are PHP extensions (ext-pgsql, ext-mysqli, ext-sqlite3). On some hosting platforms, enabling these requires contacting support or recompiling PHP. Check that your target platform has the extensions you need.
+**Extension management.** PHP database drivers are C extensions: ext-pgsql, ext-mysqli, ext-sqlite3. On some hosting platforms, enabling these requires a support ticket or a PHP recompilation. Check your target platform's available extensions before you choose your database.
 
-**Case sensitivity.** PHP uses `camelCase` for methods (`fetchOne()`, `softDelete()`, `hasMany()`). If you are coming from a Python or Ruby background, this is a style adjustment.
+**Case sensitivity.** PHP uses `camelCase` for methods: `fetchOne()`, `softDelete()`, `hasMany()`. Coming from Python or Ruby? This is a style adjustment. The API is identical in capability -- the casing is different.
 
 ### Quick Start
 
@@ -107,7 +107,7 @@ tina4 serve
 
 ## Ruby
 
-**Best for:** Startups, elegant code, Rails refugees who want less framework.
+**Best for:** Startups, elegant code, Rails refugees who want less framework and more control.
 
 ```ruby
 # src/routes/products.rb
@@ -124,21 +124,21 @@ end
 
 ### Why Choose Ruby
 
-**Elegant syntax.** Ruby was designed to make programmers happy. The Tina4 Ruby API reflects this -- route definitions read like English, blocks feel natural, and the DSL is clean.
+**Elegant syntax.** Ruby was designed to make programmers happy. That philosophy shows. Route definitions read as English. Blocks feel natural. The DSL is clean. Code written in Tina4 Ruby looks the way you think about it.
 
-**Rails refugees.** If you have built Rails applications and found yourself fighting the framework more than using it, Tina4 Ruby gives you the parts you liked (convention over configuration, migrations, ORM, template engine) without the parts you did not (massive dependency tree, complex configuration, opaque internals).
+**Rails without the weight.** You built Rails applications. You found yourself fighting the framework more than using it. Tina4 Ruby gives you the parts you valued -- convention over configuration, migrations, ORM, template engine -- and drops the parts you did not. No massive dependency tree. No opaque internals. No 15-minute boot time on a large codebase.
 
-**Startup velocity.** Ruby's expressiveness means less code for the same functionality. For startups that need to ship fast and iterate, Ruby reduces the time between "I have an idea" and "it is in production."
+**Startup velocity.** Ruby's expressiveness means less code for the same functionality. Fewer lines. Fewer files. Faster iteration. For teams that need to ship and adjust, Ruby shrinks the distance between idea and production.
 
-**Strong testing culture.** The Ruby community takes testing seriously. Tina4 Ruby integrates with Ruby's testing ecosystem naturally, and the framework itself has 1,334 tests -- the most of any Tina4 implementation.
+**Strong testing culture.** The Ruby community treats testing as a first-class concern. Tina4 Ruby integrates with Ruby's testing ecosystem. The framework itself carries 1,334 tests -- the highest count of any Tina4 implementation. Testing is not an afterthought. It is the foundation.
 
 ### Watch Out For
 
-**Smaller hosting pool.** Ruby hosting is less ubiquitous than PHP. You will generally need a VPS, container platform, or PaaS (Heroku, Render, Fly.io). Shared hosting with Ruby support is rare.
+**Smaller hosting pool.** Ruby hosting is less common than PHP. Shared hosting with Ruby support is rare. Plan on a VPS, container platform, or PaaS -- Heroku, Render, Fly.io. The options exist. They are just not everywhere.
 
-**Performance.** Ruby is not the fastest language. For raw throughput, PHP and Node.js outperform it. For most web applications, Ruby is fast enough -- but if you are building a high-traffic API that serves thousands of requests per second, benchmark first.
+**Performance.** Ruby is not the fastest language. For raw throughput, PHP and Node.js outperform it. For most web applications, Ruby is fast enough. But if you are building a high-traffic API that must serve thousands of requests per second on a single instance, benchmark with your actual workload first. Do not assume.
 
-**Smaller talent pool.** Ruby developers are harder to find than Python or JavaScript developers. If you are hiring a team, factor this in.
+**Smaller talent pool.** Ruby developers are harder to find than Python or JavaScript developers. The community is passionate but compact. If you are scaling a team, factor hiring timelines into the decision.
 
 ### Quick Start
 
@@ -153,7 +153,7 @@ tina4 serve
 
 ## Node.js
 
-**Best for:** JavaScript/TypeScript teams, file-based routing, real-time applications, highest raw speed.
+**Best for:** JavaScript/TypeScript teams, file-based routing, real-time applications, highest raw throughput.
 
 ```typescript
 // src/routes/api/products/index.ts
@@ -171,23 +171,23 @@ export default function handler(request, response) {
 
 ### Why Choose Node.js
 
-**One language everywhere.** If your team writes JavaScript or TypeScript, Node.js means no context switching between frontend and backend. The same developers, the same language, the same tooling.
+**One language everywhere.** Frontend and backend. Same developers. Same language. Same tooling. No context switching. A React component and its API endpoint live in the same mental model. JavaScript runs on both sides of the wire.
 
-**File-based routing.** Tina4 Node.js supports file-based routing -- the file path determines the URL path. A file at `src/routes/api/products/[id].ts` automatically handles `/api/products/42`. If you like the Next.js routing pattern, this will feel familiar.
+**File-based routing.** Tina4 Node.js maps file paths to URL paths. A file at `src/routes/api/products/[id].ts` handles `/api/products/42`. The filesystem is the routing table. If you have used Next.js, this pattern is already muscle memory.
 
-**Highest raw speed.** Node.js on V8 has the highest raw request throughput of the four implementations. For APIs that serve simple JSON responses, Node.js handles the most requests per second.
+**Highest raw throughput.** Node.js on V8 handles the most requests per second of the four implementations. For APIs that serve JSON and move data, Node.js delivers the highest ceiling. The event loop is purpose-built for I/O.
 
-**TypeScript support.** Tina4 Node.js is written in TypeScript. You get full type safety, autocompletion, and compile-time error checking.
+**TypeScript from the ground up.** Tina4 Node.js is written in TypeScript. Full type safety. Autocompletion in every editor. Compile-time error checking. Bugs surface before the server starts, not after.
 
-**WebSocket native.** Node.js has native WebSocket support without additional extensions. Real-time features (chat, live dashboards, notifications) work out of the box.
+**WebSocket native.** Node.js handles WebSocket connections without additional extensions. Real-time features -- chat, live dashboards, push notifications -- work out of the box. No Swoole. No extra gems. The runtime supports it.
 
 ### Watch Out For
 
-**Callback/Promise complexity.** While modern async/await syntax is clean, the underlying Node.js ecosystem still has gotchas with unhandled promise rejections, callback-style APIs, and the event loop. If your team is new to async JavaScript, there is a learning curve.
+**Async complexity.** Modern async/await syntax is clean. The underlying ecosystem is not always clean. Unhandled promise rejections, callback-style legacy APIs, event loop blocking -- these traps exist. If your team is new to async JavaScript, expect a learning curve. The syntax is simple. The debugging is not.
 
-**Single-threaded by nature.** Like Python, Node.js is single-threaded for user code. CPU-heavy operations block the event loop. Use worker threads or queue background tasks for heavy computation.
+**Single-threaded for user code.** Node.js runs your code on one thread. CPU-heavy operations block the event loop. Image processing, PDF generation, complex calculations -- offload these to worker threads or queue them for background processing. The event loop handles I/O brilliantly. It handles computation poorly.
 
-**Dependency culture.** The Node.js ecosystem is famous for micro-dependencies. While Tina4 itself has zero core dependencies, your application's other packages might pull in hundreds of transitive dependencies. Be deliberate about what you `npm install`.
+**Dependency gravity.** The Node.js ecosystem gravitates toward micro-dependencies. Tina4 itself has zero core dependencies. Your application's other packages might pull in hundreds of transitive dependencies. Be deliberate about what enters your `node_modules`. Every `npm install` is a decision. Treat it as one.
 
 ### Quick Start
 
@@ -225,36 +225,38 @@ tina4 serve
 
 ## Switching Languages
 
-Because all four Tina4 implementations share the same project structure, template syntax, and CLI commands, switching languages is straightforward:
+All four implementations share the same skeleton. Switching languages is not a rewrite. It is a translation.
 
-1. Your `src/templates/` directory works without changes -- Frond syntax is identical.
-2. Your `.env` file works without changes -- same variables, same defaults.
-3. Your `src/migrations/` directory works without changes -- same SQL.
-4. Your `src/public/` directory works without changes -- same static files.
-5. Your `frond.js` frontend code works without changes -- same API.
+Five things transfer without any changes:
 
-What you need to rewrite:
+1. `src/templates/` -- Frond syntax is identical. Every template works on every backend.
+2. `.env` -- Same variables. Same defaults. Same priority chain.
+3. `src/migrations/` -- Same SQL. The database does not care what language talks to it.
+4. `src/public/` -- Same static files. CSS, JavaScript, images. Untouched.
+5. `frond.js` frontend code -- Same API. The backend language is invisible to the browser.
 
-1. `src/routes/` -- route handlers, translated to the new language's syntax.
-2. `src/orm/` -- model definitions, translated to the new language's class syntax.
-3. `tests/` -- test files, translated to the new language's test framework.
+Three things need translation:
 
-This is not "rewrite your application." It is "translate your business logic." The framework knowledge transfers completely.
+1. `src/routes/` -- Route handlers rewritten in the new language's syntax.
+2. `src/orm/` -- Model definitions rewritten in the new language's class system.
+3. `tests/` -- Test files rewritten for the new language's test framework.
+
+The framework knowledge transfers completely. The project structure stays. The templates stay. The migrations stay. The configuration stays. You translate your business logic. Nothing else.
 
 ---
 
 ## How to Decide
 
-Answer these questions:
+Five questions. Answer them in order. Stop at the first clear answer.
 
-1. **What does your team already know?** Use that language. The learning curve for Tina4 is the same regardless. The learning curve for a new programming language is not.
+1. **What does your team already know?** Use that language. The Tina4 learning curve is the same across all four. The learning curve for a new programming language is not. Do not add two learning curves when one will do.
 
-2. **Where are you deploying?** If it is shared hosting, use PHP. If it is containers, use anything. If it is a serverless platform, check which runtimes are supported.
+2. **Where are you deploying?** Shared hosting means PHP. Containers mean anything. Serverless platforms -- check which runtimes are supported before you start writing code.
 
-3. **What are you building alongside the web app?** If you have ML models, use Python. If you have a React/Vue frontend team, use Node.js. If you have an existing PHP codebase, use PHP.
+3. **What sits next to the web app?** ML models mean Python. A React or Vue frontend team means Node.js. An existing PHP codebase means PHP. The web application is rarely the only software in the system. Choose the language that fits the neighborhood.
 
-4. **How many concurrent connections do you need?** For high-concurrency scenarios (chat, live dashboards, thousands of WebSocket connections), use Python or Node.js for native async. PHP requires Swoole for this. Ruby can handle moderate concurrency with Puma.
+4. **How many concurrent connections do you need?** Chat applications, live dashboards, thousands of WebSocket connections -- use Python or Node.js for native async. PHP needs Swoole. Ruby handles moderate concurrency with Puma. Know your ceiling before you build.
 
-5. **Does raw performance matter?** For most applications, all four are fast enough. If you are serving 10,000+ requests per second on a single instance, benchmark with your actual workload. The framework overhead is sub-millisecond in all four -- the bottleneck is usually your database queries.
+5. **Does raw performance matter?** For most applications, all four are fast enough. The framework overhead is sub-millisecond in every language. The bottleneck is your database queries, not your router. But if you need 10,000+ requests per second on a single instance, benchmark with your actual workload. Numbers on paper are not numbers in production.
 
-If none of these questions produce a clear answer, use Python. It is the reference implementation, has the largest general-purpose community, and is the most taught language in the world.
+If none of these questions produce a clear answer, use Python. It is the reference implementation. It has the largest general-purpose community. It is the most-taught language in the world. When all else is equal, start where the most help exists.
