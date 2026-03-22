@@ -40,10 +40,13 @@
 19. [CLI & Scaffolding](book-2-php/chapters/19-cli.md)
 20. [Deployment](book-2-php/chapters/20-deployment.md)
 21. [Building a Complete App](book-2-php/chapters/21-complete-app.md)
+22. [Vibe Coding with AI](book-2-php/chapters/22-vibe-coding-with-ai.md)
 
 ### Book 1: Tina4 for Python Developers — *Coming soon*
 ### Book 3: Tina4 for Ruby Developers — *Coming soon*
 ### Book 4: Tina4 for Node.js Developers — *Coming soon*
+
+### Book 5: Tina4-js Frontend Framework — *Coming soon*
 
 ---
 
