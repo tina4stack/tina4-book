@@ -69,7 +69,32 @@
 21. [Building a Complete App](book-2-php/chapters/21-complete-app.md)
 22. [Vibe Coding with AI](book-2-php/chapters/22-vibe-coding-with-ai.md)
 
-### Book 3: Tina4 for Ruby Developers — *In progress*
+### Book 3: Tina4 for Ruby Developers
+
+[📥 Download PDF](book-3-ruby/Tina4-for-Ruby-Developers.pdf)
+
+1. [Getting Started](book-3-ruby/chapters/01-getting-started.md)
+2. [Routing](book-3-ruby/chapters/02-routing.md)
+3. [Request & Response](book-3-ruby/chapters/03-request-response.md)
+4. [Templates](book-3-ruby/chapters/04-templates.md)
+5. [Database](book-3-ruby/chapters/05-database.md)
+6. [ORM](book-3-ruby/chapters/06-orm.md)
+7. [Authentication](book-3-ruby/chapters/07-authentication.md)
+8. [Middleware](book-3-ruby/chapters/08-middleware.md)
+9. [Sessions & Cookies](book-3-ruby/chapters/09-sessions-cookies.md)
+10. [Swagger / OpenAPI](book-3-ruby/chapters/10-swagger.md)
+11. [Queue System](book-3-ruby/chapters/11-queues.md)
+12. [WebSocket](book-3-ruby/chapters/12-websocket.md)
+13. [Email](book-3-ruby/chapters/13-email.md)
+14. [Caching](book-3-ruby/chapters/14-caching.md)
+15. [Frontend (tina4css)](book-3-ruby/chapters/15-frontend.md)
+16. [GraphQL](book-3-ruby/chapters/16-graphql.md)
+17. [Testing](book-3-ruby/chapters/17-testing.md)
+18. [Dev Tools](book-3-ruby/chapters/18-dev-tools.md)
+19. [CLI & Scaffolding](book-3-ruby/chapters/19-cli.md)
+20. [Deployment](book-3-ruby/chapters/20-deployment.md)
+21. [Building a Complete App](book-3-ruby/chapters/21-complete-app.md)
+22. [Vibe Coding with AI](book-3-ruby/chapters/22-vibe-coding-with-ai.md)
 
 ### Book 4: Tina4 for Node.js Developers
 
