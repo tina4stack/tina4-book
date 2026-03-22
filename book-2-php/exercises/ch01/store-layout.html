@@ -1,0 +1,28 @@
+<!-- Exercise B: Store Layout Template -->
+<!-- Place this file at src/templates/store-layout.html in your Tina4 project -->
+<!--
+  TODO: Create a base layout with:
+  1. Proper HTML5 structure
+  2. Include /css/tina4.css
+  3. Include /js/frond.js
+  4. Define a "title" block
+  5. Define a "content" block
+  6. Add some basic styling for product cards
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Store{% endblock %}</title>
+    <!-- TODO: Add tina4.css link and custom styles -->
+</head>
+<body>
+    <!-- TODO: Add a header/nav -->
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    <!-- TODO: Add frond.js script -->
+</body>
+</html>

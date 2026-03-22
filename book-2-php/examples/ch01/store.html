@@ -1,0 +1,23 @@
+{% extends "store-layout.html" %}
+
+{% block title %}Our Store{% endblock %}
+{% block header %}Our Store{% endblock %}
+
+{% block content %}
+    <p class="stats">{{ products | length }} products, {{ featured_count }} featured</p>
+
+    <div class="product-grid">
+        {% for product in products %}
+            <div class="product-card{{ product.featured ? ' featured' : '' }}">
+                <p class="product-name">
+                    {{ product.name }}
+                    {% if product.featured %}
+                        <span class="featured-badge">Featured</span>
+                    {% endif %}
+                </p>
+                <p class="product-category">{{ product.category }}</p>
+                <p class="product-price">${{ product.price | number_format(2) }}</p>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

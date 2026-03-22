@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Products - My Store{% endblock %}
+
+{% block content %}
+    <h1>Our Products</h1>
+    <p>Showing {{ products | length }} product{{ products | length != 1 ? "s" : "" }}</p>
+
+    {% if products | length > 0 %}
+        {% for product in products %}
+            <div class="product-card">
+                <h3>{{ product.name }}</h3>
+                <p>{{ product.description }}</p>
+                <p class="price">${{ product.price | number_format(2) }}</p>
+                {% if product.in_stock %}
+                    <span class="badge badge-success">In Stock</span>
+                {% else %}
+                    <span class="badge badge-danger">Out of Stock</span>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No products available at the moment.</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Store{% endblock %}</title>
+    <link rel="stylesheet" href="/css/tina4.css">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+        .container { max-width: 960px; margin: 0 auto; padding: 20px; }
+        header { background: #1a1a2e; color: white; padding: 16px 20px; }
+        header h1 { margin: 0; }
+        .stats { color: #888; margin: 8px 0 20px; }
+        .product-grid { display: grid; gap: 16px; }
+        .product-card { background: white; border: 2px solid #e0e0e0; border-radius: 8px; padding: 16px; }
+        .product-card.featured { border-color: #ffc107; background: #fffdf0; }
+        .product-name { font-size: 1.2em; font-weight: bold; margin: 0 0 4px; }
+        .product-category { color: #666; font-size: 0.9em; }
+        .product-price { color: #2d8f2d; font-weight: bold; font-size: 1.1em; margin-top: 8px; }
+        .featured-badge { background: #ffc107; color: #333; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>{% block header %}Store{% endblock %}</h1>
+    </header>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    <script src="/js/frond.js"></script>
+</body>
+</html>
