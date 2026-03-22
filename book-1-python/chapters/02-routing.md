@@ -381,19 +381,19 @@ Middleware runs left to right: `log_request` first, then `require_api_key`, then
 
 ---
 
-## 7. Route Decorators: @noauth and @secured
+## 7. Route Decorators: @noauth() and @secured()
 
 Two decorators control authentication at the route level.
 
-### @noauth -- Public Routes
+### @noauth() -- Public Routes
 
-When your application has global authentication middleware, `@noauth` marks a route as public:
+When your application has global authentication middleware, `@noauth()` marks a route as public:
 
 ```python
 from tina4_python.core.router import get, noauth
 
+@noauth()
 @get("/api/public/info")
-@noauth
 async def public_info(request, response):
     return response.json({
         "app": "My Store",
@@ -401,17 +401,17 @@ async def public_info(request, response):
     })
 ```
 
-`@noauth` tells Tina4 to skip authentication checks for this route, even if global auth middleware is configured in `.env` or applied to the parent group.
+`@noauth()` tells Tina4 to skip authentication checks for this route, even if global auth middleware is configured in `.env` or applied to the parent group.
 
-### @secured -- Protected GET Routes
+### @secured() -- Protected GET Routes
 
-`@secured` marks a GET route as requiring authentication:
+`@secured()` marks a GET route as requiring authentication:
 
 ```python
 from tina4_python.core.router import get, secured
 
+@secured()
 @get("/api/profile")
-@secured
 async def profile(request, response):
     # request.user is populated by the auth middleware
     return response.json({
@@ -419,7 +419,7 @@ async def profile(request, response):
     })
 ```
 
-By default, `POST`, `PUT`, `PATCH`, and `DELETE` routes are secured. `GET` routes are public unless you add `@secured`. This matches the common pattern: reading data is public, modifying data requires authentication.
+By default, `POST`, `PUT`, `PATCH`, and `DELETE` routes are secured. `GET` routes are public unless you add `@secured()`. This matches the common pattern: reading data is public, modifying data requires authentication.
 
 ---
 
@@ -825,7 +825,7 @@ Not found:
 
 ### 5. Decorator order matters
 
-**Problem:** Your `@middleware` decorator has no effect, or your `@noauth` is ignored.
+**Problem:** Your `@middleware` decorator has no effect, or your `@noauth()` is ignored.
 
 **Cause:** Python decorators apply bottom-up. Wrong stacking order breaks registration.
 

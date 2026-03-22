@@ -51,17 +51,17 @@ Router.post("/products", async (req, res) => {
     return res.status(201).json({ action: "create a product" });
 });
 
-Router.put("/products/:id", async (req, res) => {
+Router.put("/products/{id}", async (req, res) => {
     const id = req.params.id;
     return res.json({ action: `replace product ${id}` });
 });
 
-Router.patch("/products/:id", async (req, res) => {
+Router.patch("/products/{id}", async (req, res) => {
     const id = req.params.id;
     return res.json({ action: `update product ${id}` });
 });
 
-Router.delete("/products/:id", async (req, res) => {
+Router.delete("/products/{id}", async (req, res) => {
     const id = req.params.id;
     return res.json({ action: `delete product ${id}` });
 });
@@ -72,7 +72,7 @@ For file-based routing, the HTTP method is the filename:
 ```
 src/routes/products/get.ts      → GET /products
 src/routes/products/post.ts     → POST /products
-src/routes/products/[id]/put.ts → PUT /products/:id
+src/routes/products/[id]/put.ts → PUT /products/{id}
 ```
 
 Test each one:
@@ -125,12 +125,12 @@ curl -X DELETE http://localhost:7148/products/42
 
 ## 3. Path Parameters
 
-Path parameters capture values from the URL. Prefix the parameter name with a colon:
+Path parameters capture values from the URL. Wrap the parameter name in curly braces:
 
 ```typescript
 import { Router } from "tina4-nodejs";
 
-Router.get("/users/:id/posts/:postId", async (req, res) => {
+Router.get("/users/{id}/posts/{postId}", async (req, res) => {
     const userId = req.params.id;
     const postId = req.params.postId;
 
@@ -164,7 +164,7 @@ Enforce a type by adding a colon and the type after the parameter name:
 ```typescript
 import { Router } from "tina4-nodejs";
 
-Router.get("/orders/:id:int", async (req, res) => {
+Router.get("/orders/{id:int}", async (req, res) => {
     const id = req.params.id; // This is now a number
     return res.json({
         order_id: id,
@@ -195,10 +195,10 @@ Supported types:
 
 | Type | Matches | Example |
 |------|---------|---------|
-| `int` | Digits only | `:id:int` matches `42` but not `abc` |
-| `float` | Decimal numbers | `:price:float` matches `19.99` |
-| `alpha` | Letters only | `:slug:alpha` matches `hello` but not `hello123` |
-| `alphanumeric` | Letters and digits | `:code:alphanumeric` matches `abc123` |
+| `int` | Digits only | `{id:int}` matches `42` but not `abc` |
+| `float` | Decimal numbers | `{price:float}` matches `19.99` |
+| `alpha` | Letters only | `{slug:alpha}` matches `hello` but not `hello123` |
+| `alphanumeric` | Letters and digits | `{code:alphanumeric}` matches `abc123` |
 
 ---
 
@@ -248,7 +248,7 @@ Router.group("/api/v1", () => {
         return res.json({ users: [] });
     });
 
-    Router.get("/users/:id:int", async (req, res) => {
+    Router.get("/users/{id:int}", async (req, res) => {
         const id = req.params.id;
         return res.json({ user: { id, name: "Alice" } });
     });
@@ -263,7 +263,7 @@ Router.group("/api/v1", () => {
 });
 ```
 
-The routes register as `/api/v1/users`, `/api/v1/users/:id`, and `/api/v1/products`. Short paths inside the group. Tina4 prepends the prefix.
+The routes register as `/api/v1/users`, `/api/v1/users/{id}`, and `/api/v1/products`. Short paths inside the group. Tina4 prepends the prefix.
 
 ```bash
 curl http://localhost:7148/api/v1/users
@@ -541,11 +541,11 @@ Method   Path                          Middleware          Auth
 GET      /hello                        -                   public
 GET      /products                     -                   public
 POST     /products                     -                   secured
-PUT      /products/:id                 -                   secured
-PATCH    /products/:id                 -                   secured
-DELETE   /products/:id                 -                   secured
+PUT      /products/{id}                -                   secured
+PATCH    /products/{id}                -                   secured
+DELETE   /products/{id}                -                   secured
 GET      /api/v1/users                 -                   public
-GET      /api/v1/users/:id:int         -                   public
+GET      /api/v1/users/{id:int}        -                   public
 POST     /api/v1/users                 -                   secured
 GET      /api/admin/dashboard          requireAuth         public
 GET      /api/admin/users              requireAuth         public
@@ -587,9 +587,9 @@ src/routes/
 │   │   ├── get.ts          # GET /api/products
 │   │   ├── post.ts         # POST /api/products
 │   │   └── [id]/
-│   │       ├── get.ts      # GET /api/products/:id
-│   │       ├── put.ts      # PUT /api/products/:id
-│   │       └── delete.ts   # DELETE /api/products/:id
+│   │       ├── get.ts      # GET /api/products/{id}
+│   │       ├── put.ts      # PUT /api/products/{id}
+│   │       └── delete.ts   # DELETE /api/products/{id}
 │   └── users/
 │       ├── get.ts
 │       └── post.ts
@@ -616,10 +616,10 @@ Create a file `src/routes/product-api.ts` with the following routes:
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/api/products` | List all products. Support `?category=` filter. |
-| `GET` | `/api/products/:id:int` | Get a single product by ID. Return 404 if not found. |
+| `GET` | `/api/products/{id:int}` | Get a single product by ID. Return 404 if not found. |
 | `POST` | `/api/products` | Create a new product. Return 201. |
-| `PUT` | `/api/products/:id:int` | Replace a product. Return 404 if not found. |
-| `DELETE` | `/api/products/:id:int` | Delete a product. Return 204 with no body. |
+| `PUT` | `/api/products/{id:int}` | Replace a product. Return 404 if not found. |
+| `DELETE` | `/api/products/{id:int}` | Delete a product. Return 204 with no body. |
 
 Each product has: `id` (number), `name` (string), `category` (string), `price` (number), `inStock` (boolean).
 
@@ -699,7 +699,7 @@ Router.get("/api/products", async (req, res) => {
 });
 
 // Get a single product by ID
-Router.get("/api/products/:id:int", async (req, res) => {
+Router.get("/api/products/{id:int}", async (req, res) => {
     const id = req.params.id;
     const product = products.find(p => p.id === id);
 
@@ -732,7 +732,7 @@ Router.post("/api/products", async (req, res) => {
 });
 
 // Replace a product
-Router.put("/api/products/:id:int", async (req, res) => {
+Router.put("/api/products/{id:int}", async (req, res) => {
     const id = req.params.id;
     const body = req.body;
     const index = products.findIndex(p => p.id === id);
@@ -753,7 +753,7 @@ Router.put("/api/products/:id:int", async (req, res) => {
 });
 
 // Delete a product
-Router.delete("/api/products/:id:int", async (req, res) => {
+Router.delete("/api/products/{id:int}", async (req, res) => {
     const id = req.params.id;
     const index = products.findIndex(p => p.id === id);
 
@@ -807,19 +807,19 @@ Not found (Status: `404 Not Found`):
 
 ### 2. Parameter Names Must Be Unique in a Path
 
-**Problem:** `/users/:id/posts/:id` gives wrong results -- both parameters share the same name.
+**Problem:** `/users/{id}/posts/{id}` gives wrong results -- both parameters share the same name.
 
-**Cause:** The second `:id` overwrites the first in `req.params`.
+**Cause:** The second `{id}` overwrites the first in `req.params`.
 
-**Fix:** Use distinct names: `/users/:userId/posts/:postId`.
+**Fix:** Use distinct names: `/users/{userId}/posts/{postId}`.
 
 ### 3. Method Conflicts
 
-**Problem:** You defined `Router.get("/items/:id", ...)` and `Router.get("/items/:action", ...)` and the wrong handler runs.
+**Problem:** You defined `Router.get("/items/{id}", ...)` and `Router.get("/items/{action}", ...)` and the wrong handler runs.
 
 **Cause:** Both patterns match `/items/42`. The first one registered wins.
 
-**Fix:** Use typed parameters to disambiguate: `Router.get("/items/:id:int", ...)` matches integers only, leaving `/items/export` free for the other route.
+**Fix:** Use typed parameters to disambiguate: `Router.get("/items/{id:int}", ...)` matches integers only, leaving `/items/export` free for the other route.
 
 ### 4. Route Handler Must Return a Response
 
