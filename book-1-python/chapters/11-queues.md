@@ -56,7 +56,25 @@ Install the client library:
 uv add confluent-kafka
 ```
 
-The key point: your code stays the same. `Queue`, `push`, `pop`, and `worker` work identically whether the backend is SQLite, PostgreSQL, RabbitMQ, or Kafka.
+### Switching to MongoDB
+
+```env
+TINA4_QUEUE_BACKEND=mongodb
+TINA4_MONGO_HOST=localhost
+TINA4_MONGO_PORT=27017
+TINA4_MONGO_DB=tina4
+TINA4_MONGO_COLLECTION=tina4_queue
+# Or use a full URI:
+# TINA4_MONGO_URI=mongodb://user:pass@host:27017/tina4
+```
+
+MongoDB uses `findOneAndUpdate` for atomic job claiming -- no double-processing. Install the driver:
+
+```bash
+uv add pymongo
+```
+
+The key point: your code stays the same. `Queue`, `push`, `pop`, and `worker` work identically whether the backend is SQLite, PostgreSQL, RabbitMQ, Kafka, or MongoDB.
 
 ---
 
@@ -347,6 +365,14 @@ KAFKA_BROKERS=kafka-1:9092,kafka-2:9092,kafka-3:9092
 KAFKA_GROUP_ID=tina4-workers
 ```
 
+### Production: MongoDB
+
+```env
+TINA4_QUEUE_BACKEND=mongodb
+TINA4_MONGO_URI=mongodb://user:pass@mongo.internal:27017/tina4
+TINA4_MONGO_COLLECTION=tina4_queue
+```
+
 Your queue code does not change at all. The same `queue.push()` and `@queue.worker()` calls work with every backend.
 
 ### Fallback Configuration
@@ -635,7 +661,7 @@ def send_email(message):
 
 **Cause:** If using SQLite without WAL mode, concurrent access can cause race conditions.
 
-**Fix:** For production with multiple workers, use PostgreSQL (which has `FOR UPDATE SKIP LOCKED`) or RabbitMQ. SQLite is fine for single-worker setups. Enable WAL mode for SQLite: `PRAGMA journal_mode=WAL;`
+**Fix:** For production with multiple workers, use PostgreSQL (which has `FOR UPDATE SKIP LOCKED`), RabbitMQ, or MongoDB. SQLite is fine for single-worker setups. Enable WAL mode for SQLite: `PRAGMA journal_mode=WAL;`
 
 ### 4. Payload too large
 

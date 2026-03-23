@@ -99,7 +99,7 @@ Tina4 ships with everything you need to build a production web application. Here
 - CSRF protection, password hashing
 
 **Integration**
-- Queue system with retry, dead letters, and three backends (SQLite, RabbitMQ, Kafka)
+- Queue system with retry, dead letters, and four backends (SQLite, RabbitMQ, Kafka, MongoDB)
 - GraphQL parser and executor
 - WebSocket server
 - SOAP/WSDL support, HTTP API client, email messenger, i18n

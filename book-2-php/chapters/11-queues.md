@@ -423,6 +423,28 @@ For most applications: SQLite for development, RabbitMQ for production. Kafka wh
 
 ---
 
+## 9b. Switching to MongoDB
+
+```env
+TINA4_QUEUE_BACKEND=mongodb
+TINA4_MONGO_HOST=localhost
+TINA4_MONGO_PORT=27017
+TINA4_MONGO_DB=tina4
+TINA4_MONGO_COLLECTION=tina4_queue
+# Or use a full URI:
+# TINA4_MONGO_URI=mongodb://user:pass@host:27017/tina4
+```
+
+MongoDB uses `findOneAndUpdate` for atomic job claiming -- no double-processing. Install the driver:
+
+```bash
+composer require ext-mongodb
+```
+
+Same API. Same code. Same `Queue::produce()` and `Queue::consume()` calls.
+
+---
+
 ## 10. Monitoring via Dev Dashboard
 
 `TINA4_DEBUG=true` activates the "Queue Manager" in `/tina4/console`:
@@ -689,7 +711,7 @@ Signed up: 2026-03-22T14:30:00+00:00
 
 **Cause:** SQLite supports one writer at a time. Multiple workers compete for the same file.
 
-**Fix:** Switch to RabbitMQ or Kafka. SQLite queues are for single-worker setups and development.
+**Fix:** Switch to RabbitMQ, Kafka, or MongoDB. SQLite queues are for single-worker setups and development.
 
 ### 6. Consumer Returns Nothing
 

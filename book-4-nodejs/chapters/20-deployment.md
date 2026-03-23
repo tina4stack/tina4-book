@@ -311,6 +311,9 @@ Run multiple instances behind a load balancer. Use Redis for shared sessions, ca
 TINA4_SESSION_HANDLER=redis
 TINA4_CACHE_BACKEND=redis
 TINA4_QUEUE_BACKEND=rabbitmq
+# Or use MongoDB for queues:
+# TINA4_QUEUE_BACKEND=mongodb
+# TINA4_MONGO_URI=mongodb://user:pass@mongo.internal:27017/tina4
 ```
 
 ---

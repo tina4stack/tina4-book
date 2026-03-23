@@ -281,6 +281,28 @@ TINA4_QUEUE_GROUP_ID=my-app-workers
 
 ---
 
+## 9b. Switching to MongoDB
+
+```env
+TINA4_QUEUE_BACKEND=mongodb
+TINA4_MONGO_HOST=localhost
+TINA4_MONGO_PORT=27017
+TINA4_MONGO_DB=tina4
+TINA4_MONGO_COLLECTION=tina4_queue
+# Or use a full URI:
+# TINA4_MONGO_URI=mongodb://user:pass@host:27017/tina4
+```
+
+MongoDB uses `findOneAndUpdate` for atomic job claiming -- no double-processing. Install the driver:
+
+```bash
+gem install mongo
+```
+
+Same API. Same code. Same `Tina4::Queue.produce` and `Tina4::Queue.consume` calls.
+
+---
+
 ## 10. Monitoring via Dev Dashboard
 
 When `TINA4_DEBUG=true`, the dev dashboard at `/tina4/console` shows a "Queue Manager" section with:
@@ -443,7 +465,7 @@ end
 
 **Problem:** Multiple workers on the same SQLite queue cause "database is locked" errors.
 
-**Fix:** For multiple workers, switch to RabbitMQ or Kafka.
+**Fix:** For multiple workers, switch to RabbitMQ, Kafka, or MongoDB.
 
 ### 6. Consumer Returns Nothing
 

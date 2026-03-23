@@ -1,6 +1,6 @@
 # Chapter 4: Environment Variables
 
-Every piece of Tina4 configuration lives in one file. A `.env` at the root of your project. Sixty-eight variables. All optional. All with sensible defaults. This chapter is the complete reference.
+Every piece of Tina4 configuration lives in one file. A `.env` at the root of your project. Seventy-three variables. All optional. All with sensible defaults. This chapter is the complete reference.
 
 ## How .env Files Work
 
@@ -305,12 +305,17 @@ Five backends. File-based works for single-server deployments. Redis or Valkey f
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `TINA4_QUEUE_BACKEND` | `database` | Queue storage backend. Options: `database` (uses the connected DB), `rabbitmq`, `kafka`. |
+| `TINA4_QUEUE_BACKEND` | `database` | Queue storage backend. Options: `database` (uses the connected DB), `rabbitmq`, `kafka`, `mongodb`. |
 | `QUEUE_DRIVER` | `database` | Alias for `TINA4_QUEUE_BACKEND`. Either variable works. |
 | `QUEUE_FALLBACK_DRIVER` | _(none)_ | Fallback backend if the primary goes down. Same options as `QUEUE_DRIVER`. |
 | `RABBITMQ_URL` | _(none)_ | AMQP connection URL for RabbitMQ. |
 | `KAFKA_BROKERS` | _(none)_ | Comma-separated Kafka broker addresses. |
 | `KAFKA_GROUP_ID` | `tina4-workers` | Kafka consumer group ID. |
+| `TINA4_MONGO_HOST` | `localhost` | MongoDB host for queue backend. |
+| `TINA4_MONGO_PORT` | `27017` | MongoDB port for queue backend. |
+| `TINA4_MONGO_DB` | `tina4` | MongoDB database name for queue backend. |
+| `TINA4_MONGO_COLLECTION` | `tina4_queue` | MongoDB collection name for queue messages. |
+| `TINA4_MONGO_URI` | _(none)_ | Full MongoDB connection URI (overrides host/port/db). |
 | `QUEUE_FAILOVER_TIMEOUT` | `300` | Seconds without a successful pop before switching to the fallback. |
 | `QUEUE_FAILOVER_DEPTH` | `10000` | Maximum queue depth before triggering failover. |
 | `QUEUE_FAILOVER_ERROR_RATE` | `50` | Error rate percentage (0-100) that triggers failover. |
@@ -501,6 +506,11 @@ TINA4_QUEUE_BACKEND=database
 # RABBITMQ_URL=
 # KAFKA_BROKERS=
 # KAFKA_GROUP_ID=tina4-workers
+# TINA4_MONGO_HOST=localhost
+# TINA4_MONGO_PORT=27017
+# TINA4_MONGO_DB=tina4
+# TINA4_MONGO_COLLECTION=tina4_queue
+# TINA4_MONGO_URI=
 # QUEUE_FAILOVER_TIMEOUT=300
 # QUEUE_FAILOVER_DEPTH=10000
 # QUEUE_FAILOVER_ERROR_RATE=50
@@ -563,7 +573,7 @@ TINA4_BROKEN_MAX_FILES=100
 | 2 | Rate limiter |
 | 3 | Auth (JWT) |
 | 5 | Sessions |
-| 10 | Queue |
+| 15 | Queue |
 | 3 | Response cache |
 | 4 | Compression |
 | 6 | Messenger (email) |
@@ -571,8 +581,8 @@ TINA4_BROKEN_MAX_FILES=100
 | 4 | WebSocket |
 | 3 | Dev admin console |
 | 4 | Error handling |
-| **68** | **Total** |
+| **73** | **Total** |
 
-Sixty-eight variables. Every one follows the same priority chain: constructor > `.env` > default. Every boolean is interpreted by `is_truthy()`. Every variable has a sensible default that works for development without any configuration.
+Seventy-three variables. Every one follows the same priority chain: constructor > `.env` > default. Every boolean is interpreted by `is_truthy()`. Every variable has a sensible default that works for development without any configuration.
 
-One file. Sixty-eight knobs. Turn what you need. Leave the rest alone.
+One file. Seventy-three knobs. Turn what you need. Leave the rest alone.
