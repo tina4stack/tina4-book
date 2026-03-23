@@ -117,11 +117,11 @@ $isCorrect = Auth::checkPassword("my-secure-password", $storedHash);
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Auth;
 use Tina4\Database;
 
-Route::post("/api/register", function ($request, $response) {
+Router::post("/api/register", function ($request, $response) {
     $body = $request->body;
 
     if (empty($body["name"]) || empty($body["email"]) || empty($body["password"])) {
@@ -180,14 +180,14 @@ Client sends credentials. Server validates them. Server returns a JWT.
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Auth;
 use Tina4\Database;
 
 /**
  * @noauth
  */
-Route::post("/api/login", function ($request, $response) {
+Router::post("/api/login", function ($request, $response) {
     $body = $request->body;
 
     if (empty($body["email"]) || empty($body["password"])) {
@@ -296,9 +296,9 @@ function authMiddleware($request, $response, $next) {
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/api/profile", function ($request, $response) {
+Router::get("/api/profile", function ($request, $response) {
     return $response->json([
         "user_id" => $request->user["user_id"],
         "email" => $request->user["email"],
@@ -333,13 +333,13 @@ curl http://localhost:7146/api/profile \
 ### Applying Middleware to a Group
 
 ```php
-Route::group("/api/admin", function () {
+Router::group("/api/admin", function () {
 
-    Route::get("/stats", function ($request, $response) {
+    Router::get("/stats", function ($request, $response) {
         return $response->json(["active_users" => 42]);
     });
 
-    Route::get("/logs", function ($request, $response) {
+    Router::get("/logs", function ($request, $response) {
         return $response->json(["logs" => []]);
     });
 
@@ -362,21 +362,21 @@ Public endpoints that bypass global or group-level auth:
 /**
  * @noauth
  */
-Route::get("/api/public/health", function ($request, $response) {
+Router::get("/api/public/health", function ($request, $response) {
     return $response->json(["status" => "ok"]);
 });
 
 /**
  * @noauth
  */
-Route::post("/api/login", function ($request, $response) {
+Router::post("/api/login", function ($request, $response) {
     // Login logic
 });
 
 /**
  * @noauth
  */
-Route::post("/api/register", function ($request, $response) {
+Router::post("/api/register", function ($request, $response) {
     // Registration logic
 });
 ```
@@ -389,7 +389,7 @@ POST, PUT, PATCH, DELETE are secured by default. GET is public. Use `@secured` t
 /**
  * @secured
  */
-Route::get("/api/me", function ($request, $response) {
+Router::get("/api/me", function ($request, $response) {
     return $response->json($request->user);
 });
 ```
@@ -431,7 +431,7 @@ function requireRole($role) {
 ```php
 $adminOnly = requireRole("admin");
 
-Route::delete("/api/users/{id:int}", function ($request, $response) {
+Router::delete("/api/users/{id:int}", function ($request, $response) {
     return $response->json(["deleted" => true]);
 }, $adminOnly);
 ```
@@ -469,10 +469,10 @@ Include the CSRF token in every form:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Auth;
 
-Route::post("/profile/update", function ($request, $response) {
+Router::post("/profile/update", function ($request, $response) {
     if (!Auth::validateFormToken($request->body["_token"] ?? "")) {
         return $response->json(["error" => "Invalid form token. Please refresh and try again."], 403);
     }
@@ -532,9 +532,9 @@ Access session data through `$request->session`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::post("/login-form", function ($request, $response) {
+Router::post("/login-form", function ($request, $response) {
     // After validating credentials...
     $request->session["user_id"] = 42;
     $request->session["user_name"] = "Alice";
@@ -543,7 +543,7 @@ Route::post("/login-form", function ($request, $response) {
     return $response->redirect("/dashboard");
 });
 
-Route::get("/dashboard", function ($request, $response) {
+Router::get("/dashboard", function ($request, $response) {
     if (empty($request->session["logged_in"])) {
         return $response->redirect("/login");
     }
@@ -553,7 +553,7 @@ Route::get("/dashboard", function ($request, $response) {
     ]);
 });
 
-Route::post("/logout", function ($request, $response) {
+Router::post("/logout", function ($request, $response) {
     $request->session = [];
 
     return $response->redirect("/login");
@@ -685,14 +685,14 @@ Create `src/routes/auth.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Auth;
 use Tina4\Database;
 
 /**
  * @noauth
  */
-Route::post("/api/register", function ($request, $response) {
+Router::post("/api/register", function ($request, $response) {
     $body = $request->body;
 
     $errors = [];
@@ -730,7 +730,7 @@ Route::post("/api/register", function ($request, $response) {
 /**
  * @noauth
  */
-Route::post("/api/login", function ($request, $response) {
+Router::post("/api/login", function ($request, $response) {
     $body = $request->body;
 
     if (empty($body["email"]) || empty($body["password"])) {
@@ -762,7 +762,7 @@ Route::post("/api/login", function ($request, $response) {
     ]);
 });
 
-Route::get("/api/profile", function ($request, $response) {
+Router::get("/api/profile", function ($request, $response) {
     $db = Database::getConnection();
 
     $user = $db->fetchOne(
@@ -777,7 +777,7 @@ Route::get("/api/profile", function ($request, $response) {
     return $response->json($user);
 }, "authMiddleware");
 
-Route::put("/api/profile", function ($request, $response) {
+Router::put("/api/profile", function ($request, $response) {
     $db = Database::getConnection();
     $body = $request->body;
     $userId = $request->user["user_id"];
@@ -804,7 +804,7 @@ Route::put("/api/profile", function ($request, $response) {
     return $response->json(["message" => "Profile updated", "user" => $updated]);
 }, "authMiddleware");
 
-Route::put("/api/profile/password", function ($request, $response) {
+Router::put("/api/profile/password", function ($request, $response) {
     $db = Database::getConnection();
     $body = $request->body;
     $userId = $request->user["user_id"];

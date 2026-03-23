@@ -22,9 +22,9 @@ Route handler:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/welcome", function ($request, $response) {
+Router::get("/welcome", function ($request, $response) {
     return $response->render("welcome.html", [
         "name" => "Alice"
     ]);
@@ -153,9 +153,9 @@ Route handler:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/about", function ($request, $response) {
+Router::get("/about", function ($request, $response) {
     return $response->render("about.twig", [
         "founded_year" => 2020,
         "team_size" => 12,
@@ -827,9 +827,9 @@ Create `src/routes/catalog.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/catalog", function ($request, $response) {
+Router::get("/catalog", function ($request, $response) {
     $allProducts = [
         ["name" => "Espresso Machine", "category" => "Kitchen", "price" => 299.99, "in_stock" => true, "featured" => true],
         ["name" => "Yoga Mat", "category" => "Fitness", "price" => 29.99, "in_stock" => true, "featured" => false],

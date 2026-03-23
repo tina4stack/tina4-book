@@ -92,9 +92,9 @@ echo $product->id; // Auto-generated: 1, 2, 3, ...
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::post("/api/products", function ($request, $response) {
+Router::post("/api/products", function ($request, $response) {
     $body = $request->body;
 
     $product = new Product();
@@ -131,7 +131,7 @@ curl -X POST http://localhost:7146/api/products \
 When `id` is set, `save()` performs an UPDATE:
 
 ```php
-Route::put("/api/products/{id:int}", function ($request, $response) {
+Router::put("/api/products/{id:int}", function ($request, $response) {
     $product = new Product();
     $product->load($request->params["id"]);
 
@@ -169,7 +169,7 @@ if (empty($product->id)) {
 ### A Simple Get Endpoint
 
 ```php
-Route::get("/api/products/{id:int}", function ($request, $response) {
+Router::get("/api/products/{id:int}", function ($request, $response) {
     $product = new Product();
     $product->load($request->params["id"]);
 
@@ -204,7 +204,7 @@ curl http://localhost:7146/api/products/1
 ### delete()
 
 ```php
-Route::delete("/api/products/{id:int}", function ($request, $response) {
+Router::delete("/api/products/{id:int}", function ($request, $response) {
     $product = new Product();
     $product->load($request->params["id"]);
 
@@ -277,9 +277,9 @@ Fifth argument: LIMIT. Sixth: OFFSET.
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/api/products", function ($request, $response) {
+Router::get("/api/products", function ($request, $response) {
     $product = new Product();
 
     $category = $request->query["category"] ?? "";
@@ -459,7 +459,7 @@ public function user(): ?User
 ### Using Relationships
 
 ```php
-Route::get("/api/users/{id:int}", function ($request, $response) {
+Router::get("/api/users/{id:int}", function ($request, $response) {
     $user = new User();
     $user->load($request->params["id"]);
 
@@ -910,10 +910,10 @@ Create `src/routes/blog.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 // List published posts with author
-Route::get("/api/blog/posts", function ($request, $response) {
+Router::get("/api/blog/posts", function ($request, $response) {
     $post = new Post();
     $posts = $post->select("*", "published = :published", ["published" => 1], "created_at DESC", 0, 0, ["user"]);
 
@@ -926,7 +926,7 @@ Route::get("/api/blog/posts", function ($request, $response) {
 });
 
 // Get a single post with author and comments
-Route::get("/api/blog/posts/{id:int}", function ($request, $response) {
+Router::get("/api/blog/posts/{id:int}", function ($request, $response) {
     $post = new Post();
     $post->load($request->params["id"]);
 
@@ -946,7 +946,7 @@ Route::get("/api/blog/posts/{id:int}", function ($request, $response) {
 });
 
 // Create a post
-Route::post("/api/blog/posts", function ($request, $response) {
+Router::post("/api/blog/posts", function ($request, $response) {
     $body = $request->body;
 
     if (empty($body["title"]) || empty($body["body"]) || empty($body["user_id"])) {
@@ -964,7 +964,7 @@ Route::post("/api/blog/posts", function ($request, $response) {
 });
 
 // Add a comment to a post
-Route::post("/api/blog/posts/{id:int}/comments", function ($request, $response) {
+Router::post("/api/blog/posts/{id:int}/comments", function ($request, $response) {
     $postId = $request->params["id"];
 
     // Verify post exists

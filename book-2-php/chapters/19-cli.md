@@ -267,12 +267,12 @@ The generated route file:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::group("/api", function () {
+Router::group("/api", function () {
 
     // List all orders
-    Route::get("/orders", function ($request, $response) {
+    Router::get("/orders", function ($request, $response) {
         $order = new Order();
         $page = (int) ($request->query["page"] ?? 1);
         $perPage = (int) ($request->query["per_page"] ?? 20);
@@ -290,7 +290,7 @@ Route::group("/api", function () {
     });
 
     // Get a single order
-    Route::get("/orders/{id:int}", function ($request, $response) {
+    Router::get("/orders/{id:int}", function ($request, $response) {
         $order = new Order();
         $order->load($request->params["id"]);
 
@@ -302,7 +302,7 @@ Route::group("/api", function () {
     });
 
     // Create an order
-    Route::post("/orders", function ($request, $response) {
+    Router::post("/orders", function ($request, $response) {
         $body = $request->body;
         $order = new Order();
         $order->userId = (int) ($body["user_id"] ?? 0);
@@ -315,7 +315,7 @@ Route::group("/api", function () {
     });
 
     // Update an order
-    Route::put("/orders/{id:int}", function ($request, $response) {
+    Router::put("/orders/{id:int}", function ($request, $response) {
         $order = new Order();
         $order->load($request->params["id"]);
 
@@ -334,7 +334,7 @@ Route::group("/api", function () {
     });
 
     // Delete an order
-    Route::delete("/orders/{id:int}", function ($request, $response) {
+    Router::delete("/orders/{id:int}", function ($request, $response) {
         $order = new Order();
         $order->load($request->params["id"]);
 
@@ -427,7 +427,7 @@ function rateLimiter($request, $response, $next)
 The middleware is a named function that you can reference in route definitions:
 
 ```php
-Route::get("/api/data", function ($request, $response) {
+Router::get("/api/data", function ($request, $response) {
     return $response->json(["data" => "protected"]);
 }, "rateLimiter");
 ```

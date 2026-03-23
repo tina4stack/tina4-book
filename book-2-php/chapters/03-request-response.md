@@ -6,9 +6,9 @@ Every route handler receives two arguments. `$request` tells you what the client
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/echo", function ($request, $response) {
+Router::get("/echo", function ($request, $response) {
     return $response->json([
         "method" => $request->method,
         "path" => $request->path,
@@ -125,9 +125,9 @@ A diagnostic route that dumps everything:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::post("/debug/request", function ($request, $response) {
+Router::post("/debug/request", function ($request, $response) {
     return $response->json([
         "method" => $request->method,
         "path" => $request->path,
@@ -291,7 +291,7 @@ Equivalent to `$response->json(["id" => 7, "created" => true], 201)`. Some devel
 Set response headers with `header()`:
 
 ```php
-Route::get("/api/data", function ($request, $response) {
+Router::get("/api/data", function ($request, $response) {
     return $response
         ->header("X-Request-Id", uniqid())
         ->header("X-Rate-Limit-Remaining", "57")
@@ -336,7 +336,7 @@ return $response
 Set cookies on the response:
 
 ```php
-Route::post("/login", function ($request, $response) {
+Router::post("/login", function ($request, $response) {
     // After validating credentials...
     return $response
         ->cookie("session_id", "abc123xyz", [
@@ -364,7 +364,7 @@ Cookie options:
 Read cookies from the request:
 
 ```php
-Route::get("/profile", function ($request, $response) {
+Router::get("/profile", function ($request, $response) {
     $sessionId = $request->cookies["session_id"] ?? null;
 
     if ($sessionId === null) {
@@ -393,9 +393,9 @@ Uploaded files arrive via `$request->files`. Each file is an object with metadat
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::post("/api/upload", function ($request, $response) {
+Router::post("/api/upload", function ($request, $response) {
     if (empty($request->files["image"])) {
         return $response->json(["error" => "No file uploaded"], 400);
     }
@@ -431,9 +431,9 @@ The file sits in a temporary location. Move it somewhere permanent:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::post("/api/upload", function ($request, $response) {
+Router::post("/api/upload", function ($request, $response) {
     if (empty($request->files["image"])) {
         return $response->json(["error" => "No file uploaded"], 400);
     }
@@ -495,7 +495,7 @@ The file is now available at `http://localhost:7146/uploads/img_65f3a7b8c1234.jp
 When the form uses `multiple` or has multiple file inputs:
 
 ```php
-Route::post("/api/upload-many", function ($request, $response) {
+Router::post("/api/upload-many", function ($request, $response) {
     $results = [];
 
     foreach ($request->files as $key => $file) {
@@ -528,9 +528,9 @@ Send files to the client with `$response->file()`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/api/reports/{filename}", function ($request, $response) {
+Router::get("/api/reports/{filename}", function ($request, $response) {
     $filename = $request->params["filename"];
     $filepath = __DIR__ . "/../../data/reports/" . $filename;
 
@@ -558,9 +558,9 @@ One endpoint. Multiple formats. Check the `Accept` header:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/api/products/{id:int}", function ($request, $response) {
+Router::get("/api/products/{id:int}", function ($request, $response) {
     $id = $request->params["id"];
     $product = [
         "id" => $id,
@@ -652,9 +652,9 @@ Create `src/routes/images.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::post("/api/images", function ($request, $response) {
+Router::post("/api/images", function ($request, $response) {
     // Check if a file was uploaded
     if (empty($request->files["image"])) {
         return $response->json(["error" => "No image file provided. Use field name 'image'."], 400);
@@ -706,7 +706,7 @@ Route::post("/api/images", function ($request, $response) {
     ], 201);
 });
 
-Route::get("/api/images/{filename}", function ($request, $response) {
+Router::get("/api/images/{filename}", function ($request, $response) {
     $filename = $request->params["filename"];
 
     // Prevent directory traversal

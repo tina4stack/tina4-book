@@ -7,9 +7,9 @@
 // 2. Calculates time_of_day from the current hour
 // 3. Returns JSON with "greeting" and "time_of_day"
 
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/api/greet", function ($request, $response) {
+Router::get("/api/greet", function ($request, $response) {
     // Your code here
     // Hints:
     //   $request->query["name"] to get query parameters

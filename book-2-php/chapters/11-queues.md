@@ -60,10 +60,10 @@ SQLite backend by default. No configuration. First job creates `data/queue.db` a
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Queue;
 
-Route::post("/api/register", function ($request, $response) {
+Router::post("/api/register", function ($request, $response) {
     $body = $request->body;
 
     // Create the user (database logic)
@@ -443,10 +443,10 @@ One action. Multiple background tasks:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Queue;
 
-Route::post("/api/orders", function ($request, $response) {
+Router::post("/api/orders", function ($request, $response) {
     $body = $request->body;
 
     $orderId = 101;
@@ -531,13 +531,13 @@ Create `src/routes/email-queue.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Queue;
 
 /**
  * @noauth
  */
-Route::post("/api/signup", function ($request, $response) {
+Router::post("/api/signup", function ($request, $response) {
     $body = $request->body;
 
     if (empty($body["name"]) || empty($body["email"]) || empty($body["password"])) {
@@ -574,7 +574,7 @@ Queue::consume("welcome-emails", function ($job) {
     return true;
 });
 
-Route::get("/api/queue/stats", function ($request, $response) {
+Router::get("/api/queue/stats", function ($request, $response) {
     $stats = Queue::stats("welcome-emails");
 
     return $response->json([

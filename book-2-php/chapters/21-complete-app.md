@@ -210,13 +210,13 @@ Create `src/routes/auth.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Auth;
 
 /**
  * @noauth
  */
-Route::post("/api/auth/register", function ($request, $response) {
+Router::post("/api/auth/register", function ($request, $response) {
     $body = $request->body;
 
     // Validate input
@@ -253,7 +253,7 @@ Route::post("/api/auth/register", function ($request, $response) {
 /**
  * @noauth
  */
-Route::post("/api/auth/login", function ($request, $response) {
+Router::post("/api/auth/login", function ($request, $response) {
     $body = $request->body;
 
     if (empty($body["email"]) || empty($body["password"])) {
@@ -291,7 +291,7 @@ Route::post("/api/auth/login", function ($request, $response) {
 /**
  * @secured
  */
-Route::get("/api/profile", function ($request, $response) {
+Router::get("/api/profile", function ($request, $response) {
     $userId = $request->user["user_id"];
 
     $user = new User();
@@ -432,15 +432,15 @@ Create `src/routes/tasks.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::group("/api", function () {
+Router::group("/api", function () {
 
     // List tasks with filters
     /**
      * @secured
      */
-    Route::get("/tasks", function ($request, $response) {
+    Router::get("/tasks", function ($request, $response) {
         $userId = $request->user["user_id"];
 
         $status = $request->query["status"] ?? "";
@@ -494,7 +494,7 @@ Route::group("/api", function () {
     /**
      * @secured
      */
-    Route::get("/tasks/{id:int}", function ($request, $response) {
+    Router::get("/tasks/{id:int}", function ($request, $response) {
         $task = new Task();
         $task->load($request->params["id"]);
 
@@ -506,7 +506,7 @@ Route::group("/api", function () {
     });
 
     // Create a task
-    Route::post("/tasks", function ($request, $response) {
+    Router::post("/tasks", function ($request, $response) {
         $userId = $request->user["user_id"];
         $body = $request->body;
 
@@ -555,7 +555,7 @@ Route::group("/api", function () {
     });
 
     // Update a task
-    Route::put("/tasks/{id:int}", function ($request, $response) {
+    Router::put("/tasks/{id:int}", function ($request, $response) {
         $task = new Task();
         $task->load($request->params["id"]);
 
@@ -603,7 +603,7 @@ Route::group("/api", function () {
     });
 
     // Delete a task
-    Route::delete("/tasks/{id:int}", function ($request, $response) {
+    Router::delete("/tasks/{id:int}", function ($request, $response) {
         $task = new Task();
         $task->load($request->params["id"]);
 
@@ -927,12 +927,12 @@ Create `src/routes/dashboard.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 /**
  * @secured
  */
-Route::get("/api/dashboard/stats", function ($request, $response) {
+Router::get("/api/dashboard/stats", function ($request, $response) {
     $userId = $request->user["user_id"];
 
     $task = new Task();
@@ -961,7 +961,7 @@ Route::get("/api/dashboard/stats", function ($request, $response) {
 /**
  * @noauth
  */
-Route::get("/admin", function ($request, $response) {
+Router::get("/admin", function ($request, $response) {
     return $response->render("app/dashboard.html", [
         "page" => "dashboard"
     ]);
@@ -1129,7 +1129,7 @@ Update the dashboard stats route:
 /**
  * @secured
  */
-Route::get("/api/dashboard/stats", function ($request, $response) {
+Router::get("/api/dashboard/stats", function ($request, $response) {
     $userId = $request->user["user_id"];
     $cacheKey = "dashboard_stats_" . $userId;
 

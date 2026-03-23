@@ -103,10 +103,10 @@ The simplest email:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Messenger;
 
-Route::post("/api/contact", function ($request, $response) {
+Router::post("/api/contact", function ($request, $response) {
     $body = $request->body;
 
     $mailer = new Messenger();
@@ -294,10 +294,10 @@ TINA4_MAIL_IMAP_ENCRYPTION=ssl
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Messenger;
 
-Route::get("/api/inbox", function ($request, $response) {
+Router::get("/api/inbox", function ($request, $response) {
     $mailer = new Messenger();
 
     $emails = $mailer->getInbox([
@@ -344,7 +344,7 @@ curl http://localhost:7146/api/inbox
 ### Reading a Specific Email
 
 ```php
-Route::get("/api/inbox/{id}", function ($request, $response) {
+Router::get("/api/inbox/{id}", function ($request, $response) {
     $mailer = new Messenger();
     $emailId = $request->params["id"];
 
@@ -461,11 +461,11 @@ Create `src/templates/emails/welcome.html`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Messenger;
 use Tina4\Frond;
 
-Route::post("/api/register", function ($request, $response) {
+Router::post("/api/register", function ($request, $response) {
     $body = $request->body;
 
     // Create user (database logic)
@@ -528,13 +528,13 @@ In production, never send email inside a route handler. The SMTP handshake takes
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Queue;
 use Tina4\Messenger;
 use Tina4\Frond;
 
 // In the route handler, just queue the email
-Route::post("/api/register", function ($request, $response) {
+Router::post("/api/register", function ($request, $response) {
     $body = $request->body;
     $userId = 42; // Simulated
 
@@ -713,11 +713,11 @@ Create `src/routes/contact.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Messenger;
 use Tina4\Frond;
 
-Route::get("/contact", function ($request, $response) {
+Router::get("/contact", function ($request, $response) {
     $flash = $request->session["_flash"] ?? null;
     unset($request->session["_flash"]);
 
@@ -726,7 +726,7 @@ Route::get("/contact", function ($request, $response) {
     ]);
 });
 
-Route::post("/contact", function ($request, $response) {
+Router::post("/contact", function ($request, $response) {
     $body = $request->body;
 
     // Validate

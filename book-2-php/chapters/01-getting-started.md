@@ -101,7 +101,7 @@ If any are missing, install them via your OS package manager (e.g., `apt install
 One command. The CLI scaffolds everything.
 
 ```bash
-tina4 init my-store
+tina4 init php my-store
 ```
 
 ```
@@ -243,9 +243,9 @@ Create `src/routes/greeting.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/api/greeting/{name}", function ($request, $response) {
+Router::get("/api/greeting/{name}", function ($request, $response) {
     $name = $request->params["name"];
     return $response->json([
         "message" => "Hello, " . $name . "!",
@@ -297,7 +297,7 @@ curl "http://localhost:7146/api/greeting/Alice?pretty=true"
 Five things, in order:
 
 1. You created a file in `src/routes/`. Tina4 discovered it at startup.
-2. `Route::get("/api/greeting/{name}", ...)` registered a GET route with a path parameter `{name}`.
+2. `Router::get("/api/greeting/{name}", ...)` registered a GET route with a path parameter `{name}`.
 3. A request arrived at `/api/greeting/Alice`. The router matched the pattern. Your handler ran.
 4. `$request->params["name"]` extracted `"Alice"` from the URL.
 5. `$response->json(...)` serialized the array to JSON, set `Content-Type: application/json`, and returned `200 OK`.
@@ -310,9 +310,9 @@ Update `src/routes/greeting.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/api/greeting/{name}", function ($request, $response) {
+Router::get("/api/greeting/{name}", function ($request, $response) {
     $name = $request->params["name"];
     return $response->json([
         "message" => "Hello, " . $name . "!",
@@ -320,7 +320,7 @@ Route::get("/api/greeting/{name}", function ($request, $response) {
     ]);
 });
 
-Route::post("/api/greeting", function ($request, $response) {
+Router::post("/api/greeting", function ($request, $response) {
     $name = $request->body["name"] ?? "World";
     $language = $request->body["language"] ?? "en";
 
@@ -442,9 +442,9 @@ Create `src/routes/pages.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/products", function ($request, $response) {
+Router::get("/products", function ($request, $response) {
     $products = [
         [
             "name" => "Wireless Keyboard",
@@ -650,9 +650,9 @@ Create `src/routes/greet.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/api/greet", function ($request, $response) {
+Router::get("/api/greet", function ($request, $response) {
     $name = $request->query["name"] ?? "Stranger";
     $hour = (int) date("G");
 
@@ -762,9 +762,9 @@ Create `src/routes/store.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/store", function ($request, $response) {
+Router::get("/store", function ($request, $response) {
     $products = [
         ["name" => "Espresso Machine", "category" => "Kitchen", "price" => 299.99, "featured" => true],
         ["name" => "Yoga Mat", "category" => "Fitness", "price" => 29.99, "featured" => false],
@@ -809,7 +809,7 @@ Route::get("/store", function ($request, $response) {
 
 **Cause:** Missing `use` statement or stale autoload.
 
-**Fix:** Start the file with `<?php` and include `use Tina4\Route;`. Run `composer dump-autoload` if the error persists.
+**Fix:** Start the file with `<?php` and include `use Tina4Router;`. Run `composer dump-autoload` if the error persists.
 
 ### 3. JSON response shows HTML
 

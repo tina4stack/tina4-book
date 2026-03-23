@@ -33,9 +33,9 @@ No configuration needed. Sessions stored in files. Works out of the box.
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/visit-counter", function ($request, $response) {
+Router::get("/visit-counter", function ($request, $response) {
     $count = ($request->session["visit_count"] ?? 0) + 1;
     $request->session["visit_count"] = $count;
 
@@ -149,10 +149,10 @@ A key-value store. Read and write through `$request->session`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 // Write
-Route::post("/api/preferences", function ($request, $response) {
+Router::post("/api/preferences", function ($request, $response) {
     $body = $request->body;
 
     $request->session["language"] = $body["language"] ?? "en";
@@ -170,7 +170,7 @@ Route::post("/api/preferences", function ($request, $response) {
 });
 
 // Read
-Route::get("/api/preferences", function ($request, $response) {
+Router::get("/api/preferences", function ($request, $response) {
     return $response->json([
         "language" => $request->session["language"] ?? "en",
         "theme" => $request->session["theme"] ?? "light",
@@ -179,7 +179,7 @@ Route::get("/api/preferences", function ($request, $response) {
 });
 
 // Delete a key
-Route::delete("/api/preferences/{key}", function ($request, $response) {
+Router::delete("/api/preferences/{key}", function ($request, $response) {
     $key = $request->params["key"];
     unset($request->session[$key]);
 
@@ -187,7 +187,7 @@ Route::delete("/api/preferences/{key}", function ($request, $response) {
 });
 
 // Clear everything
-Route::post("/api/session/clear", function ($request, $response) {
+Router::post("/api/session/clear", function ($request, $response) {
     $request->session = [];
 
     return $response->json(["message" => "Session cleared"]);
@@ -199,7 +199,7 @@ Route::post("/api/session/clear", function ($request, $response) {
 Sessions hold arrays and nested structures:
 
 ```php
-Route::post("/api/cart/add", function ($request, $response) {
+Router::post("/api/cart/add", function ($request, $response) {
     $body = $request->body;
 
     if (!isset($request->session["cart"])) {
@@ -243,9 +243,9 @@ The pattern: submit a form, redirect to a success page, show a message that disa
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::post("/profile/update", function ($request, $response) {
+Router::post("/profile/update", function ($request, $response) {
     $body = $request->body;
 
     // Update the profile...
@@ -262,7 +262,7 @@ Route::post("/profile/update", function ($request, $response) {
 ### Reading and Clearing
 
 ```php
-Route::get("/profile", function ($request, $response) {
+Router::get("/profile", function ($request, $response) {
     $flash = $request->session["_flash"] ?? null;
 
     // Clear immediately
@@ -324,9 +324,9 @@ Cookies live in the browser. Unlike sessions, the data is client-side. Use cooki
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::post("/api/set-language", function ($request, $response) {
+Router::post("/api/set-language", function ($request, $response) {
     $language = $request->body["language"] ?? "en";
 
     $response->setCookie("language", $language, [
@@ -344,7 +344,7 @@ Route::post("/api/set-language", function ($request, $response) {
 ### Reading a Cookie
 
 ```php
-Route::get("/api/get-language", function ($request, $response) {
+Router::get("/api/get-language", function ($request, $response) {
     $language = $request->cookies["language"] ?? "en";
 
     return $response->json(["language" => $language]);
@@ -356,7 +356,7 @@ Route::get("/api/get-language", function ($request, $response) {
 Set expiry in the past:
 
 ```php
-Route::post("/api/clear-language", function ($request, $response) {
+Router::post("/api/clear-language", function ($request, $response) {
     $response->setCookie("language", "", [
         "expires" => time() - 3600,
         "path" => "/"
@@ -384,14 +384,14 @@ A long-lived cookie re-authenticates users after their session expires.
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Auth;
 use Tina4\Database;
 
 /**
  * @noauth
  */
-Route::post("/login", function ($request, $response) {
+Router::post("/login", function ($request, $response) {
     $body = $request->body;
     $db = Database::getConnection();
 
@@ -515,7 +515,7 @@ Controls cross-site cookie behavior:
 After login, regenerate the session ID to prevent session fixation attacks:
 
 ```php
-Route::post("/login", function ($request, $response) {
+Router::post("/login", function ($request, $response) {
     // Validate credentials...
 
     $request->sessionRegenerate();
@@ -595,7 +595,7 @@ Create `src/routes/cart.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 function getCart($session) {
     return $session["cart"] ?? [];
@@ -621,7 +621,7 @@ function cartResponse($cart) {
     ];
 }
 
-Route::post("/api/cart/add", function ($request, $response) {
+Router::post("/api/cart/add", function ($request, $response) {
     $body = $request->body;
 
     if (empty($body["product_id"]) || empty($body["name"]) || !isset($body["price"])) {
@@ -655,12 +655,12 @@ Route::post("/api/cart/add", function ($request, $response) {
     return $response->json(cartResponse($cart));
 });
 
-Route::get("/api/cart", function ($request, $response) {
+Router::get("/api/cart", function ($request, $response) {
     $cart = getCart($request->session);
     return $response->json(cartResponse($cart));
 });
 
-Route::put("/api/cart/{product_id:int}", function ($request, $response) {
+Router::put("/api/cart/{product_id:int}", function ($request, $response) {
     $productId = $request->params["product_id"];
     $quantity = (int) ($request->body["quantity"] ?? 0);
     $cart = getCart($request->session);
@@ -687,7 +687,7 @@ Route::put("/api/cart/{product_id:int}", function ($request, $response) {
     return $response->json(cartResponse($cart));
 });
 
-Route::delete("/api/cart/{product_id:int}", function ($request, $response) {
+Router::delete("/api/cart/{product_id:int}", function ($request, $response) {
     $productId = $request->params["product_id"];
     $cart = getCart($request->session);
     $found = false;
@@ -709,7 +709,7 @@ Route::delete("/api/cart/{product_id:int}", function ($request, $response) {
     return $response->json(cartResponse($cart));
 });
 
-Route::delete("/api/cart", function ($request, $response) {
+Router::delete("/api/cart", function ($request, $response) {
     $request->session["cart"] = [];
 
     return $response->json(cartResponse([]));

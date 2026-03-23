@@ -74,7 +74,7 @@ Click any section to expand it and see details. For example, clicking "DB" shows
 The toolbar is automatically hidden when `TINA4_DEBUG=false`. You can also hide it for specific routes by returning a response with the `X-Debug-Toolbar: off` header:
 
 ```php
-Route::get("/api/data", function ($request, $response) {
+Router::get("/api/data", function ($request, $response) {
     return $response->json(["data" => "no toolbar"], 200, [
         "X-Debug-Toolbar" => "off"
     ]);
@@ -100,7 +100,7 @@ An unhandled exception occurs. Tina4 does not show a generic "500 Internal Serve
 If you accidentally write:
 
 ```php
-Route::get("/api/broken", function ($request, $response) {
+Router::get("/api/broken", function ($request, $response) {
     $user = null;
     return $response->json(["name" => $user->name]);
 });
@@ -114,7 +114,7 @@ TypeError: Cannot access property "name" on null
   File: src/routes/api.php
   Line: 4
 
-  2 | Route::get("/api/broken", function ($request, $response) {
+  2 | Router::get("/api/broken", function ($request, $response) {
   3 |     $user = null;
 > 4 |     return $response->json(["name" => $user->name]);
   5 | });
@@ -282,9 +282,9 @@ Create a file in `src/gallery/`:
 // title: Product Search
 // description: Search products by name and category
 
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/gallery/product-search", function ($request, $response) {
+Router::get("/gallery/product-search", function ($request, $response) {
     $q = $request->query["q"] ?? "";
     $category = $request->query["category"] ?? "";
 
@@ -369,9 +369,9 @@ Create `src/routes/orders.php` with this intentionally broken code:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/api/orders/summary", function ($request, $response) {
+Router::get("/api/orders/summary", function ($request, $response) {
     $product = new Product();
     $products = $product->select("*");
 
@@ -420,9 +420,9 @@ The fixed route:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/api/orders/summary", function ($request, $response) {
+Router::get("/api/orders/summary", function ($request, $response) {
     $product = new Product();
     $products = $product->select("*");
 

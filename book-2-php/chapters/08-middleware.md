@@ -60,15 +60,15 @@ Apply it:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::group("/api", function () {
+Router::group("/api", function () {
 
-    Route::get("/products", function ($request, $response) {
+    Router::get("/products", function ($request, $response) {
         return $response->json(["products" => []]);
     });
 
-    Route::post("/products", function ($request, $response) {
+    Router::post("/products", function ($request, $response) {
         return $response->json(["created" => true], 201);
     });
 
@@ -128,16 +128,16 @@ TINA4_RATE_LIMIT_WINDOW=60
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::group("/api/public", function () {
+Router::group("/api/public", function () {
 
-    Route::get("/search", function ($request, $response) {
+    Router::get("/search", function ($request, $response) {
         $q = $request->query["q"] ?? "";
         return $response->json(["query" => $q, "results" => []]);
     });
 
-    Route::get("/catalog", function ($request, $response) {
+    Router::get("/catalog", function ($request, $response) {
         return $response->json(["items" => []]);
     });
 
@@ -158,18 +158,18 @@ Override the global limit with a parameter:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 // Public endpoints: 30 requests per minute
-Route::group("/api/public", function () {
-    Route::get("/search", function ($request, $response) {
+Router::group("/api/public", function () {
+    Router::get("/search", function ($request, $response) {
         return $response->json(["results" => []]);
     });
 }, "RateLimiter:30");
 
 // Authenticated endpoints: 120 requests per minute
-Route::group("/api/v1", function () {
-    Route::get("/data", function ($request, $response) {
+Router::group("/api/v1", function () {
+    Router::get("/data", function ($request, $response) {
         return $response->json(["data" => []]);
     });
 }, ["authMiddleware", "RateLimiter:120"]);
@@ -208,7 +208,7 @@ function logRequest($request, $response, $next) {
 Save in `src/routes/middleware.php`. Apply it:
 
 ```php
-Route::get("/api/products", function ($request, $response) {
+Router::get("/api/products", function ($request, $response) {
     return $response->json(["products" => []]);
 }, "logRequest");
 ```
@@ -302,13 +302,13 @@ Third argument to any route method:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/api/data", function ($request, $response) {
+Router::get("/api/data", function ($request, $response) {
     return $response->json(["data" => [1, 2, 3]]);
 }, "logRequest");
 
-Route::post("/api/data", function ($request, $response) {
+Router::post("/api/data", function ($request, $response) {
     return $response->json(["created" => true], 201);
 }, ["logRequest", "requireJson"]);
 ```
@@ -323,29 +323,29 @@ Groups apply middleware to every route inside:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 // Public API -- rate limited, CORS enabled
-Route::group("/api/public", function () {
+Router::group("/api/public", function () {
 
-    Route::get("/products", function ($request, $response) {
+    Router::get("/products", function ($request, $response) {
         return $response->json(["products" => []]);
     });
 
-    Route::get("/categories", function ($request, $response) {
+    Router::get("/categories", function ($request, $response) {
         return $response->json(["categories" => []]);
     });
 
 }, ["CorsMiddleware", "RateLimiter:30"]);
 
 // Admin API -- auth required, IP restricted, logged
-Route::group("/api/admin", function () {
+Router::group("/api/admin", function () {
 
-    Route::get("/users", function ($request, $response) {
+    Router::get("/users", function ($request, $response) {
         return $response->json(["users" => []]);
     });
 
-    Route::delete("/users/{id:int}", function ($request, $response) {
+    Router::delete("/users/{id:int}", function ($request, $response) {
         $id = $request->params["id"];
         return $response->json(["deleted" => $id]);
     });
@@ -356,10 +356,10 @@ Route::group("/api/admin", function () {
 Routes inside a group can add their own middleware. Group middleware runs first, then route-specific:
 
 ```php
-Route::group("/api", function () {
+Router::group("/api", function () {
 
     // Execution: logRequest -> requireJson -> handler
-    Route::post("/upload", function ($request, $response) {
+    Router::post("/upload", function ($request, $response) {
         return $response->json(["uploaded" => true]);
     }, "requireJson");
 
@@ -398,7 +398,7 @@ function middlewareC($request, $response, $next) {
 ```
 
 ```php
-Route::get("/api/test", function ($request, $response) {
+Router::get("/api/test", function ($request, $response) {
     error_log("Handler");
     return $response->json(["ok" => true]);
 }, ["middlewareA", "middlewareB", "middlewareC"]);
@@ -428,9 +428,9 @@ Placement matters:
 ### Group + Route Middleware Order
 
 ```php
-Route::group("/api", function () {
+Router::group("/api", function () {
 
-    Route::get("/data", function ($request, $response) {
+    Router::get("/data", function ($request, $response) {
         return $response->json(["data" => true]);
     }, "middlewareC");
 
@@ -557,7 +557,7 @@ function addRequestId($request, $response, $next) {
 The handler accesses `$request->requestId` for logging and correlation:
 
 ```php
-Route::get("/api/data", function ($request, $response) {
+Router::get("/api/data", function ($request, $response) {
     error_log("[" . $request->requestId . "] Processing data request");
     return $response->json(["request_id" => $request->requestId, "data" => []]);
 }, "addRequestId");
@@ -571,7 +571,7 @@ A realistic production setup:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 // src/routes/middleware.php
 
@@ -611,25 +611,25 @@ function requireApiKey($request, $response, $next) {
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 // src/routes/api.php
 
-Route::group("/api/v1", function () {
+Router::group("/api/v1", function () {
 
-    Route::get("/products", function ($request, $response) {
+    Router::get("/products", function ($request, $response) {
         return $response->json(["products" => [
             ["id" => 1, "name" => "Widget", "price" => 9.99],
             ["id" => 2, "name" => "Gadget", "price" => 19.99]
         ]]);
     });
 
-    Route::get("/products/{id:int}", function ($request, $response) {
+    Router::get("/products/{id:int}", function ($request, $response) {
         $id = $request->params["id"];
         return $response->json(["id" => $id, "name" => "Widget", "price" => 9.99]);
     });
 
-    Route::post("/products", function ($request, $response) {
+    Router::post("/products", function ($request, $response) {
         $body = $request->body;
         return $response->json([
             "id" => 3,
@@ -699,7 +699,7 @@ Create `src/routes/api-key-middleware.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 function validateApiKey($request, $response, $next) {
     $apiKey = $request->headers["X-API-Key"] ?? "";
@@ -719,9 +719,9 @@ function validateApiKey($request, $response, $next) {
     return $next($request, $response);
 }
 
-Route::group("/api/partner", function () {
+Router::group("/api/partner", function () {
 
-    Route::get("/data", function ($request, $response) {
+    Router::get("/data", function ($request, $response) {
         return $response->json([
             "authenticated_with" => $request->apiKey,
             "data" => [
@@ -731,7 +731,7 @@ Route::group("/api/partner", function () {
         ]);
     });
 
-    Route::get("/stats", function ($request, $response) {
+    Router::get("/stats", function ($request, $response) {
         return $response->json([
             "authenticated_with" => $request->apiKey,
             "stats" => [

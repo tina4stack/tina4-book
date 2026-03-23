@@ -47,13 +47,13 @@ Four differences matter:
 
 ## 3. Router::websocket() -- WebSocket as a Route
 
-Define WebSocket handlers with `Route::websocket()`:
+Define WebSocket handlers with `Router::websocket()`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::websocket("/ws/echo", function ($connection, $event, $data) {
+Router::websocket("/ws/echo", function ($connection, $event, $data) {
     if ($event === "message") {
         $connection->send("Echo: " . $data);
     }
@@ -95,9 +95,9 @@ Fires when a client connects:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::websocket("/ws/notifications", function ($connection, $event, $data) {
+Router::websocket("/ws/notifications", function ($connection, $event, $data) {
     if ($event === "open") {
         error_log("Client connected: " . $connection->id);
         $connection->send(json_encode([
@@ -114,7 +114,7 @@ Route::websocket("/ws/notifications", function ($connection, $event, $data) {
 Fires when a client sends data:
 
 ```php
-Route::websocket("/ws/notifications", function ($connection, $event, $data) {
+Router::websocket("/ws/notifications", function ($connection, $event, $data) {
     if ($event === "open") {
         $connection->send(json_encode([
             "type" => "welcome",
@@ -142,7 +142,7 @@ Route::websocket("/ws/notifications", function ($connection, $event, $data) {
 Fires when a client disconnects:
 
 ```php
-Route::websocket("/ws/notifications", function ($connection, $event, $data) {
+Router::websocket("/ws/notifications", function ($connection, $event, $data) {
     if ($event === "open") {
         error_log("Client connected: " . $connection->id);
     }
@@ -164,9 +164,9 @@ All three events in one handler:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::websocket("/ws/chat", function ($connection, $event, $data) {
+Router::websocket("/ws/chat", function ($connection, $event, $data) {
     switch ($event) {
         case "open":
             error_log("[Chat] New connection: " . $connection->id);
@@ -204,7 +204,7 @@ Route::websocket("/ws/chat", function ($connection, $event, $data) {
 `$connection->send()` targets the specific client that triggered the event:
 
 ```php
-Route::websocket("/ws/private", function ($connection, $event, $data) {
+Router::websocket("/ws/private", function ($connection, $event, $data) {
     if ($event === "message") {
         $message = json_decode($data, true);
         $action = $message["action"] ?? "";
@@ -239,9 +239,9 @@ Only the sender receives the response. Other connected clients see nothing.
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::websocket("/ws/announcements", function ($connection, $event, $data) {
+Router::websocket("/ws/announcements", function ($connection, $event, $data) {
     if ($event === "open") {
         // Tell everyone about the new connection
         $connection->broadcast(json_encode([
@@ -309,9 +309,9 @@ Different WebSocket paths are walls. Clients connected to `/ws/chat/room-1` neve
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::websocket("/ws/chat/{room}", function ($connection, $event, $data) {
+Router::websocket("/ws/chat/{room}", function ($connection, $event, $data) {
     $room = $connection->params["room"];
 
     if ($event === "open") {
@@ -371,11 +371,11 @@ Create `src/routes/chat-ws.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 $chatUsers = [];
 
-Route::websocket("/ws/livechat/{room}", function ($connection, $event, $data) use (&$chatUsers) {
+Router::websocket("/ws/livechat/{room}", function ($connection, $event, $data) use (&$chatUsers) {
     $room = $connection->params["room"];
 
     if ($event === "open") {
@@ -452,11 +452,11 @@ WebSocket pushes notifications to users in real time:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Queue;
 
 // WebSocket handler for notifications
-Route::websocket("/ws/notifications/{userId}", function ($connection, $event, $data) {
+Router::websocket("/ws/notifications/{userId}", function ($connection, $event, $data) {
     $userId = $connection->params["userId"];
 
     if ($event === "open") {
@@ -477,7 +477,7 @@ Route::websocket("/ws/notifications/{userId}", function ($connection, $event, $d
 });
 
 // HTTP endpoint that triggers a notification
-Route::post("/api/orders/{orderId:int}/ship", function ($request, $response) {
+Router::post("/api/orders/{orderId:int}/ship", function ($request, $response) {
     $orderId = $request->params["orderId"];
     $userId = $request->body["user_id"] ?? 0;
 
@@ -485,7 +485,7 @@ Route::post("/api/orders/{orderId:int}/ship", function ($request, $response) {
 
     // Send real-time notification via WebSocket
     // The notification is pushed to all connections on /ws/notifications/{userId}
-    Route::pushToWebSocket("/ws/notifications/" . $userId, json_encode([
+    Router::pushToWebSocket("/ws/notifications/" . $userId, json_encode([
         "type" => "notification",
         "title" => "Order Shipped",
         "message" => "Your order #" . $orderId . " has been shipped!",
@@ -497,7 +497,7 @@ Route::post("/api/orders/{orderId:int}/ship", function ($request, $response) {
 });
 ```
 
-`Route::pushToWebSocket()` bridges the gap. Your HTTP handlers send messages to WebSocket clients. Request-response meets real-time.
+`Router::pushToWebSocket()` bridges the gap. Your HTTP handlers send messages to WebSocket clients. Request-response meets real-time.
 
 ---
 
@@ -699,9 +699,9 @@ Create the route to serve the page:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/chat/{room}", function ($request, $response) {
+Router::get("/chat/{room}", function ($request, $response) {
     $room = $request->params["room"];
     return $response->render("chat.html", ["room" => $room]);
 });
@@ -746,11 +746,11 @@ Create `src/routes/chat-room.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 $roomUsers = [];
 
-Route::websocket("/ws/room/{roomName}", function ($connection, $event, $data) use (&$roomUsers) {
+Router::websocket("/ws/room/{roomName}", function ($connection, $event, $data) use (&$roomUsers) {
     $room = $connection->params["roomName"];
     $key = $room . ":" . $connection->id;
 
@@ -809,7 +809,7 @@ Route::websocket("/ws/room/{roomName}", function ($connection, $event, $data) us
     }
 });
 
-Route::get("/room/{roomName}", function ($request, $response) {
+Router::get("/room/{roomName}", function ($request, $response) {
     $room = $request->params["roomName"];
     return $response->render("room.html", ["room" => $room]);
 });

@@ -16,9 +16,9 @@ The fastest cache is at the HTTP response level. The `ResponseCache` middleware 
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/api/products", function ($request, $response) {
+Router::get("/api/products", function ($request, $response) {
     // This handler runs 12 database queries and takes 800ms
     // With ResponseCache, it only runs once every 5 minutes
 
@@ -93,7 +93,7 @@ Cache-Control: public, max-age=300
 The cache key includes the full URL with query parameters. `/api/products?page=1` and `/api/products?page=2` are cached separately:
 
 ```php
-Route::get("/api/products", function ($request, $response) {
+Router::get("/api/products", function ($request, $response) {
     $page = (int) ($request->query["page"] ?? 1);
     $limit = 20;
     $offset = ($page - 1) * $limit;
@@ -124,12 +124,12 @@ Do not use `ResponseCache` on:
 
 ```php
 // GOOD: Public, stable data
-Route::get("/api/categories", function ($request, $response) {
+Router::get("/api/categories", function ($request, $response) {
     return $response->json(["categories" => []]);
 }, "ResponseCache:3600"); // Cache for 1 hour
 
 // BAD: User-specific data -- do NOT cache
-Route::get("/api/profile", function ($request, $response) {
+Router::get("/api/profile", function ($request, $response) {
     return $response->json($request->user);
 }, "authMiddleware"); // No ResponseCache here
 ```
@@ -256,12 +256,12 @@ The most common caching pattern. Also called lazy loading:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Database;
 use function Tina4\cache_get;
 use function Tina4\cache_set;
 
-Route::get("/api/products/{id:int}", function ($request, $response) {
+Router::get("/api/products/{id:int}", function ($request, $response) {
     $id = $request->params["id"];
     $cacheKey = "product:" . $id;
 
@@ -336,10 +336,10 @@ Identical queries return cached results instead of hitting the database:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Database;
 
-Route::get("/api/categories", function ($request, $response) {
+Router::get("/api/categories", function ($request, $response) {
     $db = Database::getConnection();
 
     // First call: executes the query (20ms)
@@ -399,13 +399,13 @@ Clear the cache when the underlying data changes:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Database;
 use function Tina4\cache_set;
 use function Tina4\cache_delete;
 
 // Update a product
-Route::put("/api/products/{id:int}", function ($request, $response) {
+Router::put("/api/products/{id:int}", function ($request, $response) {
     $id = $request->params["id"];
     $body = $request->body;
     $db = Database::getConnection();
@@ -435,7 +435,7 @@ The most accurate strategy. The cache is always fresh after a write. The downsid
 Update the cache at the same time as the database:
 
 ```php
-Route::put("/api/products/{id:int}", function ($request, $response) {
+Router::put("/api/products/{id:int}", function ($request, $response) {
     $id = $request->params["id"];
     $body = $request->body;
     $db = Database::getConnection();
@@ -509,10 +509,10 @@ Monitor cache performance. Verify that caching helps:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use function Tina4\cache_stats;
 
-Route::get("/api/cache/stats", function ($request, $response) {
+Router::get("/api/cache/stats", function ($request, $response) {
     $stats = cache_stats();
 
     return $response->json($stats);
@@ -547,12 +547,12 @@ For maximum performance, layer multiple cache strategies:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Database;
 use function Tina4\cache_get;
 use function Tina4\cache_set;
 
-Route::get("/api/catalog", function ($request, $response) {
+Router::get("/api/catalog", function ($request, $response) {
     $page = (int) ($request->query["page"] ?? 1);
     $cacheKey = "catalog:page:" . $page;
 
@@ -655,7 +655,7 @@ Create `src/routes/store-cached.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use function Tina4\cache_get;
 use function Tina4\cache_set;
 use function Tina4\cache_delete;
@@ -676,7 +676,7 @@ function getProductStore() {
 }
 
 // List products with caching
-Route::get("/api/store/products", function ($request, $response) {
+Router::get("/api/store/products", function ($request, $response) {
     $category = $request->query["category"] ?? null;
     $page = (int) ($request->query["page"] ?? 1);
     $limit = (int) ($request->query["limit"] ?? 20);
@@ -728,7 +728,7 @@ Route::get("/api/store/products", function ($request, $response) {
 });
 
 // Create product and invalidate cache
-Route::post("/api/store/products", function ($request, $response) {
+Router::post("/api/store/products", function ($request, $response) {
     $body = $request->body;
 
     if (empty($body["name"])) {
@@ -776,7 +776,7 @@ Route::post("/api/store/products", function ($request, $response) {
 });
 
 // Cache statistics
-Route::get("/api/store/cache-stats", function ($request, $response) {
+Router::get("/api/store/cache-stats", function ($request, $response) {
     return $response->json(cache_stats());
 });
 ```

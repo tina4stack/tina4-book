@@ -2,9 +2,9 @@
 // Chapter 1 Example: Template Rendering Route
 // Place this file at src/routes/pages.php in your Tina4 project
 
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/products", function ($request, $response) {
+Router::get("/products", function ($request, $response) {
     $products = [
         [
             "name" => "Wireless Keyboard",

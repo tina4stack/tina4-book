@@ -272,7 +272,7 @@ Limit exceeded? The server returns `429 Too Many Requests` with a `Retry-After` 
 Override the limit on individual routes when the default does not fit:
 
 ```php
-Route::get("/api/expensive-operation", $handler)->rateLimit(10, 60);
+Router::get("/api/expensive-operation", $handler)->rateLimit(10, 60);
 // This route: 10 requests per 60 seconds
 // All other routes: default from .env
 ```

@@ -47,7 +47,7 @@ async def create_product(request, response):
 
 ```bash
 pip install tina4-python
-tina4 init my-project
+tina4 init python my-project
 cd my-project
 tina4 serve
 ```
@@ -61,14 +61,14 @@ tina4 serve
 ```php
 <?php
 // src/routes/products.php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/api/products", function ($request, $response) {
+Router::get("/api/products", function ($request, $response) {
     $products = Product::select(page: $request->query["page"] ?? 1);
     return $response->json($products);
 });
 
-Route::post("/api/products", function ($request, $response) {
+Router::post("/api/products", function ($request, $response) {
     $product = Product::create($request->body);
     return $response->json($product, 201);
 });
@@ -98,7 +98,7 @@ Route::post("/api/products", function ($request, $response) {
 
 ```bash
 composer require tina4/tina4-php
-tina4 init my-project
+tina4 init php my-project
 cd my-project
 tina4 serve
 ```
@@ -144,7 +144,7 @@ end
 
 ```bash
 gem install tina4
-tina4 init my-project
+tina4 init ruby my-project
 cd my-project
 tina4 serve
 ```
@@ -193,7 +193,7 @@ export default function handler(request, response) {
 
 ```bash
 npm install tina4
-tina4 init my-project
+tina4 init nodejs my-project
 cd my-project
 tina4 serve
 ```

@@ -2,10 +2,10 @@
 // Chapter 1 Example: Basic Greeting Route
 // Place this file at src/routes/greeting.php in your Tina4 project
 
-use Tina4\Route;
+use Tina4Router;
 
 // GET endpoint with a path parameter
-Route::get("/api/greeting/{name}", function ($request, $response) {
+Router::get("/api/greeting/{name}", function ($request, $response) {
     $name = $request->params["name"];
     return $response->json([
         "message" => "Hello, " . $name . "!",
@@ -14,7 +14,7 @@ Route::get("/api/greeting/{name}", function ($request, $response) {
 });
 
 // POST endpoint with a JSON body
-Route::post("/api/greeting", function ($request, $response) {
+Router::post("/api/greeting", function ($request, $response) {
     $name = $request->body["name"] ?? "World";
     $language = $request->body["language"] ?? "en";
 

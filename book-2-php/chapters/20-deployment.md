@@ -386,9 +386,9 @@ You can extend the health check to include your own checks:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/health/detailed", function ($request, $response) {
+Router::get("/health/detailed", function ($request, $response) {
     $checks = [
         "database" => false,
         "cache" => false,

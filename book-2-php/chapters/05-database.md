@@ -81,10 +81,10 @@ Access the database through the global `Tina4\Database` class:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Database;
 
-Route::get("/api/test-db", function ($request, $response) {
+Router::get("/api/test-db", function ($request, $response) {
     $db = Database::getConnection();
 
     $result = $db->fetch("SELECT 1 + 1 AS answer");
@@ -150,10 +150,10 @@ $db->execute("CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, message T
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Database;
 
-Route::get("/api/products", function ($request, $response) {
+Router::get("/api/products", function ($request, $response) {
     $db = Database::getConnection();
 
     $products = $db->fetch("SELECT * FROM products ORDER BY name");
@@ -215,10 +215,10 @@ The database driver handles escaping. Your input never touches the SQL string.
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Database;
 
-Route::get("/api/products/search", function ($request, $response) {
+Router::get("/api/products/search", function ($request, $response) {
     $db = Database::getConnection();
 
     $q = $request->query["q"] ?? "";
@@ -265,10 +265,10 @@ Multiple operations that must succeed or fail together:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Database;
 
-Route::post("/api/orders", function ($request, $response) {
+Router::post("/api/orders", function ($request, $response) {
     $db = Database::getConnection();
     $body = $request->body;
 
@@ -366,10 +366,10 @@ if ($db->tableExists("products")) {
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Database;
 
-Route::get("/api/schema", function ($request, $response) {
+Router::get("/api/schema", function ($request, $response) {
     $db = Database::getConnection();
     $tables = $db->getTables();
 
@@ -670,11 +670,11 @@ Create `src/routes/notes.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 use Tina4\Database;
 
 // List all notes with optional filters
-Route::get("/api/notes", function ($request, $response) {
+Router::get("/api/notes", function ($request, $response) {
     $db = Database::getConnection();
 
     $tag = $request->query["tag"] ?? "";
@@ -709,7 +709,7 @@ Route::get("/api/notes", function ($request, $response) {
 });
 
 // Get a single note
-Route::get("/api/notes/{id:int}", function ($request, $response) {
+Router::get("/api/notes/{id:int}", function ($request, $response) {
     $db = Database::getConnection();
     $id = $request->params["id"];
 
@@ -723,7 +723,7 @@ Route::get("/api/notes/{id:int}", function ($request, $response) {
 });
 
 // Create a note
-Route::post("/api/notes", function ($request, $response) {
+Router::post("/api/notes", function ($request, $response) {
     $db = Database::getConnection();
     $body = $request->body;
 
@@ -754,7 +754,7 @@ Route::post("/api/notes", function ($request, $response) {
 });
 
 // Update a note
-Route::put("/api/notes/{id:int}", function ($request, $response) {
+Router::put("/api/notes/{id:int}", function ($request, $response) {
     $db = Database::getConnection();
     $id = $request->params["id"];
     $body = $request->body;
@@ -781,7 +781,7 @@ Route::put("/api/notes/{id:int}", function ($request, $response) {
 });
 
 // Delete a note
-Route::delete("/api/notes/{id:int}", function ($request, $response) {
+Router::delete("/api/notes/{id:int}", function ($request, $response) {
     $db = Database::getConnection();
     $id = $request->params["id"];
 

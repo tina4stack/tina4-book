@@ -2,9 +2,9 @@
 // Chapter 1 Solution: Exercise B - Product List Route
 // Place this file at src/routes/store.php in your Tina4 project
 
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/store", function ($request, $response) {
+Router::get("/store", function ($request, $response) {
     $products = [
         ["name" => "Espresso Machine", "category" => "Kitchen", "price" => 299.99, "featured" => true],
         ["name" => "Yoga Mat", "category" => "Fitness", "price" => 29.99, "featured" => false],

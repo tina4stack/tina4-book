@@ -10,9 +10,9 @@ The simplest possible route:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/hello", function ($request, $response) {
+Router::get("/hello", function ($request, $response) {
     return $response->json(["message" => "Hello, World!"]);
 });
 ```
@@ -33,27 +33,27 @@ Five methods. Five static calls on the `Route` class.
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/products", function ($request, $response) {
+Router::get("/products", function ($request, $response) {
     return $response->json(["action" => "list all products"]);
 });
 
-Route::post("/products", function ($request, $response) {
+Router::post("/products", function ($request, $response) {
     return $response->json(["action" => "create a product"], 201);
 });
 
-Route::put("/products/{id}", function ($request, $response) {
+Router::put("/products/{id}", function ($request, $response) {
     $id = $request->params["id"];
     return $response->json(["action" => "replace product " . $id]);
 });
 
-Route::patch("/products/{id}", function ($request, $response) {
+Router::patch("/products/{id}", function ($request, $response) {
     $id = $request->params["id"];
     return $response->json(["action" => "update product " . $id]);
 });
 
-Route::delete("/products/{id}", function ($request, $response) {
+Router::delete("/products/{id}", function ($request, $response) {
     $id = $request->params["id"];
     return $response->json(["action" => "delete product " . $id]);
 });
@@ -113,9 +113,9 @@ Curly braces capture values from the URL.
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/users/{id}/posts/{postId}", function ($request, $response) {
+Router::get("/users/{id}/posts/{postId}", function ($request, $response) {
     $userId = $request->params["id"];
     $postId = $request->params["postId"];
 
@@ -142,9 +142,9 @@ Add a colon and a type to enforce constraints:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/orders/{id:int}", function ($request, $response) {
+Router::get("/orders/{id:int}", function ($request, $response) {
     $id = $request->params["id"]; // This is now an integer
     return $response->json([
         "order_id" => $id,
@@ -188,9 +188,9 @@ Key-value pairs after the `?` in a URL. Access them through `$request->query`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/search", function ($request, $response) {
+Router::get("/search", function ($request, $response) {
     $q = $request->query["q"] ?? "";
     $page = (int) ($request->query["page"] ?? 1);
     $limit = (int) ($request->query["limit"] ?? 10);
@@ -222,24 +222,24 @@ Shared prefix. No repetition.
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::group("/api/v1", function () {
+Router::group("/api/v1", function () {
 
-    Route::get("/users", function ($request, $response) {
+    Router::get("/users", function ($request, $response) {
         return $response->json(["users" => []]);
     });
 
-    Route::get("/users/{id:int}", function ($request, $response) {
+    Router::get("/users/{id:int}", function ($request, $response) {
         $id = $request->params["id"];
         return $response->json(["user" => ["id" => $id, "name" => "Alice"]]);
     });
 
-    Route::post("/users", function ($request, $response) {
+    Router::post("/users", function ($request, $response) {
         return $response->json(["created" => true], 201);
     });
 
-    Route::get("/products", function ($request, $response) {
+    Router::get("/products", function ($request, $response) {
         return $response->json(["products" => []]);
     });
 });
@@ -267,17 +267,17 @@ Groups nest:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::group("/api", function () {
-    Route::group("/v1", function () {
-        Route::get("/status", function ($request, $response) {
+Router::group("/api", function () {
+    Router::group("/v1", function () {
+        Router::get("/status", function ($request, $response) {
             return $response->json(["version" => "1.0"]);
         });
     });
 
-    Route::group("/v2", function () {
-        Route::get("/status", function ($request, $response) {
+    Router::group("/v2", function () {
+        Router::get("/status", function ($request, $response) {
             return $response->json(["version" => "2.0"]);
         });
     });
@@ -312,7 +312,7 @@ Pass the middleware name as the third argument:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 function logRequest($request, $response, $next) {
     $start = microtime(true);
@@ -326,7 +326,7 @@ function logRequest($request, $response, $next) {
     return $result;
 }
 
-Route::get("/api/data", function ($request, $response) {
+Router::get("/api/data", function ($request, $response) {
     return $response->json(["data" => [1, 2, 3]]);
 }, "logRequest");
 ```
@@ -339,7 +339,7 @@ A gate that checks for an API key:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 function requireApiKey($request, $response, $next) {
     $apiKey = $request->headers["X-API-Key"] ?? "";
@@ -351,7 +351,7 @@ function requireApiKey($request, $response, $next) {
     return $next($request, $response);
 }
 
-Route::get("/api/secret", function ($request, $response) {
+Router::get("/api/secret", function ($request, $response) {
     return $response->json(["secret" => "The answer is 42"]);
 }, "requireApiKey");
 ```
@@ -376,11 +376,11 @@ curl http://localhost:7146/api/secret -H "X-API-Key: my-secret-key"
 
 ### Middleware on a Group
 
-Third argument to `Route::group()`. Every route inside inherits it.
+Third argument to `Router::group()`. Every route inside inherits it.
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 function requireAuth($request, $response, $next) {
     $token = $request->headers["Authorization"] ?? "";
@@ -392,13 +392,13 @@ function requireAuth($request, $response, $next) {
     return $next($request, $response);
 }
 
-Route::group("/api/admin", function () {
+Router::group("/api/admin", function () {
 
-    Route::get("/dashboard", function ($request, $response) {
+    Router::get("/dashboard", function ($request, $response) {
         return $response->json(["page" => "admin dashboard"]);
     });
 
-    Route::get("/users", function ($request, $response) {
+    Router::get("/users", function ($request, $response) {
         return $response->json(["page" => "user management"]);
     });
 
@@ -412,7 +412,7 @@ No per-route repetition. The group handles it.
 Pass an array. They run in order.
 
 ```php
-Route::get("/api/important", function ($request, $response) {
+Router::get("/api/important", function ($request, $response) {
     return $response->json(["data" => "important stuff"]);
 }, ["logRequest", "requireApiKey", "requireAuth"]);
 ```
@@ -431,12 +431,12 @@ When your application has global authentication, `@noauth` exempts specific rout
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 /**
  * @noauth
  */
-Route::get("/api/public/info", function ($request, $response) {
+Router::get("/api/public/info", function ($request, $response) {
     return $response->json([
         "app" => "My Store",
         "version" => "1.0.0"
@@ -452,12 +452,12 @@ The `@noauth` decorator tells Tina4 to skip authentication for this route, even 
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 /**
  * @secured
  */
-Route::get("/api/profile", function ($request, $response) {
+Router::get("/api/profile", function ($request, $response) {
     // $request->user is populated by the auth middleware
     return $response->json([
         "user" => $request->user
@@ -477,9 +477,9 @@ A `*` at the end of a path matches everything after it:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/docs/*", function ($request, $response) {
+Router::get("/docs/*", function ($request, $response) {
     $path = $request->params["*"] ?? "";
     return $response->json([
         "section" => "docs",
@@ -510,9 +510,9 @@ Handle any unmatched URL:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/*", function ($request, $response) {
+Router::get("/*", function ($request, $response) {
     return $response->json([
         "error" => "Page not found",
         "path" => $request->path
@@ -699,7 +699,7 @@ Create `src/routes/product-api.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 // In-memory product store (resets on server restart)
 $products = [
@@ -713,7 +713,7 @@ $products = [
 $nextId = 6;
 
 // List all products, optionally filter by category
-Route::get("/api/products", function ($request, $response) use (&$products) {
+Router::get("/api/products", function ($request, $response) use (&$products) {
     $category = $request->query["category"] ?? null;
 
     if ($category !== null) {
@@ -728,7 +728,7 @@ Route::get("/api/products", function ($request, $response) use (&$products) {
 });
 
 // Get a single product by ID
-Route::get("/api/products/{id:int}", function ($request, $response) use (&$products) {
+Router::get("/api/products/{id:int}", function ($request, $response) use (&$products) {
     $id = $request->params["id"];
 
     foreach ($products as $product) {
@@ -741,7 +741,7 @@ Route::get("/api/products/{id:int}", function ($request, $response) use (&$produ
 });
 
 // Create a new product
-Route::post("/api/products", function ($request, $response) use (&$products, &$nextId) {
+Router::post("/api/products", function ($request, $response) use (&$products, &$nextId) {
     $body = $request->body;
 
     if (empty($body["name"])) {
@@ -762,7 +762,7 @@ Route::post("/api/products", function ($request, $response) use (&$products, &$n
 });
 
 // Replace a product
-Route::put("/api/products/{id:int}", function ($request, $response) use (&$products) {
+Router::put("/api/products/{id:int}", function ($request, $response) use (&$products) {
     $id = $request->params["id"];
     $body = $request->body;
 
@@ -783,7 +783,7 @@ Route::put("/api/products/{id:int}", function ($request, $response) use (&$produ
 });
 
 // Delete a product
-Route::delete("/api/products/{id:int}", function ($request, $response) use (&$products) {
+Router::delete("/api/products/{id:int}", function ($request, $response) use (&$products) {
     $id = $request->params["id"];
 
     foreach ($products as $index => $product) {
@@ -861,11 +861,11 @@ Not found:
 
 ### 3. Method Conflicts
 
-**Problem:** `Route::get("/items/{id}", ...)` and `Route::get("/items/{action}", ...)` collide. The wrong handler runs.
+**Problem:** `Router::get("/items/{id}", ...)` and `Router::get("/items/{action}", ...)` collide. The wrong handler runs.
 
 **Cause:** Both patterns match `/items/42`. First registration wins.
 
-**Fix:** Use typed parameters to disambiguate: `Route::get("/items/{id:int}", ...)` matches only integers, leaving `/items/export` free. Or restructure: `/items/{id:int}` and `/items/actions/{action}`.
+**Fix:** Use typed parameters to disambiguate: `Router::get("/items/{id:int}", ...)` matches only integers, leaving `/items/export` free. Or restructure: `/items/{id:int}` and `/items/actions/{action}`.
 
 ### 4. Route Handler Must Return a Response
 
@@ -893,6 +893,6 @@ Not found:
 
 ### 7. Group Prefix Must Start with a Slash
 
-**Problem:** `Route::group("api/v1", ...)` produces routes that do not match.
+**Problem:** `Router::group("api/v1", ...)` produces routes that do not match.
 
-**Fix:** Always start group prefixes with `/`: `Route::group("/api/v1", ...)`.
+**Fix:** Always start group prefixes with `/`: `Router::group("/api/v1", ...)`.

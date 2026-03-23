@@ -7,9 +7,9 @@
 // 2. Counts featured products
 // 3. Renders the store.html template with the data
 
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/store", function ($request, $response) {
+Router::get("/store", function ($request, $response) {
     $products = [
         ["name" => "Espresso Machine", "category" => "Kitchen", "price" => 299.99, "featured" => true],
         ["name" => "Yoga Mat", "category" => "Fitness", "price" => 29.99, "featured" => false],

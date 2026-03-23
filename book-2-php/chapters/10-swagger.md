@@ -87,14 +87,14 @@ Doc-block comments above route definitions:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 /**
  * List all products
  * @description Returns a paginated list of all products in the catalog
  * @tags Products
  */
-Route::get("/api/products", function ($request, $response) {
+Router::get("/api/products", function ($request, $response) {
     return $response->json(["products" => []]);
 });
 ```
@@ -110,7 +110,7 @@ First line becomes the `summary`. `@description` provides detail. `@tags` groups
  * @tags Products
  * @param int $id The unique product identifier
  */
-Route::get("/api/products/{id:int}", function ($request, $response) {
+Router::get("/api/products/{id:int}", function ($request, $response) {
     $id = $request->params["id"];
     return $response->json([
         "id" => $id,
@@ -136,7 +136,7 @@ Route::get("/api/products/{id:int}", function ($request, $response) {
  * @query int $page Page number (default: 1)
  * @query int $limit Items per page (default: 20, max: 100)
  */
-Route::get("/api/products/search", function ($request, $response) {
+Router::get("/api/products/search", function ($request, $response) {
     $q = $request->query["q"] ?? "";
     $page = (int) ($request->query["page"] ?? 1);
     $limit = min((int) ($request->query["limit"] ?? 20), 100);
@@ -168,7 +168,7 @@ Each `@query` adds a parameter to the docs with type and description.
  * @response 201 {"id": "int", "name": "string", "category": "string", "price": "float", "in_stock": "bool", "created_at": "string"}
  * @response 400 {"error": "string"}
  */
-Route::post("/api/products", function ($request, $response) {
+Router::post("/api/products", function ($request, $response) {
     $body = $request->body;
 
     if (empty($body["name"])) {
@@ -201,7 +201,7 @@ Route::post("/api/products", function ($request, $response) {
  * @response 404 {"error": "string", "id": "int"}
  * @response 400 {"error": "string"}
  */
-Route::put("/api/products/{id:int}", function ($request, $response) {
+Router::put("/api/products/{id:int}", function ($request, $response) {
     $id = $request->params["id"];
     $body = $request->body;
 
@@ -233,7 +233,7 @@ Tags organize the Swagger UI. Without tags: one flat list. With tags: collapsibl
  * List all users
  * @tags Users
  */
-Route::get("/api/users", function ($request, $response) {
+Router::get("/api/users", function ($request, $response) {
     return $response->json(["users" => []]);
 });
 
@@ -241,7 +241,7 @@ Route::get("/api/users", function ($request, $response) {
  * Get user by ID
  * @tags Users
  */
-Route::get("/api/users/{id:int}", function ($request, $response) {
+Router::get("/api/users/{id:int}", function ($request, $response) {
     return $response->json(["id" => $request->params["id"], "name" => "Alice"]);
 });
 
@@ -249,7 +249,7 @@ Route::get("/api/users/{id:int}", function ($request, $response) {
  * List all orders
  * @tags Orders
  */
-Route::get("/api/orders", function ($request, $response) {
+Router::get("/api/orders", function ($request, $response) {
     return $response->json(["orders" => []]);
 });
 
@@ -257,7 +257,7 @@ Route::get("/api/orders", function ($request, $response) {
  * Create an order
  * @tags Orders
  */
-Route::post("/api/orders", function ($request, $response) {
+Router::post("/api/orders", function ($request, $response) {
     return $response->json(["order_id" => 1], 201);
 });
 
@@ -265,7 +265,7 @@ Route::post("/api/orders", function ($request, $response) {
  * List all products
  * @tags Products
  */
-Route::get("/api/products", function ($request, $response) {
+Router::get("/api/products", function ($request, $response) {
     return $response->json(["products" => []]);
 });
 ```
@@ -281,7 +281,7 @@ An endpoint in multiple groups:
  * Get user's orders
  * @tags Users, Orders
  */
-Route::get("/api/users/{id:int}/orders", function ($request, $response) {
+Router::get("/api/users/{id:int}/orders", function ($request, $response) {
     return $response->json(["orders" => []]);
 });
 ```
@@ -302,7 +302,7 @@ Realistic data instead of type names:
  * @example request {"name": "Ergonomic Keyboard", "category": "Electronics", "price": 89.99, "in_stock": true, "description": "Split keyboard with adjustable tenting"}
  * @example response {"id": 42, "name": "Ergonomic Keyboard", "category": "Electronics", "price": 89.99, "in_stock": true, "created_at": "2026-03-22T14:30:00+00:00"}
  */
-Route::post("/api/products", function ($request, $response) {
+Router::post("/api/products", function ($request, $response) {
     $body = $request->body;
 
     return $response->json([
@@ -421,7 +421,7 @@ All annotation features together:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 /**
  * List all users
@@ -434,7 +434,7 @@ use Tina4\Route;
  * @response 200 {"users": [{"id": "int", "name": "string", "email": "string", "role": "string"}], "total": "int", "page": "int", "pages": "int"}
  * @example response {"users": [{"id": 1, "name": "Alice", "email": "alice@example.com", "role": "admin"}, {"id": 2, "name": "Bob", "email": "bob@example.com", "role": "user"}], "total": 42, "page": 1, "pages": 3}
  */
-Route::get("/api/users", function ($request, $response) {
+Router::get("/api/users", function ($request, $response) {
     $page = (int) ($request->query["page"] ?? 1);
     $limit = (int) ($request->query["limit"] ?? 20);
 
@@ -458,7 +458,7 @@ Route::get("/api/users", function ($request, $response) {
  * @response 404 {"error": "string"}
  * @example response {"id": 1, "name": "Alice", "email": "alice@example.com", "role": "admin", "created_at": "2026-01-15T10:30:00+00:00"}
  */
-Route::get("/api/users/{id:int}", function ($request, $response) {
+Router::get("/api/users/{id:int}", function ($request, $response) {
     $id = $request->params["id"];
 
     if ($id > 100) {
@@ -485,7 +485,7 @@ Route::get("/api/users/{id:int}", function ($request, $response) {
  * @example request {"name": "Charlie", "email": "charlie@example.com", "password": "securePass123", "role": "user"}
  * @example response {"id": 3, "name": "Charlie", "email": "charlie@example.com", "role": "user", "created_at": "2026-03-22T14:30:00+00:00"}
  */
-Route::post("/api/users", function ($request, $response) {
+Router::post("/api/users", function ($request, $response) {
     $body = $request->body;
 
     $errors = [];
@@ -514,7 +514,7 @@ Route::post("/api/users", function ($request, $response) {
  * @response 204
  * @response 404 {"error": "string"}
  */
-Route::delete("/api/users/{id:int}", function ($request, $response) {
+Router::delete("/api/users/{id:int}", function ($request, $response) {
     $id = $request->params["id"];
 
     if ($id > 100) {
@@ -566,7 +566,7 @@ Create `src/routes/user-api-documented.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
 /**
  * Update a user
@@ -580,7 +580,7 @@ use Tina4\Route;
  * @example request {"name": "Alice Smith", "email": "alice.smith@example.com", "role": "admin"}
  * @example response {"id": 1, "name": "Alice Smith", "email": "alice.smith@example.com", "role": "admin", "updated_at": "2026-03-22T14:30:00+00:00"}
  */
-Route::put("/api/users/{id:int}", function ($request, $response) {
+Router::put("/api/users/{id:int}", function ($request, $response) {
     $id = $request->params["id"];
     $body = $request->body;
 
@@ -609,7 +609,7 @@ Route::put("/api/users/{id:int}", function ($request, $response) {
  * @response 404 {"error": "string"}
  * @example response {"orders": [{"id": 101, "product": "Wireless Keyboard", "quantity": 2, "total": 159.98, "status": "shipped", "created_at": "2026-03-20T10:00:00+00:00"}], "total": 5, "page": 1}
  */
-Route::get("/api/users/{id:int}/orders", function ($request, $response) {
+Router::get("/api/users/{id:int}/orders", function ($request, $response) {
     $id = $request->params["id"];
     $status = $request->query["status"] ?? null;
     $page = (int) ($request->query["page"] ?? 1);
@@ -642,7 +642,7 @@ Route::get("/api/users/{id:int}/orders", function ($request, $response) {
  * @example request {"avatar_url": "https://cdn.example.com/avatars/alice-2026.jpg"}
  * @example response {"id": 1, "avatar_url": "https://cdn.example.com/avatars/alice-2026.jpg", "updated_at": "2026-03-22T14:30:00+00:00"}
  */
-Route::post("/api/users/{id:int}/avatar", function ($request, $response) {
+Router::post("/api/users/{id:int}/avatar", function ($request, $response) {
     $id = $request->params["id"];
     $body = $request->body;
 
@@ -678,9 +678,9 @@ Visit `http://localhost:7146/swagger`. Verify:
 
 **Problem:** Swagger annotations missing from the docs.
 
-**Cause:** Blank line or code between the doc-block and `Route::`. Tina4 reads only doc-blocks immediately above the route definition.
+**Cause:** Blank line or code between the doc-block and `Router::`. Tina4 reads only doc-blocks immediately above the route definition.
 
-**Fix:** `*/` must be on the line directly before `Route::get(...)`. No blank lines.
+**Fix:** `*/` must be on the line directly before `Router::get(...)`. No blank lines.
 
 ### 2. Missing @tags Makes Endpoints Hard to Find
 

@@ -88,7 +88,7 @@ The router listens. A request arrives. Method and path are matched against regis
 
 ```php
 // PHP
-Route::get("/api/products/{id:int}", function ($request, $response) {
+Router::get("/api/products/{id:int}", function ($request, $response) {
     // Only matches if {id} is an integer
 });
 ```
@@ -152,7 +152,7 @@ function logRequests($request, $response, $next) {
     return $result;
 }
 
-Route::get("/api/users", $handler)->middleware([logRequests]);
+Router::get("/api/users", $handler)->middleware([logRequests]);
 ```
 
 A middleware receives the request, calls `$next` to continue the chain, and returns the result. Skip the `$next` call and the request stops right there. Short-circuit. The handler never runs. This is how auth guards work -- no valid token, no entry.

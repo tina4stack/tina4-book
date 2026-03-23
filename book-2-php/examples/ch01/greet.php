@@ -2,9 +2,9 @@
 // Chapter 1 Solution: Exercise A - Greeting API
 // Place this file at src/routes/greet.php in your Tina4 project
 
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/api/greet", function ($request, $response) {
+Router::get("/api/greet", function ($request, $response) {
     $name = $request->query["name"] ?? "Stranger";
     $hour = (int) date("G");
 

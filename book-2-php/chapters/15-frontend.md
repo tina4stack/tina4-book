@@ -728,9 +728,9 @@ Create `src/routes/admin.php`:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/admin", function ($request, $response) {
+Router::get("/admin", function ($request, $response) {
     $stats = [
         ["label" => "Total Users", "value" => "1,247", "change" => 12, "direction" => "up"],
         ["label" => "Revenue", "value" => "$34,500", "change" => 8, "direction" => "up"],
@@ -1024,7 +1024,7 @@ Create `src/templates/admin/users.html`:
 Create the route for the users page:
 
 ```php
-Route::get("/admin/users", function ($request, $response) {
+Router::get("/admin/users", function ($request, $response) {
     return $response->render("admin/users.html", [
         "active_page" => "users",
         "user_name" => "Admin",
@@ -1056,7 +1056,7 @@ Build an admin dashboard with the following features:
 Create a route that populates sample data:
 
 ```php
-Route::get("/admin/seed", function ($request, $response) {
+Router::get("/admin/seed", function ($request, $response) {
     $products = [
         ["name" => "Wireless Keyboard", "category" => "Electronics", "price" => 79.99, "in_stock" => true],
         ["name" => "USB-C Hub", "category" => "Electronics", "price" => 49.99, "in_stock" => true],
@@ -1107,9 +1107,9 @@ The key route handlers are:
 
 ```php
 <?php
-use Tina4\Route;
+use Tina4Router;
 
-Route::get("/admin", function ($request, $response) {
+Router::get("/admin", function ($request, $response) {
     $product = new Product();
     $allProducts = $product->select("*");
     $inStockCount = count(array_filter($allProducts, fn($p) => $p->inStock));
@@ -1132,7 +1132,7 @@ Route::get("/admin", function ($request, $response) {
     ]);
 });
 
-Route::get("/admin/products", function ($request, $response) {
+Router::get("/admin/products", function ($request, $response) {
     return $response->render("admin/products.html", [
         "active_page" => "products",
         "pending_orders" => 0
