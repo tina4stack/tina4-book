@@ -123,13 +123,30 @@
 21. [Building a Complete App](book-4-nodejs/chapters/21-complete-app.md)
 22. [Vibe Coding with AI](book-4-nodejs/chapters/22-vibe-coding-with-ai.md)
 
-### Book 5: Tina4-js Frontend Framework — *Coming soon*
+### Book 5: tina4-js — The Sub-3KB Reactive Frontend Framework
+
+[📥 Download PDF](book-5-javascript/Tina4-for-JavaScript-Developers.pdf)
+
+1. [Getting Started](book-5-javascript/chapters/01-getting-started.md)
+2. [Signals](book-5-javascript/chapters/02-signals.md)
+3. [HTML Templates](book-5-javascript/chapters/03-html-templates.md)
+4. [Components](book-5-javascript/chapters/04-components.md)
+5. [Routing](book-5-javascript/chapters/05-routing.md)
+6. [API](book-5-javascript/chapters/06-api.md)
+7. [WebSocket](book-5-javascript/chapters/07-websocket.md)
+8. [PWA](book-5-javascript/chapters/08-pwa.md)
+9. [Debug Overlay](book-5-javascript/chapters/09-debug.md)
+10. [tina4-css](book-5-javascript/chapters/10-tina4-css.md)
+11. [Backend Integration](book-5-javascript/chapters/11-backend-integration.md)
+12. [Building a Complete App](book-5-javascript/chapters/12-building-a-complete-app.md)
+13. [Patterns and Pitfalls](book-5-javascript/chapters/13-patterns-and-pitfalls.md)
+14. [Vibe Coding with AI](book-5-javascript/chapters/14-vibe-coding-with-ai.md)
 
 ---
 
 ## About
 
-Each book follows the same 22-chapter structure with language-specific code. A PHP developer and a Python developer reading the same chapter learn the same concept — just in their language.
+Each book follows the same structure with language-specific code. A PHP developer and a Python developer reading the same chapter learn the same concept — just in their language. Book 5 covers the tina4-js frontend framework that works standalone or alongside any tina4 backend.
 
 Every chapter includes:
 - Real-world use case scenario
@@ -138,7 +155,7 @@ Every chapter includes:
 - Exercise with full solution
 - Common gotchas and fixes
 
-**Total: 200,000+ words | 88 chapters | ~660 printed pages**
+**Total: 225,000+ words | 102 chapters | 6 books | ~750 printed pages**
 
 ---
 

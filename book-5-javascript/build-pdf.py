@@ -10,7 +10,7 @@ from reportlab.lib.units import inch, mm
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_JUSTIFY
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, PageBreak,
-    Preformatted, Table, TableStyle, KeepTogether
+    Preformatted, Table, TableStyle, KeepTogether, Image
 )
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -76,7 +76,7 @@ styles.add(ParagraphStyle(
 styles.add(ParagraphStyle(
     'Body', parent=styles['Normal'],
     fontSize=10, leading=14, textColor=black,
-    alignment=TA_JUSTIFY, spaceAfter=8,
+    alignment=TA_LEFT, spaceAfter=8,
 ))
 styles.add(ParagraphStyle(
     'CodeBlock', parent=styles['Code'],
@@ -178,7 +178,7 @@ def parse_markdown_to_flowables(filepath):
         # Code blocks
         if line.startswith('```'):
             if in_code_block:
-                code_text = escape_xml('\n'.join(code_lines))
+                code_text = '\n'.join(code_lines)
                 flowables.append(Preformatted(code_text, styles['CodeBlock']))
                 code_lines = []
                 in_code_block = False
@@ -342,6 +342,14 @@ def build_pdf():
     story = []
 
     # ── Title page (README.md) ───────────────────────────────────────
+    logo_path = os.path.join(BOOK_DIR, 'logo.png')
+    if os.path.exists(logo_path):
+        story.append(Spacer(1, 40))
+        logo = Image(logo_path, width=1.5*inch, height=1.5*inch)
+        logo.hAlign = 'CENTER'
+        story.append(logo)
+        story.append(Spacer(1, 20))
+
     readme_path = os.path.join(BOOK_DIR, CHAPTERS[0])
     story.extend(parse_markdown_to_flowables(readme_path))
     story.append(PageBreak())
