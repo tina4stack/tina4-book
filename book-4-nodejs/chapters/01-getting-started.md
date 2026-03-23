@@ -147,7 +147,7 @@ tina4 serve
   | | | | | | | (_| |__   _|
   |_| |_|_| |_|\__,_|  |_|
 
-  Tina4 Node.js v3.0.0
+  Tina4 Node.js v3.2.1
   Server running at http://0.0.0.0:7148
   Debug mode: ON
   Database: sqlite:///data/app.db
@@ -167,7 +167,7 @@ curl http://localhost:7148/health
   "status": "ok",
   "database": "connected",
   "uptime_seconds": 12,
-  "version": "3.0.0",
+  "version": "3.2.1",
   "framework": "tina4-nodejs"
 }
 ```
@@ -607,7 +607,7 @@ npx tsx app.ts
   | | | | | | | (_| |__   _|
   |_| |_|_| |_|\__,_|  |_|
 
-  Tina4 Node.js v3.0.0
+  Tina4 Node.js v3.2.1
   Server running at http://0.0.0.0:7148
 ```
 

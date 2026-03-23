@@ -73,7 +73,17 @@ TINA4_SESSION_PORT=6379
 
 ---
 
-## 6. Reading and Writing Session Data
+## 6. Database Sessions
+
+```env
+TINA4_SESSION_BACKEND=database
+```
+
+Stores sessions in the `tina4_session` table using your existing database connection (`DATABASE_URL`). The table is auto-created on first use. Works with all 5 database engines (SQLite, PostgreSQL, MySQL, MSSQL, Firebird).
+
+---
+
+## 7. Reading and Writing Session Data
 
 ```typescript
 import { Router } from "tina4-nodejs";
