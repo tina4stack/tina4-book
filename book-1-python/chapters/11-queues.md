@@ -88,11 +88,7 @@ message_id = queue.push({
 
 The `topic` argument names the queue. The payload is any dictionary that can be serialized to JSON.
 
-You can also pass a database connection to the constructor:
-
-```python
-queue = Queue(db, topic="emails")
-```
+> **Backend configuration:** The queue backend is selected via environment variables, not constructor parameters. Set `TINA4_QUEUE_BACKEND` to `sqlite` (default), `rabbitmq`, `kafka`, or `mongodb`. For the SQLite backend, the `DATABASE_URL` environment variable controls the database path. See Section 2 and Section 8 for full details.
 
 ### Convenience Method: produce
 
