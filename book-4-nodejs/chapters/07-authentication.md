@@ -25,29 +25,40 @@ const payload = {
     role: "admin"
 };
 
-const token = Auth.createToken(payload);
+const token = Auth.getToken(payload, secret);
 ```
+
+`getToken()` signs the payload with HS256 (HMAC-SHA256) and returns a JWT string. The `secret` parameter is optional -- if omitted, Tina4 reads from the `SECRET` env var.
+
+> **Legacy aliases:** `Auth.getToken()` and the standalone `getToken()` function still work. Use the primary name in new code.
 
 ### Token Expiry
 
 Configure in `.env`:
 
 ```env
-TINA4_JWT_EXPIRY=3600
+TINA4_TOKEN_EXPIRES_IN=60
 ```
+
+The value is in **minutes**:
 
 | Value | Duration |
 |-------|----------|
-| `900` | 15 minutes |
-| `3600` | 1 hour (default) |
-| `86400` | 24 hours |
-| `604800` | 7 days |
+| `15` | 15 minutes |
+| `60` | 1 hour (default) |
+| `1440` | 24 hours |
+| `10080` | 7 days |
 
 ### Validating a Token
 
 ```typescript
-const isValid = Auth.validToken(token);
+const payload = Auth.validToken(token, secret);
+// Returns the payload object if valid, null if invalid or expired
 ```
+
+`validToken()` returns the decoded payload on success, not a boolean. This lets you validate and read the token in one step. Returns `null` if the token is invalid or expired.
+
+> **Legacy alias:** `Auth.validateToken()` and the standalone `validToken()` function work the same way.
 
 ### Reading the Payload
 
@@ -56,13 +67,21 @@ const payload = Auth.getPayload(token);
 // Returns: { user_id: 42, email: "alice@example.com", role: "admin", iat: ..., exp: ... }
 ```
 
-### The Secret Key
+Returns the decoded payload **without validation** -- it just decodes the token. Returns `null` if the token cannot be decoded.
 
-Tina4 generates a random key at `secrets/jwt.key` on first run. Or set it yourself:
+> **Important:** `getPayload()` does not verify the signature or check expiry. Use `validToken()` when you need to confirm the token is trustworthy.
+
+### The Secret Key and Algorithm
+
+Tina4 Node.js uses **HS256** (HMAC-SHA256) for JWT signing. It uses only the standard library -- zero external dependencies.
+
+Set the secret key in `.env`:
 
 ```env
-TINA4_JWT_SECRET=my-very-long-and-random-secret-key-at-least-32-chars
+SECRET=my-super-secret-key-at-least-32-chars
 ```
+
+The `secret` parameter on `getToken()` and `validToken()` is optional -- if omitted, Tina4 reads from the `SECRET` env var. If neither is set, Tina4 falls back to generating a random key at `secrets/jwt.key` on first run.
 
 ---
 
@@ -76,8 +95,9 @@ Plain text passwords are a breach waiting to happen.
 import { Auth } from "tina4-nodejs";
 
 const hash = await Auth.hashPassword("my-secure-password");
-// Returns: "$2b$10$abc123...long-hash-string..."
 ```
+
+Uses PBKDF2 from the standard library -- no external dependencies.
 
 ### Checking a Password
 
@@ -153,7 +173,7 @@ Router.post("/api/login", async (req, res) => {
         return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const token = Auth.createToken({
+    const token = Auth.getToken({
         user_id: user.id,
         email: user.email,
         name: user.name
@@ -185,11 +205,11 @@ async function authMiddleware(req, res, next) {
 
     const token = authHeader.substring(7);
 
-    if (!Auth.validToken(token)) {
+    const payload = Auth.validToken(token);
+    if (payload === null) {
         return res.status(401).json({ error: "Invalid or expired token" });
     }
 
-    const payload = Auth.getPayload(token);
     req.user = payload;
 
     return next(req, res);
@@ -221,11 +241,10 @@ function requireRole(role: string) {
         }
 
         const token = authHeader.substring(7);
-        if (!Auth.validToken(token)) {
+        const payload = Auth.validToken(token);
+        if (payload === null) {
             return res.status(401).json({ error: "Invalid or expired token" });
         }
-
-        const payload = Auth.getPayload(token);
 
         if ((payload.role ?? "") !== role) {
             return res.status(403).json({ error: `Forbidden. Required role: ${role}` });
@@ -294,10 +313,11 @@ async function authMiddleware(req, res, next) {
         return res.status(401).json({ error: "Authorization required. Send: Authorization: Bearer <token>" });
     }
     const token = authHeader.substring(7);
-    if (!Auth.validToken(token)) {
+    const payload = Auth.validToken(token);
+    if (payload === null) {
         return res.status(401).json({ error: "Invalid or expired token. Please login again." });
     }
-    req.user = Auth.getPayload(token);
+    req.user = payload;
     return next(req, res);
 }
 
@@ -353,7 +373,7 @@ Router.post("/api/login", async (req, res) => {
         return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const token = Auth.createToken({
+    const token = Auth.getToken({
         user_id: user.id,
         email: user.email,
         name: user.name,
@@ -432,13 +452,13 @@ Router.put("/api/profile/password", async (req, res) => {
 
 **Problem:** Tokens that worked yesterday now return 401.
 
-**Fix:** The default lifetime is 1 hour. Issue new tokens at login. Use refresh tokens for long-lived sessions.
+**Fix:** The default lifetime is 60 minutes (`TINA4_TOKEN_EXPIRES_IN=60`). Issue new tokens at login. Use refresh tokens for long-lived sessions.
 
 ### 2. Secret Key Management
 
 **Problem:** Tokens generated on one server are invalid on another.
 
-**Fix:** Set `TINA4_JWT_SECRET` explicitly in `.env` and use the same value across all servers.
+**Fix:** Set `SECRET` explicitly in `.env` and use the same value across all servers.
 
 ### 3. CORS with Authentication
 
@@ -462,7 +482,7 @@ Router.put("/api/profile/password", async (req, res) => {
 
 **Problem:** Registration fails because the hash is truncated.
 
-**Fix:** Use `TEXT` for the password hash column, not `VARCHAR(50)`.
+**Fix:** PBKDF2 hashes can be long. Use `TEXT` for the password hash column, not `VARCHAR(50)`.
 
 ### 7. Token in URL Query Parameters
 

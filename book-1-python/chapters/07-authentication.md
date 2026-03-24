@@ -26,7 +26,7 @@ payload = {
 token = Auth.get_token(payload)
 ```
 
-`get_token()` signs the payload with a secret key and returns a JWT string like:
+`get_token()` signs the payload with HS256 (HMAC-SHA256) and returns a JWT string like:
 
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo0MiwiZW1haWwiOiJhbGljZUBleGFtcGxlLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTcxMTExMjYwMCwiZXhwIjoxNzExMTE2MjAwfQ.abc123signature
@@ -34,29 +34,35 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo0MiwiZW1haWwiOiJhbGljZUBleGF
 
 The token has three parts separated by dots: header, payload, and signature. The signature ensures the token has not been tampered with.
 
+> **Legacy aliases:** `Auth.create_token()` still works as an alias for `Auth.get_token()`. Use the primary name in new code.
+
 ### Token Expiry
 
-By default, tokens expire after 1 hour. Configure this in `.env`:
+By default, tokens expire after 60 minutes. Configure this in `.env`:
 
 ```env
-TINA4_JWT_EXPIRY=3600
+TINA4_TOKEN_EXPIRES_IN=60
 ```
 
-The value is in seconds. Common settings:
+The value is in **minutes**. Common settings:
 
 | Value | Duration |
 |-------|----------|
-| `900` | 15 minutes |
-| `3600` | 1 hour (default) |
-| `86400` | 24 hours |
-| `604800` | 7 days |
+| `15` | 15 minutes |
+| `60` | 1 hour (default) |
+| `1440` | 24 hours |
+| `10080` | 7 days |
 
 ### Validating a Token
 
 ```python
-is_valid = Auth.valid_token(token)
-# Returns True if the token is valid and not expired, False otherwise
+payload = Auth.valid_token(token)
+# Returns the payload dict if the token is valid, None if invalid or expired
 ```
+
+`valid_token()` returns the decoded payload on success, not a boolean. This lets you validate and read the token in one step. Returns `None` if the token is invalid or expired.
+
+> **Legacy alias:** `Auth.validate_token()` works the same way.
 
 ### Reading the Payload
 
@@ -64,7 +70,7 @@ is_valid = Auth.valid_token(token)
 payload = Auth.get_payload(token)
 ```
 
-Returns the original payload dictionary:
+Returns the decoded payload dictionary **without validation** -- it just decodes the token:
 
 ```python
 {
@@ -76,15 +82,21 @@ Returns the original payload dictionary:
 }
 ```
 
-If the token is invalid or expired, `get_payload()` returns `None`.
+If the token cannot be decoded, `get_payload()` returns `None`.
 
-### The Secret Key
+> **Important:** `get_payload()` does not verify the signature or check expiry. Use `valid_token()` when you need to confirm the token is trustworthy.
 
-Tina4 uses a secret key to sign and verify tokens. On first run, it automatically generates a random key and stores it in `secrets/jwt.key`. You can also set it explicitly:
+### The Secret Key and Algorithm
+
+Tina4 Python uses **HS256** (HMAC-SHA256) for JWT signing. It uses only the standard library -- zero external dependencies.
+
+Set the secret key in `.env`:
 
 ```env
-TINA4_JWT_SECRET=my-very-long-and-random-secret-key-at-least-32-chars
+SECRET=my-super-secret-key-at-least-32-chars
 ```
+
+If no `SECRET` is set, Tina4 falls back to generating a random key at `secrets/jwt.key` on first run. Setting `SECRET` explicitly is recommended for production so all server instances share the same key.
 
 Keep this key secret. If someone gets it, they can forge tokens.
 
@@ -103,7 +115,7 @@ hashed = Auth.hash_password("my-secure-password")
 # Returns: "$2b$12$abc123...long-hash-string..."
 ```
 
-Each hash includes a random salt, so hashing the same password twice produces different results.
+Uses PBKDF2 from the standard library -- no external dependencies. Each hash includes a random salt, so hashing the same password twice produces different results.
 
 ### Checking a Password
 
@@ -276,10 +288,10 @@ async def auth_middleware(request, response, next_handler):
 
     token = auth_header[7:]  # Remove "Bearer " prefix
 
-    if not Auth.valid_token(token):
+    payload = Auth.valid_token(token)
+    if payload is None:
         return response.json({"error": "Invalid or expired token"}, 401)
 
-    payload = Auth.get_payload(token)
     request.user = payload  # Attach user data to the request
 
     return await next_handler(request, response)
@@ -402,10 +414,9 @@ def require_role(role):
             return response.json({"error": "Authorization required"}, 401)
 
         token = auth_header[7:]
-        if not Auth.valid_token(token):
+        payload = Auth.valid_token(token)
+        if payload is None:
             return response.json({"error": "Invalid or expired token"}, 401)
-
-        payload = Auth.get_payload(token)
 
         if payload.get("role") != role:
             return response.json({"error": f"Forbidden. Required role: {role}"}, 403)
@@ -661,10 +672,10 @@ async def auth_middleware(request, response, next_handler):
 
     token = auth_header[7:]
 
-    if not Auth.valid_token(token):
+    payload = Auth.valid_token(token)
+    if payload is None:
         return response.json({"error": "Invalid or expired token. Please login again."}, 401)
 
-    payload = Auth.get_payload(token)
     request.user = payload
 
     return await next_handler(request, response)
@@ -854,7 +865,7 @@ async def change_password(request, response):
 
 **Problem:** Tokens that worked yesterday now return 401.
 
-**Cause:** The default token lifetime is 1 hour. After that, the token is invalid even if the signature is correct.
+**Cause:** The default token lifetime is 60 minutes (`TINA4_TOKEN_EXPIRES_IN=60`). After that, the token is invalid even if the signature is correct.
 
 **Fix:** Issue a new token at login. If your application needs long-lived sessions, use refresh tokens: a short-lived access token (15 minutes) paired with a long-lived refresh token (7 days) that can be used to get a new access token without re-entering credentials.
 
@@ -864,7 +875,7 @@ async def change_password(request, response):
 
 **Cause:** Each server generated its own random `secrets/jwt.key` file. Or the key file was deleted/regenerated during deployment.
 
-**Fix:** Set `TINA4_JWT_SECRET` in `.env` explicitly and use the same value across all servers. Store it in your deployment secrets manager (not in version control). If the key changes, all existing tokens become invalid and users must log in again.
+**Fix:** Set `SECRET` in `.env` explicitly and use the same value across all servers. Store it in your deployment secrets manager (not in version control). If the key changes, all existing tokens become invalid and users must log in again.
 
 ### 3. CORS with authentication
 
@@ -894,7 +905,7 @@ async def change_password(request, response):
 
 **Problem:** Registration fails with a database error about the password hash being too long.
 
-**Cause:** Bcrypt hashes are 60 characters long. If your `password_hash` column is defined as `VARCHAR(50)`, it gets truncated.
+**Cause:** PBKDF2 hashes can be long. If your `password_hash` column is defined as `VARCHAR(50)`, it gets truncated.
 
 **Fix:** Use `TEXT` for the password hash column, or at minimum `VARCHAR(255)`. Never constrain the hash length.
 

@@ -24,10 +24,10 @@ $payload = [
     "role" => "admin"
 ];
 
-$token = Auth::getToken($payload);
+$token = Auth::getToken($payload, $secret);
 ```
 
-`getToken()` signs the payload with a secret key. Returns a JWT string:
+`getToken()` signs the payload with HS256 (HMAC-SHA256) using the provided secret (or the `SECRET` env var if omitted). Returns a JWT string:
 
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo0MiwiZW1haWwiOiJhbGljZUBleGFtcGxlLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTcxMTExMjYwMCwiZXhwIjoxNzExMTE2MjAwfQ.abc123signature
@@ -35,37 +35,43 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo0MiwiZW1haWwiOiJhbGljZUBleGF
 
 Three parts separated by dots: header, payload, signature. The signature ensures the token has not been tampered with.
 
+> **Legacy aliases:** `Auth::createToken()` still works as an alias for `Auth::getToken()`. Use the primary name in new code.
+
 ### Token Expiry
 
-Tokens expire after 1 hour by default. Configure in `.env`:
+Tokens expire after 60 minutes by default. Configure in `.env`:
 
 ```env
-TINA4_JWT_EXPIRY=3600
+TINA4_TOKEN_EXPIRES_IN=60
 ```
 
-Value in seconds:
+Value in **minutes**:
 
 | Value | Duration |
 |-------|----------|
-| `900` | 15 minutes |
-| `3600` | 1 hour (default) |
-| `86400` | 24 hours |
-| `604800` | 7 days |
+| `15` | 15 minutes |
+| `60` | 1 hour (default) |
+| `1440` | 24 hours |
+| `10080` | 7 days |
 
 ### Validating a Token
 
 ```php
-$isValid = Auth::validToken($token);
-// true if valid and not expired, false otherwise
+$payload = Auth::validToken($token, $secret);
+// Returns the payload array if valid, null if invalid or expired
 ```
+
+`validToken()` returns the decoded payload on success, not a boolean. This lets you validate and read the token in one step. Returns `null` if the token is invalid or expired.
+
+> **Legacy alias:** `Auth::validateToken()` works the same way.
 
 ### Reading the Payload
 
 ```php
-$payload = Auth::getPayload($token);
+$payload = Auth::getPayload($token, $secret);
 ```
 
-Returns the original payload:
+Returns the decoded payload **without validation** -- it just decodes the token:
 
 ```php
 [
@@ -77,15 +83,21 @@ Returns the original payload:
 ]
 ```
 
-Invalid or expired token: `null`.
+If the token cannot be decoded: `null`.
 
-### The Secret Key
+> **Important:** `getPayload()` does not verify the signature or check expiry. Use `validToken()` when you need to confirm the token is trustworthy.
 
-Tina4 signs and verifies tokens with a secret key. First run generates a random key at `secrets/jwt.key`. You can set it explicitly:
+### The Secret Key and Algorithm
+
+Tina4 PHP uses **HS256** (HMAC-SHA256) for JWT signing. It uses only the standard library -- zero external dependencies.
+
+Set the secret key in `.env`:
 
 ```env
-TINA4_JWT_SECRET=my-very-long-and-random-secret-key-at-least-32-chars
+SECRET=my-super-secret-key-at-least-32-chars
 ```
+
+The `secret` parameter on `getToken()`, `validToken()`, and `getPayload()` is optional -- if omitted, Tina4 reads from the `SECRET` env var. If neither is set, Tina4 falls back to generating a random key at `secrets/jwt.key` on first run.
 
 Guard this key. Anyone who has it can forge tokens.
 
@@ -104,7 +116,7 @@ $hash = Auth::hashPassword("my-secure-password");
 // Returns: "$2y$10$abc123...long-hash-string..."
 ```
 
-Uses PHP's `password_hash()` with bcrypt. Each hash includes a random salt. Hashing the same password twice produces different results.
+Uses PBKDF2 from the standard library -- no external dependencies. Each hash includes a random salt. Hashing the same password twice produces different results.
 
 ### Checking a Password
 
@@ -281,11 +293,11 @@ function authMiddleware($request, $response, $next) {
 
     $token = substr($authHeader, 7); // Remove "Bearer " prefix
 
-    if (!Auth::validToken($token)) {
+    $payload = Auth::validToken($token);
+    if ($payload === null) {
         return $response->json(["error" => "Invalid or expired token"], 401);
     }
 
-    $payload = Auth::getPayload($token);
     $request->user = $payload; // Attach user data to the request
 
     return $next($request, $response);
@@ -410,11 +422,10 @@ function requireRole($role) {
         }
 
         $token = substr($authHeader, 7);
-        if (!Auth::validToken($token)) {
+        $payload = Auth::validToken($token);
+        if ($payload === null) {
             return $response->json(["error" => "Invalid or expired token"], 401);
         }
-
-        $payload = Auth::getPayload($token);
 
         if (($payload["role"] ?? "") !== $role) {
             return $response->json(["error" => "Forbidden. Required role: " . $role], 403);
@@ -668,11 +679,11 @@ function authMiddleware($request, $response, $next) {
 
     $token = substr($authHeader, 7);
 
-    if (!Auth::validToken($token)) {
+    $payload = Auth::validToken($token);
+    if ($payload === null) {
         return $response->json(["error" => "Invalid or expired token. Please login again."], 401);
     }
 
-    $payload = Auth::getPayload($token);
     $request->user = $payload;
 
     return $next($request, $response);
@@ -851,7 +862,7 @@ Router::put("/api/profile/password", function ($request, $response) {
 
 **Problem:** Tokens that worked yesterday return 401 today.
 
-**Cause:** Default lifetime is 1 hour. After that, the token is invalid.
+**Cause:** Default lifetime is 60 minutes (`TINA4_TOKEN_EXPIRES_IN=60`). After that, the token is invalid.
 
 **Fix:** Issue a new token at login. For long-lived sessions, use refresh tokens: a short-lived access token (15 minutes) paired with a long-lived refresh token (7 days).
 
@@ -861,7 +872,7 @@ Router::put("/api/profile/password", function ($request, $response) {
 
 **Cause:** Each server generated its own `secrets/jwt.key`. Or the key was regenerated during deployment.
 
-**Fix:** Set `TINA4_JWT_SECRET` in `.env` and use the same value across all servers. Store it in your secrets manager. Not in version control. Key change invalidates all tokens. Users must log in again.
+**Fix:** Set `SECRET` in `.env` and use the same value across all servers. Store it in your secrets manager. Not in version control. Key change invalidates all tokens. Users must log in again.
 
 ### 3. CORS with Authentication
 
@@ -891,7 +902,7 @@ Router::put("/api/profile/password", function ($request, $response) {
 
 **Problem:** Registration fails with a database error about truncation.
 
-**Cause:** bcrypt hashes are 60 characters. `VARCHAR(50)` truncates them.
+**Cause:** PBKDF2 hashes can be long. `VARCHAR(50)` truncates them.
 
 **Fix:** Use `TEXT` for the password hash column. Or at minimum `VARCHAR(255)`.
 

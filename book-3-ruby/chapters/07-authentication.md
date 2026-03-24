@@ -21,10 +21,10 @@ payload = {
   role: "admin"
 }
 
-token = Tina4::Auth.create_token(payload)
+token = Tina4::Auth.get_token(payload)
 ```
 
-`create_token` signs the payload with a secret key and returns a JWT string like:
+`get_token` signs the payload and returns a JWT string like:
 
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo0MiwiZW1haWwiOiJhbGljZUBleGFtcGxlLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTcxMTExMjYwMCwiZXhwIjoxNzExMTE2MjAwfQ.abc123signature
@@ -32,29 +32,35 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo0MiwiZW1haWwiOiJhbGljZUBleGF
 
 The token has three parts separated by dots: header, payload, and signature. The signature ensures the token has not been tampered with.
 
+> **Legacy aliases:** `Tina4::Auth.create_token` still works as an alias for `Tina4::Auth.get_token`. Use the primary name in new code.
+
 ### Token Expiry
 
-By default, tokens expire after 1 hour. Configure this in `.env`:
+By default, tokens expire after 60 minutes. Configure this in `.env`:
 
 ```env
-TINA4_JWT_EXPIRY=3600
+TINA4_TOKEN_EXPIRES_IN=60
 ```
 
-The value is in seconds. Common settings:
+The value is in **minutes**. Common settings:
 
 | Value | Duration |
 |-------|----------|
-| `900` | 15 minutes |
-| `3600` | 1 hour (default) |
-| `86400` | 24 hours |
-| `604800` | 7 days |
+| `15` | 15 minutes |
+| `60` | 1 hour (default) |
+| `1440` | 24 hours |
+| `10080` | 7 days |
 
 ### Validating a Token
 
 ```ruby
-is_valid = Tina4::Auth.validate_token(token)
-# Returns true if the token is valid and not expired, false otherwise
+payload = Tina4::Auth.valid_token(token)
+# Returns the payload hash if valid, nil if invalid or expired
 ```
+
+`valid_token` returns the decoded payload on success, not a boolean. This lets you validate and read the token in one step. Returns `nil` if the token is invalid or expired.
+
+> **Legacy alias:** `Tina4::Auth.validate_token` works the same way.
 
 ### Reading the Payload
 
@@ -62,7 +68,7 @@ is_valid = Tina4::Auth.validate_token(token)
 payload = Tina4::Auth.get_payload(token)
 ```
 
-Returns the original payload hash:
+Returns the decoded payload hash **without validation** -- it just decodes the token:
 
 ```ruby
 {
@@ -74,15 +80,23 @@ Returns the original payload hash:
 }
 ```
 
-If the token is invalid or expired, `get_payload` returns `nil`.
+If the token cannot be decoded, `get_payload` returns `nil`.
 
-### The Secret Key
+> **Important:** `get_payload` does not verify the signature or check expiry. Use `valid_token` when you need to confirm the token is trustworthy.
 
-Tina4 uses a secret key to sign and verify tokens. On first run, it automatically generates a random key and stores it in `secrets/jwt.key`. You can also set it explicitly:
+### The Secret Key and Algorithm
+
+Tina4 Ruby supports two JWT algorithms, auto-detected based on your configuration:
+
+- **HS256** (HMAC-SHA256) -- set `SECRET` in `.env`. Uses the standard library. Zero dependencies.
+- **RS256** (RSA) -- place RSA keys in the `secrets/` folder. Requires the `jwt` gem.
 
 ```env
-TINA4_JWT_SECRET=my-very-long-and-random-secret-key-at-least-32-chars
+# .env -- HS256 mode (recommended, simplest setup)
+SECRET=my-super-secret-key-at-least-32-chars
 ```
+
+If `SECRET` is set, Tina4 uses HS256. If RSA keys exist in `secrets/` instead, Tina4 uses RS256 (and you need to add the `jwt` gem to your Gemfile). If neither is configured, Tina4 falls back to generating a random key at `secrets/jwt.key` on first run.
 
 Keep this key secret. If someone gets it, they can forge tokens.
 
@@ -99,7 +113,7 @@ hash = Tina4::Auth.hash_password("my-secure-password")
 # Returns: "$2a$12$abc123...long-hash-string..."
 ```
 
-This uses bcrypt under the hood. Each hash includes a random salt, so hashing the same password twice produces different results.
+In HS256 mode, this uses PBKDF2 from the standard library. In RS256 mode, it uses BCrypt (via the `bcrypt` gem). Each hash includes a random salt, so hashing the same password twice produces different results.
 
 ### Checking a Password
 
@@ -200,7 +214,7 @@ Tina4::Router.post("/api/login") do |request, response|
   end
 
   # Generate a token
-  token = Tina4::Auth.create_token({
+  token = Tina4::Auth.get_token({
     user_id: user["id"],
     email: user["email"],
     name: user["name"]
@@ -269,11 +283,11 @@ def auth_middleware(request, response, next_handler)
 
   token = auth_header.sub("Bearer ", "")
 
-  unless Tina4::Auth.validate_token(token)
+  payload = Tina4::Auth.valid_token(token)
+  if payload.nil?
     return response.json({ error: "Invalid or expired token" }, 401)
   end
 
-  payload = Tina4::Auth.get_payload(token)
   request.user = payload  # Attach user data to the request
 
   next_handler.call(request, response)
@@ -386,11 +400,10 @@ def require_role(role)
     end
 
     token = auth_header.sub("Bearer ", "")
-    unless Tina4::Auth.validate_token(token)
+    payload = Tina4::Auth.valid_token(token)
+    if payload.nil?
       return response.json({ error: "Invalid or expired token" }, 401)
     end
-
-    payload = Tina4::Auth.get_payload(token)
 
     # Check role
     if (payload["role"] || "") != role
@@ -580,11 +593,11 @@ def auth_middleware(request, response, next_handler)
 
   token = auth_header.sub("Bearer ", "")
 
-  unless Tina4::Auth.validate_token(token)
+  payload = Tina4::Auth.valid_token(token)
+  if payload.nil?
     return response.json({ error: "Invalid or expired token. Please login again." }, 401)
   end
 
-  payload = Tina4::Auth.get_payload(token)
   request.user = payload
 
   next_handler.call(request, response)
@@ -651,7 +664,7 @@ Tina4::Router.post("/api/login") do |request, response|
     return response.json({ error: "Invalid email or password" }, 401)
   end
 
-  token = Tina4::Auth.create_token({
+  token = Tina4::Auth.get_token({
     user_id: user["id"],
     email: user["email"],
     name: user["name"],
@@ -786,7 +799,7 @@ end
 
 **Problem:** Tokens that worked yesterday now return 401.
 
-**Cause:** The default token lifetime is 1 hour. After that, the token is invalid even if the signature is correct.
+**Cause:** The default token lifetime is 60 minutes (`TINA4_TOKEN_EXPIRES_IN=60`). After that, the token is invalid even if the signature is correct.
 
 **Fix:** Issue a new token at login. If your application needs long-lived sessions, use refresh tokens: a short-lived access token (15 minutes) paired with a long-lived refresh token (7 days) that can be used to get a new access token without re-entering credentials.
 
@@ -796,7 +809,7 @@ end
 
 **Cause:** Each server generated its own random `secrets/jwt.key` file. Or the key file was deleted/regenerated during deployment.
 
-**Fix:** Set `TINA4_JWT_SECRET` in `.env` explicitly and use the same value across all servers. Store it in your deployment secrets manager (not in version control). If the key changes, all existing tokens become invalid and users must log in again.
+**Fix:** Set `SECRET` in `.env` explicitly and use the same value across all servers. Store it in your deployment secrets manager (not in version control). If the key changes, all existing tokens become invalid and users must log in again.
 
 ### 3. CORS with Authentication
 
@@ -826,7 +839,7 @@ end
 
 **Problem:** Registration fails with a database error about the password hash being too long.
 
-**Cause:** bcrypt hashes are 60 characters long. If your `password_hash` column is defined as `VARCHAR(50)`, it gets truncated.
+**Cause:** BCrypt/PBKDF2 hashes can be long. If your `password_hash` column is defined as `VARCHAR(50)`, it gets truncated.
 
 **Fix:** Use `TEXT` for the password hash column, or at minimum `VARCHAR(255)`. Never constrain the hash length.
 
