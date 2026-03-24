@@ -132,8 +132,8 @@ Filters transform output. The pipe `|` applies them:
 ### Number Formatting
 
 ```html
-{{ price | number_format(2) }}          {# 79.99 #}
-{{ large_number | number_format(0) }}   {# 1,234,567 #}
+{{ "%.2f"|format(price) }}              {# 79.99 #}
+{{ "{:,}"|format(large_number) }}       {# 1,234,567 #}
 {{ percentage | round(1) }}             {# 85.3 #}
 ```
 
@@ -225,7 +225,7 @@ Comparisons and logical operators:
     <p>Please verify your email.</p>
 {% endif %}
 
-{% if items | length == 0 %}
+{% if not items %}
     <p>Your cart is empty.</p>
 {% endif %}
 ```
@@ -236,7 +236,7 @@ Comparisons and logical operators:
 {% for product in products %}
     <div class="product-card">
         <h3>{{ product.name }}</h3>
-        <p>${{ product.price | number_format(2) }}</p>
+        <p>${{ "%.2f"|format(product.price) }}</p>
     </div>
 {% endfor %}
 ```
@@ -254,7 +254,7 @@ Inside a for loop, the `loop` variable gives you context:
 ```html
 <ol>
 {% for item in items %}
-    <li class="{{ loop.first ? 'first' : '' }} {{ loop.last ? 'last' : '' }}">
+    <li class="{{ 'first' if loop.first else '' }} {{ 'last' if loop.last else '' }}">
         {{ loop.index }}. {{ item.name }}
     </li>
 {% endfor %}
@@ -399,7 +399,7 @@ Create `src/templates/macros/forms.html`:
     <div class="form-group">
         <label for="{{ name }}">{{ label }}{% if required %} *{% endif %}</label>
         <input type="{{ type }}" name="{{ name }}" id="{{ name }}"
-               value="{{ value }}" {{ required ? "required" : "" }}>
+               value="{{ value }}" {{ "required" if required else "" }}>
     </div>
 {% endmacro %}
 
@@ -521,13 +521,13 @@ Create `src/templates/macros/catalog.html`:
 
 ```html
 {% macro product_card(product) %}
-    <div class="product-card {{ product.featured ? 'featured' : '' }}">
+    <div class="product-card {{ 'featured' if product.featured else '' }}">
         {% if product.featured %}
             <span class="featured-badge">Featured</span>
         {% endif %}
         <h3><a href="/catalog/{{ product.id }}">{{ product.name }}</a></h3>
         <p class="category">{{ product.category }}</p>
-        <p class="price">${{ product.price | number_format(2) }}</p>
+        <p class="price">${{ "%.2f"|format(product.price) }}</p>
         {% if product.in_stock %}
             <span class="badge badge-success">In Stock</span>
         {% else %}
@@ -549,14 +549,14 @@ Create `src/templates/catalog.html`:
     <h1>{{ page_title | default("Product Catalog") }}</h1>
 
     <div class="category-filters">
-        <a href="/catalog" class="{{ active_category is not defined ? 'active' : '' }}">All</a>
+        <a href="/catalog" class="{{ 'active' if active_category is not defined else '' }}">All</a>
         {% for cat in categories %}
             <a href="/catalog?category={{ cat }}"
-               class="{{ active_category == cat ? 'active' : '' }}">{{ cat }}</a>
+               class="{{ 'active' if active_category == cat else '' }}">{{ cat }}</a>
         {% endfor %}
     </div>
 
-    <p class="stats">Showing {{ products | length }} product{{ products | length != 1 ? "s" : "" }}</p>
+    <p class="stats">Showing {{ products | length }} product{{ "s" if products|length != 1 else "" }}</p>
 
     <div class="product-grid">
         {% for product in products %}
@@ -581,7 +581,7 @@ Create `src/templates/product_detail.html`:
     <div class="product-detail">
         <h1>{{ product.name }}</h1>
         <p class="category">{{ product.category }}</p>
-        <p class="price">${{ product.price | number_format(2) }}</p>
+        <p class="price">${{ "%.2f"|format(product.price) }}</p>
         {% if product.in_stock %}
             <span class="badge badge-success">In Stock</span>
         {% else %}
@@ -632,8 +632,8 @@ async def catalog_page(request, response):
 
 
 @get("/catalog/{id:int}")
-async def product_detail(request, response):
-    product_id = request.params["id"]
+async def product_detail(id, request, response):
+    product_id = id
 
     for product in products:
         if product["id"] == product_id:
@@ -696,11 +696,11 @@ async def product_detail(request, response):
 
 ### 5. Filter produces wrong type
 
-**Problem:** `{{ price | number_format(2) }}` shows an error instead of a formatted number.
+**Problem:** `{{ "%.2f"|format(price) }}` shows an error instead of a formatted number.
 
 **Cause:** The variable `price` is a string, not a number. Filters expect specific types.
 
-**Fix:** Pass correct types from your route handler. Use `float(price)` in Python before passing to the template, or convert in the template: `{{ price | float | number_format(2) }}`.
+**Fix:** Pass correct types from your route handler. Use `float(price)` in Python before passing to the template, or convert in the template: `{{ "%.2f"|format(price|float) }}`.
 
 ### 6. Escaped HTML when you want raw output
 

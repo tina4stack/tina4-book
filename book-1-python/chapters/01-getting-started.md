@@ -226,14 +226,15 @@ Create the file `src/routes/greeting.py`:
 from tina4_python.core.router import get
 
 @get("/api/greeting/{name}")
-async def greeting(request, response):
-    name = request.params["name"]
+async def greeting(name, request, response):
     from datetime import datetime
     return response.json({
         "message": f"Hello, {name}!",
         "timestamp": datetime.now().isoformat()
     })
 ```
+
+In Python, path parameters are passed directly as function arguments -- not via `request.params`. The parameter name in the function signature must match the `{name}` in the route pattern.
 
 Save the file. The dev server picks up the change through live reload. If not, restart with `tina4 serve`.
 
@@ -284,7 +285,7 @@ Five steps. No magic.
 1. You created a file in `src/routes/`. Tina4 auto-discovered it at startup.
 2. `@get("/api/greeting/{name}")` registered a GET route with a path parameter `{name}`.
 3. When you requested `/api/greeting/Alice`, the router matched the pattern and called your handler.
-4. `request.params["name"]` gave you `"Alice"` from the URL.
+4. The router extracted `"Alice"` from the URL and passed it as the `name` argument to your function.
 5. `response.json(...)` serialized the dictionary to JSON, set `Content-Type: application/json`, and returned a `200 OK`.
 
 ### Adding More HTTP Methods
@@ -295,8 +296,7 @@ Update `src/routes/greeting.py`:
 from tina4_python.core.router import get, post
 
 @get("/api/greeting/{name}")
-async def greeting(request, response):
-    name = request.params["name"]
+async def greeting(name, request, response):
     from datetime import datetime
     return response.json({
         "message": f"Hello, {name}!",
@@ -395,14 +395,14 @@ Create `src/templates/products.html`:
 
 {% block content %}
     <h1>Our Products</h1>
-    <p>Showing {{ products | length }} product{{ products | length != 1 ? "s" : "" }}</p>
+    <p>Showing {{ products | length }} product{{ "s" if products|length != 1 else "" }}</p>
 
-    {% if products | length > 0 %}
+    {% if products %}
         {% for product in products %}
             <div class="product-card">
                 <h3>{{ product.name }}</h3>
                 <p>{{ product.description }}</p>
-                <p class="price">${{ product.price | number_format(2) }}</p>
+                <p class="price">${{ "%.2f"|format(product.price) }}</p>
                 {% if product.in_stock %}
                     <span class="badge badge-success">In Stock</span>
                 {% else %}
@@ -474,7 +474,7 @@ Eight steps. All automatic.
 2. Frond sees `{% extends "base.html" %}` and loads the base template.
 3. The `{% block content %}` in `products.html` replaces the same block in `base.html`.
 4. `{{ product.name }}` outputs the value, auto-escaped for HTML safety.
-5. `{{ product.price | number_format(2) }}` formats the number with 2 decimal places.
+5. `{{ "%.2f"|format(product.price) }}` formats the number with 2 decimal places.
 6. `{% for product in products %}` loops through the list.
 7. `{% if product.in_stock %}` renders the stock badge conditionally.
 8. `{{ products | length }}` returns the item count.
@@ -499,20 +499,37 @@ The important defaults for development:
 
 | Variable | Default Value | What It Means |
 |----------|---------------|---------------|
-| `TINA4_PORT` | `7145` | Server runs on port 7145 |
+| `TINA4_PORT` | `7145` | Default server port (override with `tina4 serve --port`) |
 | `DATABASE_URL` | `sqlite:///data/app.db` | SQLite database in the `data/` directory |
 | `TINA4_LOG_LEVEL` | `ALL` | All log messages are output |
 | `CORS_ORIGINS` | `*` | All origins allowed (fine for development) |
 | `TINA4_RATE_LIMIT` | `60` | 60 requests per minute per IP |
 
-To change the port, add it to `.env`:
+**Log levels** control how much output Tina4 produces:
 
-```env
-TINA4_DEBUG=true
-TINA4_PORT=8080
+| Level | Behaviour |
+|-------|-----------|
+| `ALL` / `DEBUG` | Full verbose output. DevReload active (live-reload, error overlay, hot-patching). |
+| `INFO` | Standard logging. Startup messages, request summaries. |
+| `WARNING` | Warnings and errors only. |
+| `ERROR` | Errors only. Minimal output. |
+
+Set `TINA4_LOG_LEVEL=DEBUG` during development for maximum visibility. Use `WARNING` or `ERROR` in production.
+
+To change the port, use the CLI flag:
+
+```bash
+tina4 serve --port 8080
 ```
 
-Restart the server (`Ctrl+C`, then `tina4 serve`). It now runs on port 8080.
+The server now runs on port 8080.
+
+**How port resolution works:** The Rust CLI (`tina4 serve`) determines the port using this priority order:
+
+1. `--port` CLI flag (highest priority)
+2. Framework default (Python: 7145, PHP: 7146, Ruby: 7147, Node.js: 7148)
+
+The CLI passes the resolved port to the Python server via the `PORT` environment variable. The Python server reads `PORT` (not `TINA4_PORT`) to determine which port to bind. Because the CLI sets `PORT` before your `.env` is loaded, putting `TINA4_PORT=8080` in `.env` has no effect. Use `tina4 serve --port 8080` to change the port.
 
 For the complete `.env` reference with all 68 variables, see [Book 0, Chapter 4: Environment Variables](../../book-0-understanding/chapters/04-environment-variables.md).
 
@@ -722,7 +739,7 @@ Create `src/templates/store.html`:
 
     <div class="product-grid">
         {% for product in products %}
-            <div class="product-card{{ product.featured ? ' featured' : '' }}">
+            <div class="product-card{{ ' featured' if product.featured else '' }}">
                 <p class="product-name">
                     {{ product.name }}
                     {% if product.featured %}
@@ -730,7 +747,7 @@ Create `src/templates/store.html`:
                     {% endif %}
                 </p>
                 <p class="product-category">{{ product.category }}</p>
-                <p class="product-price">${{ product.price | number_format(2) }}</p>
+                <p class="product-price">${{ "%.2f"|format(product.price) }}</p>
             </div>
         {% endfor %}
     </div>
@@ -811,13 +828,13 @@ async def store_page(request, response):
 
 **Cause:** Another process (or another Tina4 instance) is using port 7145.
 
-**Fix:** Stop the other process, or change the port:
+**Fix:** Stop the other process, or change the port with the CLI flag:
 
-```env
-TINA4_PORT=8080
+```bash
+tina4 serve --port 8080
 ```
 
-Or use the CLI flag: `tina4 serve --port 8080`.
+The CLI will also auto-increment the port if it detects the default port is in use.
 
 ### 6. Changes not reflected
 

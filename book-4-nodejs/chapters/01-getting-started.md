@@ -529,6 +529,17 @@ The important defaults for development:
 | `CORS_ORIGINS` | `*` | All origins allowed (fine for development) |
 | `TINA4_RATE_LIMIT` | `60` | 60 requests per minute per IP |
 
+**Log levels** control how much output Tina4 produces:
+
+| Level | Behaviour |
+|-------|-----------|
+| `ALL` / `DEBUG` | Full verbose output. DevReload active (live-reload, error overlay). |
+| `INFO` | Standard logging. Startup messages, request summaries. |
+| `WARNING` | Warnings and errors only. |
+| `ERROR` | Errors only. Minimal output. |
+
+Set `TINA4_LOG_LEVEL=DEBUG` during development for maximum visibility. Use `WARNING` or `ERROR` in production.
+
 To change the port, add it to `.env`:
 
 ```env

@@ -50,16 +50,16 @@ curl "http://localhost:7145/api/info?foo=bar"
 {"path":"/api/info"}
 ```
 
-### request.params
+### Path Parameters (Function Arguments)
 
-Path parameters captured from the URL pattern:
+Path parameters captured from the URL pattern are passed as function arguments. The parameter names in your function signature must match the `{name}` placeholders in the route pattern:
 
 ```python
 @get("/users/{id:int}/posts/{slug}")
-async def user_post(request, response):
+async def user_post(id, slug, request, response):
     return response.json({
-        "user_id": request.params["id"],
-        "slug": request.params["slug"]
+        "user_id": id,
+        "slug": slug
     })
 ```
 

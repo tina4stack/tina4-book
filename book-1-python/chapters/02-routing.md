@@ -42,18 +42,15 @@ async def create_product(request, response):
     return response.json({"action": "create a product"}, 201)
 
 @put("/products/{id}")
-async def replace_product(request, response):
-    id = request.params["id"]
+async def replace_product(id, request, response):
     return response.json({"action": f"replace product {id}"})
 
 @patch("/products/{id}")
-async def update_product(request, response):
-    id = request.params["id"]
+async def update_product(id, request, response):
     return response.json({"action": f"update product {id}"})
 
 @delete("/products/{id}")
-async def delete_product(request, response):
-    id = request.params["id"]
+async def delete_product(id, request, response):
     return response.json({"action": f"delete product {id}"})
 ```
 
@@ -113,12 +110,9 @@ Path parameters capture values from the URL. Wrap the parameter name in curly br
 from tina4_python.core.router import get
 
 @get("/users/{id}/posts/{post_id}")
-async def user_post(request, response):
-    user_id = request.params["id"]
-    post_id = request.params["post_id"]
-
+async def user_post(id, post_id, request, response):
     return response.json({
-        "user_id": user_id,
+        "user_id": id,
         "post_id": post_id
     })
 ```
@@ -131,7 +125,7 @@ curl http://localhost:7145/users/5/posts/99
 {"user_id":"5","post_id":"99"}
 ```
 
-Notice `user_id` came back as the string `"5"`, not the integer `5`. Path parameters are strings by default.
+Notice `user_id` came back as the string `"5"`, not the integer `5`. Path parameters are strings by default. In Python, path parameters are passed as function arguments -- the parameter names in the function signature must match the `{name}` placeholders in the route pattern.
 
 ### Typed Parameters
 
@@ -141,8 +135,8 @@ Enforce a type by adding a colon and the type after the parameter name:
 from tina4_python.core.router import get
 
 @get("/orders/{id:int}")
-async def get_order(request, response):
-    id = request.params["id"]  # This is now an integer
+async def get_order(id, request, response):
+    # id is already an integer thanks to :int
     return response.json({
         "order_id": id,
         "type": type(id).__name__
@@ -226,8 +220,7 @@ def api_v1():
         return response.json({"users": []})
 
     @get("/users/{id:int}")
-    async def get_user(request, response):
-        id = request.params["id"]
+    async def get_user(id, request, response):
         return response.json({"user": {"id": id, "name": "Alice"}})
 
     @post("/users")
@@ -731,9 +724,7 @@ async def list_products(request, response):
 
 # Get a single product by ID
 @get("/api/products/{id:int}")
-async def get_product(request, response):
-    id = request.params["id"]
-
+async def get_product(id, request, response):
     for product in products:
         if product["id"] == id:
             return response.json(product)
@@ -766,8 +757,7 @@ async def create_product(request, response):
 
 # Replace a product
 @put("/api/products/{id:int}")
-async def replace_product(request, response):
-    id = request.params["id"]
+async def replace_product(id, request, response):
     body = request.body
 
     for i, product in enumerate(products):
@@ -786,9 +776,7 @@ async def replace_product(request, response):
 
 # Delete a product
 @delete("/api/products/{id:int}")
-async def delete_product(request, response):
-    id = request.params["id"]
-
+async def delete_product(id, request, response):
     for i, product in enumerate(products):
         if product["id"] == id:
             products.pop(i)
