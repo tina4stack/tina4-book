@@ -540,19 +540,35 @@ Restart the server. It now runs on port 8080.
 
 The CLI reads your `.env` file and checks for `TINA4_PORT` (and falls back to `PORT`). The resolved port is passed to the Python server. All three methods work -- use whichever fits your workflow.
 
-For the complete `.env` reference with all 68 variables, see [Book 0, Chapter 4: Environment Variables](../../book-0-understanding/chapters/04-environment-variables.md).
+### Dashboard Environment Variables
 
----
+The dev dashboard (see Section 7) requires two additional `.env` variables:
 
-## 7. The Dev Dashboard
+```env
+TINA4_CONSOLE=true
+TINA4_CONSOLE_TOKEN=my-dev-token
+```
 
-With `TINA4_DEBUG=true`, Tina4 provides a built-in development dashboard. Enable it by adding a console token to your `.env`:
+| Variable | Default Value | What It Does |
+|----------|---------------|--------------|
+| `TINA4_CONSOLE` | `false` | Enables the built-in dev dashboard |
+| `TINA4_CONSOLE_TOKEN` | *(none)* | Token required to access the dashboard |
+
+Both require `TINA4_DEBUG=true` to function. A full development `.env` with the dashboard enabled looks like:
 
 ```env
 TINA4_DEBUG=true
 TINA4_CONSOLE=true
 TINA4_CONSOLE_TOKEN=my-dev-token
 ```
+
+For the complete `.env` reference with all 68 variables, see [Book 0, Chapter 4: Environment Variables](../../book-0-understanding/chapters/04-environment-variables.md).
+
+---
+
+## 7. The Dev Dashboard
+
+With `TINA4_DEBUG=true` and the console variables configured in your `.env` (see Section 6), Tina4 provides a built-in development dashboard.
 
 Restart the server and navigate to:
 
