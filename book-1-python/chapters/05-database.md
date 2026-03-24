@@ -313,20 +313,38 @@ These helpers eliminate boilerplate INSERT/UPDATE/DELETE SQL. For complex querie
 
 Migrations are SQL files that version your database schema. Write them once. Apply them in order. Roll them back when needed.
 
-### Creating a Migration
+### File Naming
+
+Migration files live in a `migrations/` directory. Two naming patterns are supported:
+
+| Pattern | Example |
+|---------|---------|
+| Sequential | `000001_create_users.sql` |
+| Timestamp | `20260322160000_create_notes.sql` |
+
+Files are sorted alphabetically when they run. Pick one pattern and stick with it -- `000001_` sorts before `20260322_`, so mixing the two in one project leads to unexpected execution order.
+
+### Generating a Migration
 
 ```bash
-tina4 migrate:create create_notes_table
+tina4 generate migration create_notes_table
 ```
 
+This creates two files:
+
 ```
-Created migration: src/migrations/20260322160000_create_notes_table.sql
+migrations/000001_create_notes_table.sql
+migrations/000001_create_notes_table.down.sql
 ```
 
-Open the generated file and add your SQL:
+The first is your "up" migration. The second is the matching "down" migration used for rollbacks.
+
+### Writing the Up Migration
+
+Open the generated `.sql` file and add your schema changes:
 
 ```sql
--- UP
+-- migrations/000001_create_notes_table.sql
 CREATE TABLE notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -338,45 +356,82 @@ CREATE TABLE notes (
 
 CREATE INDEX idx_notes_category ON notes (category);
 CREATE INDEX idx_notes_created_at ON notes (created_at);
+```
 
--- DOWN
+### Writing the Down Migration
+
+The `.down.sql` file undoes whatever the up migration did:
+
+```sql
+-- migrations/000001_create_notes_table.down.sql
 DROP INDEX IF EXISTS idx_notes_created_at;
 DROP INDEX IF EXISTS idx_notes_category;
 DROP TABLE IF EXISTS notes;
 ```
 
-The `-- UP` section runs when applying the migration. The `-- DOWN` section runs when rolling it back.
+Down migrations are optional. If you skip them, everything works until you try to roll back -- at which point Tina4 will fail with a clear error telling you the down file is missing.
+
+The `.down.sql` file must share the exact same base name as the up file. If your up file is `000001_create_notes_table.sql`, the down file must be `000001_create_notes_table.down.sql`.
 
 ### Running Migrations
 
 ```bash
 tina4 migrate
+# or
+tina4python migrate
 ```
 
+Tina4 finds all pending `.sql` files in `migrations/`, sorts them alphabetically, and executes them in order. Each run is assigned a **batch number**. The batch groups every migration applied in that single run.
+
+### Checking Status
+
+```bash
+tina4python migrate:status
 ```
-Running migrations...
-  Applied: 20260322160000_create_notes_table.sql
-Done. 1 migration applied.
-```
+
+This shows which migrations have been applied and which are still pending. Useful before deploying to see what will run.
 
 ### Rolling Back
 
 ```bash
-tina4 migrate:rollback
+tina4python migrate:rollback
 ```
 
-```
-Rolling back last migration...
-  Rolled back: 20260322160000_create_notes_table.sql
-Done.
-```
+Rollback undoes the **entire last batch**. If your last `tina4 migrate` run applied three migration files, rollback reverts all three by running their `.down.sql` counterparts in reverse order.
+
+### Tracking Table
+
+Tina4 creates a `tina4_migration` table in your database to track what has run:
+
+| Column | Purpose |
+|--------|---------|
+| `id` | Primary key |
+| `migration_id` | The migration filename |
+| `description` | Human-readable description |
+| `batch` | Which batch this migration belonged to |
+| `executed_at` | When it ran |
+| `passed` | `1` if it succeeded, `0` if it failed |
+
+Failed migrations are recorded with `passed = 0`. On the next `tina4 migrate` run, they will be retried automatically.
+
+### Advanced SQL Splitting
+
+Tina4's migration runner is not a naive line splitter. It correctly handles:
+
+- **`$$` delimited blocks** -- PostgreSQL stored procedures and functions that contain semicolons
+- **`//` blocks** -- alternative delimiter blocks
+- **`/* */` block comments** -- skipped during splitting
+- **`--` line comments** -- skipped during splitting
+
+This means you can write PostgreSQL stored procedures in your migration files without worrying about the runner choking on internal semicolons.
 
 ### Migration Best Practices
 
 1. **One migration per change** -- do not pile multiple table changes into one file
-2. **Always write a DOWN section** -- so you can roll back cleanly
+2. **Always write a down migration** -- so you can roll back cleanly
 3. **Never edit a migration that has been applied** -- create a new migration instead
 4. **Use descriptive names** -- `create_users_table`, `add_email_to_orders`, `create_category_index`
+5. **Pick one naming pattern** -- use either `000001_` or `YYYYMMDDHHMMSS_`, not both
 
 ---
 
@@ -476,10 +531,15 @@ curl -X DELETE http://localhost:7145/api/notes/2
 
 ### Migration
 
-Create `src/migrations/20260322160000_create_notes_table.sql`:
+Generate the migration:
+
+```bash
+tina4 generate migration create_notes_table
+```
+
+Edit `migrations/000001_create_notes_table.sql`:
 
 ```sql
--- UP
 CREATE TABLE notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -492,8 +552,11 @@ CREATE TABLE notes (
 
 CREATE INDEX idx_notes_category ON notes (category);
 CREATE INDEX idx_notes_pinned ON notes (pinned);
+```
 
--- DOWN
+Edit `migrations/000001_create_notes_table.down.sql`:
+
+```sql
 DROP INDEX IF EXISTS idx_notes_pinned;
 DROP INDEX IF EXISTS idx_notes_category;
 DROP TABLE IF EXISTS notes;
@@ -704,19 +767,27 @@ async def delete_note(request, response):
 
 **Problem:** A migration fails because it references a table that does not exist yet.
 
-**Cause:** Migrations run in alphabetical/timestamp order. If migration B depends on the table created by migration A, migration A must have an earlier timestamp.
+**Cause:** Migrations run in alphabetical order. If migration B depends on the table created by migration A, migration A must sort earlier alphabetically.
 
-**Fix:** Use the `tina4 migrate:create` command, which auto-generates timestamps. Migrations are named `YYYYMMDDHHMMSS_description.sql` and run in chronological order.
+**Fix:** Use `tina4 generate migration` which auto-generates sequential numbers. Do not mix `000001_` and `YYYYMMDDHHMMSS_` patterns in the same project -- `000001_` sorts before `20240315_`, which will scramble your intended order.
 
-### 6. Forgetting the DOWN section
+### 6. Missing down migration
 
-**Problem:** `tina4 migrate:rollback` fails or does nothing.
+**Problem:** `tina4python migrate:rollback` fails with an error about a missing file.
 
-**Cause:** The migration file does not have a `-- DOWN` section.
+**Cause:** The `.down.sql` file does not exist for the migration being rolled back.
 
-**Fix:** Always include a `-- DOWN` section in every migration. It should undo exactly what `-- UP` did. For `CREATE TABLE`, the DOWN is `DROP TABLE IF EXISTS`. For `ALTER TABLE ADD COLUMN`, the DOWN is `ALTER TABLE DROP COLUMN` (though SQLite does not support dropping columns -- in that case, you may need to recreate the table).
+**Fix:** Create a `.down.sql` file with the exact same base name as the up migration. If your up file is `000001_create_users.sql`, the down file must be `000001_create_users.down.sql`. It should undo exactly what the up migration did. For `CREATE TABLE`, the down is `DROP TABLE IF EXISTS`. For `ALTER TABLE ADD COLUMN`, the down is `ALTER TABLE DROP COLUMN` (though SQLite does not support dropping columns -- in that case, you may need to recreate the table).
 
-### 7. SQL injection through string formatting
+### 7. Failed migrations blocking progress
+
+**Problem:** A migration failed and now `tina4 migrate` keeps skipping it or retrying it.
+
+**Cause:** Failed migrations are recorded in the `tina4_migration` table with `passed = 0`. Tina4 will retry them on the next `migrate` run.
+
+**Fix:** Fix the SQL in the migration file, then run `tina4 migrate` again. The failed migration will be retried. If you need to skip it entirely, you can manually update its `passed` column to `1` in the `tina4_migration` table -- but fix the root cause first.
+
+### 8. SQL injection through string formatting
 
 **Problem:** Your application is vulnerable to SQL injection attacks.
 

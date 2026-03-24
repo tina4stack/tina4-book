@@ -444,26 +444,42 @@ These helpers generate SQL for you. Convenient for simple CRUD. Raw queries stil
 
 ## 10. Migrations
 
-Migrations are versioned SQL scripts that evolve your schema over time. No manual `CREATE TABLE` statements. Write migration files. Tina4 applies them in order.
+Migrations are versioned scripts that evolve your schema over time. No manual `CREATE TABLE` statements. Write migration files. Tina4 applies them in order.
 
-### Creating a Migration
+Ruby's migration system is unique among Tina4 implementations: it supports both `.sql` and `.rb` migration files.
 
-Use the CLI:
+### File Naming
+
+Two naming patterns are accepted:
+
+| Pattern | Example |
+|---------|---------|
+| Sequential | `000001_create_products_table.sql` |
+| Timestamp | `20260324120000_create_products_table.sql` |
+
+Pick one pattern and stick with it. Do not mix sequential and timestamp naming in the same project.
+
+### Generating a Migration
+
+Use the CLI to scaffold migration files:
 
 ```bash
-tina4 migrate:create create_products_table
+tina4 generate migration create_products_table
 ```
 
 ```
-Created migration: src/migrations/20260322143000_create_products_table.sql
+Created migration: migrations/20260324120000_create_products_table.sql
+Created migration: migrations/20260324120000_create_products_table.down.sql
 ```
 
-The filename starts with a timestamp so migrations always run in chronological order.
+The generator creates both the up and down files. The timestamp prefix ensures migrations always run in chronological order.
 
-Edit the generated file `src/migrations/20260322143000_create_products_table.sql`:
+### SQL Migrations
+
+Edit the generated file `migrations/20260324120000_create_products_table.sql`:
 
 ```sql
--- UP
+-- migrations/20260324120000_create_products_table.sql
 CREATE TABLE products (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -473,12 +489,37 @@ CREATE TABLE products (
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
+```
 
--- DOWN
+The down migration goes in the separate `.down.sql` file:
+
+```sql
+-- migrations/20260324120000_create_products_table.down.sql
 DROP TABLE IF EXISTS products;
 ```
 
-The `-- UP` section runs when applying the migration. The `-- DOWN` section runs when rolling back.
+The `.down.sql` file is optional. If it does not exist, rollback for that migration is skipped.
+
+The SQL parser supports `$$` delimited stored procedures and block comments, so you can include complex database objects in a single migration file.
+
+### Ruby Class Migrations
+
+As an alternative to SQL files, you can write migrations as Ruby classes. This is useful when you need conditional logic, loops, or data transformations during a migration:
+
+```ruby
+# migrations/20260324120000_create_products_table.rb
+class CreateProductsTable < Tina4::MigrationBase
+  def up
+    execute "CREATE TABLE products (id INTEGER PRIMARY KEY, name TEXT NOT NULL, price REAL DEFAULT 0.00)"
+  end
+
+  def down
+    execute "DROP TABLE IF EXISTS products"
+  end
+end
+```
+
+For `.rb` migrations, the `down` method handles rollback directly in the same file. No separate `.down.sql` file is needed.
 
 ### Running Migrations
 
@@ -488,61 +529,81 @@ tina4 migrate
 
 ```
 Running migrations...
-  [APPLIED] 20260322143000_create_products_table.sql
+  [APPLIED] 20260324120000_create_products_table.sql
 Migrations complete. 1 applied.
 ```
 
 ### Checking Migration Status
 
 ```bash
-tina4 migrate:status
+tina4ruby migrate:status
 ```
 
 ```
 Migration                                    Status     Applied At
 ---------                                    ------     ----------
-20260322143000_create_products_table.sql      applied    2026-03-22 14:30:00
-20260322150000_create_orders_table.sql        pending    -
+20260324120000_create_products_table.sql      applied    2026-03-24 12:00:00
+20260324130000_create_orders_table.sql        pending    -
 ```
 
 ### Rolling Back
 
 ```bash
-tina4 migrate:rollback
+tina4ruby migrate:rollback
 ```
 
 ```
-Rolling back last migration...
-  [ROLLED BACK] 20260322150000_create_orders_table.sql
+Rolling back last batch...
+  [ROLLED BACK] 20260324130000_create_orders_table.sql
 Rollback complete. 1 rolled back.
 ```
 
-This runs the `-- DOWN` section of the most recently applied migration.
+Rollback undoes the entire last batch of migrations. If you applied three migrations in one `tina4 migrate` run, all three are rolled back together. You can configure the number of steps if you need finer control.
+
+For `.sql` migrations, rollback runs the corresponding `.down.sql` file. For `.rb` migrations, rollback calls the `down` method.
 
 ### A Real Migration Sequence
 
 Here is what a typical project's migrations look like:
 
 ```
-src/migrations/
-├── 20260322143000_create_products_table.sql
-├── 20260322143100_create_users_table.sql
-├── 20260322143200_create_orders_table.sql
-├── 20260322143300_create_order_items_table.sql
-└── 20260323091500_add_email_index_to_users.sql
+migrations/
+├── 20260324120000_create_products_table.sql
+├── 20260324120000_create_products_table.down.sql
+├── 20260324121000_create_users_table.sql
+├── 20260324121000_create_users_table.down.sql
+├── 20260324122000_create_orders_table.rb
+└── 20260325091500_add_email_index_to_users.sql
 ```
 
-The last migration might look like:
+Notice the mix of `.sql` and `.rb` files. Both types can coexist in the same project. The `create_orders_table.rb` file contains both `up` and `down` methods, so it does not need a separate down file.
+
+The last SQL migration might look like:
 
 ```sql
--- UP
+-- migrations/20260325091500_add_email_index_to_users.sql
 CREATE INDEX idx_users_email ON users (email);
+```
 
--- DOWN
+With its down file:
+
+```sql
+-- migrations/20260325091500_add_email_index_to_users.down.sql
 DROP INDEX IF EXISTS idx_users_email;
 ```
 
-Migrations run in filename order. Each migration runs once. Tina4 tracks applied migrations in a `_migrations` table.
+### Migration Tracking
+
+Migrations run in filename order. Each migration runs once. Tina4 tracks applied migrations in a `tina4_migration` table with the following columns:
+
+| Column | Description |
+|--------|-------------|
+| `id` | Auto-increment primary key |
+| `migration_name` | The filename of the migration |
+| `batch` | The batch number (all migrations applied in one run share a batch) |
+| `executed_at` | Timestamp of when the migration was applied |
+
+The batch system is what makes rollback work: `migrate:rollback` undoes all migrations in the highest batch number.
 
 ---
 
@@ -629,10 +690,15 @@ curl -X DELETE http://localhost:7147/api/notes/1
 
 ### Migration
 
-Create `src/migrations/20260322143000_create_notes_table.sql`:
+Generate the migration:
+
+```bash
+tina4 generate migration create_notes_table
+```
+
+Edit `migrations/20260324120000_create_notes_table.sql`:
 
 ```sql
--- UP
 CREATE TABLE notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -641,8 +707,11 @@ CREATE TABLE notes (
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
+```
 
--- DOWN
+Edit `migrations/20260324120000_create_notes_table.down.sql`:
+
+```sql
 DROP TABLE IF EXISTS notes;
 ```
 
@@ -896,9 +965,9 @@ end
 
 **Problem:** You edited a migration file and ran `tina4 migrate` again, but nothing changed.
 
-**Cause:** Tina4 tracks applied migrations by filename. Once applied, a migration will not run again even if you change its contents.
+**Cause:** Tina4 tracks applied migrations by filename in the `tina4_migration` table. Once applied, a migration will not run again even if you change its contents.
 
-**Fix:** Create a new migration for schema changes. Do not edit applied migrations. If you are in early development and want to start fresh, use `tina4 migrate:rollback` to undo and then `tina4 migrate` to reapply.
+**Fix:** Create a new migration for schema changes. Do not edit applied migrations. If you are in early development and want to start fresh, use `tina4ruby migrate:rollback` to undo the last batch and then `tina4 migrate` to reapply. Use `tina4ruby migrate:status` to see which migrations are applied and which are pending.
 
 ### 7. fetch Returns Empty Array, Not Nil
 

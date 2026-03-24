@@ -371,20 +371,33 @@ await db.delete("products", "id = :id", { id: 7 });
 
 Migrations are versioned SQL scripts. They evolve your database schema over time. Each migration runs once. Never again.
 
-### Creating a Migration
+### File Naming
+
+Tina4 supports two naming patterns for migration files:
+
+- **Sequential:** `000001_create_products.sql`
+- **Timestamp:** `YYYYMMDDHHMMSS_create_products.sql`
+
+Both patterns sort correctly. Tina4 uses BigInt comparison internally, so you can mix them in the same project without issues.
+
+### Generating a Migration
 
 ```bash
-tina4 migrate:create create_products_table
+tina4 generate migration create_products_table
 ```
 
+This creates two files in the `migrations/` folder:
+
 ```
-Created migration: src/migrations/20260322143000_create_products_table.sql
+migrations/20260324120000_create_products_table.sql
+migrations/20260324120000_create_products_table.down.sql
 ```
 
-Edit the generated file:
+The first file is the forward (up) migration. The second is the down migration used for rollbacks. Edit each one separately.
+
+**Forward migration** (`20260324120000_create_products_table.sql`):
 
 ```sql
--- UP
 CREATE TABLE products (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -394,29 +407,65 @@ CREATE TABLE products (
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
+```
 
--- DOWN
+**Down migration** (`20260324120000_create_products_table.down.sql`):
+
+```sql
 DROP TABLE IF EXISTS products;
 ```
+
+Down migrations are optional. If you skip them, rollback will warn you but still remove the tracking record.
 
 ### Running Migrations
 
 ```bash
 tina4 migrate
+# or
+tina4nodejs migrate
 ```
 
-```
-Running migrations...
-  [APPLIED] 20260322143000_create_products_table.sql
-Migrations complete. 1 applied.
-```
+Each run increments a batch number. Every migration applied during that run belongs to the same batch. This matters for rollback.
 
-### Checking Status and Rolling Back
+### Checking Status
 
 ```bash
-tina4 migrate:status
-tina4 migrate:rollback
+tina4nodejs migrate:status
 ```
+
+This shows which migrations have been applied and which are still pending.
+
+### Rolling Back
+
+```bash
+tina4nodejs migrate:rollback
+```
+
+Rollback undoes the entire last batch. It finds each migration in the batch, runs its `.down.sql` file, and removes the tracking record. If a `.down.sql` file is missing, rollback warns but still cleans up the tracking entry.
+
+### The Tracking Table
+
+Tina4 creates a `tina4_migration` table automatically. It has these columns:
+
+| Column | Purpose |
+|--------|---------|
+| `id` | Auto-incrementing primary key |
+| `description` | The migration filename |
+| `content` | Full SQL text of the migration (for audit) |
+| `passed` | Whether the migration ran successfully |
+| `batch` | Which batch this migration belongs to |
+| `run_at` | When the migration was applied |
+
+### Advanced SQL Splitting
+
+Migration files can contain multiple statements. Tina4 splits them on semicolons, but it is smart about edge cases:
+
+- **`$$` delimited blocks** for PostgreSQL stored procedures and functions
+- **`//` blocks** for procedure definitions
+- **`/* */` block comments** are preserved
+- **`--` line comments** are preserved
+
+This means you can write PostgreSQL stored procedures in your migration files without Tina4 breaking on internal semicolons.
 
 ---
 
@@ -464,10 +513,15 @@ Build a notes application backed by SQLite. Create the database table via a migr
 
 ### Migration
 
-Create `src/migrations/20260322143000_create_notes_table.sql`:
+Generate the migration files:
+
+```bash
+tina4 generate migration create_notes_table
+```
+
+Edit `migrations/20260324120000_create_notes_table.sql`:
 
 ```sql
--- UP
 CREATE TABLE notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -476,8 +530,11 @@ CREATE TABLE notes (
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
+```
 
--- DOWN
+Edit `migrations/20260324120000_create_notes_table.down.sql`:
+
+```sql
 DROP TABLE IF EXISTS notes;
 ```
 
@@ -662,7 +719,15 @@ Router.delete("/api/notes/{id:int}", async (req, res) => {
 
 **Cause:** Once applied, a migration will not run again.
 
-**Fix:** Create a new migration for schema changes. Do not edit applied migrations.
+**Fix:** Create a new migration for schema changes. Do not edit applied migrations. If you need to undo, run `tina4nodejs migrate:rollback` first, then fix the migration and re-run.
+
+### 8. Down Migration Missing on Rollback
+
+**Problem:** You ran `tina4nodejs migrate:rollback` but the table was not dropped.
+
+**Cause:** The `.down.sql` file is missing. Rollback removes the tracking record but cannot undo the schema change without it.
+
+**Fix:** Always generate migrations with `tina4 generate migration`, which creates both files. If you created the migration manually, add the `.down.sql` file before you need to roll back.
 
 ### 7. fetch() Returns Empty Array, Not Null
 

@@ -454,24 +454,35 @@ These helpers generate SQL for you. Convenient for simple CRUD. For complex join
 
 ## 10. Migrations
 
-Migrations are versioned SQL scripts that evolve your schema over time. No manual `CREATE TABLE` statements. Write migration files. Tina4 applies them in order.
+Migrations are versioned SQL scripts that evolve your schema over time. No manual `CREATE TABLE` statements. Write migration files. Tina4 applies them in order and tracks what has run.
 
-### Creating a Migration
+### File Naming
+
+Two naming patterns are supported:
+
+- **Sequential**: `000001_create_products_table.sql`
+- **Timestamp**: `20260322143000_create_products_table.sql` (YYYYMMDDHHMMSS)
+
+Both work. Pick one pattern and stick with it throughout a project. Do not mix them.
+
+### Generating a Migration
 
 ```bash
-tina4 migrate:create create_products_table
+tina4 generate migration create_products_table
 ```
 
 ```
-Created migration: src/migrations/20260322143000_create_products_table.sql
+Created migration: migrations/20260322143000_create_products_table.sql
+Created migration: migrations/20260322143000_create_products_table.down.sql
 ```
 
-The timestamp prefix ensures chronological order.
+The generator creates two files: the migration itself and a matching `.down.sql` file for rollback.
 
-Edit `src/migrations/20260322143000_create_products_table.sql`:
+### Writing the Migration
+
+Edit `migrations/20260322143000_create_products_table.sql`:
 
 ```sql
--- UP
 CREATE TABLE products (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -481,17 +492,22 @@ CREATE TABLE products (
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
+```
 
--- DOWN
+Edit `migrations/20260322143000_create_products_table.down.sql`:
+
+```sql
 DROP TABLE IF EXISTS products;
 ```
 
-`-- UP` runs when applying. `-- DOWN` runs when rolling back.
+The `.down.sql` file is optional but recommended for production projects. It contains the SQL that reverses the migration.
 
 ### Running Migrations
 
 ```bash
 tina4 migrate
+# or
+tina4php migrate
 ```
 
 ```
@@ -500,10 +516,12 @@ Running migrations...
 Migrations complete. 1 applied.
 ```
 
+Each call to `tina4 migrate` is a **batch**. All pending migrations applied in a single run share the same batch number. This matters for rollback.
+
 ### Checking Migration Status
 
 ```bash
-tina4 migrate:status
+tina4php migrate:status
 ```
 
 ```
@@ -513,42 +531,95 @@ Migration                                    Status     Applied At
 20260322150000_create_orders_table.sql        pending    -
 ```
 
+Shows which migrations have been applied and which are still pending.
+
 ### Rolling Back
 
 ```bash
-tina4 migrate:rollback
+tina4php migrate:rollback
 ```
 
 ```
-Rolling back last migration...
+Rolling back last batch...
   [ROLLED BACK] 20260322150000_create_orders_table.sql
 Rollback complete. 1 rolled back.
 ```
 
-Runs the `-- DOWN` section of the most recently applied migration.
+Rollback undoes the entire last batch. It finds each migration's `.down.sql` file and executes it, then removes the tracking records. If you applied three migrations in one `tina4 migrate` call, rollback undoes all three.
+
+The `.down.sql` file must share the exact same base name as the migration. For `20260322150000_create_orders_table.sql`, the down file is `20260322150000_create_orders_table.down.sql`.
+
+### Tracking Table
+
+Tina4 creates a `tina4_migration` table to track applied migrations. The table has four columns:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | integer | Auto-increment primary key |
+| `migration` | VARCHAR(255) | The migration filename |
+| `batch` | integer | Batch number (increments each `tina4 migrate` run) |
+| `applied_at` | timestamp | When the migration was applied |
+
+You should not modify this table directly, but inspecting it can help debug migration issues.
+
+### Advanced SQL: Stored Procedures and Block Comments
+
+The migration runner handles more than simple semicolon-delimited statements. It correctly parses:
+
+- **`$$` delimited blocks** -- PostgreSQL stored procedures and functions
+- **`//` blocks** -- alternative delimiter blocks
+- **`/* */` block comments** -- skipped during parsing
+- **`--` line comments** -- skipped during parsing
+
+A PostgreSQL stored procedure migration works without issues:
+
+```sql
+CREATE OR REPLACE FUNCTION update_modified_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_updated_at
+    BEFORE UPDATE ON products
+    FOR EACH ROW
+    EXECUTE FUNCTION update_modified_column();
+```
+
+No special configuration needed. The SQL splitter recognises `$$` boundaries and treats the block as a single statement.
 
 ### A Real Migration Sequence
 
 ```
-src/migrations/
+migrations/
 ├── 20260322143000_create_products_table.sql
+├── 20260322143000_create_products_table.down.sql
 ├── 20260322143100_create_users_table.sql
+├── 20260322143100_create_users_table.down.sql
 ├── 20260322143200_create_orders_table.sql
+├── 20260322143200_create_orders_table.down.sql
 ├── 20260322143300_create_order_items_table.sql
+├── 20260322143300_create_order_items_table.down.sql
 └── 20260323091500_add_email_index_to_users.sql
 ```
 
-The last migration:
+The index migration without a `.down.sql` -- this is fine. Down migrations are optional. If you roll back and no `.down.sql` exists, the tracking record is removed but no reversal SQL runs.
+
+The index migration:
 
 ```sql
--- UP
 CREATE INDEX idx_users_email ON users (email);
+```
 
--- DOWN
+Its down file (`20260323091500_add_email_index_to_users.down.sql`), if you choose to create one:
+
+```sql
 DROP INDEX IF EXISTS idx_users_email;
 ```
 
-Migrations run in filename order. Each runs only once. Tina4 tracks applied migrations in a `_migrations` table.
+Migrations run in filename order. Each runs only once.
 
 ---
 
@@ -635,10 +706,15 @@ curl -X DELETE http://localhost:7146/api/notes/1
 
 ### Migration
 
-Create `src/migrations/20260322143000_create_notes_table.sql`:
+Generate the migration:
+
+```bash
+tina4 generate migration create_notes_table
+```
+
+Edit `migrations/20260322143000_create_notes_table.sql`:
 
 ```sql
--- UP
 CREATE TABLE notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -647,8 +723,11 @@ CREATE TABLE notes (
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
+```
 
--- DOWN
+Edit `migrations/20260322143000_create_notes_table.down.sql`:
+
+```sql
 DROP TABLE IF EXISTS notes;
 ```
 
@@ -912,11 +991,19 @@ Router::delete("/api/notes/{id:int}", function ($request, $response) {
 
 **Problem:** You edited a migration file and ran `tina4 migrate` again. Nothing changed.
 
-**Cause:** Tina4 tracks applied migrations by filename. Once applied, a migration will not run again regardless of content changes.
+**Cause:** Tina4 tracks applied migrations by filename in the `tina4_migration` table. Once applied, a migration will not run again regardless of content changes.
 
-**Fix:** Create a new migration for schema changes. Never edit applied migrations. For early development, use `tina4 migrate:rollback` first, then `tina4 migrate` to reapply.
+**Fix:** Create a new migration for schema changes. Never edit applied migrations. For early development, use `tina4php migrate:rollback` first, then `tina4 migrate` to reapply.
 
-### 7. fetch() Returns Empty Array, Not Null
+### 7. Down Migration Not Found During Rollback
+
+**Problem:** `tina4php migrate:rollback` removes the tracking record but does not reverse the schema change.
+
+**Cause:** The `.down.sql` file is missing, or its name does not match the migration. For `20260322143000_create_products_table.sql`, the down file must be `20260322143000_create_products_table.down.sql` -- same base name with `.down.sql` appended before the extension.
+
+**Fix:** Always generate migrations with `tina4 generate migration` which creates both files automatically. If you created migration files manually, add the `.down.sql` file with the exact matching name.
+
+### 8. fetch() Returns Empty Array, Not Null
 
 **Problem:** `if ($result === null)` never matches, even when the table is empty.
 
