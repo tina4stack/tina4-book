@@ -81,7 +81,7 @@ tina4 serve
   Press Ctrl+C to stop
 ```
 
-Both protocols share the same port. The server detects the upgrade request and routes to the correct handler.
+Both protocols share the same port. Tina4's built-in server uses PHP's `stream_select()` to multiplex HTTP and WebSocket connections in a single process -- no extensions like Swoole or ReactPHP required. The server detects the upgrade request and routes to the correct handler.
 
 ---
 
@@ -230,6 +230,29 @@ Router::websocket("/ws/private", function ($connection, $event, $data) {
 ```
 
 Only the sender receives the response. Other connected clients see nothing.
+
+### Closing a Connection
+
+`$connection->close()` terminates the connection from the server side:
+
+```php
+Router::websocket("/ws/secure", function ($connection, $event, $data) {
+    if ($event === "open") {
+        // Reject unauthenticated connections
+        $token = $connection->params["token"] ?? "";
+        if (!validateToken($token)) {
+            $connection->send(json_encode([
+                "type" => "error",
+                "message" => "Invalid token"
+            ]));
+            $connection->close();
+            return;
+        }
+    }
+});
+```
+
+The client receives the close event. Use this for kicking users, enforcing authentication, or cleaning up idle connections.
 
 ---
 

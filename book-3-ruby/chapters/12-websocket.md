@@ -43,8 +43,8 @@ Key differences:
 In Tina4, you define WebSocket handlers using `Tina4::Router.websocket`:
 
 ```ruby
-Tina4::Router.websocket("/ws/echo") do |connection, event, data|
-  if event == "message"
+Tina4::Router.websocket "/ws/echo" do |connection, event, data|
+  if event == :message
     connection.send("Echo: #{data}")
   end
 end
@@ -52,13 +52,27 @@ end
 
 This is the simplest WebSocket handler: it receives a message and sends it back with "Echo: " prepended. The handler receives three arguments:
 
-- **connection**: The WebSocket connection object. Use it to send messages.
-- **event**: The event type: `"open"`, `"message"`, or `"close"`.
-- **data**: The message data (only present for `"message"` events).
+- **connection**: The WebSocket connection object. Use it to send messages, broadcast, or close the connection.
+- **event**: The event type as a symbol: `:open`, `:message`, or `:close`.
+- **data**: The message data (only present for `:message` events).
+
+### Shorthand Syntax
+
+The same handler can be written with the shorthand `Tina4.websocket`:
+
+```ruby
+Tina4.websocket "/ws/echo" do |connection, event, data|
+  if event == :message
+    connection.send("Echo: #{data}")
+  end
+end
+```
+
+Both forms are identical. Use whichever reads better in your project.
 
 ### Starting the Server
 
-WebSocket runs alongside your HTTP server:
+WebSocket runs alongside your HTTP server. It works with both Puma and WEBrick:
 
 ```bash
 tina4 serve
@@ -75,12 +89,20 @@ tina4 serve
 
 ## 4. Connection Events
 
+There are three events, passed as symbols:
+
+| Event      | When it fires                        | `data` argument        |
+|------------|--------------------------------------|------------------------|
+| `:open`    | A client connects                    | `nil`                  |
+| `:message` | A client sends a message             | The message string     |
+| `:close`   | A client disconnects                 | `nil`                  |
+
 ### A Complete Handler
 
 ```ruby
-Tina4::Router.websocket("/ws/chat") do |connection, event, data|
+Tina4::Router.websocket "/ws/chat" do |connection, event, data|
   case event
-  when "open"
+  when :open
     $stderr.puts "[Chat] New connection: #{connection.id}"
     connection.send(JSON.generate({
       type: "system",
@@ -88,7 +110,7 @@ Tina4::Router.websocket("/ws/chat") do |connection, event, data|
       your_id: connection.id
     }))
 
-  when "message"
+  when :message
     message = JSON.parse(data)
     $stderr.puts "[Chat] #{connection.id}: #{message['text'] || data}"
 
@@ -99,7 +121,7 @@ Tina4::Router.websocket("/ws/chat") do |connection, event, data|
       timestamp: Time.now.iso8601
     }))
 
-  when "close"
+  when :close
     $stderr.puts "[Chat] Disconnected: #{connection.id}"
   end
 end
@@ -107,13 +129,23 @@ end
 
 ---
 
-## 5. Sending to a Single Client
+## 5. Connection Methods
+
+The `connection` object provides three methods for communication:
+
+| Method                              | What it does                                              |
+|-------------------------------------|-----------------------------------------------------------|
+| `connection.send(message)`          | Send a message to this client only                        |
+| `connection.broadcast(message)`     | Send a message to all clients on the same path            |
+| `connection.close()`               | Close this client's connection                            |
+
+### Sending to a Single Client
 
 `connection.send` sends a message to the specific client that triggered the event:
 
 ```ruby
-Tina4::Router.websocket("/ws/private") do |connection, event, data|
-  if event == "message"
+Tina4::Router.websocket "/ws/private" do |connection, event, data|
+  if event == :message
     message = JSON.parse(data)
     action = message["action"] || ""
 
@@ -136,23 +168,44 @@ Tina4::Router.websocket("/ws/private") do |connection, event, data|
 end
 ```
 
+### Closing a Connection
+
+`connection.close` terminates the client's connection from the server side. This triggers the `:close` event:
+
+```ruby
+Tina4::Router.websocket "/ws/secure" do |connection, event, data|
+  case event
+  when :open
+    token = connection.params["token"]
+    unless valid_token?(token)
+      connection.send(JSON.generate({ error: "Invalid token" }))
+      connection.close
+    end
+  when :message
+    connection.broadcast(data)
+  when :close
+    $stderr.puts "Client disconnected"
+  end
+end
+```
+
 ---
 
 ## 6. Broadcasting to All Clients
 
-`connection.broadcast` sends a message to every client connected to the same WebSocket path:
+`connection.broadcast` sends a message to every client connected to the same WebSocket path. Broadcast is **path-scoped** -- clients on `/ws/chat/room-1` never receive broadcasts from `/ws/chat/room-2`:
 
 ```ruby
-Tina4::Router.websocket("/ws/announcements") do |connection, event, data|
-  if event == "open"
+Tina4::Router.websocket "/ws/announcements" do |connection, event, data|
+  case event
+  when :open
     connection.broadcast(JSON.generate({
       type: "system",
       message: "A new user joined",
       online_count: connection.connection_count
     }))
-  end
 
-  if event == "message"
+  when :message
     message = JSON.parse(data)
 
     connection.broadcast(JSON.generate({
@@ -161,9 +214,8 @@ Tina4::Router.websocket("/ws/announcements") do |connection, event, data|
       text: message["text"] || "",
       timestamp: Time.now.iso8601
     }))
-  end
 
-  if event == "close"
+  when :close
     connection.broadcast(JSON.generate({
       type: "system",
       message: "A user left",
@@ -176,7 +228,7 @@ end
 ### Broadcast Excluding Sender
 
 ```ruby
-if event == "message"
+when :message
   message = JSON.parse(data)
 
   # Send to sender (confirmation)
@@ -189,20 +241,20 @@ if event == "message"
     text: message["text"],
     timestamp: Time.now.iso8601
   }), true)  # true = exclude sender
-end
 ```
 
 ---
 
-## 7. Path-Scoped Isolation
+## 7. Path Parameters and Scoped Isolation
 
-Different WebSocket paths are completely isolated. Clients connected to `/ws/chat/room-1` do not see messages from `/ws/chat/room-2`:
+WebSocket paths support the same `{param}` syntax as HTTP routes. Access them with `connection.params["param_name"]`. Different resolved paths are completely isolated:
 
 ```ruby
-Tina4::Router.websocket("/ws/chat/{room}") do |connection, event, data|
+Tina4::Router.websocket "/ws/chat/{room}" do |connection, event, data|
   room = connection.params["room"]
 
-  if event == "open"
+  case event
+  when :open
     $stderr.puts "[Room #{room}] New connection: #{connection.id}"
     connection.broadcast(JSON.generate({
       type: "system",
@@ -210,9 +262,8 @@ Tina4::Router.websocket("/ws/chat/{room}") do |connection, event, data|
       room: room,
       online: connection.connection_count
     }))
-  end
 
-  if event == "message"
+  when :message
     message = JSON.parse(data)
     connection.broadcast(JSON.generate({
       type: "message",
@@ -221,9 +272,8 @@ Tina4::Router.websocket("/ws/chat/{room}") do |connection, event, data|
       text: message["text"] || "",
       timestamp: Time.now.iso8601
     }))
-  end
 
-  if event == "close"
+  when :close
     connection.broadcast(JSON.generate({
       type: "system",
       message: "Someone left room #{room}",
@@ -233,6 +283,8 @@ Tina4::Router.websocket("/ws/chat/{room}") do |connection, event, data|
   end
 end
 ```
+
+A client connecting to `/ws/chat/ruby` only sees messages broadcast on `/ws/chat/ruby`. A client on `/ws/chat/python` is in a completely separate space.
 
 ---
 
@@ -245,11 +297,11 @@ Create `src/routes/chat_ws.rb`:
 ```ruby
 $chat_users = {}
 
-Tina4::Router.websocket("/ws/livechat/{room}") do |connection, event, data|
+Tina4::Router.websocket "/ws/livechat/{room}" do |connection, event, data|
   room = connection.params["room"]
 
   case event
-  when "open"
+  when :open
     $chat_users[connection.id] = {
       id: connection.id,
       username: "Anonymous",
@@ -264,7 +316,7 @@ Tina4::Router.websocket("/ws/livechat/{room}") do |connection, event, data|
       online: connection.connection_count
     }))
 
-  when "message"
+  when :message
     message = JSON.parse(data)
     type = message["type"] || "message"
 
@@ -299,7 +351,7 @@ Tina4::Router.websocket("/ws/livechat/{room}") do |connection, event, data|
       }), true)  # Exclude sender
     end
 
-  when "close"
+  when :close
     username = $chat_users.dig(connection.id, :username) || "Unknown"
     $chat_users.delete(connection.id)
 
@@ -319,15 +371,20 @@ end
 WebSocket is great for pushing notifications to users in real time:
 
 ```ruby
-Tina4::Router.websocket("/ws/notifications/{user_id}") do |connection, event, data|
+Tina4::Router.websocket "/ws/notifications/{user_id}" do |connection, event, data|
   user_id = connection.params["user_id"]
 
-  if event == "open"
+  case event
+  when :open
     $stderr.puts "[Notifications] User #{user_id} connected"
     connection.send(JSON.generate({
       type: "connected",
       message: "Listening for notifications"
     }))
+  when :message
+    # Handle client acknowledgments if needed
+  when :close
+    $stderr.puts "[Notifications] User #{user_id} disconnected"
   end
 end
 
@@ -351,6 +408,37 @@ end
 ---
 
 ## 10. Connecting from JavaScript
+
+### Using Plain WebSocket
+
+The browser's built-in `WebSocket` API is all you need:
+
+```html
+<script>
+    const ws = new WebSocket("ws://" + location.host + "/ws/chat/general");
+
+    ws.onopen = function () {
+        console.log("Connected to chat");
+    };
+
+    ws.onmessage = function (event) {
+        const message = JSON.parse(event.data);
+        console.log("Received:", message);
+    };
+
+    ws.onclose = function () {
+        console.log("Disconnected from chat");
+    };
+
+    function sendMessage(text) {
+        ws.send(JSON.stringify({ type: "message", text: text }));
+    }
+</script>
+```
+
+### Using Frond.js
+
+Tina4's Frond helper wraps WebSocket with convenience features:
 
 ```html
 <script src="/js/frond.js"></script>
@@ -410,20 +498,19 @@ Create `src/templates/chat.html`:
         <button type="submit" style="padding: 8px 16px; background: #333; color: white; border: none; border-radius: 4px;">Send</button>
     </form>
 
-    <script src="/js/frond.js"></script>
     <script>
         const room = "{{ room }}";
-        const ws = frond.ws("/ws/livechat/" + room);
+        const ws = new WebSocket("ws://" + location.host + "/ws/livechat/" + room);
         const messagesDiv = document.getElementById("messages");
         let username = prompt("Enter your username:") || "Anonymous";
 
-        ws.on("open", function () {
+        ws.onopen = function () {
             document.getElementById("status").textContent = "Connected";
             ws.send(JSON.stringify({ type: "set-username", username: username }));
-        });
+        };
 
-        ws.on("message", function (data) {
-            const msg = JSON.parse(data);
+        ws.onmessage = function (event) {
+            const msg = JSON.parse(event.data);
             const div = document.createElement("div");
             div.style.marginBottom = "8px";
 
@@ -440,7 +527,11 @@ Create `src/templates/chat.html`:
             if (msg.online !== undefined) {
                 document.getElementById("online").textContent = "Online: " + msg.online;
             }
-        });
+        };
+
+        ws.onclose = function () {
+            document.getElementById("status").textContent = "Disconnected";
+        };
 
         document.getElementById("chat-form").addEventListener("submit", function (e) {
             e.preventDefault();
@@ -465,13 +556,35 @@ end
 
 ---
 
-## 12. Exercise: Build a Real-Time Chat Room
+## 12. Server Compatibility
+
+WebSocket works with both Puma and WEBrick. Tina4 detects the available server and sets up WebSocket handling automatically:
+
+| Server  | Notes                                                     |
+|---------|-----------------------------------------------------------|
+| Puma    | Recommended for production. Handles concurrent connections efficiently. |
+| WEBrick | Ships with Ruby. Good for development and testing.        |
+
+For production deployments behind Nginx, configure WebSocket proxying:
+
+```nginx
+location /ws/ {
+    proxy_pass http://127.0.0.1:7147;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+}
+```
+
+---
+
+## 13. Exercise: Build a Real-Time Chat Room
 
 Build a WebSocket chat room with username support, message broadcasting, and join/leave notifications.
 
 ### Requirements
 
-1. WebSocket endpoint at `/ws/room/{room_name}` that handles open, set-name, chat, and close events
+1. WebSocket endpoint at `/ws/room/{room_name}` that handles `:open`, `:message`, and `:close` events
 2. HTTP endpoint at `GET /room/{room_name}` that serves an HTML chat page
 3. The chat page should prompt for a username, display messages in real time, and show online count
 
@@ -484,19 +597,19 @@ Build a WebSocket chat room with username support, message broadcasting, and joi
 
 ---
 
-## 13. Solution
+## 14. Solution
 
 Create `src/routes/chat_room.rb`:
 
 ```ruby
 $room_users = {}
 
-Tina4::Router.websocket("/ws/room/{room_name}") do |connection, event, data|
+Tina4::Router.websocket "/ws/room/{room_name}" do |connection, event, data|
   room = connection.params["room_name"]
   key = "#{room}:#{connection.id}"
 
   case event
-  when "open"
+  when :open
     $room_users[key] = "Anonymous"
 
     connection.send(JSON.generate({
@@ -511,7 +624,7 @@ Tina4::Router.websocket("/ws/room/{room_name}") do |connection, event, data|
       online: connection.connection_count
     }), true)
 
-  when "message"
+  when :message
     msg = JSON.parse(data)
     type = msg["type"] || "chat"
 
@@ -537,7 +650,7 @@ Tina4::Router.websocket("/ws/room/{room_name}") do |connection, event, data|
       }))
     end
 
-  when "close"
+  when :close
     username = $room_users[key] || "Anonymous"
     $room_users.delete(key)
 
@@ -557,46 +670,52 @@ end
 
 ---
 
-## 14. Gotchas
+## 15. Gotchas
 
 ### 1. WebSocket Needs a Persistent Server
 
 **Problem:** WebSocket connections drop immediately.
 
-**Fix:** Use `tina4 serve` which runs a persistent server. For production with WEBrick/Puma, configure WebSocket proxying with Nginx.
+**Fix:** Use `tina4 serve` which runs a persistent server. For production with Puma, configure WebSocket proxying with Nginx.
 
-### 2. Messages Are Strings, Not Objects
+### 2. Events Are Symbols, Not Strings
+
+**Problem:** Your handler never matches any events.
+
+**Fix:** Use symbols (`:open`, `:message`, `:close`), not strings (`"open"`, `"message"`, `"close"`).
+
+### 3. Messages Are Strings, Not Objects
 
 **Problem:** `data` in the message handler is a string, not a Ruby hash.
 
 **Fix:** Always `JSON.parse(data)` when you expect JSON messages. Always `JSON.generate(...)` when you send structured data.
 
-### 3. Connection Count Is Per-Path
+### 4. Connection Count Is Per-Path
 
 **Problem:** `connection.connection_count` returns a lower number than expected.
 
-**Cause:** Connection count is scoped to the WebSocket path.
+**Cause:** Connection count is scoped to the WebSocket path. Clients on `/ws/chat/room-1` and `/ws/chat/room-2` are counted separately.
 
-### 4. Broadcasting Does Not Scale Across Servers
+### 5. Broadcasting Does Not Scale Across Servers
 
 **Problem:** Users connected to different server instances do not see each other's messages.
 
 **Fix:** Use a pub/sub backend like Redis to relay messages across server instances.
 
-### 5. Large Messages Cause Disconnects
+### 6. Large Messages Cause Disconnects
 
 **Problem:** The connection drops when sending a large message.
 
 **Fix:** Keep messages small (under 64KB). Use HTTP endpoints for bulk data transfer.
 
-### 6. Memory Leak from Tracking Connected Users
+### 7. Memory Leak from Tracking Connected Users
 
 **Problem:** The server's memory usage grows over time.
 
-**Fix:** Always clean up in the `close` handler: `$chat_users.delete(connection.id)`.
+**Fix:** Always clean up in the `:close` handler: `$chat_users.delete(connection.id)`.
 
-### 7. No Authentication on WebSocket Connect
+### 8. No Authentication on WebSocket Connect
 
 **Problem:** Anyone can connect to your WebSocket endpoint.
 
-**Fix:** Pass the token as a query parameter: `ws://localhost:7147/ws/chat?token=eyJ...`. Validate in the `open` handler.
+**Fix:** Pass the token as a query parameter: `ws://localhost:7147/ws/chat?token=eyJ...`. Validate in the `:open` handler and call `connection.close` if invalid.

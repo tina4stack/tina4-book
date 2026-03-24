@@ -6,7 +6,7 @@ Your project management app needs live updates. Someone moves a card from "In Pr
 
 WebSocket establishes a persistent, bi-directional connection between the browser and the server. Data flows both ways. No polling. No refresh.
 
-Tina4 treats WebSocket the same way it treats routing. Define a WebSocket handler the same way you define an HTTP route.
+Tina4 treats WebSocket the same way it treats routing. Define a WebSocket handler the same way you define an HTTP route. It runs on Node's built-in HTTP server -- no `ws` or `socket.io` required.
 
 ---
 
@@ -21,7 +21,7 @@ HTTP is a conversation that ends. Request. Response. Connection closes. WebSocke
 ```typescript
 import { Router } from "tina4-nodejs";
 
-Router.websocket("/ws/echo", async (connection, event, data) => {
+Router.websocket("/ws/echo", (connection, event, data) => {
     if (event === "message") {
         connection.send(`Echo: ${data}`);
     }
@@ -38,14 +38,24 @@ tina4 serve
   WebSocket server running at ws://0.0.0.0:7148
 ```
 
+The callback receives three arguments:
+
+| Argument | Type | Description |
+|---|---|---|
+| `connection` | `WebSocketConnection` | The client connection object |
+| `event` | `"open" \| "message" \| "close"` | Which lifecycle event fired |
+| `data` | `string` | The message text (only meaningful when `event === "message"`) |
+
 ---
 
 ## 4. Connection Events
 
+Every WebSocket route receives exactly three events: `"open"`, `"message"`, and `"close"`.
+
 ```typescript
 import { Router } from "tina4-nodejs";
 
-Router.websocket("/ws/chat", async (connection, event, data) => {
+Router.websocket("/ws/chat", (connection, event, data) => {
     switch (event) {
         case "open":
             console.log(`[Chat] New connection: ${connection.id}`);
@@ -59,7 +69,7 @@ Router.websocket("/ws/chat", async (connection, event, data) => {
         case "message":
             const message = JSON.parse(data);
             console.log(`[Chat] ${connection.id}: ${message.text ?? data}`);
-            connection.send(JSON.stringify({
+            connection.broadcast(JSON.stringify({
                 type: "message",
                 from: connection.id,
                 text: message.text ?? data,
@@ -76,23 +86,39 @@ Router.websocket("/ws/chat", async (connection, event, data) => {
 
 ---
 
-## 5. Sending to a Single Client
+## 5. The Connection Object
+
+The `connection` object provides three methods:
+
+| Method | What it does |
+|---|---|
+| `connection.send(message)` | Send a message to this client only |
+| `connection.broadcast(message)` | Send a message to all clients on the same path |
+| `connection.close()` | Disconnect this client |
 
 ```typescript
+// Send to the current client
 connection.send(JSON.stringify({ type: "pong", timestamp: new Date().toISOString() }));
+
+// Send to everyone on this path
+connection.broadcast(JSON.stringify({ type: "announcement", text: "Server restarting" }));
+
+// Kick a client
+connection.close();
 ```
 
 ---
 
 ## 6. Broadcasting to All Clients
 
+Broadcast sends a message to every connection on the same WebSocket path. It is path-scoped: clients on `/ws/chat/general` will never receive broadcasts from `/ws/chat/dev-team`.
+
 ```typescript
-Router.websocket("/ws/announcements", async (connection, event, data) => {
+Router.websocket("/ws/announcements", (connection, event, data) => {
     if (event === "open") {
         connection.broadcast(JSON.stringify({
             type: "system",
-            message: "A new user joined",
-            online_count: connection.connectionCount()
+            message: "A new user joined"
         }));
     }
 
@@ -109,33 +135,26 @@ Router.websocket("/ws/announcements", async (connection, event, data) => {
     if (event === "close") {
         connection.broadcast(JSON.stringify({
             type: "system",
-            message: "A user left",
-            online_count: connection.connectionCount()
+            message: "A user left"
         }));
     }
 });
 ```
 
-### Broadcast Excluding Sender
-
-```typescript
-connection.broadcast(JSON.stringify({ type: "message", text: message.text }), true);
-```
-
 ---
 
-## 7. Path-Scoped Isolation
+## 7. Path Parameters and Scoped Isolation
+
+Route parameters use `{param}` syntax in the path. Access them via `connection.params`.
 
 ```typescript
-Router.websocket("/ws/chat/{room}", async (connection, event, data) => {
+Router.websocket("/ws/chat/{room}", (connection, event, data) => {
     const room = connection.params.room;
 
     if (event === "open") {
         connection.broadcast(JSON.stringify({
             type: "system",
-            message: `Someone joined room ${room}`,
-            room,
-            online: connection.connectionCount()
+            message: `Someone joined room ${room}`
         }));
     }
 
@@ -147,6 +166,13 @@ Router.websocket("/ws/chat/{room}", async (connection, event, data) => {
             from: message.username ?? "Anonymous",
             text: message.text ?? "",
             timestamp: new Date().toISOString()
+        }));
+    }
+
+    if (event === "close") {
+        connection.broadcast(JSON.stringify({
+            type: "system",
+            message: `Someone left room ${room}`
         }));
     }
 });
@@ -161,6 +187,8 @@ ws://localhost:7148/ws/chat/dev-team
 
 A broadcast in `/ws/chat/general` reaches only clients on that path. The rooms are walls.
 
+Path parameters use `{name}` curly-brace syntax, not `:name` colon syntax. Both `connection.params.room` and `connection.params["room"]` work.
+
 ---
 
 ## 8. Live Chat with Typing Indicators
@@ -170,7 +198,7 @@ import { Router } from "tina4-nodejs";
 
 const chatUsers: Record<string, { id: string; username: string; room: string }> = {};
 
-Router.websocket("/ws/livechat/{room}", async (connection, event, data) => {
+Router.websocket("/ws/livechat/{room}", (connection, event, data) => {
     const room = connection.params.room;
 
     if (event === "open") {
@@ -179,8 +207,7 @@ Router.websocket("/ws/livechat/{room}", async (connection, event, data) => {
         connection.send(JSON.stringify({
             type: "welcome",
             message: `Connected to room: ${room}`,
-            your_id: connection.id,
-            online: connection.connectionCount()
+            your_id: connection.id
         }));
     }
 
@@ -211,7 +238,7 @@ Router.websocket("/ws/livechat/{room}", async (connection, event, data) => {
             connection.broadcast(JSON.stringify({
                 type: "typing",
                 username: chatUsers[connection.id].username
-            }), true);
+            }));
         }
     }
 
@@ -221,8 +248,7 @@ Router.websocket("/ws/livechat/{room}", async (connection, event, data) => {
 
         connection.broadcast(JSON.stringify({
             type: "system",
-            message: `${username} left the chat`,
-            online: connection.connectionCount()
+            message: `${username} left the chat`
         }));
     }
 });
@@ -230,40 +256,25 @@ Router.websocket("/ws/livechat/{room}", async (connection, event, data) => {
 
 ---
 
-## 9. Live Notifications via HTTP
+## 9. Connecting from JavaScript (Browser Client)
 
-```typescript
-Router.post("/api/orders/{orderId:int}/ship", async (req, res) => {
-    const orderId = req.params.orderId;
-    const userId = req.body.user_id ?? 0;
-
-    Router.pushToWebSocket(`/ws/notifications/${userId}`, JSON.stringify({
-        type: "notification",
-        title: "Order Shipped",
-        message: `Your order #${orderId} has been shipped!`,
-        timestamp: new Date().toISOString()
-    }));
-
-    return res.json({ message: "Order shipped, user notified" });
-});
-```
-
----
-
-## 10. Connecting from JavaScript
+Use the standard `WebSocket` API built into every browser. No library needed.
 
 ```html
-<script src="/js/frond.js"></script>
 <script>
-    const ws = frond.ws("/ws/chat/general");
+    const ws = new WebSocket("ws://localhost:7148/ws/chat/general");
 
-    ws.on("open", function () {
+    ws.addEventListener("open", () => {
         console.log("Connected");
     });
 
-    ws.on("message", function (data) {
-        const message = JSON.parse(data);
+    ws.addEventListener("message", (event) => {
+        const message = JSON.parse(event.data);
         console.log("Received:", message);
+    });
+
+    ws.addEventListener("close", () => {
+        console.log("Disconnected");
     });
 
     function sendMessage(text) {
@@ -275,22 +286,34 @@ Router.post("/api/orders/{orderId:int}/ship", async (req, res) => {
 ### Auto-Reconnect
 
 ```javascript
-const ws = frond.ws("/ws/notifications/42", {
-    reconnect: true,
-    reconnectInterval: 3000,
-    maxReconnectAttempts: 10
-});
+function connectWebSocket(path) {
+    const ws = new WebSocket(`ws://${location.host}${path}`);
+
+    ws.addEventListener("close", () => {
+        console.log("Disconnected. Reconnecting in 3s...");
+        setTimeout(() => connectWebSocket(path), 3000);
+    });
+
+    ws.addEventListener("message", (event) => {
+        const data = JSON.parse(event.data);
+        console.log("Received:", data);
+    });
+
+    return ws;
+}
+
+const ws = connectWebSocket("/ws/chat/general");
 ```
 
 ---
 
-## 11. Exercise: Build a Real-Time Chat Room
+## 10. Exercise: Build a Real-Time Chat Room
 
 Build a WebSocket chat at `/ws/room/{roomName}` with usernames, join/leave messages, and an HTML page at `GET /room/{roomName}`.
 
 ---
 
-## 12. Solution
+## 11. Solution
 
 Create `src/routes/chat-room.ts`:
 
@@ -299,14 +322,20 @@ import { Router } from "tina4-nodejs";
 
 const roomUsers: Record<string, string> = {};
 
-Router.websocket("/ws/room/{roomName}", async (connection, event, data) => {
+Router.websocket("/ws/room/{roomName}", (connection, event, data) => {
     const room = connection.params.roomName;
     const key = `${room}:${connection.id}`;
 
     if (event === "open") {
         roomUsers[key] = "Anonymous";
-        connection.send(JSON.stringify({ type: "system", message: `Welcome to room: ${room}`, online: connection.connectionCount() }));
-        connection.broadcast(JSON.stringify({ type: "system", message: "A new user joined", online: connection.connectionCount() }), true);
+        connection.send(JSON.stringify({
+            type: "system",
+            message: `Welcome to room: ${room}`
+        }));
+        connection.broadcast(JSON.stringify({
+            type: "system",
+            message: "A new user joined"
+        }));
     }
 
     if (event === "message") {
@@ -315,18 +344,29 @@ Router.websocket("/ws/room/{roomName}", async (connection, event, data) => {
         if (msg.type === "set-name") {
             const oldName = roomUsers[key];
             roomUsers[key] = msg.name ?? "Anonymous";
-            connection.broadcast(JSON.stringify({ type: "system", message: `${oldName} changed their name to ${roomUsers[key]}` }));
+            connection.broadcast(JSON.stringify({
+                type: "system",
+                message: `${oldName} changed their name to ${roomUsers[key]}`
+            }));
         }
 
         if (msg.type === "chat") {
-            connection.broadcast(JSON.stringify({ type: "chat", from: roomUsers[key], text: msg.text ?? "", timestamp: new Date().toTimeString().substring(0, 8) }));
+            connection.broadcast(JSON.stringify({
+                type: "chat",
+                from: roomUsers[key],
+                text: msg.text ?? "",
+                timestamp: new Date().toTimeString().substring(0, 8)
+            }));
         }
     }
 
     if (event === "close") {
         const username = roomUsers[key] ?? "Anonymous";
         delete roomUsers[key];
-        connection.broadcast(JSON.stringify({ type: "system", message: `${username} left the room`, online: connection.connectionCount() }));
+        connection.broadcast(JSON.stringify({
+            type: "system",
+            message: `${username} left the room`
+        }));
     }
 });
 
@@ -337,7 +377,7 @@ Router.get("/room/{roomName}", async (req, res) => {
 
 ---
 
-## 13. Gotchas
+## 12. Gotchas
 
 ### 1. WebSocket Needs a Persistent Server
 
@@ -347,9 +387,9 @@ Router.get("/room/{roomName}", async (req, res) => {
 
 **Fix:** Always `JSON.parse(data)` on receive, `JSON.stringify()` on send.
 
-### 3. Connection Count Is Per-Path
+### 3. Broadcast Is Path-Scoped
 
-**Fix:** By design. Each path is an isolated group.
+Clients on `/ws/chat/general` never see broadcasts from `/ws/chat/dev-team`. By design. Each path is an isolated group.
 
 ### 4. Broadcasting Does Not Scale Across Servers
 
@@ -366,3 +406,7 @@ Router.get("/room/{roomName}", async (req, res) => {
 ### 7. No Authentication on WebSocket
 
 **Fix:** Pass token as query parameter and validate in the `open` handler.
+
+### 8. Route Params Use `{id}` Not `:id`
+
+WebSocket path parameters follow the same `{param}` curly-brace syntax as HTTP routes. Do not use Express-style `:param` colon syntax.

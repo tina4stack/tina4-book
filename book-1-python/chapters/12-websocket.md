@@ -282,10 +282,62 @@ if event == "message":
         "from": message.get("username", "Anonymous"),
         "text": message.get("text"),
         "timestamp": datetime.now(timezone.utc).isoformat()
-    }), exclude_sender=True)
+    }), exclude_self=True)
 ```
 
-The `exclude_sender=True` argument to `broadcast()` excludes the sender. The sender gets a "sent" confirmation, and everyone else gets the "message".
+The `exclude_self=True` argument to `broadcast()` excludes the sender. The sender gets a "sent" confirmation, and everyone else gets the "message".
+
+### Sending JSON
+
+Use `connection.send_json()` to send a Python dict or list as a JSON string without manually calling `json.dumps()`:
+
+```python
+@websocket("/ws/status")
+async def status_handler(connection, event, data):
+    if event == "open":
+        await connection.send_json({
+            "type": "welcome",
+            "connection_id": connection.id
+        })
+
+    if event == "message":
+        await connection.send_json({
+            "type": "ack",
+            "received": data
+        })
+```
+
+`send_json()` serialises the data to JSON for you. It is equivalent to `connection.send(json.dumps(data))` but saves you the import and the call.
+
+### Closing a Connection
+
+Use `connection.close()` to close the connection from the server side:
+
+```python
+@websocket("/ws/secure")
+async def secure_handler(connection, event, data):
+    if event == "open":
+        token = connection.params.get("token")
+        if not token or not validate_token(token):
+            await connection.send_json({"error": "Unauthorized"})
+            await connection.close()
+            return
+
+        await connection.send_json({"type": "welcome"})
+```
+
+### Connection Methods Summary
+
+| Method | Description |
+|--------|-------------|
+| `await connection.send(message)` | Send a string message to this connection only |
+| `await connection.send_json(data)` | Send a dict/list as JSON to this connection only |
+| `await connection.broadcast(message)` | Send to all connections on the same path |
+| `await connection.broadcast(message, exclude_self=True)` | Send to all except this connection |
+| `await connection.close()` | Close this connection from the server side |
+| `connection.id` | Unique identifier for this connection |
+| `connection.params` | Path parameters extracted from the URL |
+| `connection.connection_count()` | Number of active connections on this path |
 
 ---
 
@@ -408,7 +460,7 @@ async def livechat_handler(connection, event, data):
             await connection.broadcast(json.dumps({
                 "type": "typing",
                 "username": username
-            }), exclude_sender=True)
+            }), exclude_self=True)
 
     if event == "close":
         username = chat_users.get(connection.id, {}).get("username", "Unknown")
@@ -738,7 +790,7 @@ async def room_ws_handler(connection, event, data):
             "type": "system",
             "message": "A new user joined",
             "online": connection.connection_count()
-        }), exclude_sender=True)
+        }), exclude_self=True)
 
     if event == "message":
         msg = json.loads(data)
