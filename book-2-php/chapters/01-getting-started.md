@@ -105,32 +105,25 @@ tina4 init php my-store
 ```
 
 ```
-Creating Tina4 project in ./my-store ...
-  Detected language: PHP (composer.json)
-  Created .env
-  Created .env.example
-  Created .gitignore
-  Created src/routes/
-  Created src/orm/
-  Created src/migrations/
-  Created src/seeds/
-  Created src/templates/
-  Created src/templates/errors/
-  Created src/public/
-  Created src/public/js/
-  Created src/public/css/
-  Created src/public/scss/
-  Created src/public/images/
-  Created src/public/icons/
-  Created src/locales/
-  Created data/
-  Created logs/
-  Created secrets/
-  Created tests/
+▶ Initialising php project at ./my-store
+▶ Checking php runtime...
+  ✔ php found
+▶ Checking package manager...
+  ✔ composer found
+  ✔ Created directory ./my-store
+▶ Scaffolding php project...
+  ✔ Created directory structure
+  ✔ Created .env
+  ✔ Created index.php
+  ✔ Created .gitignore
+  ✔ Created composer.json
+▶ Installing dependencies...
+  ✔ Dependencies installed
 
-Project created! Next steps:
-  cd my-store
-  composer install
+✔ Project created at ./my-store
+
+Next steps:
+  cd ./my-store
   tina4 serve
 ```
 
@@ -166,7 +159,6 @@ tina4 serve
   Tina4 PHP v3.2.2
   Server running at http://0.0.0.0:7146
   Debug mode: ON
-  Database: sqlite:///data/app.db
   Press Ctrl+C to stop
 ```
 
@@ -181,14 +173,15 @@ curl http://localhost:7146/health
 ```json
 {
   "status": "ok",
-  "database": "connected",
   "uptime_seconds": 12,
   "version": "3.2.2",
   "framework": "tina4-php"
 }
 ```
 
-The server is running. The database is connected. Time to write code.
+The server is running. Time to write code.
+
+> **Note:** No database exists yet. The SQLite file (`data/app.db`) is created automatically the first time your code opens a database connection -- for example, when you configure `DATABASE_URL` in `.env` and run a query or migration. Until then, the `data/` directory remains empty.
 
 ---
 
@@ -199,33 +192,25 @@ Here is what `tina4 init` created:
 ```
 my-store/
 ├── .env                    # Your configuration (gitignored)
-├── .env.example            # Template for other developers
 ├── .gitignore              # Pre-configured
+├── index.php               # Application entry point
 ├── composer.json           # Composer package definition
-├── composer.lock           # Locked dependency versions
-├── vendor/                 # Composer packages (gitignored)
+├── vendor/                 # Composer packages (after composer install)
 ├── src/
 │   ├── routes/             # Your route handlers go here
 │   ├── orm/                # Your ORM model classes go here
-│   ├── migrations/         # SQL migration files
-│   ├── seeds/              # Database seed files
 │   ├── templates/          # Frond/Twig templates
-│   │   └── errors/         # Custom 404.html, 500.html
 │   ├── public/             # Static files (CSS, JS, images)
 │   │   ├── js/
-│   │   │   └── frond.js    # Auto-provided JS helper library
 │   │   ├── css/
-│   │   │   └── tina4.css   # Built-in CSS utility framework
-│   │   ├── scss/
-│   │   ├── images/
-│   │   └── icons/
-│   └── locales/            # Translation files
-│       └── en.json
+│   │   └── images/
+│   └── scss/               # SCSS source files (compiled to CSS)
+├── migrations/             # SQL migration files
 ├── data/                   # SQLite databases (gitignored)
-├── logs/                   # Log files (gitignored)
-├── secrets/                # JWT keys (gitignored)
-└── tests/                  # Your test files
+└── logs/                   # Log files (gitignored)
 ```
+
+> **Note:** The scaffold creates empty directories. Files like `tina4.css`, `frond.js`, and error templates become available at runtime through the `tina4/tina4-php` Composer package -- they are not copied into your project.
 
 Five directories matter:
 
@@ -233,7 +218,7 @@ Five directories matter:
 - **`src/orm/`** -- Every `.php` file here is auto-loaded. ORM model classes go here.
 - **`src/templates/`** -- Frond looks here when you call `$response->render("my-page.html", $data)`.
 - **`src/public/`** -- Files served directly. `src/public/images/logo.png` becomes `/images/logo.png`.
-- **`data/`** -- The default SQLite database (`app.db`) lives here. Gitignored. Databases do not belong in version control.
+- **`data/`** -- Where the SQLite database lives once created. Gitignored. The `data/` directory starts empty; the database file (e.g., `app.db`) is created automatically on the first database connection.
 
 ---
 
@@ -521,7 +506,7 @@ The defaults that matter for development:
 | Variable | Default Value | What It Does |
 |----------|---------------|--------------|
 | `TINA4_PORT` | `7146` | Server port |
-| `DATABASE_URL` | `sqlite:///data/app.db` | SQLite database in `data/` |
+| `DATABASE_URL` | `sqlite:///data/app.db` | SQLite database path (created on first connection) |
 | `TINA4_LOG_LEVEL` | `ALL` | All log messages output |
 | `CORS_ORIGINS` | `*` | All origins allowed |
 | `TINA4_RATE_LIMIT` | `60` | 60 requests per minute per IP |

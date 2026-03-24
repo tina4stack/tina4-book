@@ -12,13 +12,13 @@ Tina4 supports five database engines: SQLite, PostgreSQL, MySQL, Microsoft SQL S
 
 ### The Default: SQLite
 
-`tina4 init` creates a SQLite database at `data/app.db`. The default `.env` contains:
+`tina4 init` creates an empty `data/` directory but does not create a database file. The default `.env` contains:
 
 ```env
 TINA4_DEBUG=true
 ```
 
-No explicit `DATABASE_URL` means Tina4 defaults to `sqlite:///data/app.db`. The health check at `/health` already shows `"database": "connected"` without any configuration.
+No explicit `DATABASE_URL` means Tina4 defaults to `sqlite:///data/app.db`. The SQLite file is created automatically the first time Tina4 opens a database connection (for example, when you run a query, execute a migration, or the framework initialises the database layer at startup with a `DATABASE_URL` configured).
 
 ### Connection Strings for Other Databases
 
