@@ -183,6 +183,10 @@ Tina4 uses file system monitoring to detect changes. When a Python file changes,
 
 The reload happens in under a second. You edit code, switch to the browser, and the changes are already there.
 
+### Browser Auto-Refresh (DevReload)
+
+When `TINA4_DEBUG=true`, Tina4 Python automatically refreshes the browser when source files change. You do not need to manually reload the page -- save a file and the browser updates on its own. This matches the behavior of the PHP, Ruby, and Node.js implementations.
+
 ---
 
 ## 8. Hot-Patching with jurigged

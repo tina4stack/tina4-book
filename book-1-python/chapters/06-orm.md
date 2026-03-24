@@ -70,6 +70,30 @@ Verbose names (`IntegerField`, `StringField`, `BooleanField`) are the standard. 
 | `regex` | `str` | Pattern the value must match |
 | `validator` | callable | Custom validation function |
 
+### Field Mapping
+
+When your Python attribute names do not match the database column names, use `field_mapping` to define the translation:
+
+```python
+from tina4_python.orm import ORM, IntegerField, StringField
+
+class User(ORM):
+    table_name = "user_accounts"
+    primary_key = "id"
+    field_mapping = {
+        "first_name": "fname",      # Python attr → DB column
+        "last_name": "lname",
+        "email_address": "email",
+    }
+
+    id = IntegerField(auto_increment=True)
+    first_name = StringField(required=True)
+    last_name = StringField(required=True)
+    email_address = StringField(required=True)
+```
+
+With this mapping, `user.first_name` reads from and writes to the `fname` column in the database. The ORM handles the conversion in both directions -- on `load()`, `save()`, `select()`, and `to_dict()`. This is useful when working with legacy databases or third-party schemas where you cannot rename the columns.
+
 ---
 
 ## 3. create_table -- Schema from Models

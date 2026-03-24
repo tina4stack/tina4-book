@@ -418,7 +418,54 @@ By default, `POST`, `PUT`, `PATCH`, and `DELETE` routes are secured. `GET` route
 
 ---
 
-## 8. Wildcard and Catch-All Routes
+## 8. Route Chaining: .secure and .cache
+
+Routes return a chainable object. Two methods you can call on any route: `.secure` and `.cache`.
+
+### .secure
+
+`.secure` requires a valid bearer token in the `Authorization` header. If the token is missing or invalid, the route returns `401 Unauthorized` without ever reaching your handler:
+
+```ruby
+Tina4::Router.get("/api/account") do |request, response|
+  response.json({ account: request.user })
+end.secure
+```
+
+```bash
+curl http://localhost:7147/api/account
+# 401 Unauthorized
+
+curl http://localhost:7147/api/account -H "Authorization: Bearer eyJhbGci..."
+# 200 OK
+```
+
+### .cache
+
+`.cache` enables response caching for the route. Once the handler runs and produces a response, subsequent requests to the same URL return the cached result without re-executing the handler:
+
+```ruby
+Tina4::Router.get("/api/catalog") do |request, response|
+  # Expensive database query
+  response.json({ products: products })
+end.cache
+```
+
+### Chaining Both
+
+Chain `.secure` and `.cache` together:
+
+```ruby
+Tina4::Router.get("/api/data") do |request, response|
+  response.json({ data: data })
+end.secure.cache
+```
+
+This route requires a bearer token and caches the response. Order does not matter -- `.cache.secure` produces the same result.
+
+---
+
+## 9. Wildcard and Catch-All Routes
 
 ### Wildcard Routes
 
@@ -483,7 +530,7 @@ Tina4 uses this template for unmatched routes when the file exists.
 
 ---
 
-## 9. Route Listing via CLI
+## 10. Route Listing via CLI
 
 As your application grows, you need to see all registered routes at a glance:
 
@@ -541,7 +588,7 @@ GET      /api/admin/users              require_auth        public
 
 ---
 
-## 10. Organizing Route Files
+## 11. Organizing Route Files
 
 Organize route files however you want. Tina4 loads every `.rb` file in `src/routes/` recursively. Two common patterns:
 
@@ -575,7 +622,7 @@ Both work the same. The directory structure has no effect on URL paths -- only t
 
 ---
 
-## 11. Exercise: Build a Full CRUD API for Products
+## 12. Exercise: Build a Full CRUD API for Products
 
 Build a complete REST API for managing products. Data lives in a Ruby array (no database yet -- Chapter 5 handles that).
 
@@ -636,7 +683,7 @@ curl http://localhost:7147/api/products/999
 
 ---
 
-## 12. Solution
+## 13. Solution
 
 Create `src/routes/product_api.rb`:
 
@@ -781,7 +828,7 @@ Not found:
 
 ---
 
-## 13. Gotchas
+## 14. Gotchas
 
 ### 1. Trailing Slashes Matter
 

@@ -469,7 +469,56 @@ The convention: `POST`, `PUT`, `PATCH`, and `DELETE` routes are secured by defau
 
 ---
 
-## 8. Wildcard and Catch-All Routes
+## 8. Route Chaining: secure() and cache()
+
+Routes return a chainable object. Two methods you can call on any route: `secure()` and `cache()`.
+
+### secure()
+
+`secure()` requires a valid bearer token in the `Authorization` header. If the token is missing or invalid, the route returns `401 Unauthorized` without ever reaching your handler:
+
+```php
+Router::get("/api/account", function ($request, $response) {
+    return $response->json(["account" => $request->user]);
+})->secure();
+```
+
+```bash
+curl http://localhost:7146/api/account
+# 401 Unauthorized
+
+curl http://localhost:7146/api/account -H "Authorization: Bearer eyJhbGci..."
+# 200 OK
+```
+
+This is a lighter alternative to `@secured` -- it works inline without a docblock annotation.
+
+### cache()
+
+`cache()` enables response caching for the route. Once the handler runs and produces a response, subsequent requests to the same URL return the cached result without re-executing the handler:
+
+```php
+Router::get("/api/catalog", function ($request, $response) {
+    // Expensive database query
+    return $response->json(["products" => $products]);
+})->cache();
+```
+
+### Chaining Both
+
+Chain `secure()` and `cache()` together on the same route:
+
+```php
+Router::get("/api/data", function ($request, $response) {
+    return $response->json(["data" => $data]);
+})->secure()->cache();
+```
+
+This route requires a bearer token and caches the response. Order does not matter -- `->cache()->secure()` produces the same result.
+
+---
+
+## 9. Wildcard and Catch-All Routes
 
 ### Wildcard Routes
 
@@ -540,7 +589,7 @@ Tina4 uses this template for any unmatched route when the file exists.
 
 ---
 
-## 9. Route Listing via CLI
+## 10. Route Listing via CLI
 
 Your application grows. You need a map. The CLI provides one.
 
@@ -598,7 +647,7 @@ GET      /api/admin/users              requireAuth         public
 
 ---
 
-## 10. Organizing Route Files
+## 11. Organizing Route Files
 
 Tina4 loads every `.php` file in `src/routes/` recursively. The directory structure is yours to organize. Two common patterns:
 
@@ -632,7 +681,7 @@ Both work identically. The directory structure has no effect on URL paths -- onl
 
 ---
 
-## 11. Exercise: Build a Full CRUD API for Products
+## 12. Exercise: Build a Full CRUD API for Products
 
 Build a REST API for managing products. All data stored in a PHP array. No database yet -- Chapter 5 handles that.
 
@@ -693,7 +742,7 @@ curl http://localhost:7146/api/products/999
 
 ---
 
-## 12. Solution
+## 13. Solution
 
 Create `src/routes/product-api.php`:
 
@@ -843,7 +892,7 @@ Not found:
 
 ---
 
-## 13. Gotchas
+## 14. Gotchas
 
 ### 1. Trailing Slashes Matter
 

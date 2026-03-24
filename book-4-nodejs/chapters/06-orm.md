@@ -39,6 +39,31 @@ That is a complete model. Here is what each piece does:
 - **`static primaryKey`** -- The primary key column. Defaults to `"id"`.
 - **Default values** -- Properties with defaults (like `category = "Uncategorized"`) are used when creating new records.
 
+### Field Mapping
+
+When your TypeScript property names do not match the database column names, use `fieldMapping` to define the translation:
+
+```typescript
+import { BaseModel } from "tina4-nodejs";
+
+export class User extends BaseModel {
+    static tableName = "user_accounts";
+    static primaryKey = "id";
+    static fieldMapping = {
+        firstName: "fname",
+        lastName: "lname",
+        emailAddress: "email",
+    };
+
+    id!: number;
+    firstName!: string;
+    lastName!: string;
+    emailAddress!: string;
+}
+```
+
+With this mapping, `user.firstName` reads from and writes to the `fname` column in the database. The ORM handles the conversion in both directions -- on `load()`, `save()`, `select()`, `toDict()`, and `toObject()`. This takes priority over the default `camelCase` to `snake_case` conversion. Useful when working with legacy databases or third-party schemas where you cannot rename the columns.
+
 ---
 
 ## 3. Field Types
