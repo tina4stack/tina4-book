@@ -72,8 +72,8 @@ Update `.env`:
 TINA4_DEBUG=true
 TINA4_CONSOLE=true
 TINA4_CONSOLE_TOKEN=dev-token
-JWT_SECRET=taskflow-dev-secret-change-in-production
-JWT_EXPIRY=86400
+SECRET=taskflow-dev-secret-change-in-production
+TINA4_TOKEN_EXPIRES_IN=1440
 ```
 
 ### Create Migrations
@@ -214,10 +214,8 @@ class Task(ORM):
 Create `src/routes/auth.py`:
 
 ```python
-import os
-import jwt
-import time
 from tina4_python.core.router import post, get
+from tina4_python.auth import Auth
 
 @post("/api/auth/register")
 async def register(request, response):
@@ -264,15 +262,11 @@ async def login(request, response):
     if not user.verify_password(body["password"]):
         return response({"error": "Invalid credentials"}, 401)
 
-    secret = os.getenv("JWT_SECRET", "dev-secret")
-    expiry = int(os.getenv("JWT_EXPIRY", "86400"))
-
-    token = jwt.encode({
+    token = Auth.get_token({
         "user_id": user.id,
         "email": user.email,
-        "role": user.role,
-        "exp": int(time.time()) + expiry
-    }, secret, algorithm="HS256")
+        "role": user.role
+    })
 
     return response({
         "token": token,
@@ -287,8 +281,7 @@ async def login(request, response):
 Create `src/middleware/auth.py`:
 
 ```python
-import os
-import jwt
+from tina4_python.auth import Auth
 
 async def auth_middleware(request, response, next_handler):
     auth_header = request.headers.get("Authorization", "")
@@ -297,16 +290,13 @@ async def auth_middleware(request, response, next_handler):
         return response({"error": "Authentication required"}, 401)
 
     token = auth_header.replace("Bearer ", "")
-    secret = os.getenv("JWT_SECRET", "dev-secret")
 
-    try:
-        payload = jwt.decode(token, secret, algorithms=["HS256"])
-        request.user = payload
-        request.user_id = payload["user_id"]
-    except jwt.ExpiredSignatureError:
-        return response({"error": "Token expired"}, 401)
-    except jwt.InvalidTokenError:
-        return response({"error": "Invalid token"}, 401)
+    payload = Auth.valid_token(token)
+    if payload is None:
+        return response({"error": "Invalid or expired token"}, 401)
+
+    request.user = payload
+    request.user_id = payload["user_id"]
 
     return await next_handler(request, response)
 ```

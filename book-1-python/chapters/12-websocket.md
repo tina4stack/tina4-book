@@ -318,7 +318,7 @@ Use `connection.close()` to close the connection from the server side:
 async def secure_handler(connection, event, data):
     if event == "open":
         token = connection.params.get("token")
-        if not token or not validate_token(token):
+        if not token or not valid_token(token):
             await connection.send_json({"error": "Unauthorized"})
             await connection.close()
             return

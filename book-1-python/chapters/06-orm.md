@@ -228,13 +228,13 @@ async def list_notes(request, response):
 result = Note.select(
     order_by="created_at DESC",
     limit=20,
-    skip=40
+    offset=40
 )
 
 # Paginated result with metadata
 paginated = Note.to_paginate(
     limit=20,
-    skip=0,
+    offset=0,
     order_by="created_at DESC"
 )
 # paginated = {"data": [...], "total": 150, "page": 1, "per_page": 20, ...}

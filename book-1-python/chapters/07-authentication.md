@@ -34,8 +34,6 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo0MiwiZW1haWwiOiJhbGljZUBleGF
 
 The token has three parts separated by dots: header, payload, and signature. The signature ensures the token has not been tampered with.
 
-> **Legacy aliases:** `Auth.create_token()` still works as an alias for `Auth.get_token()`. Use the primary name in new code.
-
 ### Token Expiry
 
 By default, tokens expire after 60 minutes. Configure this in `.env`:
@@ -61,8 +59,6 @@ payload = Auth.valid_token(token)
 ```
 
 `valid_token()` returns the decoded payload on success, not a boolean. This lets you validate and read the token in one step. Returns `None` if the token is invalid or expired.
-
-> **Legacy alias:** `Auth.validate_token()` works the same way.
 
 ### Reading the Payload
 
