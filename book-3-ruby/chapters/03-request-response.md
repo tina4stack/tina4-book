@@ -210,7 +210,7 @@ Sets `Content-Type: text/plain; charset=utf-8`.
 
 ### render -- Template Response
 
-Render a Frond template with data (Chapter 4 goes deep):
+Render a Frond template with data ([Chapter 4: Templates](04-templates.md) goes deep):
 
 ```ruby
 response.render("products.html", {

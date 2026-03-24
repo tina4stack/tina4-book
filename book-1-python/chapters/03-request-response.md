@@ -300,7 +300,7 @@ async def robots(request, response):
 
 ### response.render()
 
-Render a Frond template with data:
+Render a Frond template with data ([Chapter 4: Templates](04-templates.md) goes deep):
 
 ```python
 @get("/dashboard")

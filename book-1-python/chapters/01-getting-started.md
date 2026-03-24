@@ -212,7 +212,7 @@ my-store/
 
 - **`src/routes/`** -- Every `.py` file here is auto-loaded at startup. Drop your route definitions here. Organize into subdirectories if you want.
 - **`src/orm/`** -- Every `.py` file here is auto-loaded. Drop your ORM model classes here.
-- **`src/templates/`** -- Frond looks here when you call `response.render("my-page.html", data)`.
+- **`src/templates/`** -- Frond (Tina4's built-in template engine -- see [Chapter 4: Templates](04-templates.md)) looks here when you call `response.render("my-page.html", data)`.
 - **`src/public/`** -- Files served directly. `src/public/images/logo.png` lives at `/images/logo.png`.
 - **`data/`** -- The default SQLite database (`app.db`) lives here. Gitignored because databases do not belong in version control.
 
@@ -514,7 +514,7 @@ TINA4_PORT=8080
 
 Restart the server (`Ctrl+C`, then `tina4 serve`). It now runs on port 8080.
 
-For the complete `.env` reference with all 68 variables, see Book 0, Chapter 4.
+For the complete `.env` reference with all 68 variables, see [Book 0, Chapter 4: Environment Variables](../../book-0-understanding/chapters/04-environment-variables.md).
 
 ---
 

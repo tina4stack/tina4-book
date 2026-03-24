@@ -194,7 +194,7 @@ This returns `201 Created` with the JSON body.
 
 ### html() -- Template or Raw HTML Response
 
-Render a Frond template with data:
+Render a Frond template with data ([Chapter 4: Templates](04-templates.md) goes deep):
 
 ```typescript
 return res.html("products.html", {

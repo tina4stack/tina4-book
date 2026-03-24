@@ -216,7 +216,7 @@ Five directories matter:
 
 - **`src/routes/`** -- Every `.php` file here is auto-loaded at startup. Route definitions go here. Subdirectories are fine.
 - **`src/orm/`** -- Every `.php` file here is auto-loaded. ORM model classes go here.
-- **`src/templates/`** -- Frond looks here when you call `$response->render("my-page.html", $data)`.
+- **`src/templates/`** -- Frond (Tina4's built-in template engine -- see [Chapter 4: Templates](04-templates.md)) looks here when you call `$response->render("my-page.html", $data)`.
 - **`src/public/`** -- Files served directly. `src/public/images/logo.png` becomes `/images/logo.png`.
 - **`data/`** -- Where the SQLite database lives once created. Gitignored. The `data/` directory starts empty; the database file (e.g., `app.db`) is created automatically on the first database connection.
 
@@ -520,7 +520,7 @@ TINA4_PORT=8080
 
 Restart the server. It runs on port 8080.
 
-For the complete `.env` reference with all 68 variables, see Book 0, Chapter 4.
+For the complete `.env` reference with all 68 variables, see [Book 0, Chapter 4: Environment Variables](../../book-0-understanding/chapters/04-environment-variables.md).
 
 ---
 
