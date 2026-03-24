@@ -6,7 +6,7 @@ Your app sends welcome emails on signup, generates PDF invoices, and resizes upl
 
 Queues move slow work to a background process. The handler drops a job onto a queue and responds immediately. A separate consumer picks it up. The user sees "Welcome -- check your email." in under 100 milliseconds. The email arrives 5 seconds later.
 
-Tina4 has a built-in queue system. Works out of the box with SQLite. No Redis. No RabbitMQ. No external services. Add jobs. Process them.
+Tina4 has a built-in queue system. Works out of the box with a file-based backend. No Redis. No RabbitMQ. No external services. Add jobs. Process them.
 
 ---
 
@@ -52,15 +52,58 @@ Beyond speed, queues provide:
 
 ---
 
-## 3. SQLite Queue (Default)
+## 3. File Queue (Default)
 
-SQLite backend by default. No configuration. First job creates `data/queue.db` automatically.
+The file-based backend is the default. No configuration needed. First job creates the queue storage automatically.
 
-### Producing a Job
+### Creating a Queue and Pushing a Job
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Queue;
+
+$queue = new Queue(topic: 'emails');
+
+// Push a job
+$queue->push([
+    "to" => "alice@example.com",
+    "subject" => "Order Confirmation",
+    "body" => "Your order #1234 has been confirmed."
+]);
+```
+
+You can also use the longer constructor form:
+
+```php
+$queue = new Queue('file', [], 'emails');
+```
+
+### Convenience Method: produce
+
+The `produce` method pushes to a specific topic without creating a separate Queue instance:
+
+```php
+$queue = new Queue(topic: 'emails');
+$queue->produce('invoices', ["order_id" => 101, "format" => "pdf"]);
+```
+
+### Queue Size
+
+Check how many pending messages are in the queue:
+
+```php
+$count = $queue->size();
+```
+
+---
+
+## 4. Pushing from Route Handlers
+
+The most common pattern is pushing messages from route handlers:
+
+```php
+<?php
+use Tina4\Router;
 use Tina4\Queue;
 
 Router::post("/api/register", function ($request, $response) {
@@ -69,11 +112,14 @@ Router::post("/api/register", function ($request, $response) {
     // Create the user (database logic)
     $userId = 42; // Simulated
 
+    $queue = new Queue(topic: 'emails');
+
     // Queue a welcome email
-    Queue::produce("send-welcome-email", [
+    $queue->push([
         "user_id" => $userId,
-        "email" => $body["email"],
-        "name" => $body["name"]
+        "to" => $body["email"],
+        "name" => $body["name"],
+        "subject" => "Welcome!"
     ]);
 
     return $response->json([
@@ -98,397 +144,148 @@ curl -X POST http://localhost:7146/api/register \
 
 Response returns immediately. The email job waits in the queue.
 
-### The Queue::produce() Method
-
-```php
-Queue::produce($queueName, $payload, $options = []);
-```
-
-- **$queueName**: String identifying the queue. Consumers subscribe by name.
-- **$payload**: Associative array. Must be JSON-serializable.
-- **$options**: Delay, priority, max retries.
-
-### Producing with Options
-
-```php
-// Delay 60 seconds
-Queue::produce("send-reminder", [
-    "user_id" => 42,
-    "message" => "Do not forget to verify your email!"
-], ["delay" => 60]);
-
-// Max retries (default is 3)
-Queue::produce("generate-invoice", [
-    "order_id" => 101,
-    "format" => "pdf"
-], ["max_retries" => 5]);
-
-// Priority (lower number = higher priority)
-Queue::produce("resize-image", [
-    "image_path" => "/uploads/photo.jpg",
-    "sizes" => [100, 300, 600]
-], ["priority" => 1]);
-```
-
 ---
 
-## 4. Consuming Jobs
+## 5. Consuming Jobs
 
-A consumer listens for jobs on a named queue and processes them. Define consumers in `src/routes/` (or any auto-loaded file):
+The `consume` method is a generator that yields jobs one at a time. Each job must be explicitly completed or failed:
 
 ```php
 <?php
 use Tina4\Queue;
 
-Queue::consume("send-welcome-email", function ($job) {
-    $email = $job->payload["email"];
-    $name = $job->payload["name"];
+$queue = new Queue(topic: 'emails');
 
-    error_log("Sending welcome email to " . $email . " for " . $name);
-
-    // Return true to mark completed
-    return true;
-});
+foreach ($queue->consume('emails') as $job) {
+    try {
+        sendEmail($job->payload['to'], $job->payload['subject'], $job->payload['body']);
+        $job->complete();
+    } catch (\Throwable $e) {
+        $job->fail($e->getMessage());
+    }
+}
 ```
 
-### Starting the Consumer
+### Manual Pop
 
-```bash
-tina4 queue:work
+For more control, pop a single message:
+
+```php
+$job = $queue->pop();
+
+if ($job !== null) {
+    try {
+        sendEmail($job->payload['to'], $job->payload['subject']);
+        $job->complete();
+    } catch (\Throwable $e) {
+        $job->fail($e->getMessage());
+    }
+}
 ```
-
-```
-Queue worker started
-  Listening on: all queues
-  Backend: sqlite:///data/queue.db
-  Polling interval: 1s
-
-[2026-03-22 14:30:01] Processing job #1 on "send-welcome-email"
-[2026-03-22 14:30:01] Job #1 completed in 45ms
-```
-
-The worker polls every second. Picks up pending jobs. Calls your callback.
-
-### Listening to Specific Queues
-
-```bash
-# One queue
-tina4 queue:work --queue send-welcome-email
-
-# Multiple queues
-tina4 queue:work --queue send-welcome-email,generate-invoice
-```
-
-### Running Multiple Workers
-
-```bash
-# Terminal 1
-tina4 queue:work --queue send-welcome-email
-
-# Terminal 2
-tina4 queue:work --queue generate-invoice
-
-# Terminal 3
-tina4 queue:work --queue resize-image
-```
-
-One worker per queue. Jobs processed in parallel.
 
 ---
 
-## 5. Job Lifecycle
+## 6. Job Lifecycle
 
 Every job moves through states:
 
 ```
-pending -> reserved -> completed
-                    -> failed -> pending (retry)
-                              -> dead (max retries exceeded)
+push() -> PENDING -> pop()/consume() -> RESERVED -> $job->complete() -> COMPLETED
+                                                 -> $job->fail()     -> FAILED
+                                                                          |
+                                                                    retry (manual)
+                                                                          |
+                                                                       PENDING
+                                                                          |
+                                                                max retries exceeded
+                                                                          |
+                                                                     DEAD LETTER
 ```
 
-### Pending
+### Job Methods
 
-Waiting in the queue. No worker has claimed it yet.
+When you receive a job from `consume` or `pop`, you have three methods:
 
-### Reserved
+- `$job->complete()` -- mark the job as done
+- `$job->fail($reason)` -- mark the job as failed with a reason string
+- `$job->reject($reason)` -- alias for `fail`
 
-A worker claimed it. Processing. Other workers will not touch it. If the worker crashes, the job returns to `pending` after a timeout.
+Always call one of these. If you do not, the job stays reserved.
 
-### Completed
+---
 
-Consumer returned `true`. Done. Removed from the active queue.
+## 7. Retry and Dead Letters
 
-### Failed
+### Max Retries
 
-Consumer returned `false` or threw an exception. Scheduled for retry.
+The default `max_retries` is 3. When a job's attempt count reaches `max_retries`, `retryFailed()` skips it.
 
-### Dead Letter
-
-Max retries exceeded. No more automatic retries. Needs human attention.
-
-### Inspecting Job State
+### Retrying Failed Jobs
 
 ```php
-<?php
-use Tina4\Queue;
+// Retry a specific job by ID
+$queue->retry($jobId);
 
-$stats = Queue::stats("send-welcome-email");
+// Retry all failed jobs (skips those that exceeded max_retries)
+$queue->retryFailed();
 ```
+
+### Dead Letters
+
+Jobs that have exceeded `max_retries` are dead letters. There is no magic dead letter queue -- you retrieve and handle them yourself:
 
 ```php
-[
-    "queue" => "send-welcome-email",
-    "pending" => 12,
-    "reserved" => 2,
-    "completed" => 1453,
-    "failed" => 3,
-    "dead" => 1
-]
+$deadJobs = $queue->deadLetters();
+
+foreach ($deadJobs as $job) {
+    error_log("Dead job: " . $job->id);
+    error_log("  Payload: " . json_encode($job->payload));
+    error_log("  Error: " . $job->error);
+}
 ```
 
-Also visible in the dev dashboard at `/tina4/console` under "Queue Manager".
+### Purging Jobs
 
----
-
-## 6. Retry Logic and Max Retries
-
-Failed jobs retry with exponential backoff:
-
-- Retry 1: after 10 seconds
-- Retry 2: after 30 seconds
-- Retry 3: after 90 seconds
-
-Default max: 3 retries. After the third failure, the job moves to dead letter.
-
-### Handling Failures
+Remove jobs by status:
 
 ```php
-<?php
-use Tina4\Queue;
-
-Queue::consume("send-welcome-email", function ($job) {
-    $email = $job->payload["email"];
-
-    try {
-        $success = sendEmail($email, "Welcome!", "Welcome to our platform.");
-
-        if (!$success) {
-            error_log("Failed to send email to " . $email . " (attempt " . $job->attempts . ")");
-            return false; // Triggers retry
-        }
-
-        return true;
-
-    } catch (\Exception $e) {
-        error_log("Exception sending email to " . $email . ": " . $e->getMessage());
-        return false;
-    }
-});
-```
-
-### Custom Max Retries
-
-```php
-// Critical: retry 10 times
-Queue::produce("send-password-reset", [
-    "email" => "alice@example.com",
-    "token" => "abc123"
-], ["max_retries" => 10]);
-
-// Non-critical: retry once
-Queue::produce("send-marketing-email", [
-    "email" => "bob@example.com",
-    "campaign" => "spring-sale"
-], ["max_retries" => 1]);
-```
-
-### Accessing Attempt Count
-
-```php
-Queue::consume("generate-invoice", function ($job) {
-    error_log("Processing invoice (attempt " . $job->attempts . " of " . $job->maxRetries . ")");
-
-    if ($job->attempts >= 3) {
-        error_log("Using fallback invoice generator");
-    }
-
-    return true;
-});
+$queue->purge("completed");
+$queue->purge("failed");
 ```
 
 ---
 
-## 7. Dead Letter Queue
-
-Jobs that exhausted their retries. Something is wrong. Email server is down permanently. PDF template is broken. Input data is invalid.
-
-### Viewing Dead Letter Jobs
-
-```bash
-tina4 queue:dead
-```
-
-```
-Dead Letter Queue
------------------
-Job #42  Queue: send-welcome-email  Failed: 3 times  Last error: "Connection refused"
-  Payload: {"user_id": 42, "email": "alice@example.com", "name": "Alice"}
-  First attempt: 2026-03-22 14:30:00
-  Last attempt:  2026-03-22 14:35:30
-
-Job #67  Queue: generate-invoice  Failed: 3 times  Last error: "Template not found"
-  Payload: {"order_id": 101, "format": "pdf"}
-  First attempt: 2026-03-22 15:00:00
-  Last attempt:  2026-03-22 15:05:00
-```
-
-### Re-Queuing
-
-Fix the underlying issue. Then retry:
-
-```bash
-# Specific job
-tina4 queue:retry 42
-
-# All dead jobs for a queue
-tina4 queue:retry --queue send-welcome-email
-
-# All dead jobs
-tina4 queue:retry --all
-```
-
-### Clearing
-
-Job no longer relevant (user signed up again, order cancelled):
-
-```bash
-# Specific job
-tina4 queue:clear 42
-
-# Older than 7 days
-tina4 queue:clear --older-than 7d
-```
-
----
-
-## 8. Switching to RabbitMQ
-
-Higher throughput. Message durability across restarts. Distributed processing. One line in `.env`:
-
-```env
-TINA4_QUEUE_BACKEND=rabbitmq
-TINA4_QUEUE_HOST=localhost
-TINA4_QUEUE_PORT=5672
-TINA4_QUEUE_USERNAME=guest
-TINA4_QUEUE_PASSWORD=guest
-TINA4_QUEUE_VHOST=/
-```
-
-Code unchanged. Same `Queue::produce()` and `Queue::consume()`. Tina4 handles the protocol.
-
-### When to Switch
-
-| Feature | SQLite Queue | RabbitMQ |
-|---------|-------------|----------|
-| Setup | Zero config | Requires RabbitMQ server |
-| Throughput | Hundreds of jobs/sec | Tens of thousands |
-| Multi-server | Single server only | Multiple servers, distributed |
-| Persistence | File-based | Durable queues, survives restarts |
-| Monitoring | Dev dashboard | RabbitMQ Management UI |
-| Best for | Development, small apps | Production, high-volume |
-
----
-
-## 9. Switching to Kafka
-
-Event streaming at scale. Millions of events per second. Event replay. Multiple consumer groups.
-
-```env
-TINA4_QUEUE_BACKEND=kafka
-TINA4_QUEUE_HOST=localhost
-TINA4_QUEUE_PORT=9092
-TINA4_QUEUE_GROUP_ID=my-app-workers
-```
-
-Same API. Same code.
-
-### When to Use Kafka
-
-- Millions of events per second
-- Multiple independent consumers reading the same events
-- Event replay (re-process historical events)
-- Event-driven microservices
-
-For most applications: SQLite for development, RabbitMQ for production. Kafka when you outgrow RabbitMQ.
-
----
-
-## 9b. Switching to MongoDB
-
-```env
-TINA4_QUEUE_BACKEND=mongodb
-TINA4_MONGO_HOST=localhost
-TINA4_MONGO_PORT=27017
-TINA4_MONGO_DB=tina4
-TINA4_MONGO_COLLECTION=tina4_queue
-# Or use a full URI:
-# TINA4_MONGO_URI=mongodb://user:pass@host:27017/tina4
-```
-
-MongoDB uses `findOneAndUpdate` for atomic job claiming -- no double-processing. Install the driver:
-
-```bash
-composer require ext-mongodb
-```
-
-Same API. Same code. Same `Queue::produce()` and `Queue::consume()` calls.
-
----
-
-## 10. Monitoring via Dev Dashboard
-
-`TINA4_DEBUG=true` activates the "Queue Manager" in `/tina4/console`:
-
-- **Queue overview**: pending, reserved, completed, failed, dead counts per queue
-- **Recent jobs**: last 50 processed with status, duration, payload
-- **Failed jobs**: error messages, retry counts
-- **Dead letter queue**: jobs that exhausted retries
-- **Throughput graph**: jobs per minute over the last hour
-
-Full visibility without command-line tools.
-
----
-
-## 11. Producing Multiple Jobs
+## 8. Producing Multiple Jobs
 
 One action. Multiple background tasks:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 use Tina4\Queue;
 
 Router::post("/api/orders", function ($request, $response) {
     $body = $request->body;
 
     $orderId = 101;
-    $userId = $body["user_id"];
+    $queue = new Queue(topic: 'emails');
 
-    Queue::produce("send-order-confirmation", [
+    $queue->push([
         "order_id" => $orderId,
-        "email" => $body["email"]
+        "to" => $body["email"],
+        "subject" => "Order Confirmation"
     ]);
 
-    Queue::produce("generate-invoice", [
+    $queue->produce("invoices", [
         "order_id" => $orderId,
         "format" => "pdf"
     ]);
 
-    Queue::produce("update-inventory", [
+    $queue->produce("inventory", [
         "items" => $body["items"]
     ]);
 
-    Queue::produce("notify-warehouse", [
+    $queue->produce("warehouse", [
         "order_id" => $orderId,
         "shipping_address" => $body["shipping_address"]
     ]);
@@ -500,231 +297,231 @@ Router::post("/api/orders", function ($request, $response) {
 });
 ```
 
-Four jobs queued in under 5 milliseconds. Instant response. Email, invoice, inventory, warehouse notification -- all in the background.
+Four jobs queued in under 5 milliseconds. Instant response.
 
 ---
 
-## 12. Exercise: Build an Email Queue
+## 9. Switching Backends
 
-Queue-based email for user signup. Queue the welcome email. Write a consumer.
+Switching backends is a config change, not a code change.
+
+### Default: File
+
+```env
+# No config needed -- file is the default
+```
+
+### RabbitMQ
+
+```env
+TINA4_QUEUE_BACKEND=rabbitmq
+TINA4_QUEUE_URL=amqp://user:pass@localhost:5672
+```
+
+### Kafka
+
+```env
+TINA4_QUEUE_BACKEND=kafka
+TINA4_QUEUE_URL=localhost:9092
+```
+
+### MongoDB
+
+```env
+TINA4_QUEUE_BACKEND=mongodb
+TINA4_QUEUE_URL=mongodb://user:pass@localhost:27017/tina4
+```
+
+Your queue code does not change at all. The same `$queue->push()` and `$queue->consume()` calls work with every backend.
+
+---
+
+## 10. Exercise: Build an Email Queue
+
+Build a queue-based email system with failure handling.
 
 ### Requirements
 
-1. `POST /api/signup` endpoint:
-   - Accepts `name`, `email`, `password`
-   - Queues a job on `welcome-emails`
-   - Returns immediately
+1. Create these endpoints:
 
-2. Consumer for `welcome-emails`:
-   - Logs email details (simulating send)
-   - Includes user name
-   - Returns `true` on success
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/emails/send` | Queue an email for sending |
+| `GET` | `/api/emails/queue` | Show pending email count |
+| `GET` | `/api/emails/dead` | List dead letter jobs |
+| `POST` | `/api/emails/retry` | Retry all failed jobs |
 
-3. `GET /api/queue/stats` endpoint showing queue statistics
+2. The email payload should include: `to` (required), `subject` (required), `body` (required)
+
+3. Create a consumer that processes the queue, simulating occasional failures
+
+4. When an email fails repeatedly, it should end up in dead letters
 
 ### Test with:
 
 ```bash
-# Register
-curl -X POST http://localhost:7146/api/signup \
+# Queue an email
+curl -X POST http://localhost:7146/api/emails/send \
   -H "Content-Type: application/json" \
-  -d '{"name": "Alice", "email": "alice@example.com", "password": "securePass123"}'
+  -d '{"to": "alice@example.com", "subject": "Welcome!", "body": "Thanks for signing up."}'
 
-# Register another
-curl -X POST http://localhost:7146/api/signup \
-  -H "Content-Type: application/json" \
-  -d '{"name": "Bob", "email": "bob@example.com", "password": "anotherPass456"}'
+# Check queue size
+curl http://localhost:7146/api/emails/queue
 
-# Check stats (2 pending)
-curl http://localhost:7146/api/queue/stats
+# Check dead letters
+curl http://localhost:7146/api/emails/dead
 
-# Start worker in another terminal
-tina4 queue:work --queue welcome-emails
-
-# Check stats again (2 completed)
-curl http://localhost:7146/api/queue/stats
+# Retry failed
+curl -X POST http://localhost:7146/api/emails/retry
 ```
 
 ---
 
-## 13. Solution
+## 11. Solution
 
 Create `src/routes/email-queue.php`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 use Tina4\Queue;
+
+$queue = new Queue(topic: 'emails');
 
 /**
  * @noauth
  */
-Router::post("/api/signup", function ($request, $response) {
+Router::post("/api/emails/send", function ($request, $response) use ($queue) {
     $body = $request->body;
 
-    if (empty($body["name"]) || empty($body["email"]) || empty($body["password"])) {
-        return $response->json(["error" => "Name, email, and password are required"], 400);
+    $errors = [];
+    if (empty($body["to"])) $errors[] = "'to' is required";
+    if (empty($body["subject"])) $errors[] = "'subject' is required";
+    if (empty($body["body"])) $errors[] = "'body' is required";
+
+    if (!empty($errors)) {
+        return $response->json(["errors" => $errors], 400);
     }
 
-    $userId = rand(1, 10000);
-
-    Queue::produce("welcome-emails", [
-        "user_id" => $userId,
-        "name" => $body["name"],
-        "email" => $body["email"],
-        "signed_up_at" => date("c")
+    $messageId = $queue->push([
+        "to" => $body["to"],
+        "subject" => $body["subject"],
+        "body" => $body["body"]
     ]);
 
     return $response->json([
-        "message" => "Signup successful. A welcome email will be sent shortly.",
-        "user_id" => $userId
+        "message" => "Email queued for sending",
+        "message_id" => $messageId
     ], 201);
 });
 
-Queue::consume("welcome-emails", function ($job) {
-    $name = $job->payload["name"];
-    $email = $job->payload["email"];
-    $userId = $job->payload["user_id"];
-
-    error_log("=== Welcome Email ===");
-    error_log("To: " . $email);
-    error_log("Subject: Welcome to our platform, " . $name . "!");
-    error_log("Body: Hi " . $name . ", your account (ID: " . $userId . ") has been created.");
-    error_log("Signed up: " . $job->payload["signed_up_at"]);
-    error_log("=====================");
-
-    return true;
+Router::get("/api/emails/queue", function ($request, $response) use ($queue) {
+    $count = $queue->size();
+    return $response->json(["pending" => $count]);
 });
 
-Router::get("/api/queue/stats", function ($request, $response) {
-    $stats = Queue::stats("welcome-emails");
+Router::get("/api/emails/dead", function ($request, $response) use ($queue) {
+    $deadJobs = $queue->deadLetters();
+    $items = [];
+    foreach ($deadJobs as $job) {
+        $items[] = [
+            "id" => $job->id,
+            "payload" => $job->payload,
+            "error" => $job->error
+        ];
+    }
+    return $response->json(["dead_letters" => $items, "count" => count($items)]);
+});
 
-    return $response->json([
-        "queue" => "welcome-emails",
-        "stats" => $stats
-    ]);
+Router::post("/api/emails/retry", function ($request, $response) use ($queue) {
+    $queue->retryFailed();
+    return $response->json(["message" => "Failed emails re-queued for retry"]);
 });
 ```
 
-**Signup output:** `201 Created`
+Create a separate consumer file `src/workers/email_worker.php`:
 
-```json
-{
-  "message": "Signup successful. A welcome email will be sent shortly.",
-  "user_id": 4829
+```php
+<?php
+use Tina4\Queue;
+
+$queue = new Queue(topic: 'emails');
+
+foreach ($queue->consume('emails') as $job) {
+    $payload = $job->payload;
+
+    echo "Sending email to {$payload['to']}...\n";
+    echo "  Subject: {$payload['subject']}\n";
+
+    try {
+        // Simulate sending (replace with real email logic)
+        sleep(1);
+
+        // Simulate failure for a specific address
+        if ($payload['to'] === 'bad@example.com') {
+            throw new \RuntimeException("SMTP connection refused");
+        }
+
+        echo "  Email sent to {$payload['to']} successfully!\n";
+        $job->complete();
+
+    } catch (\Throwable $e) {
+        echo "  Failed: {$e->getMessage()}\n";
+        $job->fail($e->getMessage());
+    }
 }
 ```
 
-**Stats before processing:**
-
-```json
-{
-  "queue": "welcome-emails",
-  "stats": {
-    "queue": "welcome-emails",
-    "pending": 2,
-    "reserved": 0,
-    "completed": 0,
-    "failed": 0,
-    "dead": 0
-  }
-}
-```
-
-**Worker output:**
-
-```
-[2026-03-22 14:30:01] Processing job #1 on "welcome-emails"
-=== Welcome Email ===
-To: alice@example.com
-Subject: Welcome to our platform, Alice!
-Body: Hi Alice, your account (ID: 4829) has been created.
-Signed up: 2026-03-22T14:30:00+00:00
-=====================
-[2026-03-22 14:30:01] Job #1 completed in 2ms
-
-[2026-03-22 14:30:02] Processing job #2 on "welcome-emails"
-=== Welcome Email ===
-To: bob@example.com
-Subject: Welcome to our platform, Bob!
-Body: Hi Bob, your account (ID: 7213) has been created.
-Signed up: 2026-03-22T14:30:00+00:00
-=====================
-[2026-03-22 14:30:02] Job #2 completed in 1ms
-```
-
-**Stats after processing:**
-
-```json
-{
-  "queue": "welcome-emails",
-  "stats": {
-    "queue": "welcome-emails",
-    "pending": 0,
-    "reserved": 0,
-    "completed": 2,
-    "failed": 0,
-    "dead": 0
-  }
-}
-```
+After the consumer has retried a job to `bad@example.com` three times, `$queue->deadLetters()` returns that job. The `/api/emails/dead` endpoint shows it. You investigate, fix the address, and call `/api/emails/retry` to re-queue.
 
 ---
 
-## 14. Gotchas
+## 12. Gotchas
 
-### 1. Worker Must Be Running Separately
+### 1. Always call complete or fail
 
-**Problem:** Jobs produced. Nothing happens. Queue fills up.
+**Problem:** Jobs stay in reserved status forever.
 
-**Cause:** No worker process. Producing adds to the queue. A separate process must consume.
+**Cause:** Your consumer does not call `$job->complete()` or `$job->fail()`. The job stays reserved and is never released.
 
-**Fix:** Run `tina4 queue:work` in another terminal. In production, use `supervisord` or `systemd` to keep the worker alive.
+**Fix:** Always call one of `$job->complete()`, `$job->fail($reason)`, or `$job->reject($reason)` in your consumer loop.
 
-### 2. Consumer Not Registered
+### 2. Worker not picking up messages
 
-**Problem:** Worker starts. Reports "No consumer found for queue: my-queue".
+**Problem:** Messages are pushed but nothing happens.
 
-**Cause:** `Queue::consume()` call is in a file the worker did not load.
+**Cause:** No consumer process is running, or the consumer is listening on a different topic.
 
-**Fix:** Put the consumer in `src/routes/`. The `tina4 queue:work` command loads the same files as the web server.
+**Fix:** Make sure the consumer is running. Check that the topic name in `$queue->push()` matches the topic in `$queue->consume()`.
 
-### 3. Job Payload Is Not Serializable
+### 3. Payload must be JSON-serializable
 
-**Problem:** `Queue::produce()` throws a serialization error.
+**Problem:** `$queue->push()` throws a serialization error.
 
 **Cause:** You passed an object, database connection, file handle, or other non-serializable value.
 
 **Fix:** Payload must contain only simple types: strings, numbers, booleans, arrays of these. Pass IDs, not objects. The consumer looks up records by ID.
 
-### 4. Jobs Process in Wrong Order
+### 4. Dead letters pile up
 
-**Problem:** Jobs arrive out of order.
+**Problem:** Dead letters accumulate and nobody notices.
 
-**Cause:** Multiple workers process in parallel. No guaranteed ordering.
+**Cause:** Failed jobs that exceed `max_retries` become dead letters but are never cleaned up.
 
-**Fix:** For ordering, use a single worker. Or include a sequence number in the payload. For most use cases (emails, PDFs), order does not matter.
+**Fix:** Monitor dead letters with `$queue->deadLetters()`. Set up an alert when the count exceeds a threshold. Investigate the root cause, fix it, then call `$queue->retryFailed()` or `$queue->purge("failed")`.
 
-### 5. SQLite Queue Lock Contention
+### 5. File backend for production
 
-**Problem:** Multiple workers on the same SQLite queue cause "database is locked" errors.
+**Problem:** Multiple workers cause contention on the file backend.
 
-**Cause:** SQLite supports one writer at a time. Multiple workers compete for the same file.
+**Cause:** The file backend is designed for single-worker setups.
 
-**Fix:** Switch to RabbitMQ, Kafka, or MongoDB. SQLite queues are for single-worker setups and development.
+**Fix:** For production with multiple workers, switch to RabbitMQ, Kafka, or MongoDB via the `TINA4_QUEUE_BACKEND` environment variable.
 
-### 6. Consumer Returns Nothing
+### 6. Consumer returns nothing
 
-**Problem:** Jobs process but immediately fail and retry.
+**Problem:** Jobs process but immediately fail.
 
-**Cause:** No `return true`. PHP returns `null`. Tina4 interprets `null` as failure.
+**Cause:** You forgot to call `$job->complete()`. Without it, the job stays reserved or is treated as failed.
 
-**Fix:** Always `return true` on success. `return false` on failure. Do not forget the `return`.
-
-### 7. Dead Letter Jobs Accumulate
-
-**Problem:** Dead letter queue grows. Nobody notices.
-
-**Cause:** No monitoring or alerting.
-
-**Fix:** Check `Queue::stats()` periodically. Set up alerts when the dead count exceeds a threshold. In production, integrate with monitoring (Prometheus, Datadog). Review dead letters regularly -- they reveal consumer bugs and external service failures.
+**Fix:** Always call `$job->complete()` on success and `$job->fail($reason)` on failure. Do not rely on return values.

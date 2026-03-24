@@ -6,7 +6,7 @@ Your app sends welcome emails on signup. Generates PDF invoices. Resizes uploade
 
 Queues move slow work to a background process. The HTTP handler drops a job onto a queue and responds to the user in under 100 milliseconds. A separate consumer picks up the job and does the work at its own pace. The user sees "Welcome! Check your email." The email arrives 5 seconds later.
 
-Tina4's queue system works out of the box with SQLite. No Redis. No RabbitMQ. No external services. Add jobs and process them.
+Tina4's queue system works out of the box with a lite backend. No Redis. No RabbitMQ. No external services. Add jobs and process them.
 
 ---
 
@@ -45,24 +45,59 @@ Meanwhile, in the background:
 
 ---
 
-## 3. SQLite Queue (Default)
+## 3. Lite Queue (Default)
 
-Tina4's queue system uses SQLite by default. No configuration needed. When you produce your first job, Tina4 creates a `data/queue.db` database automatically.
+Tina4's queue system uses the lite backend by default. No configuration needed.
 
-### Producing a Job
+### Creating a Queue and Pushing a Job
+
+```ruby
+require "tina4/queue"
+
+queue = Queue.new(topic: "emails")
+
+# Push a job
+queue.push({
+  to: "alice@example.com",
+  subject: "Order Confirmation",
+  body: "Your order #1234 has been confirmed."
+})
+```
+
+### Convenience Method: produce
+
+The `produce` method pushes to a specific topic without creating a separate Queue instance:
+
+```ruby
+queue = Queue.new(topic: "emails")
+queue.produce("invoices", { order_id: 101, format: "pdf" })
+```
+
+### Queue Size
+
+Check how many pending messages are in the queue:
+
+```ruby
+count = queue.size
+```
+
+---
+
+## 4. Pushing from Route Handlers
 
 ```ruby
 Tina4::Router.post("/api/register") do |request, response|
   body = request.body
 
-  # Create the user (database logic)
   user_id = 42 # Simulated
 
-  # Queue a welcome email
-  Tina4::Queue.produce("send-welcome-email", {
+  queue = Queue.new(topic: "emails")
+
+  queue.push({
     user_id: user_id,
-    email: body["email"],
-    name: body["name"]
+    to: body["email"],
+    name: body["name"],
+    subject: "Welcome!"
   })
 
   response.json({
@@ -85,237 +120,117 @@ curl -X POST http://localhost:7147/api/register \
 }
 ```
 
-### The Queue.produce Method
-
-```ruby
-Tina4::Queue.produce(queue_name, payload, options = {})
-```
-
-- **queue_name**: A string that identifies which queue to put the job on.
-- **payload**: A hash of data the consumer needs to process the job.
-- **options**: Optional settings like delay, priority, and max retries.
-
-### Producing with Options
-
-```ruby
-# Delay the job by 60 seconds
-Tina4::Queue.produce("send-reminder", {
-  user_id: 42,
-  message: "Do not forget to verify your email!"
-}, { delay: 60 })
-
-# Set max retries (default is 3)
-Tina4::Queue.produce("generate-invoice", {
-  order_id: 101,
-  format: "pdf"
-}, { max_retries: 5 })
-
-# Set priority (lower number = higher priority)
-Tina4::Queue.produce("resize-image", {
-  image_path: "/uploads/photo.jpg",
-  sizes: [100, 300, 600]
-}, { priority: 1 })
-```
-
 ---
 
-## 4. Consuming Jobs
+## 5. Consuming Jobs
 
-A consumer listens for jobs on a specific queue and processes them:
+The `consume` method yields jobs one at a time via a block. Each job must be explicitly completed or failed:
 
 ```ruby
-Tina4::Queue.consume("send-welcome-email") do |job|
-  email = job.payload["email"]
-  name = job.payload["name"]
+require "tina4/queue"
 
-  $stderr.puts "Sending welcome email to #{email} for #{name}"
+queue = Queue.new(topic: "emails")
 
-  # In a real app, you would use Tina4::Messenger here
-
-  true  # Return true to mark the job as completed
+queue.consume("emails") do |job|
+  begin
+    send_email(job.payload[:to], job.payload[:subject], job.payload[:body])
+    job.complete
+  rescue => e
+    job.fail(e.message)
+  end
 end
 ```
 
-### Starting the Consumer
+### Manual Pop
 
-```bash
-tina4 queue:work
-```
-
-```
-Queue worker started
-  Listening on: all queues
-  Backend: sqlite:///data/queue.db
-  Polling interval: 1s
-
-[2026-03-22 14:30:01] Processing job #1 on "send-welcome-email"
-[2026-03-22 14:30:01] Job #1 completed in 45ms
-```
-
-### Listening to Specific Queues
-
-```bash
-tina4 queue:work --queue send-welcome-email
-
-tina4 queue:work --queue send-welcome-email,generate-invoice
-```
-
----
-
-## 5. Job Lifecycle
-
-Every job moves through a series of states:
-
-```
-pending -> reserved -> completed
-                    -> failed -> pending (retry)
-                              -> dead (max retries exceeded)
-```
-
-### Inspecting Job State
+For more control, pop a single message:
 
 ```ruby
-stats = Tina4::Queue.stats("send-welcome-email")
-```
+job = queue.pop
 
-```ruby
-{
-  "queue" => "send-welcome-email",
-  "pending" => 12,
-  "reserved" => 2,
-  "completed" => 1453,
-  "failed" => 3,
-  "dead" => 1
-}
-```
-
----
-
-## 6. Retry Logic and Max Retries
-
-When a job fails, Tina4 automatically retries it with exponential backoff:
-
-- Retry 1: after 10 seconds
-- Retry 2: after 30 seconds
-- Retry 3: after 90 seconds
-
-### Handling Failures in Consumers
-
-```ruby
-Tina4::Queue.consume("send-welcome-email") do |job|
-  email = job.payload["email"]
-
+unless job.nil?
   begin
-    success = send_email(email, "Welcome!", "Welcome to our platform.")
-
-    unless success
-      $stderr.puts "Failed to send email to #{email} (attempt #{job.attempts})"
-      next false  # Triggers retry
-    end
-
-    true  # Job completed
-
+    send_email(job.payload[:to], job.payload[:subject])
+    job.complete
   rescue => e
-    $stderr.puts "Exception sending email to #{email}: #{e.message}"
-    false  # Triggers retry
+    job.fail(e.message)
   end
 end
 ```
 
 ---
 
-## 7. Dead Letter Queue
+## 6. Job Lifecycle
 
-Jobs that exceed their max retries land in the dead letter queue.
+Every job moves through states:
 
-### Viewing Dead Letter Jobs
-
-```bash
-tina4 queue:dead
+```
+push -> PENDING -> pop/consume -> RESERVED -> job.complete -> COMPLETED
+                                           -> job.fail     -> FAILED
+                                                                |
+                                                          retry (manual)
+                                                                |
+                                                             PENDING
+                                                                |
+                                                      max retries exceeded
+                                                                |
+                                                           DEAD LETTER
 ```
 
-### Re-Queuing Dead Letter Jobs
+### Job Methods
 
-```bash
-tina4 queue:retry 42
-tina4 queue:retry --queue send-welcome-email
-tina4 queue:retry --all
+When you receive a job from `consume` or `pop`, you have three methods:
+
+- `job.complete` -- mark the job as done
+- `job.fail(reason)` -- mark the job as failed with a reason string
+- `job.reject(reason)` -- alias for `fail`
+
+Always call one of these. If you do not, the job stays reserved.
+
+---
+
+## 7. Retry and Dead Letters
+
+### Max Retries
+
+The default `max_retries` is 3. When a job's attempt count reaches `max_retries`, `retry_failed` skips it.
+
+### Retrying Failed Jobs
+
+```ruby
+# Retry a specific job by ID
+queue.retry(job_id)
+
+# Retry all failed jobs (skips those that exceeded max_retries)
+queue.retry_failed
 ```
 
-### Clearing Dead Letter Jobs
+### Dead Letters
 
-```bash
-tina4 queue:clear 42
-tina4 queue:clear --older-than 7d
+Jobs that have exceeded `max_retries` are dead letters. There is no magic dead letter queue -- you retrieve and handle them yourself:
+
+```ruby
+dead_jobs = queue.dead_letters
+
+dead_jobs.each do |job|
+  puts "Dead job: #{job.id}"
+  puts "  Payload: #{job.payload}"
+  puts "  Error: #{job.error}"
+end
+```
+
+### Purging Jobs
+
+Remove jobs by status:
+
+```ruby
+queue.purge("completed")
+queue.purge("failed")
 ```
 
 ---
 
-## 8. Switching to RabbitMQ
-
-For production deployments:
-
-```env
-TINA4_QUEUE_BACKEND=rabbitmq
-TINA4_QUEUE_HOST=localhost
-TINA4_QUEUE_PORT=5672
-TINA4_QUEUE_USERNAME=guest
-TINA4_QUEUE_PASSWORD=guest
-TINA4_QUEUE_VHOST=/
-```
-
-Your code does not change. The same `Tina4::Queue.produce` and `Tina4::Queue.consume` calls work with RabbitMQ as the backend.
-
----
-
-## 9. Switching to Kafka
-
-For event streaming at scale:
-
-```env
-TINA4_QUEUE_BACKEND=kafka
-TINA4_QUEUE_HOST=localhost
-TINA4_QUEUE_PORT=9092
-TINA4_QUEUE_GROUP_ID=my-app-workers
-```
-
----
-
-## 9b. Switching to MongoDB
-
-```env
-TINA4_QUEUE_BACKEND=mongodb
-TINA4_MONGO_HOST=localhost
-TINA4_MONGO_PORT=27017
-TINA4_MONGO_DB=tina4
-TINA4_MONGO_COLLECTION=tina4_queue
-# Or use a full URI:
-# TINA4_MONGO_URI=mongodb://user:pass@host:27017/tina4
-```
-
-MongoDB uses `findOneAndUpdate` for atomic job claiming -- no double-processing. Install the driver:
-
-```bash
-gem install mongo
-```
-
-Same API. Same code. Same `Tina4::Queue.produce` and `Tina4::Queue.consume` calls.
-
----
-
-## 10. Monitoring via Dev Dashboard
-
-When `TINA4_DEBUG=true`, the dev dashboard at `/tina4/console` shows a "Queue Manager" section with:
-
-- Queue overview: pending, reserved, completed, failed, and dead counts
-- Recent jobs: the last 50 processed jobs
-- Failed jobs with error messages and retry counts
-- Dead letter queue
-- Throughput graph: jobs processed per minute
-
----
-
-## 11. Producing Multiple Jobs
+## 8. Producing Multiple Jobs
 
 Sometimes a single action triggers multiple background tasks:
 
@@ -324,21 +239,24 @@ Tina4::Router.post("/api/orders") do |request, response|
   body = request.body
   order_id = 101
 
-  Tina4::Queue.produce("send-order-confirmation", {
+  queue = Queue.new(topic: "emails")
+
+  queue.push({
     order_id: order_id,
-    email: body["email"]
+    to: body["email"],
+    subject: "Order Confirmation"
   })
 
-  Tina4::Queue.produce("generate-invoice", {
+  queue.produce("invoices", {
     order_id: order_id,
     format: "pdf"
   })
 
-  Tina4::Queue.produce("update-inventory", {
+  queue.produce("inventory", {
     items: body["items"]
   })
 
-  Tina4::Queue.produce("notify-warehouse", {
+  queue.produce("warehouse", {
     order_id: order_id,
     shipping_address: body["shipping_address"]
   })
@@ -354,129 +272,240 @@ Four jobs are queued in under 5 milliseconds. The user gets an instant response.
 
 ---
 
-## 12. Exercise: Build an Email Queue
+## 9. Switching Backends
 
-Build a queue-based email system for user signup.
+Switching backends is a config change, not a code change.
+
+### Default: Lite
+
+```env
+# No config needed -- lite is the default
+```
+
+### RabbitMQ
+
+```env
+TINA4_QUEUE_BACKEND=rabbitmq
+TINA4_QUEUE_URL=amqp://user:pass@localhost:5672
+```
+
+### Kafka
+
+```env
+TINA4_QUEUE_BACKEND=kafka
+TINA4_QUEUE_URL=localhost:9092
+```
+
+### MongoDB
+
+```env
+TINA4_QUEUE_BACKEND=mongodb
+TINA4_QUEUE_URL=mongodb://user:pass@localhost:27017/tina4
+```
+
+Install the MongoDB driver:
+
+```bash
+gem install mongo
+```
+
+Your code does not change. The same `queue.push` and `queue.consume` calls work with every backend.
+
+---
+
+## 10. Producer and Consumer Classes
+
+Ruby also provides `Producer` and `Consumer` classes for more structured usage:
+
+```ruby
+require "tina4/queue"
+
+# Producer side
+producer = Producer.new(topic: "emails")
+producer.push({ to: "alice@example.com", subject: "Hello" })
+
+# Consumer side
+consumer = Consumer.new(topic: "emails")
+consumer.consume("emails") do |job|
+  process(job)
+  job.complete
+end
+```
+
+These are thin wrappers around `Queue` that make intent clearer when your producers and consumers are in separate files or services.
+
+---
+
+## 11. Exercise: Build an Email Queue
+
+Build a queue-based email system with failure handling.
 
 ### Requirements
 
-1. Create a `POST /api/signup` endpoint that queues a job on the `welcome-emails` queue
-2. Create a consumer for the `welcome-emails` queue that logs the email details
-3. Create a `GET /api/queue/stats` endpoint that shows the queue statistics
+1. Create these endpoints:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/emails/send` | Queue an email for sending |
+| `GET` | `/api/emails/queue` | Show pending email count |
+| `GET` | `/api/emails/dead` | List dead letter jobs |
+| `POST` | `/api/emails/retry` | Retry all failed jobs |
+
+2. The email payload should include: `to` (required), `subject` (required), `body` (required)
+
+3. Create a consumer that processes the queue, simulating occasional failures
 
 ### Test with:
 
 ```bash
-curl -X POST http://localhost:7147/api/signup \
+curl -X POST http://localhost:7147/api/emails/send \
   -H "Content-Type: application/json" \
-  -d '{"name": "Alice", "email": "alice@example.com", "password": "securePass123"}'
+  -d '{"to": "alice@example.com", "subject": "Welcome!", "body": "Thanks for signing up."}'
 
-curl http://localhost:7147/api/queue/stats
+curl http://localhost:7147/api/emails/queue
 
-tina4 queue:work --queue welcome-emails
+curl http://localhost:7147/api/emails/dead
 
-curl http://localhost:7147/api/queue/stats
+curl -X POST http://localhost:7147/api/emails/retry
 ```
 
 ---
 
-## 13. Solution
+## 12. Solution
 
 Create `src/routes/email_queue.rb`:
 
 ```ruby
+require "tina4/queue"
+
+queue = Queue.new(topic: "emails")
+
 # @noauth
-Tina4::Router.post("/api/signup") do |request, response|
+Tina4::Router.post("/api/emails/send") do |request, response|
   body = request.body
 
-  if body["name"].nil? || body["email"].nil? || body["password"].nil?
-    return response.json({ error: "Name, email, and password are required" }, 400)
+  errors = []
+  errors << "'to' is required" if body["to"].nil? || body["to"].empty?
+  errors << "'subject' is required" if body["subject"].nil? || body["subject"].empty?
+  errors << "'body' is required" if body["body"].nil? || body["body"].empty?
+
+  unless errors.empty?
+    return response.json({ errors: errors }, 400)
   end
 
-  user_id = rand(1..10000)
-
-  Tina4::Queue.produce("welcome-emails", {
-    user_id: user_id,
-    name: body["name"],
-    email: body["email"],
-    signed_up_at: Time.now.iso8601
+  message_id = queue.push({
+    to: body["to"],
+    subject: body["subject"],
+    body: body["body"]
   })
 
   response.json({
-    message: "Signup successful! A welcome email will be sent shortly.",
-    user_id: user_id
+    message: "Email queued for sending",
+    message_id: message_id
   }, 201)
 end
 
-Tina4::Queue.consume("welcome-emails") do |job|
-  name = job.payload["name"]
-  email = job.payload["email"]
-  user_id = job.payload["user_id"]
-
-  $stderr.puts "=== Welcome Email ==="
-  $stderr.puts "To: #{email}"
-  $stderr.puts "Subject: Welcome to our platform, #{name}!"
-  $stderr.puts "Body: Hi #{name}, your account (ID: #{user_id}) has been created."
-  $stderr.puts "Signed up: #{job.payload['signed_up_at']}"
-  $stderr.puts "====================="
-
-  true
+Tina4::Router.get("/api/emails/queue") do |request, response|
+  count = queue.size
+  response.json({ pending: count })
 end
 
-Tina4::Router.get("/api/queue/stats") do |request, response|
-  stats = Tina4::Queue.stats("welcome-emails")
+Tina4::Router.get("/api/emails/dead") do |request, response|
+  dead_jobs = queue.dead_letters
+  items = dead_jobs.map do |job|
+    { id: job.id, payload: job.payload, error: job.error }
+  end
+  response.json({ dead_letters: items, count: items.length })
+end
 
-  response.json({
-    queue: "welcome-emails",
-    stats: stats
-  })
+Tina4::Router.post("/api/emails/retry") do |request, response|
+  queue.retry_failed
+  response.json({ message: "Failed emails re-queued for retry" })
 end
 ```
 
+Create a separate consumer file `src/workers/email_worker.rb`:
+
+```ruby
+require "tina4/queue"
+
+queue = Queue.new(topic: "emails")
+
+queue.consume("emails") do |job|
+  payload = job.payload
+
+  puts "Sending email to #{payload[:to]}..."
+  puts "  Subject: #{payload[:subject]}"
+
+  begin
+    # Simulate sending (replace with real email logic)
+    sleep(1)
+
+    # Simulate failure for a specific address
+    if payload[:to] == "bad@example.com"
+      raise "SMTP connection refused"
+    end
+
+    puts "  Email sent to #{payload[:to]} successfully!"
+    job.complete
+
+  rescue => e
+    puts "  Failed: #{e.message}"
+    job.fail(e.message)
+  end
+end
+```
+
+After the consumer has retried a job to `bad@example.com` three times, `queue.dead_letters` returns that job. The `/api/emails/dead` endpoint shows it. You investigate, fix the address, and call `/api/emails/retry` to re-queue.
+
 ---
 
-## 14. Gotchas
+## 13. Gotchas
 
-### 1. Worker Must Be Running Separately
+### 1. Always call complete or fail
 
-**Problem:** You produce jobs but nothing happens.
+**Problem:** Jobs stay in reserved status forever.
 
-**Fix:** Run `tina4 queue:work` in a separate terminal.
+**Cause:** Your consumer block does not call `job.complete` or `job.fail`. The job stays reserved and is never released.
 
-### 2. Consumer Not Registered
+**Fix:** Always call one of `job.complete`, `job.fail(reason)`, or `job.reject(reason)` in your consumer block.
 
-**Problem:** The worker reports "No consumer found for queue: my-queue".
+### 2. Worker not picking up messages
 
-**Fix:** Make sure your consumer is in a file inside `src/routes/`.
+**Problem:** Messages are pushed but nothing happens.
 
-### 3. Job Payload Is Not Serializable
+**Cause:** No consumer process is running, or the consumer is listening on a different topic.
 
-**Problem:** `Queue.produce` throws an error about serialization.
+**Fix:** Make sure the consumer is running. Check that the topic name in `queue.push` matches the topic in `queue.consume`.
 
-**Fix:** Only pass simple data types in the payload. If you need to reference a database record, pass the ID.
+### 3. Payload must be serializable
 
-### 4. Jobs Process in Wrong Order
+**Problem:** `queue.push` throws an error.
 
-**Problem:** Jobs are processed in a different order than they were produced.
+**Cause:** You passed a non-serializable object (database connection, file handle, etc.).
 
-**Fix:** With multiple workers, jobs are processed in parallel. Use a single worker if order matters.
+**Fix:** Only pass simple data types in the payload. If you need to reference a database record, pass the ID. The consumer looks up records by ID.
 
-### 5. SQLite Queue Lock Contention
+### 4. Dead letters pile up
 
-**Problem:** Multiple workers on the same SQLite queue cause "database is locked" errors.
+**Problem:** Dead letters accumulate and nobody notices.
 
-**Fix:** For multiple workers, switch to RabbitMQ, Kafka, or MongoDB.
+**Cause:** Failed jobs that exceed `max_retries` become dead letters but are never cleaned up.
 
-### 6. Consumer Returns Nothing
+**Fix:** Monitor dead letters with `queue.dead_letters`. Set up an alert when the count exceeds a threshold. Investigate, fix, then call `queue.retry_failed` or `queue.purge("failed")`.
 
-**Problem:** Jobs are processed but immediately marked as failed.
+### 5. Lite backend for production
 
-**Cause:** Your consumer block does not return `true`. Without an explicit `true`, Ruby returns the result of the last expression, which might be `nil`.
+**Problem:** Multiple workers cause contention on the lite backend.
 
-**Fix:** Always return `true` when the job succeeds and `false` when it fails.
+**Cause:** The lite backend is designed for single-worker setups.
 
-### 7. Dead Letter Jobs Accumulate
+**Fix:** For production with multiple workers, switch to RabbitMQ, Kafka, or MongoDB via the `TINA4_QUEUE_BACKEND` environment variable.
 
-**Problem:** The dead letter queue grows over time.
+### 6. Consumer block returns nothing useful
 
-**Fix:** Check `Tina4::Queue.stats` periodically. Review dead letter jobs regularly.
+**Problem:** Jobs are processed but the system does not track completion.
+
+**Cause:** Your consumer block does not call `job.complete`. Without an explicit call, the job stays reserved.
+
+**Fix:** Always call `job.complete` when the job succeeds and `job.fail(reason)` when it fails.
