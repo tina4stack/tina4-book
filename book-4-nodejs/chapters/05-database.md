@@ -117,6 +117,86 @@ Each row is a plain object with column names as keys:
 ]
 ```
 
+### DatabaseResult
+
+`fetch()` returns a `DatabaseResult` object. It behaves like an array but carries extra metadata about the query.
+
+#### Properties
+
+```typescript
+const result = await db.fetch("SELECT * FROM users WHERE active = ?", [1]);
+
+result.records;      // [{ id: 1, name: "Alice" }, { id: 2, name: "Bob" }]
+result.columns;      // ["id", "name", "email", "active"]
+result.count;        // total number of matching rows
+result.limit;        // query limit (if set)
+result.offset;       // query offset (if set)
+```
+
+#### Iteration
+
+A `DatabaseResult` is iterable. Use it directly in `for...of`:
+
+```typescript
+for (const user of result) {
+    console.log(user.name);
+}
+```
+
+#### Index Access
+
+Access rows by index like a regular array:
+
+```typescript
+const firstUser = result[0];
+```
+
+#### Countable
+
+The `length` property works on the result:
+
+```typescript
+console.log(result.length); // number of records in this result set
+```
+
+#### Conversion Methods
+
+```typescript
+result.toJson();      // JSON string of all records
+result.toCsv();       // CSV string with column headers
+result.toArray();     // plain array of objects
+result.toPaginate();  // { records: [...], count: 42, limit: 10, offset: 0 }
+```
+
+`toPaginate()` is designed for building paginated API responses. It bundles the records with the total count, limit, and offset in a single object.
+
+#### Schema Metadata with columnInfo()
+
+`columnInfo()` returns detailed metadata about the columns in the result set. The data is lazy-loaded -- it only queries the database schema when you call the method for the first time:
+
+```typescript
+const info = await result.columnInfo();
+// [
+//     { name: "id", type: "INTEGER", size: null, decimals: null, nullable: false, primaryKey: true },
+//     { name: "name", type: "TEXT", size: null, decimals: null, nullable: false, primaryKey: false },
+//     { name: "email", type: "TEXT", size: 255, decimals: null, nullable: true, primaryKey: false },
+//     ...
+// ]
+```
+
+Each column entry contains:
+
+| Field | Description |
+|-------|-------------|
+| `name` | Column name |
+| `type` | Database type (e.g. `INTEGER`, `TEXT`, `REAL`) |
+| `size` | Maximum size (or `null` if not applicable) |
+| `decimals` | Decimal places (or `null`) |
+| `nullable` | Whether the column allows `NULL` |
+| `primaryKey` | Whether the column is part of the primary key |
+
+This is useful for building dynamic forms, generating documentation, or validating data before insert.
+
 ### fetchOne() -- Get a Single Row
 
 ```typescript

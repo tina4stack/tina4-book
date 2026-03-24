@@ -104,6 +104,85 @@ async def list_notes(request, response):
 }
 ```
 
+### DatabaseResult
+
+`fetch()` returns a `DatabaseResult` object. It behaves like a list but carries extra metadata about the query.
+
+#### Properties
+
+```python
+result = db.fetch("SELECT * FROM users WHERE active = ?", [1])
+
+result.records      # [{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}]
+result.columns      # ["id", "name", "email", "active"]
+result.count        # total number of matching rows
+result.limit        # query limit (if set)
+result.offset       # query offset (if set)
+```
+
+#### Iteration
+
+A `DatabaseResult` is iterable. Use it directly in a `for` loop:
+
+```python
+for user in result:
+    print(user["name"])
+```
+
+#### Index Access
+
+Access rows by index like a regular list:
+
+```python
+first_user = result[0]
+```
+
+#### Countable
+
+`len()` works on the result:
+
+```python
+print(len(result))  # number of records in this result set
+```
+
+#### Conversion Methods
+
+```python
+result.to_json()      # JSON string of all records
+result.to_csv()       # CSV string with column headers
+result.to_array()     # plain list of dictionaries
+result.to_paginate()  # {"records": [...], "count": 42, "limit": 10, "offset": 0}
+```
+
+`to_paginate()` is designed for building paginated API responses. It bundles the records with the total count, limit, and offset in a single dictionary.
+
+#### Schema Metadata with column_info()
+
+`column_info()` returns detailed metadata about the columns in the result set. The data is lazy-loaded -- it only queries the database schema when you call the method for the first time:
+
+```python
+info = result.column_info()
+# [
+#     {"name": "id", "type": "INTEGER", "size": None, "decimals": None, "nullable": False, "primary_key": True},
+#     {"name": "name", "type": "TEXT", "size": None, "decimals": None, "nullable": False, "primary_key": False},
+#     {"name": "email", "type": "TEXT", "size": 255, "decimals": None, "nullable": True, "primary_key": False},
+#     ...
+# ]
+```
+
+Each column entry contains:
+
+| Field | Description |
+|-------|-------------|
+| `name` | Column name |
+| `type` | Database type (e.g. `INTEGER`, `TEXT`, `REAL`) |
+| `size` | Maximum size (or `None` if not applicable) |
+| `decimals` | Decimal places (or `None`) |
+| `nullable` | Whether the column allows `NULL` |
+| `primary_key` | Whether the column is part of the primary key |
+
+This is useful for building dynamic forms, generating documentation, or validating data before insert.
+
 ### fetch_one -- Get a Single Row
 
 ```python

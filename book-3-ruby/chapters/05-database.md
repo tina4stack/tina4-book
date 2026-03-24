@@ -132,6 +132,86 @@ Each row is a hash with column names as keys:
 ]
 ```
 
+### DatabaseResult
+
+`fetch` returns a `DatabaseResult` object. It behaves like an array but carries extra metadata about the query.
+
+#### Properties
+
+```ruby
+result = db.fetch("SELECT * FROM users WHERE active = ?", [1])
+
+result.records      # [{ "id" => 1, "name" => "Alice" }, { "id" => 2, "name" => "Bob" }]
+result.columns      # ["id", "name", "email", "active"]
+result.count        # total number of matching rows
+result.limit        # query limit (if set)
+result.offset       # query offset (if set)
+```
+
+#### Iteration
+
+A `DatabaseResult` is enumerable. Use it directly in loops:
+
+```ruby
+result.each do |user|
+  puts user["name"]
+end
+```
+
+#### Index Access
+
+Access rows by index like a regular array:
+
+```ruby
+first_user = result[0]
+```
+
+#### Countable
+
+`length` works on the result:
+
+```ruby
+puts result.length  # number of records in this result set
+```
+
+#### Conversion Methods
+
+```ruby
+result.to_json       # JSON string of all records
+result.to_csv        # CSV string with column headers
+result.to_array      # plain array of hashes
+result.to_paginate   # { "records" => [...], "count" => 42, "limit" => 10, "offset" => 0 }
+```
+
+`to_paginate` is designed for building paginated API responses. It bundles the records with the total count, limit, and offset in a single hash.
+
+#### Schema Metadata with column_info
+
+`column_info` returns detailed metadata about the columns in the result set. The data is lazy-loaded -- it only queries the database schema when you call the method for the first time:
+
+```ruby
+info = result.column_info
+# [
+#     { "name" => "id", "type" => "INTEGER", "size" => nil, "decimals" => nil, "nullable" => false, "primary_key" => true },
+#     { "name" => "name", "type" => "TEXT", "size" => nil, "decimals" => nil, "nullable" => false, "primary_key" => false },
+#     { "name" => "email", "type" => "TEXT", "size" => 255, "decimals" => nil, "nullable" => true, "primary_key" => false },
+#     ...
+# ]
+```
+
+Each column entry contains:
+
+| Field | Description |
+|-------|-------------|
+| `name` | Column name |
+| `type` | Database type (e.g. `INTEGER`, `TEXT`, `REAL`) |
+| `size` | Maximum size (or `nil` if not applicable) |
+| `decimals` | Decimal places (or `nil`) |
+| `nullable` | Whether the column allows `NULL` |
+| `primary_key` | Whether the column is part of the primary key |
+
+This is useful for building dynamic forms, generating documentation, or validating data before insert.
+
 ### fetch_one -- Get a Single Row
 
 ```ruby
