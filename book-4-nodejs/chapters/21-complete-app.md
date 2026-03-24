@@ -271,7 +271,7 @@ Router.post("/api/auth/login", async (req, res) => {
         return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const token = Auth.createToken({
+    const token = Auth.getToken({
         user_id: user.id,
         email: user.email,
         name: user.name,
