@@ -105,7 +105,7 @@ Add JWT authentication to my Tina4 Ruby project:
 2. Create register and login routes at /api/auth/register and /api/auth/login
 3. Create auth middleware that validates Bearer tokens
 4. Protect the /api/tasks group with auth middleware
-5. Use Tina4::Auth.create_token and Tina4::Auth.validate_token
+5. Use Tina4::Auth.get_token and Tina4::Auth.valid_token
 ```
 
 ### Building a Dashboard
@@ -242,7 +242,7 @@ Tina4::Router.get("/api/posts") do |request, response|
   auth_header = request.headers["Authorization"] || ""
   if auth_header.start_with?("Bearer ")
     token = auth_header.sub("Bearer ", "")
-    if Tina4::Auth.validate_token(token)
+    if Tina4::Auth.valid_token(token)
       payload = Tina4::Auth.get_payload(token)
       user_id = payload["user_id"]
     end
@@ -266,7 +266,7 @@ end
 The AI knows:
 - `Tina4::Router.get` for routes
 - `request.headers["Authorization"]` for the token
-- `Tina4::Auth.validate_token` and `Tina4::Auth.get_payload` for JWT
+- `Tina4::Auth.valid_token` and `Tina4::Auth.get_payload` for JWT
 - `db.fetch` with named parameters for queries
 - `response.json` for JSON responses
 
