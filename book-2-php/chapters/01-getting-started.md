@@ -522,7 +522,13 @@ The defaults that matter for development:
 
 Set `TINA4_LOG_LEVEL=DEBUG` during development for maximum visibility. Use `WARNING` or `ERROR` in production.
 
-Change the port by adding one line:
+To change the port, use the CLI flag or `.env`:
+
+```bash
+tina4 serve --port 8080
+```
+
+Or add it to your `.env` file:
 
 ```env
 TINA4_DEBUG=true
@@ -530,6 +536,15 @@ TINA4_PORT=8080
 ```
 
 Restart the server. It runs on port 8080.
+
+**How port resolution works:** The Rust CLI (`tina4 serve`) determines the port using this priority order:
+
+1. **CLI flag** (highest priority): `tina4 serve --port 8080`
+2. **`.env` file**: `TINA4_PORT=8080`
+3. **Environment variable**: `PORT=8080`
+4. **Framework default** (Python: 7145, PHP: 7146, Ruby: 7144, Node.js: 7143)
+
+The CLI reads your `.env` file and checks for `TINA4_PORT` (and falls back to `PORT`). The resolved port is passed to the PHP server. All three methods work -- use whichever fits your workflow.
 
 For the complete `.env` reference with all 68 variables, see [Book 0, Chapter 4: Environment Variables](../../book-0-understanding/chapters/04-environment-variables.md).
 

@@ -516,20 +516,29 @@ The important defaults for development:
 
 Set `TINA4_LOG_LEVEL=DEBUG` during development for maximum visibility. Use `WARNING` or `ERROR` in production.
 
-To change the port, use the CLI flag:
+To change the port, use the CLI flag or `.env`:
 
 ```bash
 tina4 serve --port 8080
 ```
 
-The server now runs on port 8080.
+Or add it to your `.env` file:
+
+```env
+TINA4_DEBUG=true
+TINA4_PORT=8080
+```
+
+Restart the server. It now runs on port 8080.
 
 **How port resolution works:** The Rust CLI (`tina4 serve`) determines the port using this priority order:
 
-1. `--port` CLI flag (highest priority)
-2. Framework default (Python: 7145, PHP: 7146, Ruby: 7147, Node.js: 7148)
+1. **CLI flag** (highest priority): `tina4 serve --port 8080`
+2. **`.env` file**: `TINA4_PORT=8080`
+3. **Environment variable**: `PORT=8080`
+4. **Framework default** (Python: 7145, PHP: 7146, Ruby: 7144, Node.js: 7143)
 
-The CLI passes the resolved port to the Python server via the `PORT` environment variable. The Python server reads `PORT` (not `TINA4_PORT`) to determine which port to bind. Because the CLI sets `PORT` before your `.env` is loaded, putting `TINA4_PORT=8080` in `.env` has no effect. Use `tina4 serve --port 8080` to change the port.
+The CLI reads your `.env` file and checks for `TINA4_PORT` (and falls back to `PORT`). The resolved port is passed to the Python server. All three methods work -- use whichever fits your workflow.
 
 For the complete `.env` reference with all 68 variables, see [Book 0, Chapter 4: Environment Variables](../../book-0-understanding/chapters/04-environment-variables.md).
 
