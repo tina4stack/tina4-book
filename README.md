@@ -159,4 +159,10 @@ Every chapter includes:
 
 ---
 
+## Community
+
+**[Join us on Discord](https://discord.gg/pKPUbNDTRa)** — ask questions, share projects, get help.
+
+---
+
 *Tina4 — This is not a framework. https://tina4.com*
