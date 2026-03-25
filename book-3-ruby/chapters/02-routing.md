@@ -38,17 +38,17 @@ Tina4::Router.post("/products") do |request, response|
 end
 
 Tina4::Router.put("/products/{id}") do |request, response|
-  id = request.params["id"]
+  id = request.params[:id]
   response.json({ action: "replace product #{id}" })
 end
 
 Tina4::Router.patch("/products/{id}") do |request, response|
-  id = request.params["id"]
+  id = request.params[:id]
   response.json({ action: "update product #{id}" })
 end
 
 Tina4::Router.delete("/products/{id}") do |request, response|
-  id = request.params["id"]
+  id = request.params[:id]
   response.json({ action: "delete product #{id}" })
 end
 ```
@@ -107,8 +107,8 @@ Path parameters capture values from the URL. Wrap the name in curly braces:
 
 ```ruby
 Tina4::Router.get("/users/{id}/posts/{post_id}") do |request, response|
-  user_id = request.params["id"]
-  post_id = request.params["post_id"]
+  user_id = request.params[:id]
+  post_id = request.params[:post_id]
 
   response.json({
     user_id: user_id,
@@ -133,7 +133,7 @@ Enforce a type with a colon after the parameter name:
 
 ```ruby
 Tina4::Router.get("/orders/{id:int}") do |request, response|
-  id = request.params["id"]
+  id = request.params[:id]
   response.json({
     order_id: id,
     type: id.class.name
@@ -161,12 +161,80 @@ curl http://localhost:7147/orders/abc
 
 Supported types:
 
-| Type | Matches | Example |
-|------|---------|---------|
-| `int` | Digits only | `{id:int}` matches `42` but not `abc` |
-| `float` | Decimal numbers | `{price:float}` matches `19.99` |
-| `alpha` | Letters only | `{slug:alpha}` matches `hello` but not `hello123` |
-| `alphanumeric` | Letters and digits | `{code:alphanumeric}` matches `abc123` |
+| Type | Matches | Auto-cast | Example |
+|------|---------|-----------|---------|
+| `int` | Digits only | Integer | `{id:int}` matches `42` but not `abc` |
+| `float` | Decimal numbers | Float | `{price:float}` matches `19.99` |
+| `path` | All remaining path segments (catch-all) | String | `{slug:path}` matches `docs/api/auth` |
+| `alpha` | Letters only | String | `{slug:alpha}` matches `hello` but not `hello123` |
+| `alphanumeric` | Letters and digits | String | `{code:alphanumeric}` matches `abc123` |
+
+The `{name}` form (no type) matches any single path segment and returns it as a string.
+
+### Typed Parameters in Action
+
+Here is a complete example showing the most commonly used typed parameters together:
+
+```ruby
+# Integer parameter -- only digits match, auto-cast to Integer
+Tina4::Router.get("/products/{id:int}") do |request, response|
+  id = request.params[:id] # Integer, e.g. 42
+  response.json({
+    product_id: id,
+    type: id.class.name
+  })
+end
+
+# Float parameter -- decimal numbers, auto-cast to Float
+Tina4::Router.get("/products/{id:int}/price/{price:float}") do |request, response|
+  id = request.params[:id]
+  price = request.params[:price]
+  response.json({
+    product_id: id,
+    price: price,
+    type: price.class.name
+  })
+end
+
+# Path parameter -- catch-all, captures remaining segments as a string
+Tina4::Router.get("/files/{filepath:path}") do |request, response|
+  filepath = request.params[:filepath]
+  # filepath could be "images/photos/cat.jpg"
+  response.json({
+    filepath: filepath,
+    type: filepath.class.name
+  })
+end
+```
+
+```bash
+# Integer route -- matches digits, returns an Integer
+curl http://localhost:7147/products/42
+```
+
+```json
+{"product_id":42,"type":"Integer"}
+```
+
+```bash
+# Integer route -- non-integer gives a 404
+curl http://localhost:7147/products/abc
+```
+
+```json
+{"error":"Not found","path":"/products/abc","status":404}
+```
+
+```bash
+# Path catch-all -- captures everything after /files/
+curl http://localhost:7147/files/images/photos/cat.jpg
+```
+
+```json
+{"filepath":"images/photos/cat.jpg","type":"String"}
+```
+
+The `:int` and `:float` types act as both a constraint and a converter. If the URL segment does not match the expected pattern, the route is skipped entirely and Tina4 moves on to the next registered route (or returns 404 if nothing matches). The `:path` type is greedy -- it consumes all remaining segments, making it ideal for file paths and documentation URLs.
 
 ---
 
@@ -213,7 +281,7 @@ Tina4::Router.group("/api/v1") do
   end
 
   Tina4::Router.get("/users/{id:int}") do |request, response|
-    id = request.params["id"]
+    id = request.params[:id]
     response.json({ user: { id: id, name: "Alice" } })
   end
 
@@ -713,7 +781,7 @@ end
 
 # Get a single product by ID
 Tina4::Router.get("/api/products/{id:int}") do |request, response|
-  id = request.params["id"]
+  id = request.params[:id]
 
   product = $products.find { |p| p[:id] == id }
 
@@ -748,7 +816,7 @@ end
 
 # Replace a product
 Tina4::Router.put("/api/products/{id:int}") do |request, response|
-  id = request.params["id"]
+  id = request.params[:id]
   body = request.body
 
   index = $products.index { |p| p[:id] == id }
@@ -769,7 +837,7 @@ end
 
 # Delete a product
 Tina4::Router.delete("/api/products/{id:int}") do |request, response|
-  id = request.params["id"]
+  id = request.params[:id]
 
   index = $products.index { |p| p[:id] == id }
 

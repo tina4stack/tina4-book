@@ -193,12 +193,82 @@ curl http://localhost:7148/orders/abc
 
 Supported types:
 
-| Type | Matches | Example |
-|------|---------|---------|
-| `int` | Digits only | `{id:int}` matches `42` but not `abc` |
-| `float` | Decimal numbers | `{price:float}` matches `19.99` |
-| `alpha` | Letters only | `{slug:alpha}` matches `hello` but not `hello123` |
-| `alphanumeric` | Letters and digits | `{code:alphanumeric}` matches `abc123` |
+| Type | Matches | Auto-cast | Example |
+|------|---------|-----------|---------|
+| `int` | Digits only | Number | `{id:int}` matches `42` but not `abc` |
+| `float` | Decimal numbers | Number | `{price:float}` matches `19.99` |
+| `path` | All remaining path segments (catch-all) | String | `{slug:path}` matches `docs/api/auth` |
+| `alpha` | Letters only | String | `{slug:alpha}` matches `hello` but not `hello123` |
+| `alphanumeric` | Letters and digits | String | `{code:alphanumeric}` matches `abc123` |
+
+The `{name}` form (no type) matches any single path segment and returns it as a string.
+
+### Typed Parameters in Action
+
+Here is a complete example showing the most commonly used typed parameters together:
+
+```typescript
+import { Router } from "tina4-nodejs";
+
+// Integer parameter -- only digits match, auto-cast to number
+Router.get("/products/{id:int}", async (req, res) => {
+    const id = req.params.id; // number, e.g. 42
+    return res.json({
+        product_id: id,
+        type: typeof id
+    });
+});
+
+// Float parameter -- decimal numbers, auto-cast to number
+Router.get("/products/{id:int}/price/{price:float}", async (req, res) => {
+    const id = req.params.id;
+    const price = req.params.price;
+    return res.json({
+        product_id: id,
+        price,
+        type: typeof price
+    });
+});
+
+// Path parameter -- catch-all, captures remaining segments as a string
+Router.get("/files/{filepath:path}", async (req, res) => {
+    const filepath = req.params.filepath;
+    // filepath could be "images/photos/cat.jpg"
+    return res.json({
+        filepath,
+        type: typeof filepath
+    });
+});
+```
+
+```bash
+# Integer route -- matches digits, returns a number
+curl http://localhost:7148/products/42
+```
+
+```json
+{"product_id":42,"type":"number"}
+```
+
+```bash
+# Integer route -- non-integer gives a 404
+curl http://localhost:7148/products/abc
+```
+
+```json
+{"error":"Not found","path":"/products/abc","status":404}
+```
+
+```bash
+# Path catch-all -- captures everything after /files/
+curl http://localhost:7148/files/images/photos/cat.jpg
+```
+
+```json
+{"filepath":"images/photos/cat.jpg","type":"string"}
+```
+
+The `:int` and `:float` types act as both a constraint and a converter. If the URL segment does not match the expected pattern, the route is skipped entirely and Tina4 moves on to the next registered route (or returns 404 if nothing matches). The `:path` type is greedy -- it consumes all remaining segments, making it ideal for file paths and documentation URLs.
 
 ---
 

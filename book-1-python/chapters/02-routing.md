@@ -163,12 +163,79 @@ curl http://localhost:7145/orders/abc
 
 Supported types:
 
-| Type | Matches | Example |
-|------|---------|---------|
-| `int` | Digits only | `{id:int}` matches `42` but not `abc` |
-| `float` | Decimal numbers | `{price:float}` matches `19.99` |
-| `alpha` | Letters only | `{slug:alpha}` matches `hello` but not `hello123` |
-| `alphanumeric` | Letters and digits | `{code:alphanumeric}` matches `abc123` |
+| Type | Matches | Auto-cast | Example |
+|------|---------|-----------|---------|
+| `int` | Digits only | Integer | `{id:int}` matches `42` but not `abc` |
+| `float` | Decimal numbers | Float | `{price:float}` matches `19.99` |
+| `path` | All remaining path segments (catch-all) | String | `{slug:path}` matches `docs/api/auth` |
+| `alpha` | Letters only | String | `{slug:alpha}` matches `hello` but not `hello123` |
+| `alphanumeric` | Letters and digits | String | `{code:alphanumeric}` matches `abc123` |
+
+The `{name}` form (no type) matches any single path segment and returns it as a string.
+
+### Typed Parameters in Action
+
+Here is a complete example showing the most commonly used typed parameters together:
+
+```python
+from tina4_python.core.router import get
+
+# Integer parameter -- only digits match, auto-cast to int
+@get("/products/{id:int}")
+async def get_product(id, request, response):
+    # id is an integer, e.g. 42
+    return response.json({
+        "product_id": id,
+        "type": type(id).__name__
+    })
+
+# Float parameter -- decimal numbers, auto-cast to float
+@get("/products/{id:int}/price/{price:float}")
+async def check_price(id, price, request, response):
+    return response.json({
+        "product_id": id,
+        "price": price,
+        "type": type(price).__name__
+    })
+
+# Path parameter -- catch-all, captures remaining segments as a string
+@get("/files/{filepath:path}")
+async def serve_file(filepath, request, response):
+    # filepath could be "images/photos/cat.jpg"
+    return response.json({
+        "filepath": filepath,
+        "type": type(filepath).__name__
+    })
+```
+
+```bash
+# Integer route -- matches digits, returns an int
+curl http://localhost:7145/products/42
+```
+
+```json
+{"product_id":42,"type":"int"}
+```
+
+```bash
+# Integer route -- non-integer gives a 404
+curl http://localhost:7145/products/abc
+```
+
+```json
+{"error":"Not found","path":"/products/abc","status":404}
+```
+
+```bash
+# Path catch-all -- captures everything after /files/
+curl http://localhost:7145/files/images/photos/cat.jpg
+```
+
+```json
+{"filepath":"images/photos/cat.jpg","type":"str"}
+```
+
+The `:int` and `:float` types act as both a constraint and a converter. If the URL segment does not match the expected pattern, the route is skipped entirely and Tina4 moves on to the next registered route (or returns 404 if nothing matches). The `:path` type is greedy -- it consumes all remaining segments, making it ideal for file paths and documentation URLs.
 
 ---
 
