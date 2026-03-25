@@ -808,7 +808,94 @@ async def delete_note(request, response):
 
 ---
 
-## 13. Gotchas
+## 13. Seeder -- Generating Test Data
+
+Testing with an empty database tells you nothing. Testing with hand-typed rows is slow and brittle. The `FakeData` class generates realistic test data, and `seed_table()` inserts it in bulk.
+
+### FakeData
+
+```python
+from tina4_python.seeder import FakeData
+
+fake = FakeData()
+
+fake.name()       # "Grace Lopez"
+fake.email()      # "bob.anderson@demo.net"
+fake.phone()      # "+1 (547) 382-9104"
+fake.sentence()   # "Magna exercitation lorem ipsum dolor sit amet consectetur."
+fake.paragraph()  # Four sentences of filler text
+fake.integer()    # 7342
+fake.decimal()    # 481.29
+fake.date()       # "2023-07-14"
+fake.uuid()       # "a3f1b2c4-d5e6-f7a8-b9c0-d1e2f3a4b5c6"
+fake.address()    # "742 Oak Ave, Tokyo"
+fake.boolean()    # True
+```
+
+Every method draws from built-in word banks -- no network calls, no external packages.
+
+### Deterministic Output
+
+Pass a seed to get reproducible results. The same seed always produces the same sequence:
+
+```python
+fake = FakeData(seed=42)
+fake.name()   # Always "Wendy White" with seed 42
+fake.email()  # Always the same email with seed 42
+```
+
+This matters for tests. Deterministic data means deterministic assertions.
+
+### Seeding a Table
+
+`seed_table()` combines `FakeData` with your database. Pass a field map -- a dictionary where each key is a column name and each value is a callable that generates data:
+
+```python
+from tina4_python.seeder import FakeData, seed_table
+from tina4_python.database.connection import Database
+
+db = Database()
+fake = FakeData(seed=1)
+
+seed_table(db, "users", 100, {
+    "name": fake.name,
+    "email": fake.email,
+    "phone": fake.phone,
+    "bio": fake.sentence,
+})
+```
+
+This inserts 100 rows into the `users` table. Each row calls `fake.name()`, `fake.email()`, and so on to generate its values. The function commits automatically after all rows are inserted.
+
+### Overrides
+
+Static values that apply to every row go in the `overrides` dictionary:
+
+```python
+seed_table(db, "users", 50,
+    field_map={
+        "name": fake.name,
+        "email": fake.email,
+    },
+    overrides={
+        "role": "member",
+        "active": 1,
+    },
+)
+```
+
+Every row gets `role = "member"` and `active = 1`. The field map generates the rest.
+
+### When to Use It
+
+- Populating a development database with realistic data
+- Writing integration tests that need rows in the database
+- Load testing with thousands of records
+- Demos and screenshots that look real without using real data
+
+---
+
+## 14. Gotchas
 
 ### 1. SQLite boolean quirk
 

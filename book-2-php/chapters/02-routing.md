@@ -964,13 +964,9 @@ Not found:
 
 ## 14. Gotchas
 
-### 1. Trailing Slashes Matter
+### 1. Trailing Slashes Are Normalised
 
-**Problem:** `/products` works but `/products/` returns 404.
-
-**Cause:** Tina4 treats `/products` and `/products/` as different routes by default.
-
-**Fix:** Pick one convention. Stick with it. Set `TINA4_TRAILING_SLASH_REDIRECT=true` in `.env` to auto-redirect `/products/` to `/products`.
+Tina4 strips trailing slashes automatically. Both `/products` and `/products/` match the same route. You do not need to register both or configure anything — it just works.
 
 ### 2. Parameter Names Must Be Unique in a Path
 
@@ -1002,16 +998,24 @@ Not found:
 
 **Fix:** First line of every route file: `<?php`.
 
-### 6. Middleware Function Must Be a String Name
+### 6. Middleware Uses Class-Based Pattern
 
-**Problem:** Passing a closure directly as middleware causes an error.
+**Problem:** Passing a function name string as middleware doesn't work.
 
-**Cause:** Tina4 expects middleware referenced by function name (a string), not as an inline closure.
+**Fix:** Use class-based middleware with `before*`/`after*` static methods. See Chapter 8 for the full middleware pattern:
 
-**Fix:** Define middleware as a named function. Pass the name as a string: `"myMiddleware"`.
+```php
+class AuthMiddleware {
+    public static function beforeAuth($request, $response) {
+        if (!$request->headers['authorization']) {
+            return [$request, $response->json(["error" => "Unauthorized"], 401)];
+        }
+        return [$request, $response];
+    }
+}
+Router::use(AuthMiddleware::class);
+```
 
-### 7. Group Prefix Must Start with a Slash
+### 7. Group Prefix Normalisation
 
-**Problem:** `Router::group("api/v1", ...)` produces routes that do not match.
-
-**Fix:** Always start group prefixes with `/`: `Router::group("/api/v1", ...)`.
+Tina4 auto-normalises group prefixes — it prepends `/` if missing and strips trailing slashes. `Router::group("api/v1", ...)` and `Router::group("/api/v1", ...)` both work. However, for clarity, always start with `/`.

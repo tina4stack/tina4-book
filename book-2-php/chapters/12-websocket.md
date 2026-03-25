@@ -240,7 +240,7 @@ Router::websocket("/ws/secure", function ($connection, $event, $data) {
     if ($event === "open") {
         // Reject unauthenticated connections
         $token = $connection->params["token"] ?? "";
-        if (!validateToken($token)) {
+        if (!Auth::validToken($token)) {
             $connection->send(json_encode([
                 "type" => "error",
                 "message" => "Invalid token"

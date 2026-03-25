@@ -290,3 +290,184 @@ GraphQL.resolve("Mutation", "addComment", async (root, args) => {
 ### 5. N+1 Query Problem -- Use data loaders or pre-load in parent resolvers.
 ### 6. GraphQL Playground Returns 404 -- Set `TINA4_DEBUG=true`.
 ### 7. Type Mismatch -- Cast values explicitly: `parseInt()`, `parseFloat()`, `Boolean()`.
+
+---
+
+## 14. SOAP / WSDL Services
+
+### What is SOAP/WSDL?
+
+SOAP (Simple Object Access Protocol) is an XML-based messaging protocol used in enterprise systems, banking, government, and legacy integrations. WSDL (Web Services Description Language) is the XML contract that describes a SOAP service — its operations, input/output types, and endpoint URL.
+
+Tina4 includes a built-in SOAP 1.1 / WSDL 1.1 engine. Zero external dependencies — XML parsing uses simple string matching.
+
+---
+
+### Defining a SOAP Service
+
+Create a class that extends `WSDLService`. Each method you want to expose gets the `@WSDLOp` decorator with `input` and `output` type maps.
+
+```typescript
+import { WSDLService, WSDLOp } from "@tina4/core";
+
+class Calculator extends WSDLService {
+  serviceName = "Calculator";
+  serviceUrl = "/api/calculator";
+
+  @WSDLOp({
+    description: "Add two numbers",
+    input: { a: "int", b: "int" },
+    output: { Result: "int" },
+  })
+  async Add(a: number, b: number): Promise<Record<string, unknown>> {
+    return { Result: a + b };
+  }
+
+  @WSDLOp({
+    description: "Multiply two numbers",
+    input: { x: "float", y: "float" },
+    output: { Product: "double" },
+  })
+  async Multiply(x: number, y: number): Promise<Record<string, unknown>> {
+    return { Product: x * y };
+  }
+}
+```
+
+Key points:
+
+- `serviceName` — appears in the WSDL `<service>` element.
+- `serviceUrl` — the URL path for both WSDL and SOAP requests.
+- `input` — maps parameter names to type strings.
+- `output` — maps return field names to type strings.
+- The method receives parameters in the order declared in `input` and returns a plain object matching `output`.
+
+---
+
+### Registering the Service
+
+Call `register()` with your router to wire up two routes automatically:
+
+```typescript
+const calc = new Calculator();
+calc.register(router);
+```
+
+This creates:
+
+| Method | URL | Purpose |
+|--------|-----|---------|
+| GET | `/api/calculator?wsdl` | Returns the auto-generated WSDL XML |
+| POST | `/api/calculator` | Accepts SOAP XML requests |
+
+---
+
+### Auto-Generated WSDL
+
+Fetch the WSDL document:
+
+```bash
+curl http://localhost:7148/api/calculator?wsdl
+```
+
+Tina4 generates a complete WSDL 1.1 document containing `<types>`, `<message>`, `<portType>`, `<binding>`, and `<service>` sections. The endpoint URL is inferred from the request's `Host` header.
+
+---
+
+### Type Mappings
+
+The `input` and `output` maps use short type names that are converted to XSD types:
+
+| Tina4 Type | XSD Type |
+|------------|----------|
+| `int`, `integer` | `xsd:int` |
+| `float` | `xsd:float` |
+| `double`, `number`, `numeric` | `xsd:double` |
+| `string` | `xsd:string` |
+| `bool`, `boolean` | `xsd:boolean` |
+
+Unknown types default to `xsd:string`.
+
+---
+
+### SOAP Request Handling
+
+When a POST arrives, Tina4 parses the SOAP envelope, extracts the operation name and parameters from the `<Body>`, converts parameter values to the correct types, calls your method, and wraps the result in a SOAP response envelope.
+
+If something goes wrong, a SOAP fault is returned with a `<faultcode>` (`Client` or `Server`) and `<faultstring>`.
+
+---
+
+### Testing with curl
+
+Send a SOAP request to the `Add` operation:
+
+```bash
+curl -X POST http://localhost:7148/api/calculator \
+  -H "Content-Type: text/xml" \
+  -d '<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <Add>
+      <a>5</a>
+      <b>3</b>
+    </Add>
+  </soap:Body>
+</soap:Envelope>'
+```
+
+Response:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <AddResponse>
+      <Result>8</Result>
+    </AddResponse>
+  </soap:Body>
+</soap:Envelope>
+```
+
+---
+
+### A More Complete Example
+
+A user lookup service with multiple operations:
+
+```typescript
+import { WSDLService, WSDLOp } from "@tina4/core";
+
+class UserService extends WSDLService {
+  serviceName = "UserService";
+  serviceUrl = "/api/users/soap";
+
+  @WSDLOp({
+    description: "Look up a user by ID",
+    input: { userId: "int" },
+    output: { Name: "string", Email: "string", Active: "boolean" },
+  })
+  async GetUser(userId: number): Promise<Record<string, unknown>> {
+    // Replace with real database lookup
+    return { Name: "Alice", Email: "alice@example.com", Active: true };
+  }
+
+  @WSDLOp({
+    description: "Search users by name",
+    input: { query: "string" },
+    output: { Count: "int", Names: "string" },
+  })
+  async SearchUsers(query: string): Promise<Record<string, unknown>> {
+    return { Count: 1, Names: "Alice" };
+  }
+}
+```
+
+---
+
+### SOAP Gotchas
+
+1. **Content-Type must be `text/xml`** — SOAP requests are XML, not JSON.
+2. **Operation name must match exactly** — the element name inside `<Body>` must match your method name (case-sensitive).
+3. **Parameter order matters** — values are extracted in the order declared in `input`.
+4. **Namespace prefixes are handled** — Tina4 strips namespace prefixes when matching element names, so `<ns1:Add>` works the same as `<Add>`.

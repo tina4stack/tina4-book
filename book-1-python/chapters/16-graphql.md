@@ -1,4 +1,4 @@
-# Chapter 16: GraphQL
+# Chapter 16: GraphQL and SOAP
 
 ## 1. The Problem GraphQL Solves
 
@@ -862,3 +862,172 @@ return {
 ```
 
 The `to_dict()` method handles this automatically for model properties with type declarations, but computed or derived fields need manual casting.
+
+---
+
+## 14. SOAP / WSDL Services
+
+### What is SOAP?
+
+SOAP (Simple Object Access Protocol) is an XML-based messaging protocol for exchanging structured data between systems. It predates REST and GraphQL, but remains common in enterprise integrations -- banking, healthcare, government, and ERP systems all rely on SOAP services.
+
+A WSDL (Web Services Description Language) file describes a SOAP service: what operations are available, what parameters they accept, and what they return. Clients use the WSDL to auto-generate code for calling the service.
+
+Tina4 includes a zero-dependency SOAP 1.1 server that generates WSDL definitions automatically from Python classes and type annotations. No XML authoring required.
+
+---
+
+### Defining a SOAP Service
+
+Create a class that extends `WSDL`. Each method decorated with `@wsdl_operation` becomes a SOAP operation. The decorator takes a dict describing the response fields and their types.
+
+```python
+from tina4_python.wsdl import WSDL, wsdl_operation
+from tina4_python.core.router import get, post
+
+class Calculator(WSDL):
+    @wsdl_operation({"Result": int})
+    def Add(self, a: int, b: int):
+        return {"Result": a + b}
+
+    @wsdl_operation({"Result": int})
+    def Multiply(self, a: int, b: int):
+        return {"Result": a * b}
+
+@get("/calculator")
+@post("/calculator")
+async def calculator_endpoint(request, response):
+    service = Calculator(request)
+    return response(service.handle())
+```
+
+That is the entire service. The `handle()` method inspects the request:
+
+- **GET** (or `?wsdl` query parameter) -- returns the auto-generated WSDL definition
+- **POST** with SOAP XML body -- parses the XML, finds the operation, converts parameters, calls the method, and returns a SOAP XML response
+
+### Type Annotations Map to XSD
+
+Python type annotations on method parameters control how incoming XML values are converted. The WSDL generator also uses them to produce correct XSD type declarations.
+
+| Python type | XSD type |
+|-------------|----------|
+| `str` | `xsd:string` |
+| `int` | `xsd:int` |
+| `float` | `xsd:double` |
+| `bool` | `xsd:boolean` |
+| `bytes` | `xsd:base64Binary` |
+| `List[T]` | Element of type T (repeated) |
+| `Optional[T]` | Type T (nillable) |
+
+### A More Complete Example
+
+```python
+from typing import List, Optional
+from tina4_python.wsdl import WSDL, wsdl_operation
+from tina4_python.core.router import get, post
+
+class UserService(WSDL):
+    @wsdl_operation({"Name": str, "Email": str, "Active": bool})
+    def GetUser(self, user_id: int):
+        user = User()
+        if user.load("id = ?", [user_id]):
+            return {
+                "Name": user.name,
+                "Email": user.email,
+                "Active": bool(user.active),
+            }
+        return {"Name": "", "Email": "", "Active": False}
+
+    @wsdl_operation({"Total": int, "Average": float, "Error": Optional[str]})
+    def SumList(self, Numbers: List[int]):
+        if not Numbers:
+            return {"Total": 0, "Average": 0.0, "Error": "Empty list"}
+        return {
+            "Total": sum(Numbers),
+            "Average": sum(Numbers) / len(Numbers),
+            "Error": None,
+        }
+
+@get("/api/users/soap")
+@post("/api/users/soap")
+async def user_soap(request, response):
+    service = UserService(request)
+    return response(service.handle())
+```
+
+### Lifecycle Hooks
+
+Override `on_request` and `on_result` to add validation, logging, or transformation around every operation call.
+
+```python
+class AuditedService(WSDL):
+    def on_request(self, request):
+        print(f"SOAP request from {request.headers.get('x-forwarded-for', 'unknown')}")
+
+    def on_result(self, result):
+        result["Timestamp"] = datetime.now().isoformat()
+        return result
+
+    @wsdl_operation({"Status": str, "Timestamp": str})
+    def Ping(self):
+        return {"Status": "ok"}
+```
+
+### Testing with curl
+
+Fetch the WSDL definition:
+
+```bash
+curl http://localhost:7145/calculator?wsdl
+```
+
+Call the Add operation with a SOAP request:
+
+```bash
+curl -X POST http://localhost:7145/calculator \
+  -H "Content-Type: text/xml" \
+  -d '<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <Add>
+      <a>5</a>
+      <b>3</b>
+    </Add>
+  </soap:Body>
+</soap:Envelope>'
+```
+
+Response:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <AddResponse>
+      <Result>8</Result>
+    </AddResponse>
+  </soap:Body>
+</soap:Envelope>
+```
+
+If the operation name is wrong or the XML is malformed, the service returns a SOAP fault:
+
+```xml
+<soap:Fault>
+  <faultcode>Client</faultcode>
+  <faultstring>Unknown operation: Subtract</faultstring>
+</soap:Fault>
+```
+
+### When to Use SOAP vs REST vs GraphQL
+
+| Scenario | Use |
+|----------|-----|
+| New API for web/mobile clients | REST or GraphQL |
+| Integrating with legacy enterprise systems (SAP, banks, government) | SOAP |
+| Clients require a machine-readable service contract | SOAP (WSDL) |
+| Simple internal microservices | REST |
+| Clients with diverse data needs | GraphQL |
+
+SOAP is rarely the right choice for new APIs, but when you need to expose a service that legacy systems can consume, Tina4 makes it straightforward -- define a class, annotate your types, and the framework handles the XML.

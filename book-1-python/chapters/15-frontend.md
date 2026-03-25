@@ -12,14 +12,16 @@ By the end of this chapter, you will have a complete admin dashboard with sideba
 
 ## 2. What Ships with Tina4
 
-When you run `tina4 init python`, two files appear in your project:
+When you run `tina4 init python`, several files appear in your project:
 
 ```
 src/public/
 ├── css/
 │   └── tina4.css        # The CSS framework
 ├── js/
-│   └── frond.js         # AJAX helpers, form submission, token management
+│   ├── tina4.min.js     # Core AJAX utilities
+│   ├── frond.min.js     # Template engine client-side helpers
+│   └── tina4js.min.js   # Reactive frontend framework (tina4-js)
 └── scss/
     └── tina4.scss       # SCSS source (optional, for customization)
 ```
@@ -28,10 +30,11 @@ Include them in any template:
 
 ```html
 <link rel="stylesheet" href="/css/tina4.css">
-<script src="/js/frond.js"></script>
+<script src="/js/tina4.min.js"></script>
+<script src="/js/frond.min.js"></script>
 ```
 
-That is all you need. No CDN, no package manager, no version conflicts.
+Include only what you need. See section 7 for the full JavaScript API reference. No CDN, no package manager, no version conflicts.
 
 ---
 
@@ -336,7 +339,225 @@ ws.on("message", function (data) {
 
 ---
 
-## 7. Building an Admin Dashboard
+## 7. JavaScript API Reference
+
+Tina4 ships three JavaScript files. Each serves a different purpose and can be used independently or together.
+
+### Including the Scripts
+
+```html
+<script src="/js/tina4.min.js"></script>
+<script src="/js/frond.min.js"></script>
+<script src="/js/tina4js.min.js"></script>
+```
+
+All three live in `src/public/js/` and are served from `/js/`. Include only what you need.
+
+---
+
+### 7.1 tina4.min.js -- Core Utilities
+
+Low-level helpers for AJAX page loading and form submission. Use this when you want simple dynamic page updates without a full framework.
+
+#### `loadPage(url, targetId)`
+
+Fetches HTML from `url` and injects it into the element with the given `id`.
+
+```html
+<nav>
+    <a href="#" onclick="loadPage('/dashboard', 'content')">Dashboard</a>
+    <a href="#" onclick="loadPage('/settings', 'content')">Settings</a>
+</nav>
+<div id="content"><!-- pages load here --></div>
+
+<script src="/js/tina4.min.js"></script>
+```
+
+#### `saveForm(formId, url, method)`
+
+Serializes a form and submits it via AJAX. Prevents the default page reload.
+
+```html
+<form id="product-form">
+    <input type="text" name="name" placeholder="Product name">
+    <input type="number" name="price" placeholder="Price">
+    <button type="button" onclick="saveForm('product-form', '/api/products', 'POST')">
+        Save
+    </button>
+</form>
+```
+
+#### `sendRequest(url, method, data, callback)`
+
+Generic AJAX helper for any HTTP method. Returns the response to a callback function.
+
+```javascript
+sendRequest("/api/products", "GET", null, function (response) {
+    console.log("Products:", JSON.parse(response));
+});
+
+sendRequest("/api/products", "POST", { name: "Widget", price: 9.99 }, function (response) {
+    console.log("Created:", JSON.parse(response));
+});
+```
+
+---
+
+### 7.2 frond.min.js -- Template Engine Client-Side Helpers
+
+A companion to the Frond template engine. Handles AJAX form interception, WebSocket connections with auto-reconnect, JWT token refresh, and dynamic template loading.
+
+#### AJAX Form Handling
+
+Forms with `data-frond-submit` are intercepted automatically. No page reload, no boilerplate.
+
+```html
+<form id="login-form" data-frond-submit="/api/login" data-frond-method="POST">
+    <input type="text" name="username" placeholder="Username">
+    <input type="password" name="password" placeholder="Password">
+    <button type="submit">Log In</button>
+</form>
+
+<script src="/js/frond.min.js"></script>
+<script>
+    frond.onFormSuccess("login-form", function (data) {
+        frond.setToken(data.token);
+        window.location.href = "/dashboard";
+    });
+</script>
+```
+
+#### WebSocket Auto-Reconnect
+
+Connections drop. frond.js reconnects automatically with exponential backoff.
+
+```javascript
+const ws = frond.ws("/ws/notifications");
+ws.on("message", function (data) {
+    const notification = JSON.parse(data);
+    alert(notification.text);
+});
+// If the server restarts or the network blips, frond.js reconnects silently.
+```
+
+#### Token Refresh
+
+JWT tokens stored via `frond.setToken()` are attached to every request. When a token expires, frond.js triggers a refresh before retrying the request.
+
+```javascript
+frond.setToken("eyJhbGciOiJIUzI1NiIs...");
+// All subsequent frond.get/post/put/delete calls include the token.
+// When the token expires, frond.js calls the refresh endpoint automatically.
+```
+
+#### Dynamic Template Loading
+
+Load server-rendered Frond templates into any element without a full page reload.
+
+```javascript
+frond.loadTemplate("/templates/user-card", { userId: 42 }, "user-panel");
+// Fetches the rendered template and injects it into #user-panel.
+```
+
+---
+
+### 7.3 tina4js.min.js -- Reactive Frontend Framework
+
+A standalone reactive framework for building rich client-side applications. Provides signals, computed values, effects, Web Components, client-side routing, and built-in fetch and WebSocket wrappers. This is the **tina4-js** project.
+
+#### Reactive State: `signal()`, `computed()`, `effect()`
+
+```javascript
+import { signal, computed, effect } from "/js/tina4js.min.js";
+
+const count = signal(0);
+const doubled = computed(() => count.value * 2);
+
+effect(() => {
+    console.log(`Count: ${count.value}, Doubled: ${doubled.value}`);
+});
+
+count.value = 5; // logs "Count: 5, Doubled: 10"
+```
+
+#### DOM Rendering: `html` Tagged Template
+
+```javascript
+import { signal, html } from "/js/tina4js.min.js";
+
+const name = signal("World");
+
+const app = html`
+    <div>
+        <h1>Hello, ${name}!</h1>
+        <input value="${name}" oninput="${(e) => name.value = e.target.value}" />
+    </div>
+`;
+
+document.getElementById("app").append(app);
+```
+
+#### Web Components: `Tina4Element`
+
+```javascript
+import { Tina4Element, signal, html } from "/js/tina4js.min.js";
+
+class CounterButton extends Tina4Element {
+    setup() {
+        this.count = signal(0);
+    }
+    render() {
+        return html`
+            <button onclick="${() => this.count.value++}">
+                Clicked ${this.count} times
+            </button>
+        `;
+    }
+}
+customElements.define("counter-button", CounterButton);
+```
+
+Use it in HTML:
+
+```html
+<counter-button></counter-button>
+<script type="module" src="/js/counter-button.js"></script>
+```
+
+#### Fetch Wrapper: `api()`
+
+```javascript
+import { api } from "/js/tina4js.min.js";
+
+const products = await api("/api/products");            // GET
+await api("/api/products", { method: "POST", body: { name: "Widget" } });
+```
+
+#### WebSocket Client: `ws()`
+
+```javascript
+import { ws } from "/js/tina4js.min.js";
+
+const socket = ws("/ws/chat");
+socket.on("message", (data) => console.log(data));
+socket.send({ text: "Hello" });
+```
+
+#### Client-Side Routing: `route()`, `navigate()`
+
+```javascript
+import { route, navigate, html } from "/js/tina4js.min.js";
+
+route("/", () => html`<h1>Home</h1>`);
+route("/about", () => html`<h1>About</h1>`);
+
+// Navigate programmatically
+navigate("/about");
+```
+
+---
+
+## 8. Building an Admin Dashboard
 
 Let us build a complete admin dashboard. This is the kind of page that powers the backend of every web application.
 
@@ -529,7 +750,7 @@ Start the server and visit `http://localhost:7145/admin`. You have a complete ad
 
 ---
 
-## 8. Dark Mode
+## 9. Dark Mode
 
 tina4css supports dark mode via the `data-theme` attribute on the `<html>` element:
 
@@ -572,7 +793,7 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', fun
 
 ---
 
-## 9. Responsive Design
+## 10. Responsive Design
 
 tina4css is mobile-first. Components adapt to screen size automatically. Here are the key patterns:
 
@@ -616,7 +837,7 @@ Tables scroll horizontally on small screens:
 
 ---
 
-## 10. Exercise: Build an Admin Dashboard
+## 11. Exercise: Build an Admin Dashboard
 
 Build a complete admin dashboard for a product management system.
 
@@ -650,9 +871,9 @@ Build a complete admin dashboard for a product management system.
 
 ---
 
-## 11. Solution
+## 12. Solution
 
-The base template and dashboard route are shown in sections 7 and above. Here is the product list page:
+The base template and dashboard route are shown in sections 8 and above. Here is the product list page:
 
 Create `src/templates/products.html`:
 
@@ -765,7 +986,92 @@ async def admin_products(request, response):
 
 ---
 
-## 12. Gotchas
+## 12. HTML Builder -- Generating HTML in Code
+
+Sometimes you need to produce HTML from a route handler without a template -- a dynamic email body, an AJAX fragment, or a one-off snippet. String concatenation is fragile and error-prone. The `HTMLElement` class builds HTML programmatically with auto-escaping.
+
+### Direct Construction
+
+```python
+from tina4_python.HtmlElement import HTMLElement
+
+el = HTMLElement("div", {"class": "card"}, ["Hello"])
+str(el)  # <div class="card">Hello</div>
+```
+
+The constructor takes three arguments: tag name, an attribute dictionary, and a list of children (strings or other `HTMLElement` instances).
+
+### Builder Pattern
+
+Call an element to append children and return a new element:
+
+```python
+page = HTMLElement("div")(
+    HTMLElement("h1")("Dashboard"),
+    HTMLElement("p")("Welcome back."),
+)
+```
+
+Pass a dictionary to merge attributes:
+
+```python
+link = HTMLElement("a")({"href": "/home", "class": "nav-link"}, "Home")
+# <a href="/home" class="nav-link">Home</a>
+```
+
+### Helper Functions
+
+Typing `HTMLElement` everywhere gets verbose. `add_html_helpers()` injects shorthand functions -- `_div()`, `_p()`, `_a()`, `_span()`, `_h1()`, `_table()`, and every other standard HTML tag -- into your module:
+
+```python
+from tina4_python.HtmlElement import add_html_helpers
+
+add_html_helpers(globals())
+
+html = _div({"class": "alert alert-success"},
+    _strong("Done!"),
+    _p("Your changes have been saved."),
+)
+```
+
+The first argument can be an attribute dictionary. Everything else becomes children.
+
+### Void Tags and Auto-Escaping
+
+Void tags like `br`, `hr`, `img`, and `input` render without a closing tag:
+
+```python
+HTMLElement("img", {"src": "logo.png", "alt": "Logo"})
+# <img src="logo.png" alt="Logo">
+
+HTMLElement("br")
+# <br>
+```
+
+All attribute values and text children are HTML-escaped automatically. User input is safe by default -- no XSS vectors from forgotten escaping.
+
+### Use Case -- HTML from a Route
+
+```python
+from tina4_python.core.router import get
+from tina4_python.HtmlElement import add_html_helpers
+
+add_html_helpers(globals())
+
+@get("/api/status-badge")
+async def status_badge(request, response):
+    status = request.params.get("status", "unknown")
+    color = "success" if status == "active" else "danger"
+
+    badge = _span({"class": f"badge bg-{color}"}, status)
+    return response(str(badge))
+```
+
+No template file needed. The builder handles escaping, nesting, and rendering in one place.
+
+---
+
+## 13. Gotchas
 
 ### 1. CSS Not Loading
 

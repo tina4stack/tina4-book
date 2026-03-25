@@ -4,7 +4,7 @@
 
 2am. Your production monitoring pings you. A 500 error on the checkout endpoint. You pull up the dev dashboard. Find the failing request in the request inspector. See the full stack trace with source code context. Line 47 of `src/routes/checkout.php` -- a null reference on the shipping address because the user did not fill in the form. Add a null check. Push the fix. Back to sleep. Total time: 30 seconds.
 
-Tina4's dev tools are not an afterthought. They are built into the framework from day one. When `TINA4_DEBUG=true`, you get a full development dashboard, an error overlay with source code, live reload, a request inspector, a SQL query runner, and more. No additional packages.
+Tina4's dev tools are not an afterthought. They are built into the framework from day one. When `TINA4_DEBUG=true`, you get a full development dashboard, an error overlay with source code, hot reload, a request inspector, a SQL query runner, and more. No additional packages.
 
 ---
 
@@ -211,56 +211,81 @@ The query runner is read-write in development. You can run INSERT, UPDATE, and D
 
 ---
 
-## 8. Live Reload
+## 8. Hot Reload
 
-Edit a file. Save it. The browser updates. No manual refresh.
+Edit a file. Save it. The browser updates. No manual refresh. No external tools. Zero dependencies -- hot reload is built directly into Tina4's `stream_select` server.
 
 ### How It Works
 
-1. The dev server watches your project directory for file changes (routes, templates, ORM models, static files).
-2. When a file changes, the server pushes a notification to the browser via WebSocket.
-3. The browser receives the notification and reloads the page (for route/template changes) or hot-swaps the resource (for CSS/JS changes).
+PHP's built-in `stream_select` server includes a file watcher in its event loop. Every second, it scans your project directories for changes using `filemtime()`. When a change is detected, three things happen:
 
-### What Triggers a Reload
+1. **Routes are re-discovered** -- PHP route files are re-included, so new or modified routes take effect immediately without restarting the server.
+2. **`.env` is reloaded** -- Environment variable changes are picked up on the fly.
+3. **Browsers are notified** -- A WebSocket message `{"type":"reload"}` is sent to all connected browsers, triggering a page refresh.
 
-| File Type | Action |
-|-----------|--------|
-| `src/routes/*.php` | Full page reload |
-| `src/orm/*.php` | Full page reload |
-| `src/templates/*.html` | Full page reload |
-| `src/public/css/*.css` | CSS hot-swap (no reload) |
-| `src/public/js/*.js` | Full page reload |
-| `src/public/images/*` | No automatic reload |
-| `.env` | Server restart required |
+The browser side is equally simple. When `TINA4_DEBUG=true`, every HTML page automatically connects to the `/__dev_reload` WebSocket endpoint. If the connection drops (e.g., the server restarts), the client auto-reconnects. When it receives the reload message, it refreshes the page.
 
-CSS hot-swapping is seamless -- your page layout stays the same, only the styles update. This is great when you are tweaking colors, spacing, or fonts.
+No file watcher daemon. No Node.js process. No browser extension. The server watches files, the browser listens on a WebSocket -- that is the entire system.
 
-### Disabling Live Reload
+### Watched Directories and File Types
 
-If live reload interferes with your workflow (e.g., you are filling out a form and do not want it to reset), disable it in `.env`:
+The file watcher scans three locations:
+
+- `src/` -- Your application code (routes, ORM models, templates, assets)
+- `migrations/` -- Database migration files
+- `.env` -- Environment configuration
+
+Within those locations, the following file types are monitored:
+
+| Extension | Examples |
+|-----------|----------|
+| `.php` | Route handlers, ORM models, middleware |
+| `.twig` | Twig templates |
+| `.html` | HTML templates and static pages |
+| `.scss` | SASS source files |
+| `.css` | Stylesheets |
+| `.js` | JavaScript files |
+| `.json` | Configuration and data files |
+
+Any change to a watched file triggers a reload. The watcher uses `filemtime()` to detect modifications -- it compares the current modification timestamp against the last known timestamp for each file.
+
+### What Happens on Reload
+
+When the server detects a file change, the behavior depends on what changed:
+
+- **PHP files** (`src/routes/*.php`, `src/orm/*.php`) -- The server re-includes the changed files, re-discovering routes and ORM definitions. The server process stays up. Active connections are preserved. The change takes effect on the next request.
+- **Template files** (`.twig`, `.html`) -- Templates are re-read from disk on the next render. The browser reloads to display the updated output.
+- **`.env` file** -- Environment variables are reloaded into memory. No server restart needed.
+- **Static assets** (`.css`, `.js`, `.scss`) -- The browser reloads to pick up the new files.
+
+This means the server never restarts for code changes. Routes are re-discovered, templates are re-read, and the browser refreshes -- all while the server process continues running.
+
+### The `tina4 serve` Layer
+
+When you start your project with `tina4 serve` (the Rust CLI), there is an additional layer of file watching. The Rust CLI monitors the same project files and, if it detects a change that requires a full process restart (such as a PHP fatal error that crashed the server), it automatically restarts the entire PHP server process. This gives you two levels of resilience:
+
+1. **PHP-level hot reload** -- The `stream_select` server re-includes changed files without restarting (fast, seamless).
+2. **Process-level restart** -- The Rust CLI restarts the PHP process if it crashes or becomes unresponsive (recovery from fatal errors).
+
+Together, these two layers mean you almost never have to manually restart your dev server.
+
+### Activation
+
+Hot reload is only active when `TINA4_DEBUG=true`. In production (`TINA4_DEBUG=false`), the file watcher is disabled, the `/__dev_reload` WebSocket endpoint does not exist, and routes and templates are cached for performance.
+
+### Disabling Hot Reload
+
+If hot reload interferes with your workflow (e.g., you are filling out a form and do not want it to reset), disable it in `.env`:
 
 ```env
 TINA4_LIVE_RELOAD=false
 ```
 
----
-
-## 9. Hot-Patching
-
-Hot-patching takes live reload a step further. When you edit a route handler or template, the dev server applies the change without restarting. This means:
-
-- The server stays up
-- Active WebSocket connections are preserved
-- In-memory state (like queue workers) is not reset
-- The change takes effect on the next request
-
-Hot-patching works because Tina4's dev server re-reads route files and templates on every request when `TINA4_DEBUG=true`. It is not a separate feature to enable -- it is the default development behavior.
-
-In production (`TINA4_DEBUG=false`), routes and templates are cached for performance. Changes require a server restart.
+This disables the browser-side reload while keeping `TINA4_DEBUG=true` for the rest of the dev tools.
 
 ---
 
-## 10. Gallery -- Interactive Examples
+## 9. Gallery -- Interactive Examples
 
 The dev dashboard includes a Gallery section where you can deploy interactive code examples. This is useful for:
 
@@ -314,7 +339,7 @@ The comments at the top (`// title:` and `// description:`) are parsed by the ga
 
 ---
 
-## 11. Queue Monitor
+## 10. Queue Monitor
 
 If your application uses background job queues (Chapter 14 -- Queues), the dev dashboard includes a queue monitor showing:
 
@@ -341,7 +366,7 @@ You can also:
 
 ---
 
-## 12. System Info
+## 11. System Info
 
 The System Info tab shows detailed information about your environment:
 
@@ -355,7 +380,7 @@ This is especially useful when debugging environment-specific issues. If a colle
 
 ---
 
-## 13. Exercise: Debug a Failing Route
+## 12. Exercise: Debug a Failing Route
 
 Set up a project with the following intentionally broken route, then use the dev tools to find and fix the bug.
 
@@ -410,7 +435,7 @@ Router::get("/api/orders/summary", function ($request, $response) {
 
 ---
 
-## 14. Solution
+## 13. Solution
 
 The fixed route:
 
@@ -457,7 +482,7 @@ Router::get("/api/orders/summary", function ($request, $response) {
 
 ---
 
-## 15. Gotchas
+## 14. Gotchas
 
 ### 1. Dev Dashboard Returns 404
 
@@ -473,13 +498,13 @@ TINA4_DEBUG=true
 
 Restart the server after changing `.env`.
 
-### 3. Live Reload Not Working
+### 3. Hot Reload Not Working
 
 **Problem:** You save a file but the browser does not reload.
 
-**Cause:** Live reload uses WebSocket. If your browser blocks WebSocket connections (some corporate proxies do), or if you are accessing the site via a reverse proxy that does not forward WebSocket, live reload will not work.
+**Cause:** Hot reload uses a WebSocket connection to the `/__dev_reload` endpoint. If your browser blocks WebSocket connections (some corporate proxies do), or if you are accessing the site via a reverse proxy that does not forward WebSocket, hot reload will not work.
 
-**Fix:** Check the browser console for WebSocket errors. If you are behind a proxy, configure it to forward WebSocket connections. As a workaround, manually refresh with `Ctrl+R`.
+**Fix:** Check the browser console for WebSocket connection errors to `/__dev_reload`. If you are behind a proxy, configure it to forward WebSocket connections. As a workaround, manually refresh with `Ctrl+R`.
 
 ### 4. Error Overlay Shows in Production
 
