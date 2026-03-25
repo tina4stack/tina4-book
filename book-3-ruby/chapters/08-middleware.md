@@ -14,13 +14,11 @@ Chapter 2 introduced middleware. This chapter goes deep. Built-in middleware. Cu
 
 ## 2. What Middleware Is
 
-A middleware function sits between the incoming HTTP request and your route handler. It receives the request, the response, and a `next_handler` callable. Three options:
+Middleware is code that runs before or after your route handler. It sits in the HTTP pipeline between the incoming request and the response. Every request can pass through multiple middleware layers before reaching the handler.
 
-1. Inspect or modify the request before passing it along
-2. Block the request entirely (short-circuit)
-3. Inspect or modify the response on the way back
+Tina4 Ruby supports two styles of middleware:
 
-Here is the simplest middleware that does nothing but pass through:
+**Method-based middleware** receives the request, the response, and a `next_handler` callable. Call `next_handler` to continue. Skip it to short-circuit.
 
 ```ruby
 def passthrough(request, response, next_handler)
@@ -28,15 +26,39 @@ def passthrough(request, response, next_handler)
 end
 ```
 
-And here is one that blocks everything:
-
 ```ruby
 def block_everything(request, response, next_handler)
   response.json({ error: "Service unavailable" }, 503)
 end
 ```
 
-The `next_handler` is what makes middleware composable. Call it to continue to the next middleware (or the route handler if there is no more middleware). Do not call it to stop the chain.
+**Class-based middleware** uses naming conventions. Class methods prefixed with `before_` run before the handler. Methods prefixed with `after_` run after it. Each method receives `(request, response)` and returns `[request, response]`.
+
+```ruby
+class MyMiddleware
+  class << self
+    def before_check(request, response)
+      # Runs before the route handler
+      [request, response]
+    end
+
+    def after_cleanup(request, response)
+      # Runs after the route handler
+      [request, response]
+    end
+  end
+end
+```
+
+Register class-based middleware globally with `Middleware.use`:
+
+```ruby
+Tina4::Middleware.use(Tina4::CorsClassMiddleware)
+Tina4::Middleware.use(Tina4::RateLimiterMiddleware)
+Tina4::Middleware.use(Tina4::RequestLoggerMiddleware)
+```
+
+If a `before_*` method returns a response with status >= 400, the handler is skipped (short-circuit).
 
 ---
 
@@ -45,11 +67,11 @@ The `next_handler` is what makes middleware composable. Call it to continue to t
 Cross-Origin Resource Sharing (CORS) is the browser mechanism that controls which domains can call your API. Tina4 provides a built-in `CorsMiddleware` that handles this. Configure it in `.env`:
 
 ```env
-CORS_ORIGINS=http://localhost:3000,https://myapp.com
-CORS_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
-CORS_HEADERS=Content-Type,Authorization,X-API-Key
-CORS_MAX_AGE=86400
-CORS_CREDENTIALS=true
+TINA4_CORS_ORIGINS=http://localhost:3000,https://myapp.com
+TINA4_CORS_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
+TINA4_CORS_HEADERS=Content-Type,Authorization,Accept
+TINA4_CORS_MAX_AGE=86400
+TINA4_CORS_CREDENTIALS=true
 ```
 
 Apply it to a group:
@@ -76,7 +98,7 @@ Rate limiting prevents a single client from overwhelming your API. Configure it 
 
 ```env
 TINA4_RATE_LIMIT=60
-TINA4_RATE_LIMIT_WINDOW=60
+TINA4_RATE_WINDOW=60
 ```
 
 This means 60 requests per 60 seconds per IP. Apply it:
@@ -116,11 +138,43 @@ Tina4::Router.group("/api/v1", middleware: ["auth_middleware", "RateLimiter:120"
 end
 ```
 
+### Built-in RequestLoggerMiddleware
+
+The `RequestLoggerMiddleware` logs every request with its timing. It uses two hooks:
+
+- `before_log` stamps the start time before the handler runs
+- `after_log` calculates elapsed time and writes a log entry
+
+Register it globally:
+
+```ruby
+Tina4::Middleware.use(Tina4::RequestLoggerMiddleware)
+```
+
+The log output looks like:
+
+```
+[RequestLogger] GET /api/users -> 200 (12.345ms)
+[RequestLogger] POST /api/products -> 201 (45.678ms)
+```
+
+### Combining All Three Built-In Middleware
+
+A common production setup registers all three globally:
+
+```ruby
+Tina4::Middleware.use(Tina4::CorsClassMiddleware)
+Tina4::Middleware.use(Tina4::RateLimiterMiddleware)
+Tina4::Middleware.use(Tina4::RequestLoggerMiddleware)
+```
+
+Order matters. CORS handles preflight first. The rate limiter only counts real requests. The logger measures total time including the other middleware.
+
 ---
 
 ## 5. Writing Custom Middleware
 
-Custom middleware follows the same pattern: receive `request`, `response`, and `next_handler`. Define it as a named method.
+Custom middleware follows the same pattern. You can write method-based or class-based middleware.
 
 ### Request Logging Middleware
 
@@ -190,6 +244,95 @@ def require_json(request, response, next_handler)
   end
 
   next_handler.call(request, response)
+end
+```
+
+### Writing Class-Based Middleware
+
+For middleware that needs both before and after hooks, use the class-based pattern:
+
+```ruby
+class InputSanitizer
+  class << self
+    def before_sanitize(request, response)
+      if request.body.is_a?(Hash)
+        request.body = sanitize_hash(request.body)
+      end
+      [request, response]
+    end
+
+    private
+
+    def sanitize_hash(data)
+      data.transform_values do |value|
+        case value
+        when String
+          CGI.escapeHTML(value)
+        when Hash
+          sanitize_hash(value)
+        else
+          value
+        end
+      end
+    end
+  end
+end
+```
+
+Register globally or apply to groups:
+
+```ruby
+# Global
+Tina4::Middleware.use(InputSanitizer)
+
+# On a specific group
+Tina4::Router.group("/api", middleware: "InputSanitizer") do
+  # routes here
+end
+```
+
+### JWT Authentication Middleware (Class-Based)
+
+```ruby
+class JwtAuthMiddleware
+  class << self
+    def before_verify_token(request, response)
+      auth_header = request.headers["Authorization"] || ""
+
+      unless auth_header.start_with?("Bearer ")
+        response.json({ error: "Authorization header required" }, 401)
+        return [request, response]
+      end
+
+      token = auth_header[7..]
+      payload = Tina4::Auth.valid_token(token)
+
+      if payload.nil?
+        response.json({ error: "Invalid or expired token" }, 401)
+        return [request, response]
+      end
+
+      request.user = payload
+      [request, response]
+    end
+  end
+end
+```
+
+Apply it to protected routes:
+
+```ruby
+Tina4::Router.group("/api/protected", middleware: "JwtAuthMiddleware") do
+
+  Tina4::Router.get("/profile") do |request, response|
+    response.json({ user: request.user })
+  end
+
+  Tina4::Router.post("/settings") do |request, response|
+    user_id = request.user["sub"]
+    response.json({ updated: true, user_id: user_id })
+  end
+
 end
 ```
 

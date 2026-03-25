@@ -10,7 +10,11 @@ Middleware solves this. Each middleware is a gatekeeper. It does one job and pas
 
 ## 2. What Middleware Is
 
-A middleware function stands between the incoming HTTP request and your route handler. It receives the request, the response, and a `next` function:
+Middleware is code that runs before or after your route handler. It sits in the HTTP pipeline between the incoming request and the response. Every request can pass through multiple middleware layers before reaching the handler.
+
+Tina4 Node.js supports two styles of middleware:
+
+**Function-based middleware** receives `req`, `res`, and `next`. Call `next()` to continue. Skip it to short-circuit.
 
 ```typescript
 async function passthrough(req, res, next) {
@@ -18,31 +22,73 @@ async function passthrough(req, res, next) {
 }
 ```
 
-And one that blocks everything:
-
 ```typescript
 async function blockEverything(req, res, next) {
     return res.status(503).json({ error: "Service unavailable" });
 }
 ```
 
+**Class-based middleware** uses naming conventions. Static methods whose names start with `before` run before the handler (via `MiddlewareRunner.runBefore`). Methods starting with `after` run after it (via `MiddlewareRunner.runAfter`). Each method receives `(req, res)` and returns `[req, res]`.
+
+```typescript
+class MyMiddleware {
+    static beforeCheck(req, res) {
+        // Runs before the route handler
+        return [req, res];
+    }
+
+    static afterCleanup(req, res) {
+        // Runs after the route handler
+        return [req, res];
+    }
+}
+```
+
+If a `before*` method sets the response status to >= 400, the handler is skipped (short-circuit).
+
+Register class-based middleware globally with `Router.use()`:
+
+```typescript
+import { Router, CorsMiddleware, RateLimiterMiddleware, RequestLogger } from "tina4-nodejs";
+
+Router.use(CorsMiddleware);
+Router.use(RateLimiterMiddleware);
+Router.use(RequestLogger);
+```
+
 ---
 
 ## 3. Built-in CorsMiddleware
 
+CORS (Cross-Origin Resource Sharing) controls which domains can call your API from a browser. When React at `http://localhost:3000` calls your Tina4 API at `http://localhost:7148`, the browser sends a preflight `OPTIONS` request first. Wrong headers and the browser blocks everything.
+
+Tina4 provides both a function-based `cors()` middleware and a class-based `CorsMiddleware`. Configure via `.env`:
+
 ```env
-CORS_ORIGINS=http://localhost:3000,https://myapp.com
-CORS_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
-CORS_HEADERS=Content-Type,Authorization,X-API-Key
-CORS_MAX_AGE=86400
-CORS_CREDENTIALS=true
+TINA4_CORS_ORIGINS=http://localhost:3000,https://myapp.com
+TINA4_CORS_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
+TINA4_CORS_HEADERS=Content-Type,Authorization
+TINA4_CORS_MAX_AGE=86400
 ```
 
-Apply it:
+For development, allow all origins:
+
+```env
+TINA4_CORS_ORIGINS=*
+```
+
+Apply using the function-based form:
 
 ```typescript
-import { Router } from "tina4-nodejs";
+import { Router, cors } from "tina4-nodejs";
 
+const app = Router();
+app.use(cors());   // applies to all routes
+```
+
+Or apply the class-based form to specific groups:
+
+```typescript
 Router.group("/api", () => {
     Router.get("/products", async (req, res) => {
         return res.json({ products: [] });
@@ -50,21 +96,36 @@ Router.group("/api", () => {
 }, "CorsMiddleware");
 ```
 
+Preflight `OPTIONS` requests return `204 No Content` with the correct CORS headers. The browser caches the preflight based on `TINA4_CORS_MAX_AGE`.
+
 ---
 
-## 4. Built-in RateLimiter
+## 4. Built-in RateLimiterMiddleware
+
+The rate limiter prevents a single client from flooding your API. It uses a sliding-window algorithm that tracks requests per IP in memory. Configure via `.env`:
 
 ```env
 TINA4_RATE_LIMIT=60
-TINA4_RATE_LIMIT_WINDOW=60
+TINA4_RATE_WINDOW=60
 ```
+
+60 requests per 60 seconds per IP. Apply it:
 
 ```typescript
 Router.group("/api/public", () => {
     Router.get("/search", async (req, res) => {
         return res.json({ results: [] });
     });
-}, "RateLimiter");
+}, "RateLimiterMiddleware");
+```
+
+When a client exceeds the limit, they receive a `429 Too Many Requests` response with rate limit headers:
+
+```
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1711113060
+Retry-After: 42
 ```
 
 Custom limits per group:
@@ -74,12 +135,51 @@ Router.group("/api/public", () => {
     Router.get("/search", async (req, res) => {
         return res.json({ results: [] });
     });
-}, "RateLimiter:30");
+}, "RateLimiterMiddleware:30");
 ```
+
+## 5. Built-in RequestLogger
+
+The `RequestLogger` middleware logs every request with timing and coloured status codes. It uses two hooks:
+
+- `beforeLog` stamps the start time before the handler runs
+- `afterLog` calculates elapsed time and prints a coloured log line
+
+Register it globally:
+
+```typescript
+import { Router, RequestLogger } from "tina4-nodejs";
+
+Router.use(RequestLogger);
+```
+
+The console output looks like:
+
+```
+  200 GET /api/users 12ms
+  201 POST /api/products 45ms
+  404 GET /api/missing 2ms
+```
+
+Green for 2xx, yellow for 3xx, red for 4xx and 5xx.
+
+### Combining All Three Built-In Middleware
+
+A common production setup:
+
+```typescript
+import { Router, CorsMiddleware, RateLimiterMiddleware, RequestLogger } from "tina4-nodejs";
+
+Router.use(CorsMiddleware);
+Router.use(RateLimiterMiddleware);
+Router.use(RequestLogger);
+```
+
+Order matters. CORS handles `OPTIONS` preflight first. The rate limiter only counts real requests (not preflight). The logger measures total time including the other middleware.
 
 ---
 
-## 5. Writing Custom Middleware
+## 6. Writing Custom Middleware
 
 ### Request Logging
 
@@ -142,9 +242,101 @@ async function requireJson(req, res, next) {
 }
 ```
 
+### Writing Class-Based Middleware
+
+For middleware that needs both before and after hooks, use the class-based pattern with static `before*` and `after*` methods:
+
+```typescript
+class InputSanitizer {
+    static beforeSanitize(req, res) {
+        if (req.body && typeof req.body === "object") {
+            req.body = InputSanitizer.sanitize(req.body);
+        }
+        return [req, res];
+    }
+
+    private static sanitize(data: Record<string, any>): Record<string, any> {
+        const clean: Record<string, any> = {};
+        for (const [key, value] of Object.entries(data)) {
+            if (typeof value === "string") {
+                clean[key] = value.replace(/[<>&"']/g, (c) =>
+                    ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" })[c] ?? c
+                );
+            } else if (typeof value === "object" && value !== null) {
+                clean[key] = InputSanitizer.sanitize(value);
+            } else {
+                clean[key] = value;
+            }
+        }
+        return clean;
+    }
+}
+```
+
+### JWT Authentication Middleware (Class-Based)
+
+```typescript
+import { Auth } from "tina4-nodejs";
+
+class JwtAuthMiddleware {
+    static beforeVerifyToken(req, res) {
+        const authHeader = req.headers["authorization"] ?? "";
+
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            res(JSON.stringify({ error: "Authorization header required" }), 401);
+            return [req, res];
+        }
+
+        const token = authHeader.slice(7);
+        const payload = Auth.validToken(token);
+
+        if (!payload) {
+            res(JSON.stringify({ error: "Invalid or expired token" }), 401);
+            return [req, res];
+        }
+
+        (req as any).user = payload;
+        return [req, res];
+    }
+}
+```
+
+Apply it to protected routes:
+
+```typescript
+Router.group("/api/protected", () => {
+    Router.get("/profile", async (req, res) => {
+        return res.json({ user: (req as any).user });
+    });
+
+    Router.post("/settings", async (req, res) => {
+        const userId = (req as any).user.sub;
+        return res.json({ updated: true, user_id: userId });
+    });
+}, "JwtAuthMiddleware");
+```
+
+### Request ID Middleware (Class-Based)
+
+```typescript
+import { randomUUID } from "crypto";
+
+class RequestIdMiddleware {
+    static beforeInjectId(req, res) {
+        (req as any).requestId = randomUUID();
+        return [req, res];
+    }
+
+    static afterAddHeader(req, res) {
+        res.header("X-Request-ID", (req as any).requestId);
+        return [req, res];
+    }
+}
+```
+
 ---
 
-## 6. Applying Middleware
+## 7. Applying Middleware
 
 Single middleware:
 
@@ -164,7 +356,7 @@ Router.post("/api/data", async (req, res) => {
 
 ---
 
-## 7. Route Groups with Shared Middleware
+## 8. Route Groups with Shared Middleware
 
 ```typescript
 Router.group("/api/public", () => {
@@ -185,7 +377,7 @@ Router.group("/api/admin", () => {
 
 ---
 
-## 8. Middleware Execution Order
+## 9. Middleware Execution Order
 
 Middleware executes from outer to inner:
 
@@ -212,7 +404,7 @@ Group middleware always runs before route middleware.
 
 ---
 
-## 9. Short-Circuiting
+## 10. Short-Circuiting
 
 When middleware does not call `next`, the chain dies:
 
@@ -247,7 +439,7 @@ async function maintenanceMode(req, res, next) {
 
 ---
 
-## 10. Modifying Requests in Middleware
+## 11. Modifying Requests in Middleware
 
 ```typescript
 async function addRequestId(req, res, next) {
@@ -261,7 +453,7 @@ async function addRequestId(req, res, next) {
 
 ---
 
-## 11. Real-World Middleware Stack
+## 12. Real-World Middleware Stack
 
 ```typescript
 import { Router } from "tina4-nodejs";
@@ -286,7 +478,7 @@ Router.group("/api/v1", () => {
 
 ---
 
-## 12. Exercise: Build an API Key Middleware
+## 13. Exercise: Build an API Key Middleware
 
 Build `validateApiKey` middleware that checks `X-API-Key` header against `API_KEYS` env variable.
 
@@ -299,7 +491,7 @@ Build `validateApiKey` middleware that checks `X-API-Key` header against `API_KE
 
 ---
 
-## 13. Solution
+## 14. Solution
 
 ```typescript
 import { Router } from "tina4-nodejs";
@@ -340,7 +532,7 @@ Router.group("/api/partner", () => {
 
 ---
 
-## 14. Gotchas
+## 15. Gotchas
 
 ### 1. Middleware Must Be a Named Function
 

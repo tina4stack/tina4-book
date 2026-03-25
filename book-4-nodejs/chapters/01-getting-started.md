@@ -635,7 +635,196 @@ Both `tina4 serve` and `npx tsx app.ts` work. The CLI adds live reload and other
 
 ---
 
-## 9. Exercise: Greeting API + Product List Template
+## 9. Request & Response Fundamentals
+
+Before jumping into the exercises, let's consolidate how route handlers work in Tina4 Node.js. Every handler receives two arguments: `req` (what the client sent) and `res` (what you send back). Here is the complete picture.
+
+### Reading Query Parameters
+
+Query parameters are the key-value pairs after the `?` in a URL. Access them through `req.query`:
+
+```typescript
+// URL: /api/search?q=laptop&page=2
+req.query.q          // "laptop"
+req.query.page       // "2" (always a string)
+req.query.sort ?? "name"  // "name" (default -- param was not sent)
+```
+
+### Reading URL Path Parameters
+
+Route patterns like `/users/{id}` capture segments of the URL. Access them through `req.params`:
+
+```typescript
+import { Router } from "tina4-nodejs";
+
+Router.get("/users/{id:int}/posts/{slug}", async (req, res) => {
+    const id = req.params.id;      // 5 (number, because of :int)
+    const slug = req.params.slug;  // "hello-world" (string)
+    return res.json({ user_id: id, slug: slug });
+});
+```
+
+The `{id:int}` syntax tells Tina4 to convert the value to a number. Without `:int`, it stays a string.
+
+### Reading the Request Body
+
+POST, PUT, and PATCH requests carry a body. Tina4 parses JSON bodies into an object automatically (as long as the client sends `Content-Type: application/json`):
+
+```typescript
+Router.post("/api/items", async (req, res) => {
+    const name = req.body.name ?? "";
+    const price = req.body.price ?? 0;
+    return res.json({ received_name: name, received_price: price });
+});
+```
+
+### Reading Headers
+
+Headers are available as an object. In Node.js, header names are normalized to lowercase:
+
+```typescript
+const contentType = req.headers["content-type"] ?? "not set";
+const authToken = req.headers["authorization"] ?? "";
+const custom = req.headers["x-custom-header"] ?? "";
+```
+
+### Sending JSON Responses
+
+`res.json()` converts an object to JSON and sets the correct `Content-Type`. Chain with `res.status()` for a custom status code:
+
+```typescript
+return res.json({ id: 1, name: "Widget" });               // 200 OK (default)
+return res.status(201).json({ id: 1, name: "Widget" });    // 201 Created
+return res.status(404).json({ error: "Not found" });        // 404 Not Found
+```
+
+### Sending HTML / Template Responses
+
+`res.html()` renders a Frond template from `src/templates/` when given a filename and data:
+
+```typescript
+return res.html("products.html", { products: productList, title: "Our Products" });
+```
+
+For raw HTML without a template file:
+
+```typescript
+return res.html("<h1>Hello</h1><p>This works too.</p>");
+```
+
+### Status Codes
+
+The most common status codes you will use:
+
+| Code | Meaning | When to Use |
+|------|---------|-------------|
+| `200` | OK | Successful GET (default) |
+| `201` | Created | Successful POST that created something |
+| `400` | Bad Request | Client sent invalid input |
+| `404` | Not Found | Resource does not exist |
+| `500` | Internal Server Error | Something broke on the server |
+
+### Worked Example: A Complete Route File
+
+Here is a full route file that ties everything together. It builds a small book lookup API with query parameters, path parameters, JSON responses, and proper status codes. Read through it before attempting the exercises -- it is your reference.
+
+Create `src/routes/books.ts`:
+
+```typescript
+import { Router } from "tina4-nodejs";
+
+// In-memory data store
+const books = [
+    { id: 1, title: "Dune", author: "Frank Herbert", year: 1965 },
+    { id: 2, title: "Neuromancer", author: "William Gibson", year: 1984 },
+    { id: 3, title: "Snow Crash", author: "Neal Stephenson", year: 1992 }
+];
+
+Router.get("/api/books", async (req, res) => {
+    // List all books. Supports ?author= filter and ?sort=year.
+    const author = (req.query.author ?? "") as string;
+    const sortBy = (req.query.sort ?? "") as string;
+
+    let result = [...books];
+
+    // Filter by author if the query param is present
+    if (author) {
+        result = result.filter(b =>
+            b.author.toLowerCase().includes(author.toLowerCase())
+        );
+    }
+
+    // Sort by year if requested
+    if (sortBy === "year") {
+        result.sort((a, b) => a.year - b.year);
+    }
+
+    return res.json({ books: result, count: result.length });
+});
+
+Router.get("/api/books/{id:int}", async (req, res) => {
+    // Get a single book by ID. Returns 404 if not found.
+    const id = req.params.id;
+    const book = books.find(b => b.id === id);
+
+    if (!book) {
+        return res.status(404).json({ error: `Book with id ${id} not found` });
+    }
+
+    return res.json(book);
+});
+
+Router.post("/api/books", async (req, res) => {
+    // Create a new book from the JSON body. Returns 201 on success.
+    const title = req.body.title ?? "";
+    const author = req.body.author ?? "";
+    const year = req.body.year ?? 0;
+
+    if (!title || !author) {
+        return res.status(400).json({ error: "title and author are required" });
+    }
+
+    const newBook = {
+        id: Math.max(...books.map(b => b.id)) + 1,
+        title,
+        author,
+        year
+    };
+    books.push(newBook);
+
+    return res.status(201).json(newBook);
+});
+```
+
+Test it:
+
+```bash
+# List all books
+curl http://localhost:7148/api/books
+
+# Filter by author
+curl "http://localhost:7148/api/books?author=gibson"
+
+# Sort by year
+curl "http://localhost:7148/api/books?sort=year"
+
+# Get a single book
+curl http://localhost:7148/api/books/2
+
+# Get a book that does not exist (returns 404)
+curl http://localhost:7148/api/books/99
+
+# Create a new book
+curl -X POST http://localhost:7148/api/books \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Foundation", "author": "Isaac Asimov", "year": 1951}'
+```
+
+This example covers every building block the exercises use: reading query parameters, reading path parameters, reading the request body, returning JSON with different status codes, and handling missing data. Refer back to it as you work through the exercises below.
+
+---
+
+## 10. Exercise: Greeting API + Product List Template
 
 Build the following two features from scratch, without looking at the examples above.
 
@@ -699,7 +888,7 @@ const products = [
 
 ---
 
-## 10. Solutions
+## 11. Solutions
 
 ### Solution A: Greeting API
 
@@ -849,7 +1038,7 @@ Router.get("/store", async (req, res) => {
 
 ---
 
-## 11. Gotchas
+## 12. Gotchas
 
 ### 1. File not auto-discovered
 

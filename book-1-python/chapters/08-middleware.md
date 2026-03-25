@@ -12,16 +12,20 @@ Tina4 Python ships with built-in middleware (CORS, rate limiting) and lets you w
 
 ## 2. Built-In Middleware
 
+Tina4 Python ships with two built-in middleware classes in `tina4_python.core.middleware`: `CorsMiddleware` and `RateLimiter`. Both are configured via environment variables.
+
 ### CorsMiddleware
 
-CORS (Cross-Origin Resource Sharing) controls which websites can call your API from a browser. Tina4 includes CORS middleware that is configured via `.env`:
+CORS (Cross-Origin Resource Sharing) controls which websites can call your API from a browser. When React at `http://localhost:3000` calls your Tina4 API at `http://localhost:7145`, the browser sends a preflight `OPTIONS` request first. Wrong headers and the browser blocks everything.
+
+Configure via `.env`:
 
 ```env
-CORS_ORIGINS=https://app.example.com,https://admin.example.com
-CORS_METHODS=GET,POST,PUT,DELETE
-CORS_HEADERS=Content-Type,Authorization
-CORS_CREDENTIALS=true
-CORS_MAX_AGE=86400
+TINA4_CORS_ORIGINS=https://app.example.com,https://admin.example.com
+TINA4_CORS_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
+TINA4_CORS_HEADERS=Content-Type,Authorization,X-Request-ID
+TINA4_CORS_MAX_AGE=86400
+TINA4_CORS_CREDENTIALS=true
 ```
 
 With these settings, only `app.example.com` and `admin.example.com` can make cross-origin requests to your API. The browser automatically handles preflight `OPTIONS` requests.
@@ -29,27 +33,67 @@ With these settings, only `app.example.com` and `admin.example.com` can make cro
 For development, you can allow all origins:
 
 ```env
-CORS_ORIGINS=*
+TINA4_CORS_ORIGINS=*
 ```
 
 The CORS middleware is active by default. You do not need to register it manually.
 
+You can also use `CorsMiddleware` programmatically in your own middleware:
+
+```python
+from tina4_python.core.middleware import CorsMiddleware
+
+cors = CorsMiddleware()
+
+# Check if an origin is allowed
+allowed = cors.allowed_origin("https://app.example.com")
+
+# Apply CORS headers to a response
+cors.apply(request, response)
+
+# Check if this is a preflight request
+if cors.is_preflight(request):
+    # Handle OPTIONS request
+    pass
+```
+
 ### RateLimiter
 
-The rate limiter prevents abuse by limiting how many requests a single IP can make in a time window:
+The rate limiter prevents abuse by limiting how many requests a single IP can make in a sliding time window. It uses an in-memory store that is thread-safe.
+
+Configure via `.env`:
 
 ```env
 TINA4_RATE_LIMIT=60
+TINA4_RATE_WINDOW=60
 ```
 
-This allows 60 requests per minute per IP address. When a client exceeds the limit, they receive a `429 Too Many Requests` response with a `Retry-After` header.
+This allows 60 requests per 60-second window per IP address. When a client exceeds the limit, they receive a `429 Too Many Requests` response with a `Retry-After` header.
 
 Rate limit headers are included in every response:
 
 ```
 X-RateLimit-Limit: 60
 X-RateLimit-Remaining: 57
-X-RateLimit-Reset: 1711113000
+X-RateLimit-Reset: 60
+```
+
+You can use the `RateLimiter` class directly for custom rate limiting logic:
+
+```python
+from tina4_python.core.middleware import RateLimiter
+
+limiter = RateLimiter()
+
+allowed, info = limiter.check(request.ip)
+if not allowed:
+    return response.json({
+        "error": "Too many requests",
+        "retry_after": info["reset"]
+    }, 429)
+
+# Add rate limit headers to the response
+limiter.apply_headers(response, info)
 ```
 
 Like CORS, the rate limiter is active by default based on your `.env` configuration.
@@ -57,6 +101,10 @@ Like CORS, the rate limiter is active by default based on your `.env` configurat
 ---
 
 ## 3. Writing Custom Middleware
+
+Tina4 Python supports two styles of middleware: function-based and class-based.
+
+### Function-Based Middleware
 
 A middleware function takes three arguments: `request`, `response`, and `next_handler`. It must return a response.
 
@@ -74,23 +122,47 @@ async def my_middleware(request, response, next_handler):
     return result
 ```
 
-### Example: Request Timer
+### Class-Based Middleware
+
+Class-based middleware uses a naming convention: static methods prefixed with `before_` run before the route handler, and methods prefixed with `after_` run after it. Each method receives `(request, response)` and returns `(request, response)`.
+
+```python
+class MyMiddleware:
+    @staticmethod
+    def before_check(request, response):
+        """Runs before the route handler."""
+        print("Before handler")
+        return request, response
+
+    @staticmethod
+    def after_cleanup(request, response):
+        """Runs after the route handler."""
+        print("After handler")
+        return request, response
+```
+
+If a `before_*` method returns a response with an error status (>= 400), the route handler is skipped entirely. This is short-circuiting.
+
+### Example: Request Timer (Class-Based)
 
 ```python
 import time
 
-async def timer_middleware(request, response, next_handler):
-    start = time.time()
+class TimingMiddleware:
+    @staticmethod
+    def before_start_timer(request, response):
+        request._start_time = time.time()
+        return request, response
 
-    result = await next_handler(request, response)
-
-    duration_ms = round((time.time() - start) * 1000, 2)
-    print(f"{request.method} {request.path} completed in {duration_ms}ms")
-
-    return result
+    @staticmethod
+    def after_add_timing(request, response):
+        elapsed = time.time() - getattr(request, "_start_time", time.time())
+        from tina4_python.core.response import Response
+        Response.add_header("X-Response-Time", f"{elapsed:.3f}s")
+        return request, response
 ```
 
-### Example: Request Logger
+### Example: Request Logger (Function-Based)
 
 ```python
 from datetime import datetime
@@ -110,7 +182,22 @@ async def log_middleware(request, response, next_handler):
     return result
 ```
 
-### Example: JSON Content-Type Enforcer
+### Example: Security Headers (Class-Based)
+
+```python
+from tina4_python.core.response import Response
+
+class SecurityHeaders:
+    @staticmethod
+    def after_security(request, response):
+        Response.add_header("X-Content-Type-Options", "nosniff")
+        Response.add_header("X-Frame-Options", "DENY")
+        Response.add_header("X-XSS-Protection", "1; mode=block")
+        Response.add_header("Strict-Transport-Security", "max-age=31536000")
+        return request, response
+```
+
+### Example: JSON Content-Type Enforcer (Function-Based)
 
 ```python
 async def require_json(request, response, next_handler):
@@ -124,31 +211,81 @@ async def require_json(request, response, next_handler):
     return await next_handler(request, response)
 ```
 
+### Example: Request ID (Class-Based)
+
+```python
+import secrets
+
+class RequestIdMiddleware:
+    @staticmethod
+    def before_inject_id(request, response):
+        request.request_id = secrets.token_hex(8)
+        return request, response
+
+    @staticmethod
+    def after_add_header(request, response):
+        from tina4_python.core.response import Response
+        Response.add_header("X-Request-ID", getattr(request, "request_id", ""))
+        return request, response
+```
+
+### Example: Input Sanitization (Class-Based)
+
+```python
+import html
+
+class InputSanitizer:
+    @staticmethod
+    def before_sanitize(request, response):
+        if request.body and isinstance(request.body, dict):
+            request.body = InputSanitizer._sanitize_dict(request.body)
+        return request, response
+
+    @staticmethod
+    def _sanitize_dict(data):
+        sanitized = {}
+        for key, value in data.items():
+            if isinstance(value, str):
+                sanitized[key] = html.escape(value)
+            elif isinstance(value, dict):
+                sanitized[key] = InputSanitizer._sanitize_dict(value)
+            else:
+                sanitized[key] = value
+        return sanitized
+```
+
 ---
 
 ## 4. The @middleware Decorator
 
-Apply middleware to a single route with the `@middleware` decorator:
+Apply middleware to a single route with the `@middleware` decorator. Both function-based and class-based middleware work:
 
 ```python
 from tina4_python.core.router import get, post, middleware
 
-@get("/api/data")
+# Function-based middleware
 @middleware(timer_middleware)
+@get("/api/data")
 async def get_data(request, response):
     return response.json({"data": [1, 2, 3]})
+
+# Class-based middleware
+@middleware(TimingMiddleware)
+@get("/api/stats")
+async def get_stats(request, response):
+    return response.json({"stats": {}})
 ```
 
 Apply multiple middleware by passing them as separate arguments:
 
 ```python
+@middleware(RequestIdMiddleware, SecurityHeaders, require_json)
 @post("/api/items")
-@middleware(log_middleware, require_json, timer_middleware)
 async def create_item(request, response):
     return response.json({"item": request.body}, 201)
 ```
 
-Middleware runs in the order you list them. In the example above: `log_middleware` runs first, then `require_json`, then `timer_middleware`, then the route handler.
+You can mix function-based and class-based middleware freely. They run in the order you list them. In the example above: `RequestIdMiddleware` runs first (before and after hooks), then `SecurityHeaders`, then `require_json`, then the route handler.
 
 ---
 
@@ -160,7 +297,7 @@ Apply middleware to all routes in a group:
 from tina4_python.core.router import get, post, group, middleware
 
 @group("/api/v1")
-@middleware(log_middleware, timer_middleware)
+@middleware(TimingMiddleware, SecurityHeaders)
 def api_v1():
 
     @get("/users")
@@ -176,24 +313,26 @@ def api_v1():
         return response.json({"products": []})
 ```
 
-Every route inside the group now has `log_middleware` and `timer_middleware` applied. You can still add route-specific middleware on top:
+Every route inside the group now has `TimingMiddleware` and `SecurityHeaders` applied. You can still add route-specific middleware on top:
 
 ```python
 @group("/api/v1")
-@middleware(log_middleware)
+@middleware(RequestIdMiddleware)
 def api_v1():
 
     @get("/public")
     async def public_endpoint(request, response):
-        # Only log_middleware runs
+        # Only RequestIdMiddleware runs
         return response.json({"public": True})
 
+    @middleware(AuthMiddleware)
     @post("/admin")
-    @middleware(auth_middleware)
     async def admin_endpoint(request, response):
-        # log_middleware + auth_middleware both run
+        # RequestIdMiddleware + AuthMiddleware both run
         return response.json({"admin": True})
 ```
+
+Group middleware always runs before route-specific middleware. This means authentication checks at the group level cannot be bypassed by individual routes.
 
 ---
 
@@ -348,7 +487,56 @@ async def add_security_headers(request, response, next_handler):
 
 ---
 
-## 9. Real-World Example: API Key Middleware with Database Lookup
+## 9. Real-World Example: JWT Authentication Middleware
+
+This class-based middleware verifies JWT tokens on protected routes. It uses the `before_*` / `after_*` convention.
+
+```python
+from tina4_python.auth import Auth
+
+class JwtAuthMiddleware:
+    @staticmethod
+    def before_verify_token(request, response):
+        auth_header = request.headers.get("authorization", "")
+
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return request, response({"error": "Authorization header required"}, 401)
+
+        token = auth_header[7:]
+        payload = Auth.valid_token(token)
+
+        if payload is None:
+            return request, response({"error": "Invalid or expired token"}, 401)
+
+        # Attach the decoded payload to the request
+        request.user = payload
+        return request, response
+```
+
+Apply it to a group of protected routes:
+
+```python
+from tina4_python.core.router import get, post, group, middleware
+
+@group("/api/protected")
+@middleware(JwtAuthMiddleware)
+def protected_routes():
+
+    @get("/profile")
+    async def get_profile(request, response):
+        return response({"user": request.user})
+
+    @post("/settings")
+    async def update_settings(request, response):
+        user_id = request.user["sub"]
+        return response({"updated": True, "user_id": user_id})
+```
+
+The middleware short-circuits with 401 if the token is missing or invalid. The route handler never runs. If the token is valid, the decoded payload is available as `request.user`.
+
+---
+
+## 10. Real-World Example: API Key Middleware with Database Lookup
 
 ```python
 from tina4_python.database.connection import Database
@@ -389,7 +577,7 @@ async def api_key_middleware(request, response, next_handler):
 
 ---
 
-## 10. Exercise: Build an API Key Middleware System
+## 11. Exercise: Build an API Key Middleware System
 
 Build a complete API key system with key management and usage tracking.
 
@@ -434,7 +622,7 @@ curl http://localhost:7145/admin/api-keys \
 
 ---
 
-## 11. Solution
+## 12. Solution
 
 ### Migration
 
@@ -573,7 +761,7 @@ async def api_status(request, response):
 
 ---
 
-## 12. Gotchas
+## 13. Gotchas
 
 ### 1. Forgetting to await next_handler
 

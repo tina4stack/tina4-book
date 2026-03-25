@@ -12,13 +12,11 @@ Chapter 2 introduced middleware briefly. This chapter goes deep: built-in middle
 
 ## 2. What Middleware Is
 
-A middleware function sits between the HTTP request and your route handler. It receives `$request`, `$response`, and `$next`. Three options:
+Middleware is code that runs before or after your route handler. It sits in the HTTP pipeline between the incoming request and the response. Every request can pass through multiple middleware layers before reaching the handler.
 
-1. Inspect or modify the request, then pass it along
-2. Stop the chain entirely (short-circuit)
-3. Inspect or modify the response on the way back
+Tina4 PHP supports two styles of middleware:
 
-The simplest middleware -- a passthrough:
+**Function-based middleware** receives `$request`, `$response`, and `$next`. Call `$next` to continue the chain. Skip it to short-circuit.
 
 ```php
 <?php
@@ -28,17 +26,44 @@ function passthrough($request, $response, $next) {
 }
 ```
 
-The strictest middleware -- a wall:
+**Class-based middleware** uses naming conventions. Static methods prefixed with `before` run before the handler. Methods prefixed with `after` run after it. Each method receives `($request, $response)` and returns `[$request, $response]`.
 
 ```php
 <?php
+use Tina4\Request;
+use Tina4\Response;
 
-function blockEverything($request, $response, $next) {
-    return $response->json(["error" => "Service unavailable"], 503);
+class MyMiddleware
+{
+    public static function beforeCheck(Request $request, Response $response): array
+    {
+        // Runs before the route handler
+        return [$request, $response];
+    }
+
+    public static function afterCleanup(Request $request, Response $response): array
+    {
+        // Runs after the route handler
+        return [$request, $response];
+    }
 }
 ```
 
-`$next` is composability. Call it to continue. Skip it to stop.
+If a `before*` method sets the response status to >= 400, the handler is skipped (short-circuit).
+
+Register class-based middleware globally with `Middleware::use()`:
+
+```php
+<?php
+use Tina4\Middleware;
+use Tina4\Middleware\CorsMiddleware;
+use Tina4\Middleware\RequestLogger;
+
+Middleware::use(CorsMiddleware::class);
+Middleware::use(RequestLogger::class);
+```
+
+Global middleware runs on every request, in the order registered.
 
 ---
 
@@ -49,11 +74,10 @@ CORS controls which domains can call your API. When React at `http://localhost:3
 Tina4 provides `CorsMiddleware`. Configure in `.env`:
 
 ```env
-CORS_ORIGINS=http://localhost:3000,https://myapp.com
-CORS_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
-CORS_HEADERS=Content-Type,Authorization,X-API-Key
-CORS_MAX_AGE=86400
-CORS_CREDENTIALS=true
+TINA4_CORS_ORIGINS=http://localhost:3000,https://myapp.com
+TINA4_CORS_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
+TINA4_CORS_HEADERS=Content-Type,Authorization,X-API-Key
+TINA4_CORS_MAX_AGE=86400
 ```
 
 Apply it:
@@ -92,7 +116,6 @@ Access-Control-Allow-Origin: http://localhost:3000
 Access-Control-Allow-Methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
 Access-Control-Allow-Headers: Content-Type,Authorization,X-API-Key
 Access-Control-Max-Age: 86400
-Access-Control-Allow-Credentials: true
 ```
 
 The `OPTIONS` request returns `204 No Content` with those headers. The browser caches the preflight for 86400 seconds (24 hours). Subsequent requests skip the preflight.
@@ -102,14 +125,14 @@ The `OPTIONS` request returns `204 No Content` with those headers. The browser c
 During development:
 
 ```env
-CORS_ORIGINS=*
+TINA4_CORS_ORIGINS=*
 ```
 
 The default. Do not use `*` in production. Specify your domains.
 
 ### CORS Without Middleware
 
-Set `CORS_ORIGINS` in `.env` and Tina4 applies CORS headers globally. The middleware approach gives finer control -- CORS on specific groups, none on internal routes.
+Set `TINA4_CORS_ORIGINS` in `.env` and Tina4 applies CORS headers globally. The middleware approach gives finer control -- CORS on specific groups, none on internal routes.
 
 ---
 
@@ -121,7 +144,7 @@ Configure in `.env`:
 
 ```env
 TINA4_RATE_LIMIT=60
-TINA4_RATE_LIMIT_WINDOW=60
+TINA4_RATE_WINDOW=60
 ```
 
 60 requests per 60 seconds per IP. Apply it:
@@ -176,6 +199,58 @@ Router::group("/api/v1", function () {
 ```
 
 `"RateLimiter:30"` passes `30` as a parameter. Overrides the global setting for that group.
+
+### Built-in RequestLogger
+
+The `RequestLogger` middleware logs every request with its timing. It uses two hooks:
+
+- `beforeLog` stamps the start time before the handler runs
+- `afterLog` calculates elapsed time and writes an info-level log entry
+
+Register it globally:
+
+```php
+<?php
+use Tina4\Middleware;
+use Tina4\Middleware\RequestLogger;
+
+Middleware::use(RequestLogger::class);
+```
+
+The log output looks like:
+
+```
+GET /api/users 12.34ms
+POST /api/products 45.67ms
+```
+
+You can also apply it to specific route groups:
+
+```php
+Router::group("/api", function () {
+    Router::get("/products", function ($request, $response) {
+        return $response->json(["products" => []]);
+    });
+}, "RequestLogger");
+```
+
+### Combining All Three Built-In Middleware
+
+A common production setup registers all three globally:
+
+```php
+<?php
+use Tina4\Middleware;
+use Tina4\Middleware\CorsMiddleware;
+use Tina4\Middleware\RateLimiter;
+use Tina4\Middleware\RequestLogger;
+
+Middleware::use(CorsMiddleware::class);
+Middleware::use(RateLimiter::class);
+Middleware::use(RequestLogger::class);
+```
+
+Order matters. CORS handles `OPTIONS` preflight first. The rate limiter only counts real requests (not preflight). The logger measures total time including the other middleware.
 
 ---
 
@@ -293,6 +368,107 @@ function requireJson($request, $response, $next) {
 ```
 
 Ensures all write requests send JSON. Status: `415 Unsupported Media Type`.
+
+### Writing Class-Based Middleware
+
+For more complex middleware, use the class-based pattern with `before*` and `after*` static methods:
+
+```php
+<?php
+use Tina4\Request;
+use Tina4\Response;
+
+class InputSanitizer
+{
+    public static function beforeSanitize(Request $request, Response $response): array
+    {
+        if (is_array($request->body)) {
+            $request->body = self::sanitize($request->body);
+        }
+        return [$request, $response];
+    }
+
+    private static function sanitize(array $data): array
+    {
+        $clean = [];
+        foreach ($data as $key => $value) {
+            if (is_string($value)) {
+                $clean[$key] = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+            } elseif (is_array($value)) {
+                $clean[$key] = self::sanitize($value);
+            } else {
+                $clean[$key] = $value;
+            }
+        }
+        return $clean;
+    }
+}
+```
+
+Register it globally or apply to specific groups:
+
+```php
+// Global registration
+Middleware::use(InputSanitizer::class);
+
+// Or on a specific group
+Router::group("/api", function () {
+    // routes here
+}, "InputSanitizer");
+```
+
+### JWT Authentication Middleware (Class-Based)
+
+A real-world authentication middleware that verifies JWT tokens:
+
+```php
+<?php
+use Tina4\Auth;
+use Tina4\Request;
+use Tina4\Response;
+
+class JwtAuthMiddleware
+{
+    public static function beforeVerifyToken(Request $request, Response $response): array
+    {
+        $authHeader = $request->headers["Authorization"] ?? "";
+
+        if (empty($authHeader) || !str_starts_with($authHeader, "Bearer ")) {
+            $response->status(401);
+            return [$request, $response->json(["error" => "Authorization header required"])];
+        }
+
+        $token = substr($authHeader, 7);
+
+        if (!Auth::validToken($token)) {
+            $response->status(401);
+            return [$request, $response->json(["error" => "Invalid or expired token"])];
+        }
+
+        $request->user = Auth::getPayload($token);
+        return [$request, $response];
+    }
+}
+```
+
+Apply it to a group of protected routes:
+
+```php
+Router::group("/api/protected", function () {
+
+    Router::get("/profile", function ($request, $response) {
+        return $response->json(["user" => $request->user]);
+    });
+
+    Router::post("/settings", function ($request, $response) {
+        $userId = $request->user["sub"];
+        return $response->json(["updated" => true, "user_id" => $userId]);
+    });
+
+}, "JwtAuthMiddleware");
+```
+
+The middleware short-circuits with 401 if the token is missing or invalid. The decoded payload is available as `$request->user` in the handler.
 
 ---
 

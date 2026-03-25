@@ -565,7 +565,190 @@ The overlay vanishes when `TINA4_DEBUG=false`. Production users never see it.
 
 ---
 
-## 8. Exercise: Greeting API + Product List Template
+## 8. Request & Response Fundamentals
+
+Before jumping into the exercises, let's consolidate how route handlers work in Tina4 Ruby. Every handler receives two arguments: `request` (what the client sent) and `response` (what you send back). Here is the complete picture.
+
+### Reading Query Parameters
+
+Query parameters are the key-value pairs after the `?` in a URL. Access them through `request.query`:
+
+```ruby
+# URL: /api/search?q=laptop&page=2
+request.query["q"]                  # "laptop"
+request.query["page"]               # "2" (always a string)
+request.query["sort"] || "name"     # "name" (default -- param was not sent)
+```
+
+### Reading URL Path Parameters
+
+Route patterns like `/users/{id}` capture segments of the URL. Access them through `request.params`:
+
+```ruby
+Tina4::Router.get("/users/{id:int}/posts/{slug}") do |request, response|
+  id = request.params["id"]      # 5 (int, because of :int)
+  slug = request.params["slug"]  # "hello-world" (string)
+  response.json({ user_id: id, slug: slug })
+end
+```
+
+The `{id:int}` syntax tells Tina4 to convert the value to an integer. Without `:int`, it stays a string.
+
+### Reading the Request Body
+
+POST, PUT, and PATCH requests carry a body. Tina4 parses JSON bodies into a hash automatically (as long as the client sends `Content-Type: application/json`):
+
+```ruby
+Tina4::Router.post("/api/items") do |request, response|
+  name = request.body["name"] || ""
+  price = request.body["price"] || 0
+  response.json({ received_name: name, received_price: price })
+end
+```
+
+### Reading Headers
+
+Headers are available as a hash with their original casing:
+
+```ruby
+content_type = request.headers["Content-Type"] || "not set"
+auth_token = request.headers["Authorization"] || ""
+custom = request.headers["X-Custom-Header"] || ""
+```
+
+### Sending JSON Responses
+
+`response.json` converts a hash to JSON and sets the correct `Content-Type`. Pass a status code as the second argument:
+
+```ruby
+response.json({ id: 1, name: "Widget" })        # 200 OK (default)
+response.json({ id: 1, name: "Widget" }, 201)    # 201 Created
+response.json({ error: "Not found" }, 404)        # 404 Not Found
+```
+
+### Sending HTML / Template Responses
+
+`response.render` renders a Frond template from `src/templates/` and passes data to it:
+
+```ruby
+response.render("products.html", { products: product_list, title: "Our Products" })
+```
+
+For raw HTML without a template file:
+
+```ruby
+response.html("<h1>Hello</h1><p>This works too.</p>")
+```
+
+### Status Codes
+
+The most common status codes you will use:
+
+| Code | Meaning | When to Use |
+|------|---------|-------------|
+| `200` | OK | Successful GET (default) |
+| `201` | Created | Successful POST that created something |
+| `400` | Bad Request | Client sent invalid input |
+| `404` | Not Found | Resource does not exist |
+| `500` | Internal Server Error | Something broke on the server |
+
+### Worked Example: A Complete Route File
+
+Here is a full route file that ties everything together. It builds a small book lookup API with query parameters, path parameters, JSON responses, and proper status codes. Read through it before attempting the exercises -- it is your reference.
+
+Create `src/routes/books.rb`:
+
+```ruby
+# In-memory data store
+books = [
+  { id: 1, title: "Dune", author: "Frank Herbert", year: 1965 },
+  { id: 2, title: "Neuromancer", author: "William Gibson", year: 1984 },
+  { id: 3, title: "Snow Crash", author: "Neal Stephenson", year: 1992 }
+]
+
+Tina4::Router.get("/api/books") do |request, response|
+  # List all books. Supports ?author= filter and ?sort=year.
+  author = request.query["author"] || ""
+  sort_by = request.query["sort"] || ""
+
+  result = books
+
+  # Filter by author if the query param is present
+  unless author.empty?
+    result = result.select { |b| b[:author].downcase.include?(author.downcase) }
+  end
+
+  # Sort by year if requested
+  if sort_by == "year"
+    result = result.sort_by { |b| b[:year] }
+  end
+
+  response.json({ books: result, count: result.length })
+end
+
+Tina4::Router.get("/api/books/{id:int}") do |request, response|
+  # Get a single book by ID. Returns 404 if not found.
+  id = request.params["id"]
+  book = books.find { |b| b[:id] == id }
+
+  if book.nil?
+    return response.json({ error: "Book with id #{id} not found" }, 404)
+  end
+
+  response.json(book)
+end
+
+Tina4::Router.post("/api/books") do |request, response|
+  # Create a new book from the JSON body. Returns 201 on success.
+  title = request.body["title"] || ""
+  author = request.body["author"] || ""
+  year = request.body["year"] || 0
+
+  if title.empty? || author.empty?
+    return response.json({ error: "title and author are required" }, 400)
+  end
+
+  new_book = {
+    id: books.map { |b| b[:id] }.max + 1,
+    title: title,
+    author: author,
+    year: year
+  }
+  books << new_book
+
+  response.json(new_book, 201)
+end
+```
+
+Test it:
+
+```bash
+# List all books
+curl http://localhost:7147/api/books
+
+# Filter by author
+curl "http://localhost:7147/api/books?author=gibson"
+
+# Sort by year
+curl "http://localhost:7147/api/books?sort=year"
+
+# Get a single book
+curl http://localhost:7147/api/books/2
+
+# Get a book that does not exist (returns 404)
+curl http://localhost:7147/api/books/99
+
+# Create a new book
+curl -X POST http://localhost:7147/api/books \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Foundation", "author": "Isaac Asimov", "year": 1951}'
+```
+
+This example covers every building block the exercises use: reading query parameters, reading path parameters, reading the request body, returning JSON with different status codes, and handling missing data. Refer back to it as you work through the exercises below.
+
+---
+
+## 9. Exercise: Greeting API + Product List Template
 
 Build two features from scratch. No peeking at the examples above.
 
@@ -629,7 +812,7 @@ products = [
 
 ---
 
-## 9. Solutions
+## 10. Solutions
 
 ### Solution A: Greeting API
 
@@ -774,7 +957,7 @@ end
 
 ---
 
-## 10. Gotchas
+## 11. Gotchas
 
 ### 1. File not auto-discovered
 
