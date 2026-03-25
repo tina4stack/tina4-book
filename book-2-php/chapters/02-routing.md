@@ -522,17 +522,16 @@ This route requires a bearer token and caches the response. Order does not matte
 
 ### Wildcard Routes
 
-A `*` at the end of a path matches everything after it:
+Use `{name:path}` at the end of a path to capture everything after it:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
-Router::get("/docs/*", function ($request, $response) {
-    $path = $request->params["*"] ?? "";
+Router::get("/docs/{path:path}", function ($request, $response) {
     return $response->json([
         "section" => "docs",
-        "path" => $path
+        "path" => $request->params["path"]
     ]);
 });
 ```
@@ -559,19 +558,19 @@ Handle any unmatched URL:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
-Router::get("/*", function ($request, $response) {
+Router::get("/{path:path}", function ($request, $response) {
     return $response->json([
         "error" => "Page not found",
-        "path" => $request->path
+        "path" => $request->params["path"]
     ], 404);
 });
 ```
 
 Define this last. Tina4 matches routes in registration order -- first match wins. Place this in a file that sorts alphabetically after your other route files, or it will shadow everything.
 
-You can also create a custom 404 template at `src/templates/errors/404.html`:
+You can also create a custom 404 template at `src/templates/errors/404.twig`:
 
 ```html
 {% extends "base.html" %}
