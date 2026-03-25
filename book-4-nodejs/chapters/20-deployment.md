@@ -28,8 +28,6 @@ TINA4_RATE_LIMIT=120
 TINA4_CACHE_TEMPLATES=true
 TINA4_MINIFY_HTML=true
 
-# Console (disabled)
-TINA4_CONSOLE=false
 ```
 
 ### Key Differences
@@ -39,7 +37,6 @@ TINA4_CONSOLE=false
 | `TINA4_DEBUG` | `true` | `false` |
 | `TINA4_LOG_LEVEL` | `ALL` | `WARNING` |
 | `CORS_ORIGINS` | `*` | Your domain |
-| `TINA4_CONSOLE` | `true` | `false` |
 
 ---
 

@@ -514,7 +514,7 @@ curl http://localhost:7145/api/cache/stats
 
 Hit rate above 90%: your caching strategy works. Below 80%: TTLs are too short, cache is too small, or you are caching data that is not accessed often enough to benefit.
 
-The dev dashboard at `/tina4/console` shows cache statistics too -- per-key hit counts and miss counts. You see which keys earn their keep.
+The dev dashboard at `/__dev` shows cache statistics too -- per-key hit counts and miss counts. You see which keys earn their keep.
 
 ---
 

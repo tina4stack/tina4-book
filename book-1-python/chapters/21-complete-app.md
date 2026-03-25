@@ -70,8 +70,6 @@ Update `.env`:
 
 ```env
 TINA4_DEBUG=true
-TINA4_CONSOLE=true
-TINA4_CONSOLE_TOKEN=dev-token
 SECRET=taskflow-dev-secret-change-in-production
 TINA4_TOKEN_EXPIRES_IN=1440
 ```

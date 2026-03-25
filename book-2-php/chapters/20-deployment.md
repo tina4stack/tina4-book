@@ -32,8 +32,6 @@ TINA4_RATE_LIMIT=120
 TINA4_CACHE_TEMPLATES=true
 TINA4_MINIFY_HTML=true
 
-# Console (disabled in production)
-TINA4_CONSOLE=false
 ```
 
 ### Key Differences from Development
@@ -43,7 +41,6 @@ TINA4_CONSOLE=false
 | `TINA4_DEBUG` | `true` | `false` | Hides stack traces, disables toolbar |
 | `TINA4_LOG_LEVEL` | `ALL` | `WARNING` | Reduces log noise |
 | `CORS_ORIGINS` | `*` | Your domain | Prevents cross-origin abuse |
-| `TINA4_CONSOLE` | `true` | `false` | Hides dev dashboard |
 | `TINA4_CACHE_TEMPLATES` | `false` | `true` | Caches compiled templates |
 | `TINA4_MINIFY_HTML` | `false` | `true` | Reduces response size |
 
@@ -843,7 +840,6 @@ TINA4_DEBUG=false
 TINA4_LOG_LEVEL=WARNING
 TINA4_CACHE_TEMPLATES=true
 TINA4_MINIFY_HTML=true
-TINA4_CONSOLE=false
 TINA4_RATE_LIMIT=120
 CORS_ORIGINS=https://yourdomain.com
 ```

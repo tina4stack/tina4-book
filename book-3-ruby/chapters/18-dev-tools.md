@@ -12,11 +12,9 @@ Tina4's dev tools are not an afterthought. They ship with the framework from day
 
 ```env
 TINA4_DEBUG=true
-TINA4_CONSOLE=true
-TINA4_CONSOLE_TOKEN=my-dev-token
 ```
 
-Navigate to `http://localhost:7147/tina4/console` and enter your token.
+Navigate to `http://localhost:7147/__dev`. No token or additional environment variables are needed -- the dashboard is a dev-only feature that only runs when debug mode is on.
 
 ---
 
@@ -85,7 +83,7 @@ Click any section to expand it. The overlay is injected automatically -- you do 
 The dev dashboard includes an interactive SQL query runner:
 
 ```
-http://localhost:7147/tina4/console#sql
+http://localhost:7147/__dev#sql
 ```
 
 Type any SQL query and see the results instantly. Useful for exploring your data without a separate database client:
@@ -103,7 +101,7 @@ The runner shows the result as a formatted table with column types and row count
 View application logs in real time from the dashboard:
 
 ```
-http://localhost:7147/tina4/console#logs
+http://localhost:7147/__dev#logs
 ```
 
 Filter by level (DEBUG, INFO, WARNING, ERROR), search by keyword, and view timestamps. In development, all log levels are shown. In production with `TINA4_LOG_LEVEL=WARNING`, only warnings and errors appear.
@@ -248,17 +246,17 @@ end
 
 ## 12. Gotchas
 
-### 1. Console Token Exposed in .env
+### 1. Dev Dashboard Accessible on Network
 
-**Problem:** Anyone with access to your `.env` can access the dev dashboard.
+**Problem:** Anyone on your network can access the dev dashboard.
 
-**Fix:** Use a strong random token. Never commit `.env` to version control. In shared environments, restrict access by IP.
+**Fix:** In production, set `TINA4_DEBUG=false` to disable the dashboard entirely. In shared development environments, restrict network access.
 
 ### 2. Debug Mode in Production
 
 **Problem:** Stack traces and database queries visible to users.
 
-**Fix:** Always set `TINA4_DEBUG=false` in production. Set `TINA4_CONSOLE=false` to disable the dashboard entirely.
+**Fix:** Always set `TINA4_DEBUG=false` in production to disable the dashboard entirely.
 
 ### 3. Log Files Growing Without Bound
 
@@ -282,7 +280,7 @@ end
 
 **Problem:** Someone runs `DROP TABLE products` in the SQL runner.
 
-**Fix:** The SQL runner is only available via the dev dashboard, which requires the console token. Never expose the console in production. The SQL runner is a power tool for development only.
+**Fix:** The SQL runner is only available via the dev dashboard when `TINA4_DEBUG=true`. Never leave debug mode on in production. The SQL runner is a power tool for development only.
 
 ### 7. Memory Usage Grows During Development
 

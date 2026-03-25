@@ -70,8 +70,6 @@ Update `.env`:
 
 ```env
 TINA4_DEBUG=true
-TINA4_CONSOLE=true
-TINA4_CONSOLE_TOKEN=dev-token
 JWT_SECRET=taskflow-dev-secret-change-in-production
 JWT_EXPIRY=86400
 ```

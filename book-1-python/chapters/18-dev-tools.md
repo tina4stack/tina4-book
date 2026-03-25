@@ -10,23 +10,19 @@ Tina4's dev tools are not an afterthought. They are built into the framework fro
 
 ## 2. Enabling the Dev Dashboard
 
-The dev dashboard is available when you enable the console in your `.env`:
+The dev dashboard is available when `TINA4_DEBUG=true` in your `.env`:
 
 ```env
 TINA4_DEBUG=true
-TINA4_CONSOLE=true
-TINA4_CONSOLE_TOKEN=my-dev-token
 ```
 
 Restart your server and navigate to:
 
 ```
-http://localhost:7145/tina4/console
+http://localhost:7145/__dev
 ```
 
-Enter your console token (`my-dev-token`) when prompted. You are now in the dev dashboard.
-
-The console token guards the dashboard from unauthorized access. In development, any string works. In shared environments, use a strong random token. In production, set `TINA4_DEBUG=false` and the entire dashboard disappears.
+You are now in the dev dashboard. No token or additional environment variables are needed -- the dashboard is a dev-only feature that only runs when debug mode is on. In production, set `TINA4_DEBUG=false` and the entire dashboard disappears.
 
 ---
 
@@ -273,7 +269,7 @@ SELECT * FROM products WHERE category = 'Electronics' ORDER BY price DESC;
 
 The results are displayed in a table with column headers, row numbers, and data type indicators. You can copy results, export as CSV, or run another query.
 
-The query runner only works when `TINA4_DEBUG=true` and requires the console token. It is completely disabled in production.
+The query runner only works when `TINA4_DEBUG=true`. It is completely disabled in production.
 
 ---
 
@@ -319,7 +315,7 @@ async def buggy_create_user(request, response):
 
 ### Requirements
 
-1. Open the dev dashboard at `http://localhost:7145/tina4/console`
+1. Open the dev dashboard at `http://localhost:7145/__dev`
 2. Hit the `GET /api/buggy/users` endpoint and find Bug 1 using the error overlay
 3. Hit the `POST /api/buggy/users` endpoint without a body and find Bug 2 using the request inspector
 4. Fix all three bugs:
@@ -368,13 +364,13 @@ The dev tools made it easy: the error overlay showed the SQL syntax error with t
 
 ## 12. Gotchas
 
-### 1. Dev Dashboard Accessible Without Token
+### 1. Dev Dashboard Accessible on Network
 
 **Problem:** Anyone on your network can access the dev dashboard.
 
-**Cause:** `TINA4_CONSOLE_TOKEN` is not set, or it is set to an empty string.
+**Cause:** `TINA4_DEBUG=true` makes the dashboard available at `/__dev`.
 
-**Fix:** Always set a console token: `TINA4_CONSOLE_TOKEN=a-strong-random-token`. In production, set `TINA4_DEBUG=false` to disable the dashboard entirely.
+**Fix:** In production, set `TINA4_DEBUG=false` to disable the dashboard entirely. In shared development environments, restrict network access.
 
 ### 2. Live Reload Causes Connection Drops
 
@@ -406,7 +402,7 @@ The dev tools made it easy: the error overlay showed the SQL syntax error with t
 
 **Cause:** The SQL runner executes any valid SQL query, including destructive ones. There is no confirmation step.
 
-**Fix:** The SQL runner is only available when `TINA4_DEBUG=true` and requires the console token. Never leave the dashboard accessible in production. For sensitive development databases, use a read-only database connection for the SQL runner.
+**Fix:** The SQL runner is only available when `TINA4_DEBUG=true`. Never leave debug mode on in production. For sensitive development databases, use a read-only database connection for the SQL runner.
 
 ### 6. Hot-Patching Does Not Pick Up New Routes
 

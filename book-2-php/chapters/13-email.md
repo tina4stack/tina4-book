@@ -377,7 +377,7 @@ Router::get("/api/inbox/{id}", function ($request, $response) {
 
 When `TINA4_DEBUG=true`, all outgoing emails are intercepted. They appear in the dev dashboard instead of reaching real recipients. No accidents during development.
 
-Navigate to `/tina4/console` and find the "Mail" section. You see:
+Navigate to `/__dev` and find the "Mail" section. You see:
 
 - Every email "sent" during the current session
 - The To, CC, and BCC addresses
@@ -612,7 +612,7 @@ curl -X POST http://localhost:7146/contact \
   -d '{"name": "Bob", "email": "bob@example.com", "subject": "Product inquiry", "message": "Do you ship internationally?"}'
 
 # Check the dev dashboard for the intercepted email
-# Navigate to http://localhost:7146/tina4/console
+# Navigate to http://localhost:7146/__dev
 ```
 
 ---
@@ -790,7 +790,7 @@ Router::post("/contact", function ($request, $response) {
 1. Open `http://localhost:7146/contact` in your browser
 2. Fill in the form and submit
 3. You should see a green "Thank you" flash message
-4. Open `http://localhost:7146/tina4/console` to see the intercepted email
+4. Open `http://localhost:7146/__dev` to see the intercepted email
 5. The email should show the sender details, subject, message, and formatted HTML
 
 **API test:**
@@ -852,7 +852,7 @@ The HTML response includes the success flash message.
 
 **Cause:** `TINA4_DEBUG=true` intercepts all emails and shows them in the dev dashboard. The email never reaches the SMTP server.
 
-**Fix:** Check the dev dashboard at `/tina4/console` for intercepted emails. If you need real email delivery during development, set `TINA4_MAIL_INTERCEPT=false`. Remove this setting before committing.
+**Fix:** Check the dev dashboard at `/__dev` for intercepted emails. If you need real email delivery during development, set `TINA4_MAIL_INTERCEPT=false`. Remove this setting before committing.
 
 ### 6. Email Template Variables Not Substituted
 

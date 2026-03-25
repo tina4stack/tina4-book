@@ -165,7 +165,7 @@ Router.get("/api/inbox", async (req, res) => {
 
 ## 9. Dev Mode: Email Interception
 
-When `TINA4_DEBUG=true`, Tina4 catches all outgoing emails and holds them in the dev dashboard. Navigate to `/tina4/console` to inspect them. No email reaches a real inbox during development.
+When `TINA4_DEBUG=true`, Tina4 catches all outgoing emails and holds them in the dev dashboard. Navigate to `/__dev` to inspect them. No email reaches a real inbox during development.
 
 Override with `TINA4_MAIL_INTERCEPT=false` if you need real delivery in debug mode.
 
@@ -302,7 +302,7 @@ Router.post("/contact", async (req, res) => {
 
 ### 5. Dev Mode Silently Intercepts Emails
 
-**Fix:** Check the dev dashboard at `/tina4/console`.
+**Fix:** Check the dev dashboard at `/__dev`.
 
 ### 6. Template Variables Not Substituted
 

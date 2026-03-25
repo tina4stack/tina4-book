@@ -528,43 +528,21 @@ Restart the server. It now runs on 8080.
 
 The CLI reads your `.env` file and checks for `TINA4_PORT` (and falls back to `PORT`). The resolved port is passed to the Ruby server. All three methods work -- use whichever fits your workflow.
 
-### Dashboard Environment Variables
-
-The dev dashboard (see Section 7) requires two additional `.env` variables:
-
-```env
-TINA4_CONSOLE=true
-TINA4_CONSOLE_TOKEN=my-dev-token
-```
-
-| Variable | Default Value | What It Does |
-|----------|---------------|--------------|
-| `TINA4_CONSOLE` | `false` | Enables the built-in dev dashboard |
-| `TINA4_CONSOLE_TOKEN` | *(none)* | Token required to access the dashboard |
-
-Both require `TINA4_DEBUG=true` to function. A full development `.env` with the dashboard enabled looks like:
-
-```env
-TINA4_DEBUG=true
-TINA4_CONSOLE=true
-TINA4_CONSOLE_TOKEN=my-dev-token
-```
-
 For the complete `.env` reference with all 68 variables, see [Book 0, Chapter 4: Environment Variables](../../book-0-understanding/chapters/04-environment-variables.md).
 
 ---
 
 ## 7. The Dev Dashboard
 
-With `TINA4_DEBUG=true` and the console variables configured in your `.env` (see Section 6), Tina4 provides a built-in development dashboard.
+With `TINA4_DEBUG=true` in your `.env`, Tina4 provides a built-in development dashboard. No additional environment variables are needed.
 
 Restart and navigate to:
 
 ```
-http://localhost:7147/tina4/console
+http://localhost:7147/__dev
 ```
 
-Enter your token. The dashboard shows:
+The dashboard shows:
 
 - **System Overview** -- framework version, Ruby version, uptime, memory, database status
 - **Request Inspector** -- recent HTTP requests with method, path, status, duration, and request ID. Click any request for full headers, body, queries, and template renders.
@@ -573,7 +551,7 @@ Enter your token. The dashboard shows:
 - **WebSocket Monitor** -- active connections with metadata
 - **Routes** -- all registered routes with methods, paths, and middleware
 
-The console is a debugging powerhouse. It shows you what your application does without print statements.
+The dev dashboard is a debugging powerhouse. It shows you what your application does without print statements.
 
 HTML pages also get a **debug overlay** -- a toolbar at the bottom showing:
 

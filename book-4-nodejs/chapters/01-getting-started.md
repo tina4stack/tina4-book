@@ -564,43 +564,21 @@ Restart the server (`Ctrl+C`, then `tina4 serve`). It now runs on port 8080.
 
 The CLI reads your `.env` file and checks for `TINA4_PORT` (and falls back to `PORT`). The resolved port is passed to the Node.js server. All three methods work -- use whichever fits your workflow.
 
-### Dashboard Environment Variables
-
-The dev dashboard (see Section 7) requires two additional `.env` variables:
-
-```env
-TINA4_CONSOLE=true
-TINA4_CONSOLE_TOKEN=my-dev-token
-```
-
-| Variable | Default Value | What It Does |
-|----------|---------------|--------------|
-| `TINA4_CONSOLE` | `false` | Enables the built-in dev dashboard |
-| `TINA4_CONSOLE_TOKEN` | *(none)* | Token required to access the dashboard |
-
-Both require `TINA4_DEBUG=true` to function. A full development `.env` with the dashboard enabled looks like:
-
-```env
-TINA4_DEBUG=true
-TINA4_CONSOLE=true
-TINA4_CONSOLE_TOKEN=my-dev-token
-```
-
 For the complete `.env` reference with all 68 variables, see [Book 0, Chapter 4: Environment Variables](../../book-0-understanding/chapters/04-environment-variables.md).
 
 ---
 
 ## 7. The Dev Dashboard
 
-With `TINA4_DEBUG=true` and the console variables configured in your `.env` (see Section 6), Tina4 provides a built-in development dashboard.
+With `TINA4_DEBUG=true` in your `.env`, Tina4 provides a built-in development dashboard. No additional environment variables are needed.
 
 Restart the server and navigate to:
 
 ```
-http://localhost:7148/tina4/console
+http://localhost:7148/__dev
 ```
 
-Enter your token (`my-dev-token`) when prompted. The dashboard reveals:
+The dashboard reveals:
 
 - **System Overview** -- framework version, Node.js version, uptime, memory usage, database status
 - **Request Inspector** -- recent HTTP requests with method, path, status, duration, and request ID. Click any request to see full headers, body, database queries, and template renders.
@@ -609,7 +587,7 @@ Enter your token (`my-dev-token`) when prompted. The dashboard reveals:
 - **WebSocket Monitor** -- active WebSocket connections with metadata
 - **Routes** -- all registered routes with their methods, paths, and middleware
 
-The console shows you what your application is doing without littering your code with `console.log` statements.
+The dev dashboard shows you what your application is doing without littering your code with `console.log` statements.
 
 When you visit any HTML page (like `/products`), a **debug overlay** appears -- a toolbar at the bottom of the page showing:
 

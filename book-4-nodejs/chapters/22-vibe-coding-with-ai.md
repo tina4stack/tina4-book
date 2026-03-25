@@ -164,7 +164,7 @@ Run `tina4 doctor` to see which tools are detected.
 
 ## The AI Chat in Dev Dashboard
 
-The dev dashboard at `/tina4/console` includes an AI chat tab. Enter your API key. Chat with Claude or GPT about your code directly from the browser.
+The dev dashboard at `/__dev` includes an AI chat tab. Enter your API key. Chat with Claude or GPT about your code directly from the browser.
 
 The AI has full context of your Tina4 project. Ask it anything:
 

@@ -10,23 +10,19 @@ Tina4's dev tools are not an afterthought. They are built into the framework fro
 
 ## 2. Enabling the Dev Dashboard
 
-Enable the console in your `.env`:
+Enable debug mode in your `.env`:
 
 ```env
 TINA4_DEBUG=true
-TINA4_CONSOLE=true
-TINA4_CONSOLE_TOKEN=my-dev-token
 ```
 
 Restart your server and navigate to:
 
 ```
-http://localhost:7146/tina4/console
+http://localhost:7146/__dev
 ```
 
-Enter your console token (`my-dev-token`) when prompted. You are in the dev dashboard.
-
-The console token protects the dashboard from unauthorized access. In development, any string works. In shared environments, use a strong random token. In production, set `TINA4_DEBUG=false` and the entire dashboard disappears.
+You are in the dev dashboard. No token or additional environment variables are needed -- the dashboard is a dev-only feature that only runs when debug mode is on. In production, set `TINA4_DEBUG=false` and the entire dashboard disappears.
 
 ---
 
@@ -401,7 +397,7 @@ Router::get("/api/orders/summary", function ($request, $response) {
    - Replace `$p->quantity` with `1` (or remove the multiplication) since products do not have a quantity field.
    - Add a check for zero `$orderCount` before dividing.
 6. Reload the page and verify the response is correct.
-7. Open the dev dashboard at `/tina4/console` and find the failed request in the request inspector.
+7. Open the dev dashboard at `/__dev` and find the failed request in the request inspector.
 8. Verify the fixed request now appears as a 200 in the inspector.
 
 ### Expected Steps
@@ -465,35 +461,17 @@ Router::get("/api/orders/summary", function ($request, $response) {
 
 ### 1. Dev Dashboard Returns 404
 
-**Problem:** Navigating to `/tina4/console` returns a 404 page.
+**Problem:** Navigating to `/__dev` returns a 404 page.
 
-**Cause:** Either `TINA4_CONSOLE` is not set to `true`, or `TINA4_DEBUG` is `false`.
+**Cause:** `TINA4_DEBUG` is not set to `true`.
 
-**Fix:** Add both to your `.env`:
+**Fix:** Add to your `.env`:
 
 ```env
 TINA4_DEBUG=true
-TINA4_CONSOLE=true
-TINA4_CONSOLE_TOKEN=your-token
 ```
 
 Restart the server after changing `.env`.
-
-### 2. Console Token Not Accepted
-
-**Problem:** You enter the token but the dashboard rejects it.
-
-**Cause:** The token in your `.env` has extra whitespace or quotes. Environment values should not be quoted in `.env` files.
-
-**Fix:** Check your `.env`:
-
-```env
-# Wrong
-TINA4_CONSOLE_TOKEN="my-token"
-
-# Right
-TINA4_CONSOLE_TOKEN=my-token
-```
 
 ### 3. Live Reload Not Working
 
@@ -517,7 +495,7 @@ TINA4_CONSOLE_TOKEN=my-token
 
 **Cause:** Static file requests (CSS, JS, images, favicon) are all recorded.
 
-**Fix:** Use the path filter to narrow down the list. Type `/api/` in the filter box to show only API requests. You can also set `TINA4_CONSOLE_IGNORE_STATIC=true` in `.env` to exclude static file requests from the inspector.
+**Fix:** Use the path filter to narrow down the list. Type `/api/` in the filter box to show only API requests. You can also configure the dev dashboard to exclude static file requests from the inspector.
 
 ### 6. SQL Runner Modifies Data Accidentally
 
@@ -525,7 +503,7 @@ TINA4_CONSOLE_TOKEN=my-token
 
 **Cause:** The SQL runner executes queries directly against the database with full read-write access.
 
-**Fix:** There is no undo. For safety, always include a WHERE clause with DELETE and UPDATE statements. If you are worried about accidental modifications, use a read-only database connection for the dev dashboard by setting `TINA4_CONSOLE_READ_ONLY=true` in `.env`.
+**Fix:** There is no undo. For safety, always include a WHERE clause with DELETE and UPDATE statements. If you are worried about accidental modifications, use a read-only database connection for the dev dashboard.
 
 ### 7. Debug Toolbar Breaks Layout
 

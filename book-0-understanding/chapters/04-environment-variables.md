@@ -386,13 +386,9 @@ The fallback chain for translations: requested locale > `TINA4_LANGUAGE` > `en` 
 | `TINA4_WS_PING_INTERVAL` | `30` | Seconds between server-sent ping frames. Keeps connections alive through proxies and load balancers. |
 | `TINA4_WS_PING_TIMEOUT` | `10` | Seconds to wait for a pong response before closing the connection. No response means the client is gone. |
 
-### Dev Admin Console
+### Dev Dashboard
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `TINA4_CONSOLE` | `false` | Enable the admin console at `/tina4/console`. |
-| `TINA4_CONSOLE_TOKEN` | _(required)_ | Authentication token for console access. No default. Enable the console without a token and it stays locked. |
-| `TINA4_CONSOLE_PATH` | `/tina4/console` | URL path for the admin console. Change this if the default conflicts with your routes. |
+The dev dashboard at `/__dev` is automatically available when `TINA4_DEBUG=true`. No additional environment variables are needed. In production, set `TINA4_DEBUG=false` and the dashboard disappears entirely.
 
 ### Error Handling (.broken Files)
 
@@ -549,10 +545,8 @@ TINA4_WS_MAX_CONNECTIONS=10000
 TINA4_WS_PING_INTERVAL=30
 TINA4_WS_PING_TIMEOUT=10
 
-# --- Dev Admin Console ---
-TINA4_CONSOLE=false
-# TINA4_CONSOLE_TOKEN=
-# TINA4_CONSOLE_PATH=/tina4/console
+# --- Dev Dashboard ---
+# The dev dashboard at /__dev is enabled by TINA4_DEBUG=true (no additional variables needed)
 
 # --- Error Handling ---
 TINA4_BROKEN_DIR=data/.broken

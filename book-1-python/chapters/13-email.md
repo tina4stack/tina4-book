@@ -359,7 +359,7 @@ async def get_email(request, response):
 
 When `TINA4_DEBUG=true`, Tina4 intercepts all outgoing emails and shows them in the dev dashboard. No real recipients receive anything. No accidental emails during development.
 
-Navigate to `/tina4/console` and look for the "Mail" section. You will see:
+Navigate to `/__dev` and look for the "Mail" section. You will see:
 
 - Every email that was "sent" during the current session
 - The To, CC, and BCC addresses
@@ -594,7 +594,7 @@ curl -X POST http://localhost:7145/contact \
   -d '{"name": "Bob", "email": "bob@example.com", "subject": "Product inquiry", "message": "Do you ship internationally?"}'
 
 # Check the dev dashboard for the intercepted email
-# Navigate to http://localhost:7145/tina4/console
+# Navigate to http://localhost:7145/__dev
 ```
 
 ---
@@ -772,7 +772,7 @@ async def contact_submit(request, response):
 1. Open `http://localhost:7145/contact` in your browser
 2. Fill in the form and submit
 3. You should see a green "Thank you" flash message
-4. Open `http://localhost:7145/tina4/console` to see the intercepted email
+4. Open `http://localhost:7145/__dev` to see the intercepted email
 5. The email should show the sender details, subject, message, and formatted HTML
 
 **API test:**
@@ -834,7 +834,7 @@ The HTML response includes the success flash message.
 
 **Cause:** `TINA4_DEBUG=true` intercepts all emails and shows them in the dev dashboard. The email is never sent to the SMTP server.
 
-**Fix:** Check the dev dashboard at `/tina4/console` for intercepted emails. If you want to send real emails during development, set `TINA4_MAIL_INTERCEPT=false`. Remember to remove this setting before committing.
+**Fix:** Check the dev dashboard at `/__dev` for intercepted emails. If you want to send real emails during development, set `TINA4_MAIL_INTERCEPT=false`. Remember to remove this setting before committing.
 
 ### 6. Email Template Variables Not Substituted
 

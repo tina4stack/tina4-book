@@ -161,7 +161,7 @@ mail.send
 
 ## 7. Dev Mode: Email Interception
 
-When `TINA4_DEBUG=true`, emails are not sent to real SMTP servers. Instead, they are intercepted and stored in the dev dashboard. Navigate to `/tina4/console` and click "Emails" to see:
+When `TINA4_DEBUG=true`, emails are not sent to real SMTP servers. Instead, they are intercepted and stored in the dev dashboard. Navigate to `/__dev` and click "Emails" to see:
 
 - Recipient, subject, and timestamp
 - Full HTML preview

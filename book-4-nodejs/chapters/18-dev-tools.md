@@ -12,15 +12,15 @@ Tina4's dev tools are part of the framework from day one. When `TINA4_DEBUG=true
 
 ```env
 TINA4_DEBUG=true
-TINA4_CONSOLE=true
-TINA4_CONSOLE_TOKEN=my-dev-token
 ```
 
 Navigate to:
 
 ```
-http://localhost:7148/tina4/console
+http://localhost:7148/__dev
 ```
+
+No token or additional environment variables are needed -- the dashboard is a dev-only feature that only runs when debug mode is on.
 
 ---
 
@@ -165,9 +165,9 @@ Returns system status: database connectivity, uptime, and version. Your monitori
 
 ## 11. Gotchas
 
-### 1. Dashboard Not Available -- Check `TINA4_CONSOLE=true` and `TINA4_CONSOLE_TOKEN`.
+### 1. Dashboard Not Available -- Check `TINA4_DEBUG=true` in your `.env`.
 ### 2. Debug Overlay Shows in Production -- Set `TINA4_DEBUG=false`.
-### 3. Console Token in Version Control -- Add `.env` to `.gitignore`.
+### 3. Debug Mode in Version Control -- Add `.env` to `.gitignore`.
 ### 4. Live Reload Not Working -- Ensure `tina4 serve` is running (not `npx tsx app.ts`).
 ### 5. Logs Fill Up Disk -- Set `TINA4_LOG_LEVEL=WARNING` in production.
 ### 6. SQL Runner in Production -- Never enable the console in production.

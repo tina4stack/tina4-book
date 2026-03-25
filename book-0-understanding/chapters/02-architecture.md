@@ -401,7 +401,7 @@ The framework opens up. Every diagnostic tool activates:
 - **Debug overlay** injects into every HTML response -- a toolbar showing request details, database queries, template render times, session data, and logs
 - **Full stack traces** appear in the browser with source code context, the triggering request, and the queries that ran
 - **Swagger UI** auto-registers at `/swagger`
-- **Admin console** becomes available at `/tina4/console` (when `TINA4_CONSOLE_TOKEN` is set)
+- **Admin console** becomes available at `/__dev`
 - **Live reload** watches for file changes and refreshes the browser
 - **SQL query logging** writes every query to `logs/query.log`
 - **Pretty JSON** is available via `?pretty=true` on any JSON endpoint
@@ -418,7 +418,7 @@ The framework locks down. Every diagnostic tool disappears:
 - **HTML minification** -- comments stripped, whitespace collapsed, 15-25% smaller output
 - **.broken files** -- unhandled exceptions create marker files in `data/.broken/` that flip the health check to `503 Service Unavailable`, triggering container restarts
 - **No Swagger UI** -- unless you force it on
-- **No admin console** -- unless you set a token and enable it
+- **No dev dashboard** -- only available when `TINA4_DEBUG=true`
 - **No query logging** -- unless you enable it
 - **Compact JSON only** -- no `?pretty=true`
 
