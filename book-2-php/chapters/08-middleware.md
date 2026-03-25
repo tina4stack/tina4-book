@@ -4,7 +4,7 @@
 
 Your API needs CORS headers for the React frontend, rate limiting for public endpoints, and auth checks for admin routes. You could paste the same 10 lines of CORS code into every handler. You will forget one. You could pile every check into a giant `if` tree. The business logic disappears under boilerplate.
 
-Middleware solves this. Wrap routes with reusable logic. Each middleware does one job -- check a token, set CORS headers, log the request, enforce rate limits -- and passes control to the next layer. Route handlers stay focused on their purpose.
+Middleware solves this. Wrap routes with reusable logic. Each middleware does one job -- check a token, set CORS headers, log the request, enforce rate limits -- and the framework decides whether to continue to the next layer. Route handlers stay focused on their purpose.
 
 Chapter 2 introduced middleware briefly. This chapter goes deep: built-in middleware, custom middleware, execution order, short-circuiting, and real-world patterns.
 
@@ -16,17 +16,30 @@ Middleware is code that runs before or after your route handler. It sits in the 
 
 Tina4 PHP supports two styles of middleware:
 
-**Function-based middleware** receives `$request`, `$response`, and `$next`. Call `$next` to continue the chain. Skip it to short-circuit.
+**Route-level middleware (function-based)** receives `$request` and `$response`. To continue the chain, return nothing (null/void). To short-circuit, return a `Response` object directly. To block with a 403, return `false`.
 
 ```php
 <?php
 
-function passthrough($request, $response, $next) {
-    return $next($request, $response);
+// This middleware continues to the next layer (returns nothing)
+function passthrough($request, $response) {
+    // do something with the request
 }
 ```
 
-**Class-based middleware** uses naming conventions. Static methods prefixed with `before` run before the handler. Methods prefixed with `after` run after it. Each method receives `($request, $response)` and returns `[$request, $response]`.
+```php
+<?php
+
+// This middleware short-circuits with a response
+function blockUnauthorized($request, $response) {
+    if (!$request->bearerToken()) {
+        return $response->json(["error" => "Unauthorized"], 401);
+    }
+    // return nothing to continue
+}
+```
+
+**Class-based middleware (global)** uses naming conventions. Static methods prefixed with `before` run before the handler. Methods prefixed with `after` run after it. Each method receives `($request, $response)` and returns `[$request, $response]`.
 
 ```php
 <?php
@@ -80,24 +93,17 @@ TINA4_CORS_HEADERS=Content-Type,Authorization,X-API-Key
 TINA4_CORS_MAX_AGE=86400
 ```
 
-Apply it:
+Register it globally:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Middleware;
+use Tina4\Middleware\CorsMiddleware;
 
-Router::group("/api", function () {
-
-    Router::get("/products", function ($request, $response) {
-        return $response->json(["products" => []]);
-    });
-
-    Router::post("/products", function ($request, $response) {
-        return $response->json(["created" => true], 201);
-    });
-
-}, "CorsMiddleware");
+Middleware::use(CorsMiddleware::class);
 ```
+
+The `beforeCors` method sets CORS response headers on every request. For `OPTIONS` preflight requests, it sets a 204 status which short-circuits the handler.
 
 Test the preflight:
 
@@ -147,58 +153,23 @@ TINA4_RATE_LIMIT=60
 TINA4_RATE_WINDOW=60
 ```
 
-60 requests per 60 seconds per IP. Apply it:
+60 requests per 60 seconds per IP. Register it globally:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Middleware;
+use Tina4\Middleware\RateLimiter;
 
-Router::group("/api/public", function () {
-
-    Router::get("/search", function ($request, $response) {
-        $q = $request->query["q"] ?? "";
-        return $response->json(["query" => $q, "results" => []]);
-    });
-
-    Router::get("/catalog", function ($request, $response) {
-        return $response->json(["items" => []]);
-    });
-
-}, "RateLimiter");
+Middleware::use(RateLimiter::class);
 ```
 
-When exceeded:
+When exceeded, the `beforeRateLimit` method sets a 429 status on the response, which short-circuits the handler. The response includes rate limit headers:
 
-```json
-{"error":"Rate limit exceeded. Try again in 42 seconds.","retry_after":42}
 ```
-
-A `Retry-After` header accompanies the response.
-
-### Custom Limits Per Group
-
-Override the global limit with a parameter:
-
-```php
-<?php
-use Tina4Router;
-
-// Public endpoints: 30 requests per minute
-Router::group("/api/public", function () {
-    Router::get("/search", function ($request, $response) {
-        return $response->json(["results" => []]);
-    });
-}, "RateLimiter:30");
-
-// Authenticated endpoints: 120 requests per minute
-Router::group("/api/v1", function () {
-    Router::get("/data", function ($request, $response) {
-        return $response->json(["data" => []]);
-    });
-}, ["authMiddleware", "RateLimiter:120"]);
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 0
+Retry-After: 42
 ```
-
-`"RateLimiter:30"` passes `30` as a parameter. Overrides the global setting for that group.
 
 ### Built-in RequestLogger
 
@@ -224,16 +195,6 @@ GET /api/users 12.34ms
 POST /api/products 45.67ms
 ```
 
-You can also apply it to specific route groups:
-
-```php
-Router::group("/api", function () {
-    Router::get("/products", function ($request, $response) {
-        return $response->json(["products" => []]);
-    });
-}, "RequestLogger");
-```
-
 ### Combining All Three Built-In Middleware
 
 A common production setup registers all three globally:
@@ -256,77 +217,51 @@ Order matters. CORS handles `OPTIONS` preflight first. The rate limiter only cou
 
 ## 5. Writing Custom Middleware
 
-Same pattern every time. Receive `$request`, `$response`, `$next`. Define as a named function.
+Route-level middleware functions receive `$request` and `$response`. Return nothing to continue the chain. Return a `Response` to short-circuit. Return `false` to block with 403.
 
 ### Request Logging Middleware
 
 ```php
 <?php
 
-function logRequest($request, $response, $next) {
-    $start = microtime(true);
+function logRequest($request, $response) {
     $method = $request->method;
     $path = $request->path;
     $ip = $request->ip;
 
     error_log("[" . date("Y-m-d H:i:s") . "] " . $method . " " . $path . " from " . $ip);
-
-    $result = $next($request, $response);
-
-    $duration = round((microtime(true) - $start) * 1000, 2);
-    error_log("  Completed in " . $duration . "ms");
-
-    return $result;
+    // return nothing to continue
 }
 ```
 
-Save in `src/routes/middleware.php`. Apply it:
+Save in `src/routes/middleware.php`. Apply it to a route:
 
 ```php
 Router::get("/api/products", function ($request, $response) {
     return $response->json(["products" => []]);
-}, "logRequest");
+})->middleware([function ($request, $response) {
+    error_log($request->method . " " . $request->path);
+}]);
 ```
 
-Server log:
-
-```
-[2026-03-22 14:30:00] GET /api/products from 127.0.0.1
-  Completed in 2.34ms
-```
-
-### Request Timing Middleware
+Or apply the named function to a group:
 
 ```php
-<?php
-
-function addTiming($request, $response, $next) {
-    $start = microtime(true);
-
-    $result = $next($request, $response);
-
-    $duration = round((microtime(true) - $start) * 1000, 2);
-
-    $response->addHeader("X-Response-Time", $duration . "ms");
-
-    return $result;
-}
+Router::group("/api", function () {
+    Router::get("/products", function ($request, $response) {
+        return $response->json(["products" => []]);
+    });
+}, [$logRequest]);
 ```
 
-Response headers:
-
-```
-X-Response-Time: 3.12ms
-```
-
-Frontend tools and monitoring systems read this header.
+Note: `Router::group()` takes an **array** of middleware callables as its third argument.
 
 ### IP Whitelist Middleware
 
 ```php
 <?php
 
-function ipWhitelist($request, $response, $next) {
+function ipWhitelist($request, $response) {
     $allowedIps = explode(",", $_ENV["ALLOWED_IPS"] ?? "127.0.0.1");
 
     if (!in_array($request->ip, $allowedIps)) {
@@ -335,8 +270,7 @@ function ipWhitelist($request, $response, $next) {
             "your_ip" => $request->ip
         ], 403);
     }
-
-    return $next($request, $response);
+    // return nothing to continue
 }
 ```
 
@@ -346,12 +280,14 @@ Configure in `.env`:
 ALLOWED_IPS=127.0.0.1,10.0.0.5,192.168.1.100
 ```
 
+When the IP is not in the list, the middleware returns a `Response` object. This short-circuits the chain -- the handler never runs.
+
 ### Request Validation Middleware
 
 ```php
 <?php
 
-function requireJson($request, $response, $next) {
+function requireJson($request, $response) {
     if (in_array($request->method, ["POST", "PUT", "PATCH"])) {
         $contentType = $request->headers["Content-Type"] ?? "";
 
@@ -362,8 +298,7 @@ function requireJson($request, $response, $next) {
             ], 415);
         }
     }
-
-    return $next($request, $response);
+    // return nothing to continue
 }
 ```
 
@@ -371,7 +306,7 @@ Ensures all write requests send JSON. Status: `415 Unsupported Media Type`.
 
 ### Writing Class-Based Middleware
 
-For more complex middleware, use the class-based pattern with `before*` and `after*` static methods:
+For more complex middleware, use the class-based pattern with `before*` and `after*` static methods. This style is for **global** middleware registered via `Middleware::use()`:
 
 ```php
 <?php
@@ -405,16 +340,10 @@ class InputSanitizer
 }
 ```
 
-Register it globally or apply to specific groups:
+Register it globally:
 
 ```php
-// Global registration
 Middleware::use(InputSanitizer::class);
-
-// Or on a specific group
-Router::group("/api", function () {
-    // routes here
-}, "InputSanitizer");
 ```
 
 ### JWT Authentication Middleware (Class-Based)
@@ -451,57 +380,74 @@ class JwtAuthMiddleware
 }
 ```
 
-Apply it to a group of protected routes:
+Register it globally so all routes require authentication:
 
 ```php
-Router::group("/api/protected", function () {
-
-    Router::get("/profile", function ($request, $response) {
-        return $response->json(["user" => $request->user]);
-    });
-
-    Router::post("/settings", function ($request, $response) {
-        $userId = $request->user["sub"];
-        return $response->json(["updated" => true, "user_id" => $userId]);
-    });
-
-}, "JwtAuthMiddleware");
+Middleware::use(JwtAuthMiddleware::class);
 ```
 
-The middleware short-circuits with 401 if the token is missing or invalid. The decoded payload is available as `$request->user` in the handler.
+The middleware short-circuits with 401 if the token is missing or invalid. When `beforeVerifyToken` sets the response status to >= 400, the framework skips the route handler. The decoded payload is available as `$request->user` in the handler.
 
 ---
 
 ## 6. Applying Middleware to Individual Routes
 
-Third argument to any route method:
+Use the `->middleware()` method to attach route-level middleware. Pass an array of callables:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::get("/api/data", function ($request, $response) {
     return $response->json(["data" => [1, 2, 3]]);
-}, "logRequest");
-
-Router::post("/api/data", function ($request, $response) {
-    return $response->json(["created" => true], 201);
-}, ["logRequest", "requireJson"]);
+})->middleware([function ($request, $response) {
+    error_log("Accessing /api/data");
+}]);
 ```
 
-String for one. Array for multiple. Each runs in listed order.
+Multiple middleware functions run in listed order:
+
+```php
+Router::post("/api/data", function ($request, $response) {
+    return $response->json(["created" => true], 201);
+})->middleware([$logRequest, $requireJson]);
+```
+
+You can also use named functions defined elsewhere:
+
+```php
+$checkAuth = function ($request, $response) {
+    if (!$request->bearerToken()) {
+        return $response->json(["error" => "Unauthorized"], 401);
+    }
+};
+
+Router::get("/api/secret", function ($request, $response) {
+    return $response->json(["secret" => "data"]);
+})->middleware([$checkAuth]);
+```
 
 ---
 
 ## 7. Route Groups with Shared Middleware
 
-Groups apply middleware to every route inside:
+Groups apply middleware to every route inside. The third argument is an **array** of middleware callables:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
-// Public API -- rate limited, CORS enabled
+$checkAuth = function ($request, $response) {
+    if (!$request->bearerToken()) {
+        return $response->json(["error" => "Unauthorized"], 401);
+    }
+};
+
+$logRequest = function ($request, $response) {
+    error_log($request->method . " " . $request->path);
+};
+
+// Public API -- no auth needed
 Router::group("/api/public", function () {
 
     Router::get("/products", function ($request, $response) {
@@ -512,7 +458,7 @@ Router::group("/api/public", function () {
         return $response->json(["categories" => []]);
     });
 
-}, ["CorsMiddleware", "RateLimiter:30"]);
+}, [$logRequest]);
 
 // Admin API -- auth required, IP restricted, logged
 Router::group("/api/admin", function () {
@@ -526,7 +472,7 @@ Router::group("/api/admin", function () {
         return $response->json(["deleted" => $id]);
     });
 
-}, ["logRequest", "ipWhitelist", "authMiddleware"]);
+}, [$logRequest, $ipWhitelist, $checkAuth]);
 ```
 
 Routes inside a group can add their own middleware. Group middleware runs first, then route-specific:
@@ -534,72 +480,62 @@ Routes inside a group can add their own middleware. Group middleware runs first,
 ```php
 Router::group("/api", function () {
 
-    // Execution: logRequest -> requireJson -> handler
+    // Execution: $logRequest -> $requireJson -> handler
     Router::post("/upload", function ($request, $response) {
         return $response->json(["uploaded" => true]);
-    }, "requireJson");
+    })->middleware([$requireJson]);
 
-}, "logRequest");
+}, [$logRequest]);
 ```
 
 ---
 
 ## 8. Middleware Execution Order
 
-Middleware stacks like layers of an onion. First listed runs first on the way in, last on the way out.
+Route-level middleware runs in listed order. Each middleware either returns nothing (continue) or returns a `Response` (stop).
 
 ```php
 <?php
 
-function middlewareA($request, $response, $next) {
-    error_log("A: before");
-    $result = $next($request, $response);
-    error_log("A: after");
-    return $result;
-}
+$middlewareA = function ($request, $response) {
+    error_log("A: running");
+    // returns nothing -- continues to B
+};
 
-function middlewareB($request, $response, $next) {
-    error_log("B: before");
-    $result = $next($request, $response);
-    error_log("B: after");
-    return $result;
-}
+$middlewareB = function ($request, $response) {
+    error_log("B: running");
+    // returns nothing -- continues to C
+};
 
-function middlewareC($request, $response, $next) {
-    error_log("C: before");
-    $result = $next($request, $response);
-    error_log("C: after");
-    return $result;
-}
+$middlewareC = function ($request, $response) {
+    error_log("C: running");
+    // returns nothing -- continues to handler
+};
 ```
 
 ```php
 Router::get("/api/test", function ($request, $response) {
     error_log("Handler");
     return $response->json(["ok" => true]);
-}, ["middlewareA", "middlewareB", "middlewareC"]);
+})->middleware([$middlewareA, $middlewareB, $middlewareC]);
 ```
 
 Server log:
 
 ```
-A: before
-B: before
-C: before
+A: running
+B: running
+C: running
 Handler
-C: after
-B: after
-A: after
 ```
 
-The request flows inward: A, B, C, Handler. The response flows outward: C, B, A.
+The request flows through the middleware array in order: A, B, C, then the handler.
 
 Placement matters:
 
-- `middlewareA` sees the request first, the response last. CORS headers and logging go here.
-- `middlewareC` sees the request last, the response first. Response transformations go here.
 - Authentication goes early. Catch unauthorized requests before doing work.
-- Timing goes outermost. Measure the entire pipeline.
+- Validation goes before the handler. Reject bad input early.
+- Logging can go first to capture every request, even blocked ones.
 
 ### Group + Route Middleware Order
 
@@ -608,57 +544,66 @@ Router::group("/api", function () {
 
     Router::get("/data", function ($request, $response) {
         return $response->json(["data" => true]);
-    }, "middlewareC");
+    })->middleware([$middlewareC]);
 
-}, ["middlewareA", "middlewareB"]);
+}, [$middlewareA, $middlewareB]);
 ```
 
-Execution: `middlewareA` -> `middlewareB` -> `middlewareC` -> handler. Group middleware always runs before route middleware.
+Execution: `$middlewareA` -> `$middlewareB` -> `$middlewareC` -> handler. Group middleware always runs before route middleware.
 
 ---
 
 ## 9. Short-Circuiting
 
-When middleware does not call `$next`, the chain stops. No subsequent middleware runs. The handler never executes.
+When middleware returns a `Response` object, the chain stops. No subsequent middleware runs. The handler never executes.
 
 ### Authentication Short-Circuit
 
 ```php
 <?php
 
-function requireAuth($request, $response, $next) {
+function requireAuth($request, $response) {
     $token = $request->headers["Authorization"] ?? "";
 
     if (empty($token)) {
         return $response->json(["error" => "Authentication required"], 401);
     }
-
-    return $next($request, $response);
+    // return nothing to continue
 }
 ```
 
 Missing header: `401` returned. Handler never runs. No database query. No business logic. Resources saved.
+
+### Blocking with false
+
+Returning `false` from middleware tells the framework to respond with a generic `403 Forbidden`:
+
+```php
+<?php
+
+function requireAdmin($request, $response) {
+    if (!isAdmin($request)) {
+        return false; // framework sends 403 Forbidden
+    }
+    // return nothing to continue
+}
+```
 
 ### Maintenance Mode
 
 ```php
 <?php
 
-function maintenanceMode($request, $response, $next) {
+function maintenanceMode($request, $response) {
     $isMaintenanceMode = ($_ENV["MAINTENANCE_MODE"] ?? "false") === "true";
 
     if ($isMaintenanceMode) {
-        if ($request->path === "/health") {
-            return $next($request, $response);
-        }
-
         return $response->json([
             "error" => "Service is undergoing maintenance",
             "retry_after" => 300
         ], 503);
     }
-
-    return $next($request, $response);
+    // return nothing to continue
 }
 ```
 
@@ -668,19 +613,18 @@ Add to `.env`:
 MAINTENANCE_MODE=true
 ```
 
-Every request except `/health` gets `503 Service Unavailable`.
+Every request gets `503 Service Unavailable`.
 
 ### Read-Only Mode
 
 ```php
 <?php
 
-function readOnly($request, $response, $next) {
+function readOnly($request, $response) {
     if (in_array($request->method, ["POST", "PUT", "PATCH", "DELETE"])) {
         return $response->json(["error" => "API is in read-only mode"], 405);
     }
-
-    return $next($request, $response);
+    // return nothing to continue
 }
 ```
 
@@ -696,7 +640,7 @@ Middleware can attach data to the request before the handler sees it:
 <?php
 use Tina4\Auth;
 
-function attachUser($request, $response, $next) {
+function attachUser($request, $response) {
     $authHeader = $request->headers["Authorization"] ?? "";
 
     if (!empty($authHeader) && str_starts_with($authHeader, "Bearer ")) {
@@ -706,8 +650,7 @@ function attachUser($request, $response, $next) {
         }
     }
 
-    // Always call $next -- this middleware does not block
-    return $next($request, $response);
+    // return nothing -- this middleware does not block
 }
 ```
 
@@ -718,15 +661,11 @@ Different from blocking auth middleware. This attaches user data if present but 
 ```php
 <?php
 
-function addRequestId($request, $response, $next) {
+function addRequestId($request, $response) {
     $requestId = bin2hex(random_bytes(8));
     $request->requestId = $requestId;
-
-    $result = $next($request, $response);
-
     $response->addHeader("X-Request-Id", $requestId);
-
-    return $result;
+    // return nothing to continue
 }
 ```
 
@@ -736,41 +675,40 @@ The handler accesses `$request->requestId` for logging and correlation:
 Router::get("/api/data", function ($request, $response) {
     error_log("[" . $request->requestId . "] Processing data request");
     return $response->json(["request_id" => $request->requestId, "data" => []]);
-}, "addRequestId");
+})->middleware([$addRequestId]);
 ```
 
 ---
 
 ## 11. Real-World Middleware Stack
 
-A realistic production setup:
+A realistic production setup combining global class-based middleware with route-level function middleware:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Middleware;
+use Tina4\Middleware\CorsMiddleware;
+use Tina4\Middleware\RateLimiter;
+use Tina4\Middleware\RequestLogger;
+
+// Global middleware -- runs on every request
+Middleware::use(CorsMiddleware::class);
+Middleware::use(RateLimiter::class);
+Middleware::use(RequestLogger::class);
+```
+
+```php
+<?php
+use Tina4\Router;
 
 // src/routes/middleware.php
 
-function addRequestId($request, $response, $next) {
+$addRequestId = function ($request, $response) {
     $request->requestId = bin2hex(random_bytes(8));
-    $result = $next($request, $response);
     $response->addHeader("X-Request-Id", $request->requestId);
-    return $result;
-}
+};
 
-function logRequest($request, $response, $next) {
-    $start = microtime(true);
-    error_log("[" . $request->requestId . "] " . $request->method . " " . $request->path);
-
-    $result = $next($request, $response);
-
-    $duration = round((microtime(true) - $start) * 1000, 2);
-    error_log("[" . $request->requestId . "] Completed in " . $duration . "ms");
-
-    return $result;
-}
-
-function requireApiKey($request, $response, $next) {
+$requireApiKey = function ($request, $response) {
     $apiKey = $request->headers["X-API-Key"] ?? "";
     $validKeys = explode(",", $_ENV["API_KEYS"] ?? "");
 
@@ -780,14 +718,12 @@ function requireApiKey($request, $response, $next) {
             "request_id" => $request->requestId ?? null
         ], 401);
     }
-
-    return $next($request, $response);
-}
+};
 ```
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 // src/routes/api.php
 
@@ -814,7 +750,7 @@ Router::group("/api/v1", function () {
         ], 201);
     });
 
-}, ["addRequestId", "logRequest", "CorsMiddleware", "requireApiKey"]);
+}, [$addRequestId, $requireApiKey]);
 ```
 
 Without API key:
@@ -833,7 +769,7 @@ With valid key:
 
 ## 12. Exercise: Build an API Key Middleware
 
-Build `validateApiKey` middleware:
+Build API key middleware:
 
 1. Check for `X-API-Key` header
 2. Validate against a comma-separated list in `API_KEYS` env variable
@@ -875,9 +811,9 @@ Create `src/routes/api-key-middleware.php`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
-function validateApiKey($request, $response, $next) {
+$validateApiKey = function ($request, $response) {
     $apiKey = $request->headers["X-API-Key"] ?? "";
 
     if (empty($apiKey)) {
@@ -891,9 +827,8 @@ function validateApiKey($request, $response, $next) {
     }
 
     $request->apiKey = $apiKey;
-
-    return $next($request, $response);
-}
+    // return nothing to continue
+};
 
 Router::group("/api/partner", function () {
 
@@ -917,7 +852,7 @@ Router::group("/api/partner", function () {
         ]);
     });
 
-}, "validateApiKey");
+}, [$validateApiKey]);
 ```
 
 **No key:** `401` -- `{"error":"API key required"}`
@@ -940,56 +875,67 @@ Router::group("/api/partner", function () {
 
 ## 14. Gotchas
 
-### 1. Middleware Must Be a Named Function
+### 1. Route Middleware Must Be Callable
 
-**Problem:** Anonymous closure as middleware causes an error.
+**Problem:** Passing a string name instead of a callable to `->middleware()` or `Router::group()`.
 
-**Cause:** Tina4 resolves middleware by string name at runtime.
+**Cause:** Route-level middleware expects an array of callable functions (closures or function references), not string names.
 
-**Fix:** Named function: `function myMiddleware($request, $response, $next) { ... }`. Pass as string: `"myMiddleware"`.
+**Fix:** Pass callables: `->middleware([$myFunction])` or `->middleware([function ($request, $response) { ... }])`. Use variables holding closures, not strings.
 
-### 2. Forgetting to Return $next()
+### 2. Returning the Wrong Thing from Middleware
 
-**Problem:** Middleware runs. Handler never executes. Empty response or 500.
+**Problem:** Middleware runs but does not behave as expected -- handler runs when it should be blocked, or chain stops when it should continue.
 
-**Cause:** Called `$next($request, $response)` but did not `return` the result.
+**Cause:** Confusion about return values. Route-level middleware uses a three-way contract:
+- Return nothing (null/void) to continue
+- Return a `Response` to short-circuit
+- Return `false` to block with 403
 
-**Fix:** `return $next($request, $response)`. Without `return`, the response from the handler is discarded.
+**Fix:** To continue, just do not return anything. To block, return `$response->json([...], 401)`. Do not return `true` or other values.
 
 ### 3. Middleware Order Matters
 
 **Problem:** Logging middleware does not see the request ID.
 
-**Cause:** `logRequest` runs before `addRequestId`.
+**Cause:** `$logRequest` runs before `$addRequestId`.
 
-**Fix:** Put `addRequestId` first: `["addRequestId", "logRequest"]`. Think: what needs to happen first.
+**Fix:** Put `$addRequestId` first: `[$addRequestId, $logRequest]`. Think: what needs to happen first.
 
 ### 4. CORS Preflight Returns 404
 
 **Problem:** Browser `OPTIONS` request gets 404. `GET` and `POST` work with curl.
 
-**Cause:** No `CorsMiddleware` on the route group. `OPTIONS` is not handled.
+**Cause:** No `CorsMiddleware` registered. `OPTIONS` is not handled.
 
-**Fix:** Apply `CorsMiddleware`. It handles `OPTIONS` and returns correct CORS headers. Or set `CORS_ORIGINS` in `.env` for global handling.
+**Fix:** Register `Middleware::use(CorsMiddleware::class)`. It handles `OPTIONS` and returns correct CORS headers. Or set `CORS_ORIGINS` in `.env` for global handling.
 
 ### 5. Rate Limiter Counts Preflight Requests
 
 **Problem:** Frontend hits rate limit faster than expected. Every `POST` counts as two (OPTIONS + POST).
 
-**Fix:** Put `CorsMiddleware` before `RateLimiter`: `["CorsMiddleware", "RateLimiter"]`. CORS handles `OPTIONS` and returns. The rate limiter only sees real requests.
+**Fix:** Register `CorsMiddleware` before `RateLimiter` globally. CORS handles `OPTIONS` and short-circuits with 204. The rate limiter only sees real requests.
 
 ### 6. Middleware File Not Auto-Loaded
 
-**Problem:** "Function not found" when referencing middleware.
+**Problem:** Middleware variable is undefined when used in a route file.
 
 **Cause:** File is not in `src/routes/`. Tina4 auto-loads `.php` files from that directory only.
 
 **Fix:** Put middleware in `src/routes/middleware.php`. Filename does not matter. Location does.
 
-### 7. Short-Circuiting Skips Cleanup Middleware
+### 7. Group Middleware Expects an Array
 
-**Problem:** Timing middleware logs start but never logs completion for blocked requests.
+**Problem:** Passing a single callable instead of an array to `Router::group()`.
 
-**Cause:** When an inner middleware short-circuits, outer middleware code after `$next()` still runs. But if the short-circuiting middleware is listed before the timing middleware, timing never executes.
+**Cause:** The third parameter of `Router::group()` is typed as `array $middleware = []`.
 
-**Fix:** Put cleanup-dependent middleware (timing, logging) outermost. They wrap the entire chain. Code after `$next()` in outer middleware always runs, even when inner middleware short-circuits.
+**Fix:** Always wrap in an array: `Router::group("/api", $callback, [$myMiddleware])`, not `Router::group("/api", $callback, $myMiddleware)`.
+
+### 8. Mixing Up the Two Middleware Styles
+
+**Problem:** Trying to use a class-based middleware in `->middleware()` or a function in `Middleware::use()`.
+
+**Cause:** The two styles serve different purposes. Route-level middleware (`->middleware()` and `Router::group()`) takes callable functions. Global middleware (`Middleware::use()`) takes class names with `before*`/`after*` static methods.
+
+**Fix:** Use `Middleware::use(MyClass::class)` for class-based global middleware. Use `->middleware([$callable])` for route-level function middleware.
