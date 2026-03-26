@@ -10,7 +10,9 @@ Chapter 7 introduced sessions for authentication. This chapter goes deeper: sess
 
 ## 2. How Sessions Work
 
-First visit. No session cookie. Tina4 generates a unique session ID -- a long random string. Stores it in a cookie. Creates server-side storage keyed by that ID. Every subsequent request carries the cookie. Tina4 looks up the data. Makes it available through `$request->session`.
+Sessions are auto-started. Every route handler receives `$request->session` ready to use. No manual setup required.
+
+First visit. No session cookie. Tina4 generates a unique session ID -- a long random string. Stores it in a cookie named `tina4_session` (`HttpOnly`, `SameSite=Lax`). Creates server-side storage keyed by that ID. Every subsequent request carries the cookie. Tina4 looks up the data. Makes it available through `$request->session`.
 
 The flow:
 
@@ -27,7 +29,29 @@ The data lives server-side. The browser holds the session ID. Nothing else.
 
 ---
 
-## 3. File Sessions (Default)
+## 3. The Session API
+
+Access session data through `$request->session`. It is available in every route handler with zero configuration.
+
+### Full API Reference
+
+| Method | Description |
+|--------|-------------|
+| `$request->session->set(key, value)` | Store a value |
+| `$request->session->get(key, default)` | Retrieve a value (with optional default) |
+| `$request->session->delete(key)` | Remove a key |
+| `$request->session->has(key)` | Check if a key exists |
+| `$request->session->clear()` | Remove all session data |
+| `$request->session->destroy()` | Destroy the session entirely |
+| `$request->session->save()` | Persist session data (auto-called after response) |
+| `$request->session->regenerate()` | Generate a new session ID, preserve data |
+| `$request->session->flash(key, value)` | Set flash data (one-time read) |
+| `$request->session->getFlash(key)` | Read and remove flash data |
+| `$request->session->all()` | Get all session data as an array |
+
+---
+
+## 4. File Sessions (Default)
 
 No configuration needed. Sessions stored in files. Works out of the box.
 
@@ -36,8 +60,8 @@ No configuration needed. Sessions stored in files. Works out of the box.
 use Tina4Router;
 
 Router::get("/visit-counter", function ($request, $response) {
-    $count = ($request->session["visit_count"] ?? 0) + 1;
-    $request->session["visit_count"] = $count;
+    $count = ($request->session->get("visit_count", 0)) + 1;
+    $request->session->set("visit_count", $count);
 
     return $response->json([
         "visit_count" => $count,
@@ -72,22 +96,16 @@ curl http://localhost:7146/visit-counter -c cookies.txt -b cookies.txt
 
 The `-c` flag saves cookies. The `-b` flag sends them back. This simulates browser behavior.
 
-Change the storage path:
-
-```env
-TINA4_SESSION_PATH=/path/to/session/files
-```
-
 File sessions work for single-server deployments. Simplest option. No extra software.
 
 ---
 
-## 4. Redis Sessions
+## 5. Redis Sessions
 
 Multiple servers behind a load balancer need a shared session store. Redis is the standard choice.
 
 ```env
-TINA4_SESSION_HANDLER=redis
+TINA4_SESSION_BACKEND=redis
 TINA4_SESSION_HOST=localhost
 TINA4_SESSION_PORT=6379
 TINA4_SESSION_PASSWORD=your-redis-password
@@ -107,7 +125,7 @@ That is the only change. Your code stays identical. `$request->session` works th
 Sharing a Redis instance with other applications:
 
 ```env
-TINA4_SESSION_HANDLER=redis
+TINA4_SESSION_BACKEND=redis
 TINA4_SESSION_HOST=localhost
 TINA4_SESSION_PORT=6379
 TINA4_SESSION_PREFIX=myapp:sess:
@@ -115,12 +133,12 @@ TINA4_SESSION_PREFIX=myapp:sess:
 
 ---
 
-## 5. MongoDB Sessions
+## 6. MongoDB Sessions
 
 Already running MongoDB:
 
 ```env
-TINA4_SESSION_HANDLER=mongodb
+TINA4_SESSION_BACKEND=mongodb
 TINA4_SESSION_HOST=localhost
 TINA4_SESSION_PORT=27017
 TINA4_SESSION_DATABASE=myapp
@@ -131,19 +149,19 @@ TTL indexes handle expired session cleanup.
 
 ---
 
-## 6. Valkey Sessions
+## 7. Valkey Sessions
 
 Valkey is the open-source Redis fork. Wire-compatible. Same client library:
 
 ```env
-TINA4_SESSION_HANDLER=valkey
+TINA4_SESSION_BACKEND=valkey
 TINA4_SESSION_HOST=localhost
 TINA4_SESSION_PORT=6379
 ```
 
 ---
 
-## 7. Database Sessions
+## 8. Database Sessions
 
 ```env
 TINA4_SESSION_BACKEND=database
@@ -153,7 +171,7 @@ Stores sessions in the `tina4_session` table using your existing database connec
 
 ---
 
-## 8. Reading and Writing Session Data
+## 9. Reading and Writing Session Data
 
 A key-value store. Read and write through `$request->session`:
 
@@ -165,16 +183,16 @@ use Tina4Router;
 Router::post("/api/preferences", function ($request, $response) {
     $body = $request->body;
 
-    $request->session["language"] = $body["language"] ?? "en";
-    $request->session["theme"] = $body["theme"] ?? "light";
-    $request->session["items_per_page"] = (int) ($body["items_per_page"] ?? 20);
+    $request->session->set("language", $body["language"] ?? "en");
+    $request->session->set("theme", $body["theme"] ?? "light");
+    $request->session->set("items_per_page", (int) ($body["items_per_page"] ?? 20));
 
     return $response->json([
         "message" => "Preferences saved",
         "preferences" => [
-            "language" => $request->session["language"],
-            "theme" => $request->session["theme"],
-            "items_per_page" => $request->session["items_per_page"]
+            "language" => $request->session->get("language"),
+            "theme" => $request->session->get("theme"),
+            "items_per_page" => $request->session->get("items_per_page")
         ]
     ]);
 });
@@ -182,23 +200,23 @@ Router::post("/api/preferences", function ($request, $response) {
 // Read
 Router::get("/api/preferences", function ($request, $response) {
     return $response->json([
-        "language" => $request->session["language"] ?? "en",
-        "theme" => $request->session["theme"] ?? "light",
-        "items_per_page" => $request->session["items_per_page"] ?? 20
+        "language" => $request->session->get("language", "en"),
+        "theme" => $request->session->get("theme", "light"),
+        "items_per_page" => $request->session->get("items_per_page", 20)
     ]);
 });
 
 // Delete a key
 Router::delete("/api/preferences/{key}", function ($request, $response) {
     $key = $request->params["key"];
-    unset($request->session[$key]);
+    $request->session->delete($key);
 
     return $response->json(["message" => "Preference '" . $key . "' removed"]);
 });
 
 // Clear everything
 Router::post("/api/session/clear", function ($request, $response) {
-    $request->session = [];
+    $request->session->clear();
 
     return $response->json(["message" => "Session cleared"]);
 });
@@ -212,11 +230,7 @@ Sessions hold arrays and nested structures:
 Router::post("/api/cart/add", function ($request, $response) {
     $body = $request->body;
 
-    if (!isset($request->session["cart"])) {
-        $request->session["cart"] = [];
-    }
-
-    $cart = $request->session["cart"];
+    $cart = $request->session->get("cart", []);
 
     $cart[] = [
         "product_id" => (int) $body["product_id"],
@@ -226,7 +240,7 @@ Router::post("/api/cart/add", function ($request, $response) {
         "added_at" => date("c")
     ];
 
-    $request->session["cart"] = $cart;
+    $request->session->set("cart", $cart);
 
     $total = array_sum(array_map(
         fn($item) => $item["price"] * $item["quantity"],
@@ -243,7 +257,7 @@ Router::post("/api/cart/add", function ($request, $response) {
 
 ---
 
-## 8. Flash Messages
+## 10. Flash Messages
 
 Session data that lives for one request. Set it before redirecting. Read it on the next request. Gone after that.
 
@@ -260,10 +274,8 @@ Router::post("/profile/update", function ($request, $response) {
 
     // Update the profile...
 
-    $request->session["_flash"] = [
-        "type" => "success",
-        "message" => "Profile updated successfully"
-    ];
+    $request->session->flash("message", "Profile updated successfully");
+    $request->session->flash("message_type", "success");
 
     return $response->redirect("/profile");
 });
@@ -273,17 +285,18 @@ Router::post("/profile/update", function ($request, $response) {
 
 ```php
 Router::get("/profile", function ($request, $response) {
-    $flash = $request->session["_flash"] ?? null;
-
-    // Clear immediately
-    unset($request->session["_flash"]);
+    $flash_message = $request->session->getFlash("message");
+    $flash_type = $request->session->getFlash("message_type") ?? "info";
 
     return $response->render("profile.html", [
         "user" => ["name" => "Alice", "email" => "alice@example.com"],
-        "flash" => $flash
+        "flash_message" => $flash_message,
+        "flash_type" => $flash_type
     ]);
 });
 ```
+
+The `getFlash()` method reads the value and removes it in one step. The next request will not see it.
 
 ### In Templates
 
@@ -291,9 +304,9 @@ Router::get("/profile", function ($request, $response) {
 {% extends "base.html" %}
 
 {% block content %}
-    {% if flash %}
-        <div class="alert alert-{{ flash.type }}">
-            {{ flash.message }}
+    {% if flash_message %}
+        <div class="alert alert-{{ flash_type }}">
+            {{ flash_message }}
         </div>
     {% endif %}
 
@@ -305,28 +318,9 @@ Router::get("/profile", function ($request, $response) {
 
 The alert appears once. Refresh the page. Gone.
 
-### Multiple Flash Messages
-
-```php
-$request->session["_flash"] = [
-    ["type" => "success", "message" => "Email updated"],
-    ["type" => "warning", "message" => "Please verify your new email address"]
-];
-```
-
-```html
-{% if flash %}
-    {% for msg in flash %}
-        <div class="alert alert-{{ msg.type }}">
-            {{ msg.message }}
-        </div>
-    {% endfor %}
-{% endif %}
-```
-
 ---
 
-## 9. Setting and Reading Cookies
+## 11. Setting and Reading Cookies
 
 Cookies live in the browser. Unlike sessions, the data is client-side. Use cookies for non-sensitive preferences that should survive session expiry.
 
@@ -388,7 +382,7 @@ Router::post("/api/clear-language", function ($request, $response) {
 
 ---
 
-## 10. Remember Me Functionality
+## 12. Remember Me Functionality
 
 A long-lived cookie re-authenticates users after their session expires.
 
@@ -414,8 +408,8 @@ Router::post("/login", function ($request, $response) {
         return $response->json(["error" => "Invalid email or password"], 401);
     }
 
-    $request->session["user_id"] = $user["id"];
-    $request->session["user_name"] = $user["name"];
+    $request->session->set("user_id", $user["id"]);
+    $request->session->set("user_name", $user["name"]);
 
     if (!empty($body["remember_me"])) {
         $rememberToken = bin2hex(random_bytes(32));
@@ -450,7 +444,7 @@ The middleware that checks the cookie:
 use Tina4\Database;
 
 function rememberMeMiddleware($request, $response, $next) {
-    if (!empty($request->session["user_id"])) {
+    if ($request->session->has("user_id")) {
         return $next($request, $response);
     }
 
@@ -469,8 +463,8 @@ function rememberMeMiddleware($request, $response, $next) {
     );
 
     if ($user !== null) {
-        $request->session["user_id"] = $user["id"];
-        $request->session["user_name"] = $user["name"];
+        $request->session->set("user_id", $user["id"]);
+        $request->session->set("user_name", $user["name"]);
     }
 
     return $next($request, $response);
@@ -490,16 +484,15 @@ The database holds the hash. The cookie holds the raw token. If the database is 
 
 ---
 
-## 11. Session Security
+## 13. Session Security
 
 ### Configuration Options
 
 ```env
-TINA4_SESSION_LIFETIME=3600       # Expires after 1 hour of inactivity
-TINA4_SESSION_NAME=tina4_session  # Cookie name
+TINA4_SESSION_TTL=3600            # Expires after 1 hour of inactivity
 TINA4_SESSION_SECURE=true         # HTTPS only
-TINA4_SESSION_HTTPONLY=true       # JavaScript cannot access the cookie
-TINA4_SESSION_SAMESITE=Lax        # CSRF protection
+TINA4_SESSION_HTTPONLY=true       # JavaScript cannot access the cookie (default)
+TINA4_SESSION_SAMESITE=Lax        # CSRF protection (default)
 ```
 
 ### httpOnly
@@ -528,9 +521,9 @@ After login, regenerate the session ID to prevent session fixation attacks:
 Router::post("/login", function ($request, $response) {
     // Validate credentials...
 
-    $request->sessionRegenerate();
+    $request->session->regenerate();
 
-    $request->session["user_id"] = $user["id"];
+    $request->session->set("user_id", $user["id"]);
 
     return $response->redirect("/dashboard");
 });
@@ -538,9 +531,20 @@ Router::post("/login", function ($request, $response) {
 
 Session fixation: attacker sets a known session ID on the victim's browser before login. After login, the attacker uses that same ID. Regeneration invalidates the old ID.
 
+### Destroy a Session
+
+To completely destroy a session (not just clear its data):
+
+```php
+Router::post("/logout", function ($request, $response) {
+    $request->session->destroy();
+    return $response->redirect("/login");
+});
+```
+
 ---
 
-## 12. Exercise: Build a Shopping Cart with Session Storage
+## 14. Exercise: Build a Shopping Cart with Session Storage
 
 A cart stored entirely in session data. No database.
 
@@ -599,7 +603,7 @@ curl -X DELETE http://localhost:7146/api/cart -b cookies.txt -c cookies.txt
 
 ---
 
-## 13. Solution
+## 15. Solution
 
 Create `src/routes/cart.php`:
 
@@ -608,7 +612,7 @@ Create `src/routes/cart.php`:
 use Tina4Router;
 
 function getCart($session) {
-    return $session["cart"] ?? [];
+    return $session->get("cart", []);
 }
 
 function cartResponse($cart) {
@@ -660,7 +664,7 @@ Router::post("/api/cart/add", function ($request, $response) {
         ];
     }
 
-    $request->session["cart"] = $cart;
+    $request->session->set("cart", $cart);
 
     return $response->json(cartResponse($cart));
 });
@@ -692,7 +696,7 @@ Router::put("/api/cart/{product_id:int}", function ($request, $response) {
         return $response->json(["error" => "Product not in cart"], 404);
     }
 
-    $request->session["cart"] = $cart;
+    $request->session->set("cart", $cart);
 
     return $response->json(cartResponse($cart));
 });
@@ -714,13 +718,13 @@ Router::delete("/api/cart/{product_id:int}", function ($request, $response) {
         return $response->json(["error" => "Product not in cart"], 404);
     }
 
-    $request->session["cart"] = $cart;
+    $request->session->set("cart", $cart);
 
     return $response->json(cartResponse($cart));
 });
 
 Router::delete("/api/cart", function ($request, $response) {
-    $request->session["cart"] = [];
+    $request->session->set("cart", []);
 
     return $response->json(cartResponse([]));
 });
@@ -750,7 +754,7 @@ Keyboard has `quantity: 2` (1 + 1). Not two separate entries.
 
 ---
 
-## 14. Gotchas
+## 16. Gotchas
 
 ### 1. Sessions Do Not Work with curl Without Cookie Flags
 
@@ -782,7 +786,7 @@ Keyboard has `quantity: 2` (1 + 1). Not two separate entries.
 
 **Cause:** Read it but did not clear it.
 
-**Fix:** Always `unset($request->session["_flash"])` after reading. Read, use, delete -- same request.
+**Fix:** Use `$request->session->getFlash("message")` instead of `$request->session->get()`. The `getFlash()` method reads and deletes in one step.
 
 ### 5. Large Session Data Causes Slow Requests
 
@@ -806,4 +810,4 @@ Keyboard has `quantity: 2` (1 + 1). Not two separate entries.
 
 **Cause:** Session ID not regenerated after authentication.
 
-**Fix:** Call `$request->sessionRegenerate()` after login. New ID. Old one useless.
+**Fix:** Call `$request->session->regenerate()` after login. New ID. Old one useless.
