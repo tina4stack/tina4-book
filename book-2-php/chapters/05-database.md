@@ -53,6 +53,21 @@ DATABASE_PASSWORD=secretpassword
 
 Tina4 merges these at startup. Separate variables take precedence over anything embedded in the URL.
 
+### Connection Pooling
+
+For applications that handle many concurrent requests, enable connection pooling with the `pool` parameter:
+
+```php
+$db = new Database("postgres://localhost/mydb", pool: 5);
+```
+
+The `pool` parameter controls how many database connections are maintained:
+
+- `pool: 0` (the default) -- a single connection is used for all queries
+- `pool: N` (where N > 0) -- N connections are created and rotated round-robin across queries
+
+Pooled connections are thread-safe. Each query is dispatched to the next available connection in the pool. This eliminates contention when multiple route handlers query the database simultaneously.
+
 ### Verifying the Connection
 
 Update `.env`. Restart. Check:

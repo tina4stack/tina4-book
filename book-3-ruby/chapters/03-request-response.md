@@ -595,7 +595,73 @@ curl http://localhost:7147/api/products/1 -H "Accept: text/html"
 
 ---
 
-## 10. Exercise: Build an Image Upload API
+## 10. Input Validation
+
+Tina4 includes a `Validator` class for declarative input validation. Chain rules together and check the result. If validation fails, use `response.error` to return a structured error envelope.
+
+### The Validator Class
+
+```ruby
+Tina4::Router.post "/api/users" do |request, response|
+  v = Tina4::Validator.new(request.body)
+  v.required("name").required("email").email("email").min_length("name", 2)
+
+  unless v.valid?
+    return response.error("VALIDATION_FAILED", v.errors.first[:message], 400)
+  end
+
+  # proceed with valid data
+end
+```
+
+The `Validator` accepts the request body (a hash) and provides chainable methods:
+
+| Method | Description |
+|--------|-------------|
+| `required(field)` | Field must be present and non-empty |
+| `email(field)` | Field must be a valid email address |
+| `min_length(field, n)` | Field must have at least `n` characters |
+| `max_length(field, n)` | Field must have at most `n` characters |
+| `numeric(field)` | Field must be a number |
+| `in_list(field, values)` | Field must be one of the allowed values |
+
+Call `v.valid?` to check all rules. Call `v.errors` to get the list of failures, each with a `:field` and `:message` key.
+
+### The Error Response Envelope
+
+`response.error` returns a consistent JSON error envelope:
+
+```ruby
+response.error("VALIDATION_FAILED", "Name is required", 400)
+```
+
+This produces:
+
+```json
+{"error": true, "code": "VALIDATION_FAILED", "message": "Name is required", "status": 400}
+```
+
+The three arguments are: an error code string, a human-readable message, and the HTTP status code. Use this pattern across your API for consistent error handling.
+
+### Upload Size Limits
+
+Tina4 enforces a maximum upload size via the `TINA4_MAX_UPLOAD_SIZE` environment variable. The value is in bytes. The default is `10485760` (10 MB).
+
+```env
+TINA4_MAX_UPLOAD_SIZE=10485760
+```
+
+If a client sends a file larger than this limit, Tina4 returns a `413 Payload Too Large` response before your handler runs. To allow larger uploads, increase the value in `.env`:
+
+```env
+TINA4_MAX_UPLOAD_SIZE=52428800
+```
+
+This sets the limit to 50 MB.
+
+---
+
+## 11. Exercise: Build an Image Upload API
 
 Build an API that handles image uploads and serves them back.
 
@@ -627,7 +693,7 @@ curl http://localhost:7147/api/images/img_a1b2c3d4e5f6a7b8.jpg --output download
 
 ---
 
-## 11. Solution
+## 12. Solution
 
 Create `src/routes/images.rb`:
 
@@ -746,7 +812,7 @@ end
 
 ---
 
-## 12. Gotchas
+## 13. Gotchas
 
 ### 1. Forgetting the response method
 

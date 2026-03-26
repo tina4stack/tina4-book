@@ -22,6 +22,8 @@ TINA4_DEBUG=true
 
 With no explicit `DATABASE_URL`, Tina4 defaults to `sqlite:///data/app.db`. That is why the health check at `/health` shows `"database": "connected"` with zero configuration.
 
+SQLite support uses Node's built-in `node:sqlite` module (Node 22+). No native C++ addons are needed. No `node-gyp`. No platform-specific binaries. This is what makes Tina4 Node.js truly zero runtime dependencies -- even the database driver ships with Node itself.
+
 ### Connection Strings for Other Databases
 
 Set `DATABASE_URL` in `.env` to use a different engine:
@@ -50,6 +52,21 @@ DATABASE_URL=postgres://localhost:5432/myapp
 DATABASE_USERNAME=myuser
 DATABASE_PASSWORD=secretpassword
 ```
+
+### Connection Pooling
+
+For applications that handle many concurrent requests, enable connection pooling by passing a pool size to `Database.create()`:
+
+```typescript
+const db = await Database.create("postgres://localhost/mydb", undefined, undefined, 5);
+```
+
+The fourth argument controls how many database connections are maintained:
+
+- `0` (the default) -- a single connection is used for all queries
+- `N` (where N > 0) -- N connections are created and rotated round-robin across queries
+
+Pooled connections are thread-safe. Each query is dispatched to the next available connection in the pool. This eliminates contention when multiple route handlers query the database simultaneously.
 
 ### Verifying the Connection
 

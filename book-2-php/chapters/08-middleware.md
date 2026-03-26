@@ -195,9 +195,42 @@ GET /api/users 12.34ms
 POST /api/products 45.67ms
 ```
 
-### Combining All Three Built-In Middleware
+### Built-in SecurityHeadersMiddleware
 
-A common production setup registers all three globally:
+The `SecurityHeadersMiddleware` adds standard security headers to every response. Register it globally:
+
+```php
+<?php
+use Tina4\Middleware;
+use Tina4\Middleware\SecurityHeadersMiddleware;
+
+Middleware::use(SecurityHeadersMiddleware::class);
+```
+
+It sets the following headers by default:
+
+| Header | Default Value |
+|--------|---------------|
+| `X-Frame-Options` | `DENY` |
+| `Content-Security-Policy` | `default-src 'self'` |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` |
+| `X-Content-Type-Options` | `nosniff` |
+
+Override any header via environment variables in `.env`:
+
+```env
+TINA4_FRAME_OPTIONS=SAMEORIGIN
+TINA4_CSP=default-src 'self'; script-src 'self' https://cdn.example.com
+TINA4_HSTS=max-age=63072000; includeSubDomains; preload
+TINA4_REFERRER_POLICY=no-referrer
+TINA4_PERMISSIONS_POLICY=camera=(), microphone=(), geolocation=(self)
+```
+
+### Combining All Four Built-In Middleware
+
+A common production setup registers all four globally:
 
 ```php
 <?php
@@ -205,13 +238,15 @@ use Tina4\Middleware;
 use Tina4\Middleware\CorsMiddleware;
 use Tina4\Middleware\RateLimiter;
 use Tina4\Middleware\RequestLogger;
+use Tina4\Middleware\SecurityHeadersMiddleware;
 
 Middleware::use(CorsMiddleware::class);
 Middleware::use(RateLimiter::class);
 Middleware::use(RequestLogger::class);
+Middleware::use(SecurityHeadersMiddleware::class);
 ```
 
-Order matters. CORS handles `OPTIONS` preflight first. The rate limiter only counts real requests (not preflight). The logger measures total time including the other middleware.
+Order matters. CORS handles `OPTIONS` preflight first. The rate limiter only counts real requests (not preflight). The logger measures total time including the other middleware. Security headers are added to every response.
 
 ---
 

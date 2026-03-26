@@ -74,6 +74,21 @@ You can also pass a URL directly:
 db = Database("sqlite:///data/test.db")
 ```
 
+### Connection Pooling
+
+For applications that handle many concurrent requests, enable connection pooling by passing a `pool` argument:
+
+```python
+db = Database("postgres://localhost/mydb", pool=5)  # 5 connections, round-robin
+```
+
+The `pool` parameter controls how many database connections are maintained:
+
+- `pool=0` (the default) -- a single connection is used for all queries
+- `pool=N` (where N > 0) -- N connections are created and rotated round-robin across queries
+
+Pooled connections are thread-safe. Each query is dispatched to the next available connection in the pool. This eliminates contention when multiple route handlers query the database simultaneously.
+
 ---
 
 ## 4. Running Queries

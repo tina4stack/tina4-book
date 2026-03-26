@@ -163,19 +163,51 @@ The console output looks like:
 
 Green for 2xx, yellow for 3xx, red for 4xx and 5xx.
 
-### Combining All Three Built-In Middleware
+### Built-in SecurityHeadersMiddleware
+
+The `SecurityHeadersMiddleware` adds standard security headers to every response. Register it globally:
+
+```typescript
+import { Router, SecurityHeadersMiddleware } from "tina4-nodejs";
+
+Router.use(SecurityHeadersMiddleware);
+```
+
+It sets the following headers by default:
+
+| Header | Default Value |
+|--------|---------------|
+| `X-Frame-Options` | `DENY` |
+| `Content-Security-Policy` | `default-src 'self'` |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` |
+| `X-Content-Type-Options` | `nosniff` |
+
+Override any header via environment variables in `.env`:
+
+```env
+TINA4_FRAME_OPTIONS=SAMEORIGIN
+TINA4_CSP=default-src 'self'; script-src 'self' https://cdn.example.com
+TINA4_HSTS=max-age=63072000; includeSubDomains; preload
+TINA4_REFERRER_POLICY=no-referrer
+TINA4_PERMISSIONS_POLICY=camera=(), microphone=(), geolocation=(self)
+```
+
+### Combining All Four Built-In Middleware
 
 A common production setup:
 
 ```typescript
-import { Router, CorsMiddleware, RateLimiterMiddleware, RequestLogger } from "tina4-nodejs";
+import { Router, CorsMiddleware, RateLimiterMiddleware, RequestLogger, SecurityHeadersMiddleware } from "tina4-nodejs";
 
 Router.use(CorsMiddleware);
 Router.use(RateLimiterMiddleware);
 Router.use(RequestLogger);
+Router.use(SecurityHeadersMiddleware);
 ```
 
-Order matters. CORS handles `OPTIONS` preflight first. The rate limiter only counts real requests (not preflight). The logger measures total time including the other middleware.
+Order matters. CORS handles `OPTIONS` preflight first. The rate limiter only counts real requests (not preflight). The logger measures total time including the other middleware. Security headers are added to every response.
 
 ---
 

@@ -449,7 +449,58 @@ Cookie options:
 
 ---
 
-## 4. Real-World Example: File Upload with Validation
+## 4. Input Validation
+
+Tina4 includes a `Validator` class for declarative input validation. Chain rules together and check the result. If validation fails, use `response.error()` to return a structured error envelope.
+
+### The Validator Class
+
+```python
+from tina4_python.validator import Validator
+
+@post("/api/users")
+async def create_user(request, response):
+    v = Validator(request.body)
+    v.required("name").required("email").email("email").min_length("name", 2)
+
+    if not v.is_valid():
+        return response.error("VALIDATION_FAILED", v.errors()[0]["message"], 400)
+
+    # proceed with valid data
+```
+
+The `Validator` accepts the request body (a dictionary) and provides chainable methods:
+
+| Method | Description |
+|--------|-------------|
+| `required(field)` | Field must be present and non-empty |
+| `email(field)` | Field must be a valid email address |
+| `min_length(field, n)` | Field must have at least `n` characters |
+| `max_length(field, n)` | Field must have at most `n` characters |
+| `numeric(field)` | Field must be a number |
+| `in_list(field, values)` | Field must be one of the allowed values |
+
+Call `v.is_valid()` to check all rules. Call `v.errors()` to get the list of validation failures, each with a `field` and `message` key.
+
+### The Error Response Envelope
+
+`response.error()` returns a consistent JSON error envelope:
+
+```python
+return response.error("VALIDATION_FAILED", "Name is required", 400)
+```
+
+This produces:
+
+```json
+{"error": true, "code": "VALIDATION_FAILED", "message": "Name is required", "status": 400}
+```
+
+The three arguments are: an error code string, a human-readable message, and the HTTP status code. Use this pattern across your API for consistent error handling. Clients can check `error: true` and switch on the `code` field.
+
+---
+
+## 5. Real-World Example: File Upload with Validation
 
 A complete file upload endpoint that validates type, size, and returns appropriate errors:
 
@@ -530,7 +581,7 @@ curl -X POST http://localhost:7145/api/files/upload \
 
 ---
 
-## 5. Exercise: Build a Contact Form API
+## 6. Exercise: Build a Contact Form API
 
 Build an API that processes contact form submissions with full validation.
 
@@ -572,7 +623,7 @@ curl "http://localhost:7145/api/contact/submissions?status=new"
 
 ---
 
-## 6. Solution
+## 7. Solution
 
 ```python
 from tina4_python.core.router import get, post
@@ -689,7 +740,7 @@ async def list_submissions(request, response):
 
 ---
 
-## 7. Gotchas
+## 8. Gotchas
 
 ### 1. request.body is None for GET requests
 

@@ -2,7 +2,9 @@
 
 ## 1. What Is Tina4 Node.js
 
-Tina4 Node.js is a zero-dependency web framework. One npm package. Under 5,000 lines of code. It hands you routing, an ORM, a template engine, authentication, queues, WebSocket, and 70 other features. Node.js 20+ and TypeScript.
+Tina4 Node.js is a zero-dependency web framework. One npm package. Under 5,000 lines of code. It hands you routing, an ORM, a template engine, authentication, queues, WebSocket, and 70 other features. Node.js 22+ and TypeScript.
+
+Truly zero runtime dependencies means no native C++ addons, no `node-gyp`, no platform-specific binaries. SQLite support uses Node's built-in `node:sqlite` module (available in Node 22+), so even database access requires nothing beyond what ships with Node.js itself.
 
 It belongs to the Tina4 family -- four identical frameworks in Python, PHP, Ruby, and Node.js. Learn one, know all four. Same project structure. Same template syntax. Same CLI commands. Same `.env` variables.
 
@@ -16,7 +18,7 @@ By the end of this chapter, you will have a working project with an API endpoint
 
 ### What You Need
 
-1. **Node.js 20 or later** -- check with:
+1. **Node.js 22 or later** -- check with:
 
 ```bash
 node -v
@@ -25,10 +27,10 @@ node -v
 You should see output like:
 
 ```
-v20.11.1
+v22.0.0
 ```
 
-Anything below 20 means you need to upgrade first.
+Anything below 22 means you need to upgrade first. Node 22+ is required because Tina4 uses the built-in `node:sqlite` module for SQLite support, which is not available in earlier versions.
 
 2. **npm** -- Node's package manager. Check with:
 

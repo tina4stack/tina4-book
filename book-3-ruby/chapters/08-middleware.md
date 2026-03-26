@@ -158,17 +158,47 @@ The log output looks like:
 [RequestLogger] POST /api/products -> 201 (45.678ms)
 ```
 
-### Combining All Three Built-In Middleware
+### Built-in SecurityHeadersMiddleware
 
-A common production setup registers all three globally:
+The `SecurityHeadersMiddleware` adds standard security headers to every response. Register it globally:
+
+```ruby
+Tina4::Middleware.use(Tina4::SecurityHeadersMiddleware)
+```
+
+It sets the following headers by default:
+
+| Header | Default Value |
+|--------|---------------|
+| `X-Frame-Options` | `DENY` |
+| `Content-Security-Policy` | `default-src 'self'` |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` |
+| `X-Content-Type-Options` | `nosniff` |
+
+Override any header via environment variables in `.env`:
+
+```env
+TINA4_FRAME_OPTIONS=SAMEORIGIN
+TINA4_CSP=default-src 'self'; script-src 'self' https://cdn.example.com
+TINA4_HSTS=max-age=63072000; includeSubDomains; preload
+TINA4_REFERRER_POLICY=no-referrer
+TINA4_PERMISSIONS_POLICY=camera=(), microphone=(), geolocation=(self)
+```
+
+### Combining All Four Built-In Middleware
+
+A common production setup registers all four globally:
 
 ```ruby
 Tina4::Middleware.use(Tina4::CorsClassMiddleware)
 Tina4::Middleware.use(Tina4::RateLimiterMiddleware)
 Tina4::Middleware.use(Tina4::RequestLoggerMiddleware)
+Tina4::Middleware.use(Tina4::SecurityHeadersMiddleware)
 ```
 
-Order matters. CORS handles preflight first. The rate limiter only counts real requests. The logger measures total time including the other middleware.
+Order matters. CORS handles preflight first. The rate limiter only counts real requests. The logger measures total time including the other middleware. Security headers are added to every response.
 
 ---
 

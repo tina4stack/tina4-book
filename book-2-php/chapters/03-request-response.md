@@ -614,7 +614,75 @@ curl http://localhost:7146/api/products/1 -H "Accept: text/html"
 
 ---
 
-## 10. Exercise: Build an Image Upload API
+## 10. Input Validation
+
+Tina4 includes a `Validator` class for declarative input validation. Chain rules together and check the result. If validation fails, use `$response->sendError()` to return a structured error envelope.
+
+### The Validator Class
+
+```php
+use Tina4\Validator;
+
+Router::post("/api/users", function ($request, $response) {
+    $v = new Validator($request->body);
+    $v->required("name")->required("email")->email("email")->minLength("name", 2);
+
+    if (!$v->isValid()) {
+        return $response->sendError("VALIDATION_FAILED", $v->errors()[0]["message"], 400);
+    }
+
+    // proceed with valid data
+});
+```
+
+The `Validator` accepts the request body (an associative array) and provides chainable methods:
+
+| Method | Description |
+|--------|-------------|
+| `required(field)` | Field must be present and non-empty |
+| `email(field)` | Field must be a valid email address |
+| `minLength(field, n)` | Field must have at least `n` characters |
+| `maxLength(field, n)` | Field must have at most `n` characters |
+| `numeric(field)` | Field must be a number |
+| `inList(field, values)` | Field must be one of the allowed values |
+
+Call `$v->isValid()` to check all rules. Call `$v->errors()` to get the list of failures, each with a `field` and `message` key.
+
+### The Error Response Envelope
+
+`$response->sendError()` returns a consistent JSON error envelope:
+
+```php
+return $response->sendError("VALIDATION_FAILED", "Name is required", 400);
+```
+
+This produces:
+
+```json
+{"error": true, "code": "VALIDATION_FAILED", "message": "Name is required", "status": 400}
+```
+
+The three arguments are: an error code string, a human-readable message, and the HTTP status code. Use this pattern across your API for consistent error handling.
+
+### Upload Size Limits
+
+Tina4 enforces a maximum upload size via the `TINA4_MAX_UPLOAD_SIZE` environment variable. The value is in bytes. The default is `10485760` (10 MB).
+
+```env
+TINA4_MAX_UPLOAD_SIZE=10485760
+```
+
+If a client sends a file larger than this limit, Tina4 returns a `413 Payload Too Large` response before your handler runs. To allow larger uploads, increase the value in `.env`:
+
+```env
+TINA4_MAX_UPLOAD_SIZE=52428800
+```
+
+This sets the limit to 50 MB.
+
+---
+
+## 11. Exercise: Build an Image Upload API
 
 Two endpoints. Upload images and serve them back.
 
@@ -646,7 +714,7 @@ curl http://localhost:7146/api/images/img_65f3a7b8c1234.jpg --output downloaded.
 
 ---
 
-## 11. Solution
+## 12. Solution
 
 Create `src/routes/images.php`:
 
@@ -767,7 +835,7 @@ Router::get("/api/images/{filename}", function ($request, $response) {
 
 ---
 
-## 12. Gotchas
+## 13. Gotchas
 
 ### 1. Forgetting `return`
 
