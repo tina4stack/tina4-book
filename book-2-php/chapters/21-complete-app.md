@@ -208,7 +208,7 @@ Create `src/routes/auth.php`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 use Tina4\Auth;
 
 /**
@@ -430,7 +430,7 @@ Create `src/routes/tasks.php`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::group("/api", function () {
 
@@ -925,7 +925,7 @@ Create `src/routes/dashboard.php`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 /**
  * @secured

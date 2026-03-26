@@ -129,7 +129,7 @@ $isCorrect = Auth::checkPassword("my-secure-password", $storedHash);
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 use Tina4\Auth;
 use Tina4\Database;
 
@@ -192,7 +192,7 @@ Client sends credentials. Server validates them. Server returns a JWT.
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 use Tina4\Auth;
 use Tina4\Database;
 
@@ -308,7 +308,7 @@ function authMiddleware($request, $response, $next) {
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::get("/api/profile", function ($request, $response) {
     return $response->json([
@@ -480,7 +480,7 @@ Include the CSRF token in every form:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 use Tina4\Auth;
 
 Router::post("/profile/update", function ($request, $response) {
@@ -543,7 +543,7 @@ Access session data through `$request->session`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::post("/login-form", function ($request, $response) {
     // After validating credentials...
@@ -696,7 +696,7 @@ Create `src/routes/auth.php`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 use Tina4\Auth;
 use Tina4\Database;
 

@@ -22,7 +22,7 @@ Route handler:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::get("/welcome", function ($request, $response) {
     return $response->render("welcome.html", [
@@ -153,7 +153,7 @@ Route handler:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::get("/about", function ($request, $response) {
     return $response->render("about.twig", [
@@ -827,7 +827,7 @@ Create `src/routes/catalog.php`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::get("/catalog", function ($request, $response) {
     $allProducts = [

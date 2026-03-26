@@ -51,7 +51,7 @@ Define WebSocket handlers with `Router::websocket()`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::websocket("/ws/echo", function ($connection, $event, $data) {
     if ($event === "message") {
@@ -95,7 +95,7 @@ Fires when a client connects:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::websocket("/ws/notifications", function ($connection, $event, $data) {
     if ($event === "open") {
@@ -164,7 +164,7 @@ All three events in one handler:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::websocket("/ws/chat", function ($connection, $event, $data) {
     switch ($event) {
@@ -262,7 +262,7 @@ The client receives the close event. Use this for kicking users, enforcing authe
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::websocket("/ws/announcements", function ($connection, $event, $data) {
     if ($event === "open") {
@@ -332,7 +332,7 @@ Different WebSocket paths are walls. Clients connected to `/ws/chat/room-1` neve
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::websocket("/ws/chat/{room}", function ($connection, $event, $data) {
     $room = $connection->params["room"];
@@ -394,7 +394,7 @@ Create `src/routes/chat-ws.php`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 $chatUsers = [];
 
@@ -475,7 +475,7 @@ WebSocket pushes notifications to users in real time:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 use Tina4\Queue;
 
 // WebSocket handler for notifications
@@ -722,7 +722,7 @@ Create the route to serve the page:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::get("/chat/{room}", function ($request, $response) {
     $room = $request->params["room"];
@@ -769,7 +769,7 @@ Create `src/routes/chat-room.php`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 $roomUsers = [];
 

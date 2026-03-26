@@ -103,7 +103,7 @@ The simplest email:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 use Tina4\Messenger;
 
 Router::post("/api/contact", function ($request, $response) {
@@ -294,7 +294,7 @@ TINA4_MAIL_IMAP_ENCRYPTION=ssl
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 use Tina4\Messenger;
 
 Router::get("/api/inbox", function ($request, $response) {
@@ -461,7 +461,7 @@ Create `src/templates/emails/welcome.html`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 use Tina4\Messenger;
 use Tina4\Frond;
 
@@ -528,7 +528,7 @@ In production, never send email inside a route handler. The SMTP handshake takes
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 use Tina4\Queue;
 use Tina4\Messenger;
 use Tina4\Frond;
@@ -713,7 +713,7 @@ Create `src/routes/contact.php`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 use Tina4\Messenger;
 use Tina4\Frond;
 

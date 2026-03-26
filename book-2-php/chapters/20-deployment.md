@@ -383,7 +383,7 @@ You can extend the health check to include your own checks:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::get("/health/detailed", function ($request, $response) {
     $checks = [

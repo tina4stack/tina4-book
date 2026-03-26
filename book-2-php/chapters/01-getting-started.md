@@ -228,7 +228,7 @@ Create `src/routes/greeting.php`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::get("/api/greeting/{name}", function ($request, $response) {
     $name = $request->params["name"];
@@ -295,7 +295,7 @@ Update `src/routes/greeting.php`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::get("/api/greeting/{name}", function ($request, $response) {
     $name = $request->params["name"];
@@ -427,7 +427,7 @@ Create `src/routes/pages.php`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::get("/products", function ($request, $response) {
     $products = [
@@ -602,7 +602,7 @@ Route patterns like `/users/{id}` capture segments of the URL. Access them throu
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::get("/users/{id:int}/posts/{slug}", function ($request, $response) {
     $id = $request->params["id"];     // 5 (int, because of :int)
@@ -679,7 +679,7 @@ Create `src/routes/books.php`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 // In-memory data store
 $books = [
@@ -852,7 +852,7 @@ Create `src/routes/greet.php`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::get("/api/greet", function ($request, $response) {
     $name = $request->query["name"] ?? "Stranger";
@@ -964,7 +964,7 @@ Create `src/routes/store.php`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::get("/store", function ($request, $response) {
     $products = [
@@ -1011,7 +1011,7 @@ Router::get("/store", function ($request, $response) {
 
 **Cause:** Missing `use` statement or stale autoload.
 
-**Fix:** Start the file with `<?php` and include `use Tina4Router;`. Run `composer dump-autoload` if the error persists.
+**Fix:** Start the file with `<?php` and include `use Tina4\Router;`. Run `composer dump-autoload` if the error persists.
 
 ### 3. JSON response shows HTML
 

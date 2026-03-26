@@ -57,7 +57,7 @@ No configuration needed. Sessions stored in files. Works out of the box.
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::get("/visit-counter", function ($request, $response) {
     $count = ($request->session->get("visit_count", 0)) + 1;
@@ -177,7 +177,7 @@ A key-value store. Read and write through `$request->session`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 // Write
 Router::post("/api/preferences", function ($request, $response) {
@@ -267,7 +267,7 @@ The pattern: submit a form, redirect to a success page, show a message that disa
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::post("/profile/update", function ($request, $response) {
     $body = $request->body;
@@ -328,7 +328,7 @@ Cookies live in the browser. Unlike sessions, the data is client-side. Use cooki
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::post("/api/set-language", function ($request, $response) {
     $language = $request->body["language"] ?? "en";
@@ -388,7 +388,7 @@ A long-lived cookie re-authenticates users after their session expires.
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 use Tina4\Auth;
 use Tina4\Database;
 
@@ -609,7 +609,7 @@ Create `src/routes/cart.php`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 function getCart($session) {
     return $session->get("cart", []);

@@ -728,7 +728,7 @@ Create `src/routes/admin.php`:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::get("/admin", function ($request, $response) {
     $stats = [
@@ -1107,7 +1107,7 @@ The key route handlers are:
 
 ```php
 <?php
-use Tina4Router;
+use Tina4\Router;
 
 Router::get("/admin", function ($request, $response) {
     $product = new Product();
