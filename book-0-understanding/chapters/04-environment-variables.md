@@ -264,7 +264,7 @@ When the limit is exceeded, the server returns `429 Too Many Requests`.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `TINA4_QUEUE_BACKEND` | `file` | Queue storage backend. Options: `file`, `rabbitmq`, `kafka`, `mongodb`. |
-| `TINA4_QUEUE_PATH` | `data/queue` | Path for SQLite queue database (when using `sqlite` backend). |
+| `TINA4_QUEUE_PATH` | `data/queue` | Directory for file-based queue storage (when using `file` backend). |
 | `TINA4_QUEUE_URL` | _(none)_ | Generic connection URL for queue backend. |
 
 #### RabbitMQ Queue Backend
@@ -390,7 +390,7 @@ Everything else uses sensible defaults:
 - Binds to `0.0.0.0` on the framework's default port
 - SQLite database at `data/app.db`
 - File-based sessions (1 hour TTL)
-- SQLite-backed queue
+- File-based queue
 - In-memory response cache
 - CORS allows all origins
 - 100 requests per minute rate limit
@@ -493,7 +493,7 @@ TINA4_SESSION_TTL=3600
 # TINA4_SESSION_VALKEY_PORT=6379
 
 # --- Queue ---
-TINA4_QUEUE_BACKEND=sqlite
+TINA4_QUEUE_BACKEND=file
 # TINA4_RABBITMQ_HOST=localhost
 # TINA4_RABBITMQ_PORT=5672
 # TINA4_RABBITMQ_USERNAME=guest
