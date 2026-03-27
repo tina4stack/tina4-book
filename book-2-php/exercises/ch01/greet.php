@@ -12,7 +12,7 @@ use Tina4Router;
 Router::get("/api/greet", function ($request, $response) {
     // Your code here
     // Hints:
-    //   $request->query["name"] to get query parameters
+    //   $request->params["name"] to get query parameters
     //   date("G") returns the hour in 24-hour format (0-23)
     //   $response->json([...]) to return JSON
 

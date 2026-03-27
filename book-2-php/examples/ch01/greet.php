@@ -5,7 +5,7 @@
 use Tina4Router;
 
 Router::get("/api/greet", function ($request, $response) {
-    $name = $request->query["name"] ?? "Stranger";
+    $name = $request->params["name"] ?? "Stranger";
     $hour = (int) date("G");
 
     if ($hour >= 5 && $hour < 12) {
