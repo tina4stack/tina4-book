@@ -263,7 +263,7 @@ When the limit is exceeded, the server returns `429 Too Many Requests`.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `TINA4_QUEUE_BACKEND` | `sqlite` | Queue storage backend. Options: `sqlite`, `rabbitmq`, `kafka`, `mongodb`. |
+| `TINA4_QUEUE_BACKEND` | `file` | Queue storage backend. Options: `file`, `rabbitmq`, `kafka`, `mongodb`. |
 | `TINA4_QUEUE_PATH` | `data/queue` | Path for SQLite queue database (when using `sqlite` backend). |
 | `TINA4_QUEUE_URL` | _(none)_ | Generic connection URL for queue backend. |
 
