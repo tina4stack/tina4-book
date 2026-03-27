@@ -450,6 +450,67 @@ result = QueryBuilder.from_table("users", db) \
 
 ---
 
+## NoSQL: MongoDB Queries
+
+The QueryBuilder can generate MongoDB-compatible query documents with `to_mongo()`. This returns a dict containing the filter, projection, sort, limit, and skip -- ready to pass to PyMongo or any MongoDB driver.
+
+### Operator Mapping
+
+| SQL Operator | MongoDB Operator |
+|-------------|-----------------|
+| `=` | Exact match |
+| `!=` | `$ne` |
+| `>` | `$gt` |
+| `<` | `$lt` |
+| `>=` | `$gte` |
+| `<=` | `$lte` |
+| `LIKE` | `$regex` |
+| `IN` | `$in` |
+| `IS NULL` | `$exists: false` |
+| `IS NOT NULL` | `$exists: true` |
+
+### Example
+
+```python
+from tina4 import QueryBuilder
+
+query = (
+    QueryBuilder.from_table("users")
+    .select("name", "email")
+    .where("age > ?", [25])
+    .where("status = ?", ["active"])
+    .order_by("name ASC")
+    .limit(10)
+    .offset(5)
+)
+
+mongo = query.to_mongo()
+```
+
+The returned dict:
+
+```python
+{
+    "filter": {"age": {"$gt": 25}, "status": "active"},
+    "projection": {"name": 1, "email": 1},
+    "sort": [("name", 1)],
+    "limit": 10,
+    "skip": 5,
+}
+```
+
+Pass it directly to PyMongo:
+
+```python
+collection = db["users"]
+cursor = collection.find(
+    mongo["filter"],
+    mongo["projection"]
+).sort(mongo["sort"]).limit(mongo["limit"]).skip(mongo["skip"])
+```
+
+---
+
 ## Gotchas
 
 ### 1. "select() replaced my columns"

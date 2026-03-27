@@ -231,6 +231,7 @@ When the limit is exceeded, the server returns `429 Too Many Requests`.
 | `TINA4_SESSION_BACKEND` | `file` | Session storage backend. Options: `file`, `redis`, `valkey`, `mongo`, `database`. |
 | `TINA4_SESSION_PATH` | `data/sessions` | Directory for file-based sessions. Relative to the project root. |
 | `TINA4_SESSION_TTL` | `3600` | Session expiry in seconds. Default: 1 hour. |
+| `TINA4_SESSION_SAMESITE` | `Lax` | SameSite cookie attribute. Options: `Strict`, `Lax`, `None`. |
 
 #### Redis/Valkey Session Backend
 
@@ -361,6 +362,8 @@ Tina4 supports two naming conventions for SMTP variables. The `SMTP_*` variables
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `TINA4_WS_PORT` | `8080` | WebSocket server port (when running as separate process). |
+| `TINA4_WS_BACKPLANE` | _(none)_ | WebSocket backplane type. Set to `redis` to relay broadcasts across instances. |
+| `TINA4_WS_BACKPLANE_URL` | `redis://localhost:6379` | Connection URL for the WebSocket backplane. |
 
 ### Services (Background Workers)
 
@@ -546,18 +549,18 @@ SWAGGER_VERSION=1.0.0
 | 5 | Security headers |
 | 2 | Rate limiter |
 | 3 | Logging |
-| 13 | Sessions (base + Redis + Valkey + MongoDB) |
+| 14 | Sessions (base + Redis + Valkey + MongoDB) |
 | 15 | Queue (base + RabbitMQ + Kafka + MongoDB) |
 | 5 | Response cache |
 | 8 | Messenger (SMTP + IMAP) |
 | 2 | Localization |
 | 3 | Swagger |
 | 1 | File uploads |
-| 1 | WebSocket |
+| 3 | WebSocket |
 | 2 | Services |
 | 1 | Dev mailbox |
-| **79** | **Total** |
+| **82** | **Total** |
 
 Every variable follows the same priority chain: constructor > `.env` > default. Every boolean is interpreted consistently across all four frameworks. Every variable has a sensible default that works for development without any configuration.
 
-One file. Seventy-nine knobs. Turn what you need. Leave the rest alone.
+One file. Eighty-two knobs. Turn what you need. Leave the rest alone.

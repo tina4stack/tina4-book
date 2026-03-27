@@ -523,7 +523,69 @@ This keeps the ORM for simple CRUD (`save()`, `load()`, `delete()`) and the Quer
 
 ---
 
-## 15. Gotchas
+## 15. NoSQL: MongoDB Queries
+
+The QueryBuilder can generate MongoDB-compatible query documents with `toMongo()`. This returns an associative array containing the filter, projection, sort, limit, and skip -- ready to pass to the MongoDB PHP driver.
+
+### Operator Mapping
+
+| SQL Operator | MongoDB Operator |
+|-------------|-----------------|
+| `=` | Exact match |
+| `!=` | `$ne` |
+| `>` | `$gt` |
+| `<` | `$lt` |
+| `>=` | `$gte` |
+| `<=` | `$lte` |
+| `LIKE` | `$regex` |
+| `IN` | `$in` |
+| `IS NULL` | `$exists: false` |
+| `IS NOT NULL` | `$exists: true` |
+
+### Example
+
+```php
+$query = QueryBuilder::from("users")
+    ->select("name", "email")
+    ->where("age > ?", [25])
+    ->where("status = ?", ["active"])
+    ->orderBy("name ASC")
+    ->limit(10)
+    ->offset(5);
+
+$mongo = $query->toMongo();
+```
+
+The returned array:
+
+```php
+[
+    "filter" => ["age" => ['$gt' => 25], "status" => "active"],
+    "projection" => ["name" => 1, "email" => 1],
+    "sort" => ["name" => 1],
+    "limit" => 10,
+    "skip" => 5,
+]
+```
+
+Pass it directly to the MongoDB driver:
+
+```php
+$collection = $client->selectCollection("mydb", "users");
+$cursor = $collection->find(
+    $mongo["filter"],
+    [
+        "projection" => $mongo["projection"],
+        "sort" => $mongo["sort"],
+        "limit" => $mongo["limit"],
+        "skip" => $mongo["skip"],
+    ]
+);
+```
+
+---
+
+## 16. Gotchas
 
 ### No Database Adapter
 

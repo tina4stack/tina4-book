@@ -570,7 +570,65 @@ end
 
 ---
 
-## 15. Gotchas
+## 15. NoSQL: MongoDB Queries
+
+The QueryBuilder can generate MongoDB-compatible query documents with `to_mongo`. This returns a hash containing the filter, projection, sort, limit, and skip -- ready to pass to the Mongo Ruby driver.
+
+### Operator Mapping
+
+| SQL Operator | MongoDB Operator |
+|-------------|-----------------|
+| `=` | Exact match |
+| `!=` | `$ne` |
+| `>` | `$gt` |
+| `<` | `$lt` |
+| `>=` | `$gte` |
+| `<=` | `$lte` |
+| `LIKE` | `$regex` |
+| `IN` | `$in` |
+| `IS NULL` | `$exists: false` |
+| `IS NOT NULL` | `$exists: true` |
+
+### Example
+
+```ruby
+query = Tina4::QueryBuilder.from("users")
+  .select("name", "email")
+  .where("age > ?", [25])
+  .where("status = ?", ["active"])
+  .order_by("name ASC")
+  .limit(10)
+  .offset(5)
+
+mongo = query.to_mongo
+```
+
+The returned hash:
+
+```ruby
+{
+  filter: { "age" => { "$gt" => 25 }, "status" => "active" },
+  projection: { "name" => 1, "email" => 1 },
+  sort: { "name" => 1 },
+  limit: 10,
+  skip: 5,
+}
+```
+
+Pass it directly to the Mongo Ruby driver:
+
+```ruby
+collection = client[:users]
+cursor = collection.find(mongo[:filter])
+  .projection(mongo[:projection])
+  .sort(mongo[:sort])
+  .limit(mongo[:limit])
+  .skip(mongo[:skip])
+```
+
+---
+
+## 16. Gotchas
 
 ### 1. Default Limit of 100
 

@@ -250,6 +250,14 @@ TINA4_SESSION_HTTPONLY=true
 TINA4_SESSION_SAMESITE=Lax
 ```
 
+`TINA4_SESSION_SAMESITE` controls cross-site cookie behavior:
+
+| Value | Behavior |
+|-------|----------|
+| `Strict` | Never sent with cross-site requests. Safest. Breaks some flows (clicking links from email). |
+| `Lax` | Sent with top-level navigations (clicking links) but not cross-site API calls. Good default. |
+| `None` | Always sent. Requires `TINA4_SESSION_SECURE=true`. Only for cross-site cookie access. |
+
 ### Session Regeneration
 
 After login, regenerate the session ID to prevent session fixation:
