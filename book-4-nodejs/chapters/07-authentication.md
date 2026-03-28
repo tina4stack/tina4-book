@@ -173,11 +173,12 @@ Router.post("/api/login", async (req, res) => {
         return res.status(401).json({ error: "Invalid email or password" });
     }
 
+    const secret = process.env.SECRET || "tina4-default-secret";
     const token = Auth.getToken({
         user_id: user.id,
         email: user.email,
         name: user.name
-    });
+    }, secret);
 
     return res.json({
         message: "Login successful",
@@ -384,12 +385,13 @@ Router.post("/api/login", async (req, res) => {
         return res.status(401).json({ error: "Invalid email or password" });
     }
 
+    const secret = process.env.SECRET || "tina4-default-secret";
     const token = Auth.getToken({
         user_id: user.id,
         email: user.email,
         name: user.name,
         role: user.role
-    });
+    }, secret);
 
     return res.json({
         message: "Login successful",

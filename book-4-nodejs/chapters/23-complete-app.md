@@ -213,6 +213,7 @@ Create `src/routes/auth.ts`:
 ```typescript
 import { Router, Auth } from "tina4-nodejs";
 import { Database } from "tina4-nodejs/orm";
+import { authMiddleware } from "./middleware";
 
 /**
  * Register a new user
@@ -274,12 +275,13 @@ Router.post("/api/auth/login", async (req, res) => {
         return res.status(401).json({ error: "Invalid email or password" });
     }
 
+    const secret = process.env.SECRET || "tina4-default-secret";
     const token = Auth.getToken({
         user_id: user.id,
         email: user.email,
         name: user.name,
         role: user.role
-    });
+    }, secret);
 
     return res.json({
         message: "Login successful",
@@ -295,7 +297,7 @@ Router.get("/api/profile", async (req, res) => {
         { id: req.user.user_id }
     );
     return res.json(user);
-}, "authMiddleware");
+}, [authMiddleware]);
 ```
 
 ---
@@ -307,6 +309,7 @@ Create `src/routes/tasks.ts`:
 ```typescript
 import { Router, Queue } from "tina4-nodejs";
 import { Database } from "tina4-nodejs/orm";
+import { authMiddleware } from "./middleware";
 
 /**
  * List tasks with filters
@@ -347,7 +350,7 @@ Router.get("/api/tasks", async (req, res) => {
     const tasks = await db.fetch(sql, params);
 
     return res.json({ tasks, count: tasks.length });
-}, "authMiddleware");
+}, [authMiddleware]);
 
 /**
  * Get a single task
@@ -370,7 +373,7 @@ Router.get("/api/tasks/{id:int}", async (req, res) => {
     }
 
     return res.json(task);
-}, "authMiddleware");
+}, [authMiddleware]);
 
 /**
  * Create a task
@@ -419,7 +422,7 @@ Router.post("/api/tasks", async (req, res) => {
     }));
 
     return res.status(201).json(task);
-}, "authMiddleware");
+}, [authMiddleware]);
 
 /**
  * Update a task
@@ -462,7 +465,7 @@ Router.put("/api/tasks/{id:int}", async (req, res) => {
     Router.pushToWebSocket("/ws/tasks", JSON.stringify({ type: "task_updated", task }));
 
     return res.json(task);
-}, "authMiddleware");
+}, [authMiddleware]);
 
 /**
  * Delete a task
@@ -482,7 +485,7 @@ Router.delete("/api/tasks/{id:int}", async (req, res) => {
     Router.pushToWebSocket("/ws/tasks", JSON.stringify({ type: "task_deleted", task_id: id }));
 
     return res.status(204).json(null);
-}, "authMiddleware");
+}, [authMiddleware]);
 ```
 
 ---
@@ -494,6 +497,7 @@ Create `src/routes/dashboard.ts`:
 ```typescript
 import { Router, cacheGet, cacheSet } from "tina4-nodejs";
 import { Database } from "tina4-nodejs/orm";
+import { authMiddleware } from "./middleware";
 
 Router.get("/api/dashboard/stats", async (req, res) => {
     const userId = req.user.user_id;
@@ -536,7 +540,7 @@ Router.get("/api/dashboard/stats", async (req, res) => {
     await cacheSet(cacheKey, stats, 30);
 
     return res.json({ ...stats, source: "database" });
-}, "authMiddleware");
+}, [authMiddleware]);
 
 Router.get("/admin", async (req, res) => {
     return res.html("dashboard.html", {});

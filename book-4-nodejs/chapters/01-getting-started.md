@@ -169,7 +169,7 @@ curl http://localhost:7148/health
   "status": "ok",
   "database": "connected",
   "uptime_seconds": 12,
-  "version": "3.2.1",
+  "version": "3.10.3",
   "framework": "tina4-nodejs"
 }
 ```

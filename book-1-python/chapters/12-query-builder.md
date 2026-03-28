@@ -300,7 +300,7 @@ Four methods execute the query against the database.
 
 ### get() — Multiple rows
 
-Returns a `DatabaseResult` object. Use `.records` for the list of dicts, `.to_array()` for a plain list, or iterate directly.
+Returns a `DatabaseResult` object. Use `.records` for the list of dicts, `.to_list()` for a plain list, or iterate directly.
 
 ```python
 result = QueryBuilder.from_table("users", db) \
@@ -401,7 +401,7 @@ async def search_products(request, response):
     qb.order_by("name ASC")
     qb.limit(20)
 
-    return response(qb.get().to_array())
+    return response(qb.get().to_list())
 ```
 
 This is where QueryBuilder shines. Without it, you would be concatenating SQL fragments with `if` checks and tracking parameter positions manually.
