@@ -480,6 +480,8 @@ async def update_profile(request, response):
 
 The CSRF token is tied to the session and expires after a single use. A malicious site cannot forge a form submission because it cannot guess the token.
 
+> **Note (3.10.9):** Form token validation internally uses `Auth.valid_token_static()`, a classmethod that does not require an `Auth` instance. Earlier versions incorrectly called the instance method, which could fail when no request context was available. If you validate form tokens manually, prefer `Auth.valid_token_static(token)` for reliability.
+
 ### When to Use CSRF Tokens
 
 Use CSRF tokens for:

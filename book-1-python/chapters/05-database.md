@@ -105,6 +105,10 @@ The Firebird adapter tries `firebird-driver` (the modern package) first and fall
 
 Firebird returns column names in uppercase by default. Tina4 normalises them to lowercase automatically, so `result["first_name"]` works regardless of how the column was defined in the schema.
 
+### Firebird Migration Support
+
+As of 3.10.8, the migration runner handles Firebird correctly. It uses a generator (sequence) for auto-increment IDs instead of `AUTOINCREMENT`, and emits `VARCHAR(4096)` instead of `TEXT` (which Firebird does not support as a column type). If you are upgrading from an earlier version, no changes to existing migrations are needed -- the runner detects the engine automatically.
+
 ---
 
 ## 4. Running Queries
