@@ -365,52 +365,95 @@ Handle empty lists with `{% else %}`:
 
 Filters transform values. Apply them with the `|` (pipe) character.
 
-### Text Filters
+### Complete Filter Reference
 
-| Filter | Input | Output | Description |
-|--------|-------|--------|-------------|
-| `upper` | `"hello"` | `"HELLO"` | Uppercase |
-| `lower` | `"HELLO"` | `"hello"` | Lowercase |
-| `capitalize` | `"hello world"` | `"Hello world"` | Capitalize first letter |
-| `title` | `"hello world"` | `"Hello World"` | Capitalize each word |
-| `trim` | `"  hello  "` | `"hello"` | Remove whitespace |
-| `striptags` | `"<b>bold</b>"` | `"bold"` | Remove HTML tags |
+#### String Filters
 
-### Number Filters
+| Filter | Example | Description |
+|--------|---------|-------------|
+| `upper` | `{{ name \| upper }}` | Convert to uppercase |
+| `lower` | `{{ name \| lower }}` | Convert to lowercase |
+| `capitalize` | `{{ name \| capitalize }}` | Capitalize first letter |
+| `title` | `{{ name \| title }}` | Capitalize each word |
+| `trim` | `{{ name \| trim }}` | Strip leading/trailing whitespace |
+| `ltrim` | `{{ name \| ltrim }}` | Strip leading whitespace |
+| `rtrim` | `{{ name \| rtrim }}` | Strip trailing whitespace |
+| `slug` | `{{ title \| slug }}` | Convert to URL-friendly slug |
+| `wordwrap(80)` | `{{ text \| wordwrap(80) }}` | Wrap text at N characters |
+| `truncate(100)` | `{{ text \| truncate(100) }}` | Truncate to N characters with ellipsis |
+| `nl2br` | `{{ text \| nl2br }}` | Convert newlines to `<br>` tags |
+| `striptags` | `{{ html \| striptags }}` | Remove all HTML tags |
+| `replace("a", "b")` | `{{ text \| replace("old", "new") }}` | Replace occurrences of a substring |
 
-| Filter | Input | Output | Description |
-|--------|-------|--------|-------------|
-| `number_format(2)` | `1234.5` | `"1,234.50"` | Format number |
-| `round` | `3.7` | `4` | Round to nearest integer |
-| `abs` | `-5` | `5` | Absolute value |
+#### Array Filters
 
-### Array Filters
+| Filter | Example | Description |
+|--------|---------|-------------|
+| `length` | `{{ items \| length }}` | Count items in array or string length |
+| `reverse` | `{{ items \| reverse }}` | Reverse order of items |
+| `sort` | `{{ items \| sort }}` | Sort items ascending |
+| `shuffle` | `{{ items \| shuffle }}` | Randomly shuffle items |
+| `first` | `{{ items \| first }}` | Get the first item |
+| `last` | `{{ items \| last }}` | Get the last item |
+| `join(", ")` | `{{ items \| join(", ") }}` | Join array items with separator |
+| `split(",")` | `{{ csv \| split(",") }}` | Split string into array |
+| `unique` | `{{ items \| unique }}` | Remove duplicate values |
+| `filter` | `{{ items \| filter }}` | Remove falsy values from array |
+| `map("name")` | `{{ items \| map("name") }}` | Extract a property from each item |
+| `column("name")` | `{{ items \| column("name") }}` | Extract a column from array of objects |
+| `batch(3)` | `{{ items \| batch(3) }}` | Group items into batches of N |
+| `slice(0, 3)` | `{{ items \| slice(0, 3) }}` | Extract a slice from offset with length |
 
-| Filter | Input | Output | Description |
-|--------|-------|--------|-------------|
-| `length` | `[1,2,3]` | `3` | Count items |
-| `join(", ")` | `["a","b","c"]` | `"a, b, c"` | Join with separator |
-| `first` | `[1,2,3]` | `1` | First item |
-| `last` | `[1,2,3]` | `3` | Last item |
-| `reverse` | `[1,2,3]` | `[3,2,1]` | Reverse order |
-| `sort` | `[3,1,2]` | `[1,2,3]` | Sort ascending |
+#### Encoding Filters
 
-### The `default` Filter
+| Filter | Example | Description |
+|--------|---------|-------------|
+| `escape` (`e`) | `{{ text \| escape }}` | HTML-escape special characters |
+| `raw` (`safe`) | `{{ html \| raw }}` | Output without auto-escaping |
+| `url_encode` | `{{ text \| url_encode }}` | URL-encode a string |
+| `base64_encode` (`base64encode`) | `{{ text \| base64_encode }}` | Base64-encode a string |
+| `base64_decode` (`base64decode`) | `{{ data \| base64_decode }}` | Base64-decode a string |
+| `md5` | `{{ text \| md5 }}` | Compute MD5 hash |
+| `sha256` | `{{ text \| sha256 }}` | Compute SHA-256 hash |
 
-```html
-<p>{{ subtitle | default("No subtitle") }}</p>
-<p>{{ user.nickname | default(user.name) | default("Anonymous") }}</p>
-```
+#### Numeric Filters
 
-### The `escape` and `raw` Filters
+| Filter | Example | Description |
+|--------|---------|-------------|
+| `abs` | `{{ num \| abs }}` | Absolute value |
+| `round(2)` | `{{ price \| round(2) }}` | Round to N decimal places |
+| `number_format(2)` | `{{ price \| number_format(2) }}` | Format with decimals and thousands separator |
+| `int` | `{{ val \| int }}` | Cast to integer |
+| `float` | `{{ val \| float }}` | Cast to float |
+| `string` | `{{ val \| string }}` | Cast to string |
 
-All `{{ }}` output is auto-escaped for HTML safety. If you trust the content and need raw HTML:
+#### JSON Filters
 
-```html
-{{ trusted_html | raw }}
-```
+| Filter | Example | Description |
+|--------|---------|-------------|
+| `json_encode` | `{{ data \| json_encode }}` | Encode value as JSON string |
+| `to_json` (`tojson`) | `{{ data \| to_json }}` | Encode value as JSON string (alias) |
+| `json_decode` | `{{ str \| json_decode }}` | Decode JSON string to object |
+| `js_escape` | `{{ text \| js_escape }}` | Escape string for safe use in JavaScript |
 
-Use `raw` with caution. Apply it only to content you control. Never to user input.
+#### Dict Filters
+
+| Filter | Example | Description |
+|--------|---------|-------------|
+| `keys` | `{{ obj \| keys }}` | Get dictionary keys as array |
+| `values` | `{{ obj \| values }}` | Get dictionary values as array |
+| `merge(other)` | `{{ defaults \| merge(overrides) }}` | Merge two dictionaries |
+
+#### Other Filters
+
+| Filter | Example | Description |
+|--------|---------|-------------|
+| `default("fallback")` | `{{ name \| default("Guest") }}` | Fallback when value is empty or undefined |
+| `date("Y-m-d")` | `{{ created \| date("Y-m-d") }}` | Format a date value |
+| `format(val)` | `{{ "%.2f" \| format(price) }}` | Format string with value (sprintf-style) |
+| `data_uri` | `{{ content \| data_uri }}` | Convert to a data URI string |
+| `dump` | `{{ var \| dump }}` | Debug output of a variable |
+| `form_token` | `{{ "" \| form_token }}` | Generate a CSRF form token |
 
 ### Chaining Filters
 

@@ -142,52 +142,95 @@ Filters transform output. The pipe `|` applies them:
 {{ bio | trim }}            {# Removes leading/trailing whitespace #}
 ```
 
-### Number Formatting
+### Complete Filter Reference
 
-```html
-{{ "%.2f"|format(price) }}              {# 79.99 #}
-{{ "{:,}"|format(large_number) }}       {# 1,234,567 #}
-{{ percentage | round(1) }}             {# 85.3 #}
-```
+#### String Filters
 
-### String Filters
+| Filter | Example | Description |
+|--------|---------|-------------|
+| `upper` | `{{ name \| upper }}` | Convert to uppercase |
+| `lower` | `{{ name \| lower }}` | Convert to lowercase |
+| `capitalize` | `{{ name \| capitalize }}` | Capitalize first letter |
+| `title` | `{{ name \| title }}` | Capitalize each word |
+| `trim` | `{{ name \| trim }}` | Strip leading/trailing whitespace |
+| `ltrim` | `{{ name \| ltrim }}` | Strip leading whitespace |
+| `rtrim` | `{{ name \| rtrim }}` | Strip trailing whitespace |
+| `slug` | `{{ title \| slug }}` | Convert to URL-friendly slug |
+| `wordwrap(80)` | `{{ text \| wordwrap(80) }}` | Wrap text at N characters |
+| `truncate(100)` | `{{ text \| truncate(100) }}` | Truncate to N characters with ellipsis |
+| `nl2br` | `{{ text \| nl2br }}` | Convert newlines to `<br>` tags |
+| `striptags` | `{{ html \| striptags }}` | Remove all HTML tags |
+| `replace("a", "b")` | `{{ text \| replace("old", "new") }}` | Replace occurrences of a substring |
 
-```html
-{{ text | replace("old", "new") }}      {# Replace substring #}
-{{ title | striptags }}                  {# Remove HTML tags #}
-{{ content | nl2br }}                   {# Convert newlines to <br> #}
-{{ slug | url_encode }}                 {# URL-encode a string #}
-{{ items | join(", ") }}                {# Join list with separator #}
-```
+#### Array Filters
 
-### Collection Filters
+| Filter | Example | Description |
+|--------|---------|-------------|
+| `length` | `{{ items \| length }}` | Count items in array or string length |
+| `reverse` | `{{ items \| reverse }}` | Reverse order of items |
+| `sort` | `{{ items \| sort }}` | Sort items ascending |
+| `shuffle` | `{{ items \| shuffle }}` | Randomly shuffle items |
+| `first` | `{{ items \| first }}` | Get the first item |
+| `last` | `{{ items \| last }}` | Get the last item |
+| `join(", ")` | `{{ items \| join(", ") }}` | Join array items with separator |
+| `split(",")` | `{{ csv \| split(",") }}` | Split string into array |
+| `unique` | `{{ items \| unique }}` | Remove duplicate values |
+| `filter` | `{{ items \| filter }}` | Remove falsy values from array |
+| `map("name")` | `{{ items \| map("name") }}` | Extract a property from each item |
+| `column("name")` | `{{ items \| column("name") }}` | Extract a column from array of objects |
+| `batch(3)` | `{{ items \| batch(3) }}` | Group items into batches of N |
+| `slice(0, 3)` | `{{ items \| slice(0, 3) }}` | Extract a slice from offset with length |
 
-```html
-{{ items | length }}          {# Number of items #}
-{{ items | first }}           {# First item #}
-{{ items | last }}            {# Last item #}
-{{ items | sort }}            {# Sort ascending #}
-{{ items | reverse }}         {# Reverse order #}
-{{ items | unique }}          {# Remove duplicates #}
-{{ items | slice(0, 3) }}     {# First 3 items #}
-{{ items | batch(3) }}        {# Group into batches of 3 #}
-```
+#### Encoding Filters
 
-### Date Formatting
+| Filter | Example | Description |
+|--------|---------|-------------|
+| `escape` (`e`) | `{{ text \| escape }}` | HTML-escape special characters |
+| `raw` (`safe`) | `{{ html \| raw }}` | Output without auto-escaping |
+| `url_encode` | `{{ text \| url_encode }}` | URL-encode a string |
+| `base64_encode` (`base64encode`) | `{{ text \| base64_encode }}` | Base64-encode a string |
+| `base64_decode` (`base64decode`) | `{{ data \| base64_decode }}` | Base64-decode a string |
+| `md5` | `{{ text \| md5 }}` | Compute MD5 hash |
+| `sha256` | `{{ text \| sha256 }}` | Compute SHA-256 hash |
 
-```html
-{{ created_at | date("Y-m-d") }}        {# 2026-03-22 #}
-{{ created_at | date("d M Y") }}        {# 22 Mar 2026 #}
-{{ created_at | date("H:i:s") }}        {# 14:30:00 #}
-```
+#### Numeric Filters
 
-### Encoding Filters
+| Filter | Example | Description |
+|--------|---------|-------------|
+| `abs` | `{{ num \| abs }}` | Absolute value |
+| `round(2)` | `{{ price \| round(2) }}` | Round to N decimal places |
+| `number_format(2)` | `{{ price \| number_format(2) }}` | Format with decimals and thousands separator |
+| `int` | `{{ val \| int }}` | Cast to integer |
+| `float` | `{{ val \| float }}` | Cast to float |
+| `string` | `{{ val \| string }}` | Cast to string |
 
-```html
-{{ data | json_encode }}                {# {"key": "value"} #}
-{{ text | base64encode }}               {# Base64 encoded #}
-{{ encoded | base64decode }}            {# Base64 decoded #}
-```
+#### JSON Filters
+
+| Filter | Example | Description |
+|--------|---------|-------------|
+| `json_encode` | `{{ data \| json_encode }}` | Encode value as JSON string |
+| `to_json` (`tojson`) | `{{ data \| to_json }}` | Encode value as JSON string (alias) |
+| `json_decode` | `{{ str \| json_decode }}` | Decode JSON string to object |
+| `js_escape` | `{{ text \| js_escape }}` | Escape string for safe use in JavaScript |
+
+#### Dict Filters
+
+| Filter | Example | Description |
+|--------|---------|-------------|
+| `keys` | `{{ obj \| keys }}` | Get dictionary keys as array |
+| `values` | `{{ obj \| values }}` | Get dictionary values as array |
+| `merge(other)` | `{{ defaults \| merge(overrides) }}` | Merge two dictionaries |
+
+#### Other Filters
+
+| Filter | Example | Description |
+|--------|---------|-------------|
+| `default("fallback")` | `{{ name \| default("Guest") }}` | Fallback when value is empty or undefined |
+| `date("Y-m-d")` | `{{ created \| date("Y-m-d") }}` | Format a date value |
+| `format(val)` | `{{ "%.2f" \| format(price) }}` | Format string with value (sprintf-style) |
+| `data_uri` | `{{ content \| data_uri }}` | Convert to a data URI string |
+| `dump` | `{{ var \| dump }}` | Debug output of a variable |
+| `form_token` | `{{ "" \| form_token }}` | Generate a CSRF form token |
 
 ### Chaining Filters
 
