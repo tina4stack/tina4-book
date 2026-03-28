@@ -127,7 +127,7 @@ tina4 migrate
 Create `src/orm/User.ts`:
 
 ```typescript
-import { BaseModel } from "tina4-nodejs";
+import { BaseModel } from "tina4-nodejs/orm";
 
 export class User extends BaseModel {
     static tableName = "users";
@@ -149,7 +149,7 @@ export class User extends BaseModel {
 Create `src/orm/Task.ts`:
 
 ```typescript
-import { BaseModel } from "tina4-nodejs";
+import { BaseModel } from "tina4-nodejs/orm";
 
 export class Task extends BaseModel {
     static tableName = "tasks";
@@ -182,21 +182,25 @@ Create `src/routes/middleware.ts`:
 ```typescript
 import { Auth } from "tina4-nodejs";
 
-export async function authMiddleware(req, res, next) {
+export function authMiddleware(req, res, next) {
     const authHeader = req.headers["authorization"] ?? "";
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return res.status(401).json({ error: "Authorization required" });
+        res({ error: "Authorization required" }, 401);
+        return;
     }
 
     const token = authHeader.substring(7);
 
-    if (!Auth.validToken(token)) {
-        return res.status(401).json({ error: "Invalid or expired token" });
+    const secret = process.env.SECRET || "tina4-default-secret";
+    const payload = Auth.validToken(token, secret);
+    if (payload === null) {
+        res({ error: "Invalid or expired token" }, 401);
+        return;
     }
 
-    req.user = Auth.getPayload(token);
-    return next(req, res);
+    req.user = payload;
+    next();
 }
 ```
 
@@ -207,7 +211,8 @@ export async function authMiddleware(req, res, next) {
 Create `src/routes/auth.ts`:
 
 ```typescript
-import { Router, Auth, Database } from "tina4-nodejs";
+import { Router, Auth } from "tina4-nodejs";
+import { Database } from "tina4-nodejs/orm";
 
 /**
  * Register a new user
@@ -300,7 +305,8 @@ Router.get("/api/profile", async (req, res) => {
 Create `src/routes/tasks.ts`:
 
 ```typescript
-import { Router, Database, Queue } from "tina4-nodejs";
+import { Router, Queue } from "tina4-nodejs";
+import { Database } from "tina4-nodejs/orm";
 
 /**
  * List tasks with filters
@@ -396,7 +402,8 @@ Router.post("/api/tasks", async (req, res) => {
 
     // Queue notification if assigned to someone
     if (assigned_to) {
-        await Queue.produce("task-notifications", {
+        const notifyQueue = new Queue({ topic: "task-notifications" });
+        notifyQueue.push({
             type: "assigned",
             task_id: task.id,
             task_title: title,
@@ -485,7 +492,8 @@ Router.delete("/api/tasks/{id:int}", async (req, res) => {
 Create `src/routes/dashboard.ts`:
 
 ```typescript
-import { Router, Database, cacheGet, cacheSet } from "tina4-nodejs";
+import { Router, cacheGet, cacheSet } from "tina4-nodejs";
+import { Database } from "tina4-nodejs/orm";
 
 Router.get("/api/dashboard/stats", async (req, res) => {
     const userId = req.user.user_id;
@@ -558,26 +566,33 @@ Router.websocket("/ws/tasks", async (connection, event, data) => {
 Create `src/routes/queue-consumers.ts`:
 
 ```typescript
-import { Queue, Database, Messenger, Frond } from "tina4-nodejs";
+import { Queue, Messenger } from "tina4-nodejs";
+import { Database } from "tina4-nodejs/orm";
 
-Queue.consume("task-notifications", async (job) => {
-    const { type, task_title, assigned_to, assigned_by } = job.payload;
+const notifyQueue = new Queue({ topic: "task-notifications" });
+
+notifyQueue.process(async (job) => {
+    const { type, task_title, assigned_to, assigned_by } = job.payload as any;
 
     const db = Database.getConnection();
     const user = await db.fetchOne("SELECT name, email FROM users WHERE id = :id", { id: assigned_to });
 
-    if (!user) return true;
+    if (!user) {
+        job.complete();
+        return;
+    }
 
     console.log(`[Notification] Task "${task_title}" assigned to ${user.name} by ${assigned_by}`);
 
     const mailer = new Messenger();
-    await mailer.send(
-        user.email,
-        `New Task Assigned: ${task_title}`,
-        `<h2>New Task Assigned</h2><p>Hi ${user.name},</p><p>${assigned_by} assigned you a new task: <strong>${task_title}</strong></p>`
-    );
+    await mailer.send({
+        to: user.email,
+        subject: `New Task Assigned: ${task_title}`,
+        body: `<h2>New Task Assigned</h2><p>Hi ${user.name},</p><p>${assigned_by} assigned you a new task: <strong>${task_title}</strong></p>`,
+        html: true
+    });
 
-    return true;
+    job.complete();
 });
 ```
 
@@ -588,73 +603,27 @@ Queue.consume("task-notifications", async (job) => {
 Create `tests/TaskFlowTest.ts`:
 
 ```typescript
-import { Test, Auth } from "tina4-nodejs";
+import { tests, assertEqual, assertTrue, runAllTests, Auth } from "tina4-nodejs";
 
-export class TaskFlowTest extends Test {
-    private token: string = "";
-    private taskId: number = 0;
+// Test that token creation and validation round-trips correctly
+const testTokenRoundTrip = tests(
+    assertTrue([{ userId: 1, role: "admin" }]),
+)(function testTokenRoundTrip(payload: Record<string, unknown>): boolean {
+    const secret = process.env.SECRET || "test-secret";
+    const token = Auth.getToken(payload, secret);
+    const decoded = Auth.validToken(token, secret);
+    return decoded !== null && decoded.userId === payload.userId;
+});
 
-    async setupOnce() {
-        await this.testPost("/api/auth/register", {
-            name: "Test User",
-            email: "test@taskflow.com",
-            password: "securePass123"
-        });
+// Test that password hashing and checking works
+const testPasswordHash = tests(
+    assertTrue(["securePass123"]),
+)(function testPasswordHash(password: string): boolean {
+    const hash = Auth.hashPassword(password);
+    return Auth.checkPassword(password, hash);
+});
 
-        const login = await this.testPost("/api/auth/login", {
-            email: "test@taskflow.com",
-            password: "securePass123"
-        });
-
-        this.token = login.body.token;
-    }
-
-    async testCreateTask() {
-        const response = await this.testPost("/api/tasks", {
-            title: "Write tests",
-            description: "Add comprehensive test coverage",
-            priority: "high"
-        }, { headers: { Authorization: `Bearer ${this.token}` } });
-
-        this.assertEqual(response.status, 201);
-        this.assertEqual(response.body.title, "Write tests");
-        this.assertEqual(response.body.status, "todo");
-        this.taskId = response.body.id;
-    }
-
-    async testListTasks() {
-        const response = await this.testGet("/api/tasks", {
-            headers: { Authorization: `Bearer ${this.token}` }
-        });
-
-        this.assertEqual(response.status, 200);
-        this.assertTrue(response.body.count >= 1);
-    }
-
-    async testUpdateTaskStatus() {
-        const response = await this.testPut(`/api/tasks/${this.taskId}`, {
-            status: "done"
-        }, { headers: { Authorization: `Bearer ${this.token}` } });
-
-        this.assertEqual(response.status, 200);
-        this.assertEqual(response.body.status, "done");
-        this.assertNotNull(response.body.completed_at);
-    }
-
-    async testDashboardStats() {
-        const response = await this.testGet("/api/dashboard/stats", {
-            headers: { Authorization: `Bearer ${this.token}` }
-        });
-
-        this.assertEqual(response.status, 200);
-        this.assertTrue(response.body.total_tasks >= 1);
-    }
-
-    async testUnauthorizedAccess() {
-        const response = await this.testGet("/api/tasks");
-        this.assertEqual(response.status, 401);
-    }
-}
+runAllTests();
 ```
 
 Run tests:

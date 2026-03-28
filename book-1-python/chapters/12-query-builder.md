@@ -259,7 +259,7 @@ async def list_users(request, response):
         .count()
 
     return response({
-        "users": result.to_array(),
+        "users": result.to_list(),
         "total": total,
         "page": page,
         "per_page": per_page,
@@ -433,8 +433,7 @@ Use QueryBuilder when you need joins across tables, aggregations, complex filter
 
 ```python
 # ORM — single model operations
-user = User()
-user.load("id = ?", [1])
+user = User.find(1)
 user.name = "Alice"
 user.save()
 
@@ -639,7 +638,7 @@ async def search_products(request, response):
     total = count_qb.count()
 
     return response({
-        "products": result.to_array(),
+        "products": result.to_list(),
         "total": total,
         "page": page,
         "per_page": per_page,

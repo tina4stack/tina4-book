@@ -11,11 +11,11 @@ Tina4 ships secure by default. POST routes require authentication. CSRF tokens p
 Every POST, PUT, PATCH, and DELETE route requires a valid `Authorization: Bearer` token. No configuration needed. No method to call. The framework enforces this before your handler runs.
 
 ```php
-use Tina4\Route;
+use Tina4\Router;
 use Tina4\Request;
 use Tina4\Response;
 
-Route::post("/api/orders", function (Request $request, Response $response) {
+Router::post("/api/orders", function (Request $request, Response $response) {
     // This handler ONLY runs if the request carries a valid Bearer token.
     // Without one, the framework returns 401 before your code executes.
     return $response(["created" => true], 201);
@@ -48,11 +48,11 @@ GET routes are public by default. Anyone can read. Writing requires proof of ide
 Some endpoints need to accept unauthenticated writes — webhooks, registration forms, public contact forms. Use `->noAuth()`:
 
 ```php
-use Tina4\Route;
+use Tina4\Router;
 use Tina4\Request;
 use Tina4\Response;
 
-Route::post("/api/webhooks/stripe", function (Request $request, Response $response) {
+Router::post("/api/webhooks/stripe", function (Request $request, Response $response) {
     // No token required. Stripe can POST here freely.
     return $response(["received" => true]);
 })->noAuth();
@@ -63,11 +63,11 @@ Route::post("/api/webhooks/stripe", function (Request $request, Response $respon
 Admin dashboards, user profiles, account settings — some pages need protection even though they only read data. Use `->secure()`:
 
 ```php
-use Tina4\Route;
+use Tina4\Router;
 use Tina4\Request;
 use Tina4\Response;
 
-Route::get("/api/admin/users", function (Request $request, Response $response) {
+Router::get("/api/admin/users", function (Request $request, Response $response) {
     // Requires a valid Bearer token, even though it's a GET.
     return $response(["users" => []]);
 })->secure();
@@ -245,12 +245,12 @@ Authentication, sessions, tokens, and security converge in the login flow. Here 
 ### The Login Route
 
 ```php
-use Tina4\Route;
+use Tina4\Router;
 use Tina4\Request;
 use Tina4\Response;
 use Tina4\Auth;
 
-Route::post("/api/login", function (Request $request, Response $response) {
+Router::post("/api/login", function (Request $request, Response $response) {
     $email = $request->body["email"] ?? "";
     $password = $request->body["password"] ?? "";
 
@@ -274,11 +274,12 @@ Route::post("/api/login", function (Request $request, Response $response) {
     }
 
     // Generate token with user claims
+    $secret = $_ENV["SECRET"] ?? getenv("SECRET");
     $token = Auth::getToken([
         "sub" => $user->id,
         "email" => $user->email,
         "role" => $user->role,
-    ]);
+    ], $secret);
 
     // Store user in session
     $request->session->set("user_id", $user->id);
@@ -336,11 +337,11 @@ function handleLogin(result) {
 ### Protected Pages — Checking the Session
 
 ```php
-use Tina4\Route;
+use Tina4\Router;
 use Tina4\Request;
 use Tina4\Response;
 
-Route::get("/dashboard", function (Request $request, Response $response) {
+Router::get("/dashboard", function (Request $request, Response $response) {
     $userId = $request->session->get("user_id");
 
     if (!$userId) {
@@ -357,11 +358,11 @@ Route::get("/dashboard", function (Request $request, Response $response) {
 ### Logout — Destroying the Session
 
 ```php
-use Tina4\Route;
+use Tina4\Router;
 use Tina4\Request;
 use Tina4\Response;
 
-Route::post("/api/logout", function (Request $request, Response $response) {
+Router::post("/api/logout", function (Request $request, Response $response) {
     $request->session->destroy();
     return $response(["logged_out" => true]);
 })->noAuth();
@@ -382,11 +383,11 @@ When a session expires mid-use, the user should:
 3. Land on the page they were trying to reach — not the home page.
 
 ```php
-use Tina4\Route;
+use Tina4\Router;
 use Tina4\Request;
 use Tina4\Response;
 
-Route::get("/account/settings", function (Request $request, Response $response) {
+Router::get("/account/settings", function (Request $request, Response $response) {
     $userId = $request->session->get("user_id");
 
     if (!$userId) {
@@ -402,10 +403,10 @@ Route::get("/account/settings", function (Request $request, Response $response) 
 The login handler reads the `redirect` parameter after successful authentication:
 
 ```php
-Route::post("/api/login", function (Request $request, Response $response) {
+Router::post("/api/login", function (Request $request, Response $response) {
     // ... validate credentials ...
 
-    $redirectUrl = $request->params["redirect"] ?? "/dashboard";
+    $redirectUrl = $request->query["redirect"] ?? "/dashboard";
 
     return $response([
         "token" => $token,
@@ -466,7 +467,7 @@ X-RateLimit-Reset: 45
 For login routes, consider a stricter limit:
 
 ```php
-use Tina4\Route;
+use Tina4\Router;
 use Tina4\Request;
 use Tina4\Response;
 use Tina4\Middleware;
@@ -482,7 +483,7 @@ class LoginRateLimit extends Middleware
     }
 }
 
-Route::post("/api/login", function (Request $request, Response $response) {
+Router::post("/api/login", function (Request $request, Response $response) {
     // ... login logic ...
 })->noAuth()->middleware(LoginRateLimit::class);
 ```
@@ -587,15 +588,15 @@ Build a public contact form that:
 
 ```php
 // src/routes/contact.php
-use Tina4\Route;
+use Tina4\Router;
 use Tina4\Request;
 use Tina4\Response;
 
-Route::get("/contact", function (Request $request, Response $response) {
+Router::get("/contact", function (Request $request, Response $response) {
     return $response->render("contact.twig", ["title" => "Contact Us"]);
 });
 
-Route::post("/api/contact", function (Request $request, Response $response) {
+Router::post("/api/contact", function (Request $request, Response $response) {
     $name = trim($request->body["name"] ?? "");
     $email = trim($request->body["email"] ?? "");
     $message = trim($request->body["message"] ?? "");
