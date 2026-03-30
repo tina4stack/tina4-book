@@ -359,6 +359,31 @@ Handle empty lists with `{% else %}`:
 {% endif %}
 ```
 
+### {% set %} -- Local Variables
+
+Create or update a variable inside a template:
+
+```html
+{% set greeting = "Hello" %}
+{% set full_name = user.first_name ~ " " ~ user.last_name %}
+{% set total = price * quantity %}
+{% set discount = total - rebate %}
+
+<p>{{ greeting }}, {{ full_name }}!</p>
+<p>Total: {{ total }}, After discount: {{ discount }}</p>
+```
+
+The `~` operator concatenates strings. Arithmetic operators (`+`, `-`, `*`, `/`, `//`, `%`, `**`) work in `set` and expressions.
+
+When combining filters with arithmetic, assign the filtered values first:
+
+```html
+{% set dr = account.dr|default(0) %}
+{% set cr = account.cr|default(0) %}
+{% set balance = dr - cr %}
+<p>Balance: {{ balance }}</p>
+```
+
 ---
 
 ## 7. Filters
@@ -453,7 +478,10 @@ Filters transform values. Apply them with the `|` (pipe) character.
 | `format(val)` | `{{ "%.2f" \| format(price) }}` | Format string with value (sprintf-style) |
 | `data_uri` | `{{ content \| data_uri }}` | Convert to a data URI string |
 | `dump` | `{{ var \| dump }}` | Debug output of a variable |
-| `form_token` | `{{ "" \| form_token }}` | Generate a CSRF form token |
+| `form_token` | `{{ form_token() }}` | Generate a CSRF hidden input with token |
+| `formTokenValue` | `{{ formTokenValue("context") }}` | Return just the raw JWT token string |
+| `to_json` | `{{ data \| to_json }}` | JSON-encode a value (safe, no double-escaping) |
+| `js_escape` | `{{ text \| js_escape }}` | Escape for safe use in JavaScript strings |
 
 ### Chaining Filters
 
