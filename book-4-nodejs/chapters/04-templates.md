@@ -557,6 +557,62 @@ When you need to output literal `{{ }}` (for a Vue.js template, for example):
 {% endraw %}
 ```
 
+### {% spaceless %} -- Remove Whitespace Between Tags
+
+The `spaceless` tag strips whitespace between HTML tags. Useful for inline elements where whitespace affects layout:
+
+```html
+{% spaceless %}
+    <div>
+        <span>Hello</span>
+        <span>World</span>
+    </div>
+{% endspaceless %}
+```
+
+Output:
+
+```html
+<div><span>Hello</span><span>World</span></div>
+```
+
+Only whitespace between tags is removed. Whitespace inside text content stays intact.
+
+### {% autoescape %} -- Control HTML Escaping
+
+By default, Frond escapes HTML in `{{ }}` output to prevent XSS attacks. The `autoescape` tag controls this behavior for a block:
+
+```html
+{% autoescape false %}
+    {{ raw_html }}
+{% endautoescape %}
+```
+
+With `autoescape false`, the variable outputs as raw HTML without escaping. Use this when you trust the content -- rendering Markdown-to-HTML output, for example.
+
+To re-enable escaping inside a `false` block:
+
+```html
+{% autoescape false %}
+    {{ trusted_html }}
+    {% autoescape true %}
+        {{ user_input }}
+    {% endautoescape %}
+{% endautoescape %}
+```
+
+### Whitespace Control
+
+Use hyphens in tag delimiters to trim whitespace:
+
+```html
+{%- if condition -%}
+    No leading or trailing whitespace around this block
+{%- endif -%}
+```
+
+The `-` on the left trims whitespace before the tag. The `-` on the right trims whitespace after the tag. Works with `{{ }}`, `{% %}`, and `{# #}` delimiters.
+
 ### Comments
 
 ```html

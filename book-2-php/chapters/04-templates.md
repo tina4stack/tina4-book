@@ -2,11 +2,11 @@
 
 ## 1. Why Templates
 
-In Chapter 1, `$response->render("products.html", $data)` produced a full HTML page. That rendering was done by **Frond** -- Tina4's built-in template engine. Zero dependencies. Twig-compatible. If you know Twig, Jinja2, or Nunjucks, you already know 90% of Frond.
+In Chapter 1, `$response->render("products.html", $data)` produced a full HTML page. **Frond** did the rendering -- Tina4's built-in template engine. Zero dependencies. Twig-compatible syntax. If you know Twig, Jinja2, or Nunjucks, you know 90% of Frond.
 
-Templates live in `src/templates/`. Call `$response->render("page.html", $data)`. Frond loads `src/templates/page.html`, processes the tags and expressions, returns the final HTML.
+Templates live in `src/templates/`. Call `$response->render("page.html", $data)`. Frond loads the file, processes tags and expressions, returns final HTML.
 
-This chapter covers every feature. After reading it, you can build real pages.
+This chapter covers every feature. After reading it, you build real pages.
 
 ---
 

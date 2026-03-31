@@ -1,12 +1,14 @@
 # Chapter 4: Templates
 
-## 1. Why Templates
+## 1. Beyond JSON -- Rendering HTML
 
-In Chapter 1, you saw `response.render("products.html", data)` produce a full HTML page. That rendering came from **Frond** -- Tina4's built-in template engine. Frond is zero-dependency and Twig-compatible. It ships with the framework. If you know Twig, Jinja2, or Nunjucks, you know 90% of Frond.
+Every route so far returns JSON. That works for APIs. Web applications need HTML -- product listings, dashboards, login forms, email templates. Tina4 uses the **Frond** template engine for this work.
+
+Frond is a zero-dependency template engine built from scratch. Its syntax matches Twig, Jinja2, and Nunjucks. Three constructs drive the entire engine: `{{ }}` for output, `{% %}` for logic, `{# #}` for comments. That is the whole grammar.
 
 Templates live in `src/templates/`. When you call `response.render("page.html", data)`, Frond loads `src/templates/page.html`, processes the tags and expressions, and returns the final HTML.
 
-This chapter covers every feature of the template engine.
+This chapter builds toward a product catalog page. Items in a grid. Featured products highlighted. Prices formatted. Layout inherited from a shared template. One engine handles it all.
 
 ---
 
