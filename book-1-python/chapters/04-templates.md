@@ -2,17 +2,17 @@
 
 ## 1. Beyond JSON -- Rendering HTML
 
-Every route so far returns JSON. That works for APIs. But web applications need HTML -- product listings, dashboards, login forms, email templates. Tina4 uses the **Frond** template engine for this.
+Every route so far returns JSON. That works for APIs. Web applications need HTML -- product listings, dashboards, login forms, email templates. Tina4 uses the **Frond** template engine for this work.
 
-Frond is a zero-dependency template engine built from scratch. Its syntax is compatible with Twig, Jinja2, and Nunjucks. If you know any of those, you know Frond. If you do not, the syntax is three things: `{{ }}` for output, `{% %}` for logic, `{# #}` for comments.
+Frond is a zero-dependency template engine built from scratch. Its syntax matches Twig, Jinja2, and Nunjucks. Three constructs drive the entire engine: `{{ }}` for output, `{% %}` for logic, `{# #}` for comments. That is the whole grammar.
 
-Picture an online store. A product catalog page. Items in a grid. Featured products highlighted. Prices formatted. Layout inherited from a shared template. That is what this chapter builds.
+This chapter builds toward a product catalog page. Items in a grid. Featured products highlighted. Prices formatted. Layout inherited from a shared template. One engine handles it all.
 
 ---
 
 ## 2. The @template Decorator
 
-The shortest path to a rendered template:
+The shortest path to a rendered page:
 
 ```python
 from tina4_python.core.router import get, template
@@ -42,7 +42,7 @@ Create `src/templates/about.html`:
 
 Visit `http://localhost:7145/about` and the rendered page appears.
 
-The `@template` decorator is stacked above `@get` (or `@post`, etc.). When the handler returns a dictionary, the decorator passes that dict to `response.render()` with the named template. If the handler returns something other than a dict (like an already-built Response), it is passed through unchanged. You can also use `response.render()` directly in any route handler -- `@template` is shorthand.
+The `@template` decorator stacks above `@get` (or `@post`, etc.). When the handler returns a dictionary, the decorator passes that dict to `response.render()` with the named template. If the handler returns something other than a dict -- an already-built Response, for instance -- the decorator passes it through unchanged. You can also call `response.render()` directly in any route handler. The decorator is shorthand.
 
 ---
 
@@ -50,7 +50,7 @@ The `@template` decorator is stacked above `@get` (or `@post`, etc.). When the h
 
 ### Basic Output
 
-Use `{{ }}` to output a variable:
+Double curly braces print a variable:
 
 ```html
 <h1>Hello, {{ name }}!</h1>
@@ -66,7 +66,7 @@ With data `{"name": "Alice", "balance": 150.50}`, this renders:
 
 ### Accessing Nested Properties
 
-Dot notation for dictionaries and object attributes:
+Dot notation reaches into dictionaries and object attributes:
 
 ```html
 <p>{{ user.name }}</p>
@@ -98,7 +98,7 @@ Renders:
 
 ### Method Calls and Slicing
 
-Frond supports calling methods on values directly in templates. If a dictionary value is callable, you can invoke it with arguments:
+Frond supports calling methods on values inside templates. If a dictionary value is callable, you invoke it with arguments:
 
 ```html
 {{ user.t("greeting") }}       {# calls user.t("greeting") #}
@@ -106,7 +106,7 @@ Frond supports calling methods on values directly in templates. If a dictionary 
 {{ items[2:5] }}               {# slice from index 2 to 5 #}
 ```
 
-Operators inside quoted function arguments (like `+`, `-`, `*`) are handled correctly and will not break the expression parser.
+Operators inside quoted function arguments (such as `+`, `-`, `*`) parse without breaking the expression.
 
 ### Auto-Escaping
 
@@ -122,7 +122,7 @@ With `{"user_input": "<script>alert('hacked')</script>"}`, this renders:
 <p>&lt;script&gt;alert(&#39;hacked&#39;)&lt;/script&gt;</p>
 ```
 
-The script tag is escaped. Displayed as text. Never executes. If you need raw HTML (and you trust the source), use the `|safe` filter:
+The script tag becomes plain text. It never executes. If you need raw HTML output and you trust the source, use the `|safe` filter:
 
 ```html
 <div>{{ trusted_html | safe }}</div>
@@ -231,8 +231,8 @@ Filters transform output. The pipe `|` applies them:
 | `data_uri` | `{{ content \| data_uri }}` | Convert to a data URI string |
 | `dump` | `{{ var \| dump }}` | Debug output of a variable |
 | `form_token` | `{{ form_token() }}` | Generate a CSRF hidden input with token |
-| `formTokenValue` | `{{ formTokenValue("context") }}` | Return just the raw JWT token string |
-| `to_json` | `{{ data \| to_json }}` | JSON-encode a value (safe, no double-escaping) |
+| `formTokenValue` | `{{ formTokenValue("context") }}` | Return the raw JWT token string |
+| `to_json` | `{{ data \| to_json }}` | JSON-encode a value (no double-escaping) |
 | `js_escape` | `{{ text \| js_escape }}` | Escape for safe use in JavaScript strings |
 
 ### Chaining Filters
@@ -300,7 +300,7 @@ Comparisons and logical operators:
 {% endfor %}
 ```
 
-Inside a for loop, the `loop` variable gives you context:
+Inside a for loop, the `loop` variable provides iteration context:
 
 | Variable | Description |
 |----------|-------------|
@@ -361,7 +361,7 @@ When combining filters with arithmetic, assign the filtered values first:
 
 ## 6. Template Inheritance
 
-Template inheritance kills duplication. A base template defines blocks. Child templates override them.
+Template inheritance kills duplication. A base template defines blocks. Child templates override them. One layout file controls every page.
 
 ### Base Template
 
@@ -418,7 +418,7 @@ When Frond renders `home.html`:
 1. It sees `{% extends "base.html" %}` and loads the base template.
 2. The `{% block title %}` in `home.html` replaces the one in `base.html`.
 3. The `{% block content %}` in `home.html` replaces the one in `base.html`.
-4. Blocks not overridden (`head`, `scripts`) keep their default content (empty here).
+4. Blocks not overridden (`head`, `scripts`) keep their default content -- empty here.
 
 ### Calling Parent Blocks
 
@@ -433,7 +433,7 @@ Use `{{ parent() }}` to include the parent block's content:
 {% endblock %}
 ```
 
-This keeps whatever the parent had in `{% block head %}` and adds the extra stylesheet.
+The `head` block now contains everything from the base plus the extra stylesheet.
 
 ---
 
@@ -461,7 +461,7 @@ Pass variables to included templates:
 
 ### macro -- Reusable Template Functions
 
-Macros are functions for templates. Define once, use everywhere:
+Macros are functions for templates. Define once, call everywhere:
 
 Create `src/templates/macros/forms.html`:
 
@@ -499,13 +499,13 @@ Use them:
 </form>
 ```
 
-Consistent markup. Change the macro once and every form in your application updates.
+Change the macro once and every form in your application updates. Consistent markup across the entire project.
 
 ---
 
 ## 8. Comments
 
-Use `{# #}` for template comments. Stripped from output:
+Template comments use `{# #}`. Frond strips them from the output:
 
 ```html
 {# This comment will not appear in the HTML source #}
@@ -517,42 +517,258 @@ Use `{# #}` for template comments. Stripped from output:
 #}
 ```
 
-Unlike HTML comments (`<!-- -->`), Frond comments never reach the browser.
+HTML comments (`<!-- -->`) reach the browser. Frond comments never do.
 
 ---
 
-## 9. tina4css
+## 9. Special Tags
+
+### {% raw %} -- Literal Output
+
+Output literal `{{ }}` or `{% %}` without processing. This tag saves you when embedding Vue.js or Angular templates:
+
+```html
+{% raw %}
+    <div id="app">
+        {{ message }}
+    </div>
+{% endraw %}
+```
+
+Frond outputs the literal text `{{ message }}`. No variable lookup. No expression parsing.
+
+### {% spaceless %} -- Remove Whitespace
+
+Strip whitespace between HTML tags:
+
+```html
+{% spaceless %}
+    <div>
+        <span>Hello</span>
+    </div>
+{% endspaceless %}
+```
+
+**Output:**
+
+```html
+<div><span>Hello</span></div>
+```
+
+Inline elements create visible gaps when whitespace sits between them. The `spaceless` tag eliminates those gaps.
+
+### {% autoescape %} -- Control Escaping
+
+Override auto-escaping for a block of content:
+
+```html
+{% autoescape false %}
+    {{ trusted_html }}
+{% endautoescape %}
+```
+
+Everything inside outputs without HTML escaping. This works the same as `| raw` on every variable, but handles large blocks of trusted content with less repetition. Never use this with user-submitted data.
+
+### Whitespace Control
+
+Template tags occupy a full line and produce blank lines in the output. Use `{%-` and `-%}` to strip surrounding whitespace:
+
+```html
+{%- for item in items -%}
+    <li>{{ item.name }}</li>
+{%- endfor -%}
+```
+
+The `-` on the left strips whitespace before the tag. The `-` on the right strips whitespace after. The output contains no blank lines between list items.
+
+---
+
+## 10. tina4css
 
 The `tina4.css` file is Tina4's built-in CSS utility framework. It ships with every project. Layout utilities. Typography. Spacing. Common UI patterns. No Bootstrap. No Tailwind. No separate download.
 
-Some common classes:
+Include it in your base template:
 
 ```html
-{# Grid layout #}
+<link rel="stylesheet" href="/css/tina4.css">
+```
+
+### Layout Classes
+
+The grid system uses a 12-column layout:
+
+```html
+<div class="container">
+    <div class="row">
+        <div class="col-6">Left half</div>
+        <div class="col-6">Right half</div>
+    </div>
+</div>
+```
+
+Flex layout for alignment:
+
+```html
+<div class="flex justify-between items-center">
+    <h1>Title</h1>
+    <button class="btn btn-primary">Action</button>
+</div>
+```
+
+CSS grid for card layouts:
+
+```html
 <div class="grid grid-cols-3 gap-4">
     <div class="card">Item 1</div>
     <div class="card">Item 2</div>
     <div class="card">Item 3</div>
 </div>
+```
 
-{# Flex layout #}
-<div class="flex justify-between items-center">
-    <h1>Title</h1>
-    <button class="btn btn-primary">Action</button>
+### Buttons
+
+Five button styles cover most use cases:
+
+```html
+<button class="btn btn-primary">Primary</button>
+<button class="btn btn-secondary">Secondary</button>
+<button class="btn btn-success">Success</button>
+<button class="btn btn-warning">Warning</button>
+<button class="btn btn-danger">Danger</button>
+```
+
+Link-style buttons use the same classes on anchor tags:
+
+```html
+<a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
+<a href="/cancel" class="btn btn-secondary">Cancel</a>
+```
+
+### Cards
+
+Cards group related content with optional header and footer sections:
+
+```html
+<div class="card">
+    <div class="card-header">Order Summary</div>
+    <div class="card-body">
+        <p>3 items in your cart</p>
+        <p class="text-primary">Total: $149.97</p>
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-primary">Checkout</button>
+    </div>
 </div>
+```
 
+Cards work well inside a grid for catalog-style layouts:
+
+```html
+<div class="grid grid-cols-3 gap-4">
+    {% for product in products %}
+    <div class="card">
+        <div class="card-header">{{ product.name }}</div>
+        <div class="card-body">
+            <p>${{ "%.2f"|format(product.price) }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+```
+
+### Alerts
+
+Alert boxes communicate status messages to the user:
+
+```html
+<div class="alert alert-success">Order placed. Check your email for confirmation.</div>
+<div class="alert alert-danger">Payment failed. Your card was declined.</div>
+<div class="alert alert-warning">Your session expires in 5 minutes.</div>
+<div class="alert alert-info">New features are available. See the changelog.</div>
+```
+
+### Forms
+
+Form controls use `form-group` for spacing and `form-control` for input styling:
+
+```html
+<form method="POST" action="/api/contact">
+    <div class="form-group">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" name="name" class="form-control" required>
+    </div>
+
+    <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" class="form-control" required>
+    </div>
+
+    <div class="form-group">
+        <label for="message">Message</label>
+        <textarea id="message" name="message" class="form-control" rows="4"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="priority">Priority</label>
+        <select id="priority" name="priority" class="form-control">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Send Message</button>
+    <button type="reset" class="btn btn-secondary">Clear</button>
+</form>
+```
+
+### Tables
+
+Tables gain borders and row striping with tina4css classes:
+
+```html
+<table class="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Product</th>
+            <th>Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in products %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ product.name }}</td>
+            <td>${{ "%.2f"|format(product.price) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+```
+
+### Spacing and Typography Utilities
+
+```html
 {# Spacing #}
 <div class="p-4 m-2">Padded and margined</div>
+<div class="mt-4">Margin top</div>
+<div class="mb-2">Margin bottom</div>
+<div class="px-3">Horizontal padding</div>
 
 {# Typography #}
 <p class="text-lg text-gray-600">Large gray text</p>
+<p class="text-center">Centered text</p>
+<p class="text-right">Right-aligned text</p>
+<span class="text-muted">Gray text</span>
+<span class="text-primary">Primary color text</span>
 ```
 
-The full tina4css reference is in Book 0. For this chapter, inline styles in the examples work fine.
+No external dependencies. If you prefer Bootstrap or Tailwind, swap the `<link>` tag. Tina4 does not care which CSS framework you choose.
 
 ---
 
-## 10. Exercise: Build a Product Catalog Page
+## 11. Exercise: Build a Product Catalog Page
 
 Build a product catalog page with categories, filtering, and a detail view.
 
@@ -586,7 +802,7 @@ products = [
 
 ---
 
-## 11. Solution
+## 12. Solution
 
 Create `src/templates/macros/catalog.html`:
 
@@ -719,19 +935,19 @@ async def product_detail(id, request, response):
 - Category filter links: All, Electronics, Fitness, Kitchen, Office
 - A count of products shown
 - Product cards in a grid with names, prices, category labels, and stock badges
-- Featured products have a highlighted style and a "Featured" badge
+- Featured products wear a highlighted style and a "Featured" badge
 - Clicking a product name navigates to the detail page
 - Clicking a category link filters the list
 
 ---
 
-## 12. Gotchas
+## 13. Gotchas
 
 ### 1. Whitespace in output
 
-**Problem:** Your rendered HTML has unexpected blank lines or spaces.
+**Problem:** Rendered HTML contains unexpected blank lines or spaces.
 
-**Cause:** Template tags produce whitespace on the line they occupy.
+**Cause:** Template tags produce whitespace on the lines they occupy.
 
 **Fix:** Use whitespace control with `{%-` and `-%}` to strip whitespace around tags:
 
@@ -751,17 +967,17 @@ async def product_detail(id, request, response):
 
 ### 3. Extends must be the first tag
 
-**Problem:** `{% extends "base.html" %}` has no effect and the page renders without the layout.
+**Problem:** `{% extends "base.html" %}` has no effect. The page renders without the layout.
 
 **Cause:** `{% extends %}` must be the first tag in the template. Any text, HTML, or tags before it cause Frond to treat the template as standalone.
 
-**Fix:** Move `{% extends "base.html" %}` to the first line. No content before it.
+**Fix:** Move `{% extends "base.html" %}` to the first line. Nothing before it.
 
 ### 4. Macro not found
 
 **Problem:** `{{ forms.input(...) }}` produces an error about `forms` being undefined.
 
-**Cause:** You forgot the `{% import %}` statement, or the import path is wrong.
+**Cause:** The `{% import %}` statement is missing, or the import path is wrong.
 
 **Fix:** Add `{% import "macros/forms.html" as forms %}` at the top of the template (after `{% extends %}` if using inheritance). The path is relative to `src/templates/`.
 
@@ -775,7 +991,7 @@ async def product_detail(id, request, response):
 
 ### 6. Escaped HTML when you want raw output
 
-**Problem:** Your HTML content shows as text with visible `<tags>` instead of rendering.
+**Problem:** HTML content shows as text with visible `<tags>` instead of rendering.
 
 **Cause:** Frond auto-escapes all `{{ }}` output to prevent XSS.
 
@@ -783,7 +999,7 @@ async def product_detail(id, request, response):
 
 ### 7. Include file path wrong
 
-**Problem:** `{% include "header.html" %}` gives a "template not found" error even though the file exists.
+**Problem:** `{% include "header.html" %}` produces a "template not found" error even though the file exists.
 
 **Cause:** The path in `{% include %}` is relative to `src/templates/`, not the current template file.
 
