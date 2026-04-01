@@ -1,6 +1,6 @@
 # Tina4 — Cross-Framework Parity Matrix
 
-Last updated: 2026-04-01 | Version: 3.10.39
+Last updated: 2026-04-01 | Version: 3.10.40
 
 ## Feature Parity
 

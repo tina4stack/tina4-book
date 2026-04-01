@@ -8,6 +8,14 @@ This chapter covers the full v3 line -- from the first release candidate through
 
 ---
 
+## v3.10.40 — April 1, 2026
+
+### Bug Fixes
+
+**Dev overlay version check** — Fixed misleading "You are up to date" message when running a version ahead of what's published on Packagist. The overlay now shows a purple "ahead of Packagist" message. Also added a breaking changes warning (red banner with changelog link) when a major or minor version update is available.
+
+---
+
 ## v3.10.39 — April 1, 2026
 
 ### Breaking Changes

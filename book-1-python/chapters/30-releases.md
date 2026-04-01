@@ -22,6 +22,14 @@ print(tina4_python.__version__)
 
 ---
 
+## v3.10.40 — April 1, 2026
+
+### Bug Fixes
+
+**Dev overlay version check** — Fixed misleading "You are up to date" message when running a version ahead of what's published on PyPI (e.g. running v3.10.39 locally while PyPI still has v3.10.24). The overlay now shows a purple "ahead of PyPI" message. Also added a breaking changes warning (red banner with changelog link) when a major or minor version update is available, so developers know to check for breaking changes before upgrading.
+
+---
+
 ## v3.10.39 — April 1, 2026
 
 ### Breaking Changes

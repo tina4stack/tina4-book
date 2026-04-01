@@ -6,6 +6,14 @@ This chapter covers every release from v3.0.0 through v3.10.x. Each section grou
 
 ---
 
+## v3.10.40 — April 1, 2026
+
+### Bug Fixes
+
+**Dev overlay version check** — Fixed misleading "You are up to date" message when running a version ahead of what's published on npm. The overlay now shows a purple "ahead of npm" message. Also added a breaking changes warning (red banner with changelog link) when a major or minor version update is available.
+
+---
+
 ## v3.10.39 — April 1, 2026
 
 ### New Features
