@@ -22,6 +22,62 @@ print(tina4_python.__version__)
 
 ---
 
+## v3.10.39 — April 1, 2026
+
+### Breaking Changes
+
+This release aligns the Python framework with the other three Tina4 implementations. Two breaking changes affect existing code:
+
+**`Auth.check_password()` parameter order reversed**
+
+```python
+# BEFORE (v3.10.38 and earlier)
+Auth.check_password(hashed, password)
+
+# AFTER (v3.10.39+)
+Auth.check_password(password, hashed)  # password first — matches PHP, Ruby, Node.js
+```
+
+**`Router.all()` removed — use `get_routes()` or `list_routes()`**
+
+```python
+# BEFORE
+routes = Router.all()
+
+# AFTER
+routes = Router.get_routes()   # or Router.list_routes()
+```
+
+### New Features
+
+**`Auth.validate_api_key(provided, expected=None)`**
+
+Compare API keys with constant-time comparison. Optionally pass `expected`; if omitted, reads `TINA4_API_KEY` (or `API_KEY`) from environment.
+
+```python
+Auth.validate_api_key("sk-abc123")              # check against env
+Auth.validate_api_key("sk-abc123", "sk-abc123") # check against explicit value
+```
+
+**`Auth.authenticate_request(headers)`**
+
+One-call header authentication: checks Bearer JWT, Bearer API key, and Basic auth in order.
+
+```python
+payload = Auth.authenticate_request(request.headers)
+# Returns: dict on success, None on failure
+```
+
+**`ORM.find_by_id(pk)` with `find()` and `load()` as aliases**
+
+`find_by_id()` is now the explicit primary method. Both `find()` and `load()` continue to work as aliases, ensuring backward compatibility.
+
+### Test Coverage
+
+2,054 tests passing (up from 2,051 in v3.10.38).
+
+---
+
 ## v3.10.38 — April 1, 2026
 
 ### Code Metrics & Bubble Chart

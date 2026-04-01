@@ -6,6 +6,24 @@ This chapter covers every release from v3.0.0 through v3.10.x. Each section grou
 
 ---
 
+## v3.10.39 — April 1, 2026
+
+### New Features
+
+**`Database.getColumns(tableName)`** — Returns `[{name, type, nullable, default, primaryKey}]` for each column. Uses `PRAGMA table_info` for SQLite and `information_schema.columns` for PostgreSQL/MySQL/MSSQL.
+
+**`Database.executeMany(sql, paramSets)`** — Execute a SQL statement with multiple parameter arrays in a single transaction for atomicity and performance.
+
+**`BaseModel.create<T>(data)`** — Static factory method: instantiates, saves, and returns the new record.
+
+**`BaseModel.find()` and `BaseModel.load()`** — aliases for `findById()` (parity with Python, PHP, Ruby).
+
+**`seed` CLI command** — `tina4nodejs seed` scans `src/seeds/*.ts` and executes them via `tsx`.
+
+**`Router.allRoutes()`** — alias for `getRoutes()`.
+
+---
+
 ## v3.10.38 — April 1, 2026
 
 ### Code Metrics & Bubble Chart

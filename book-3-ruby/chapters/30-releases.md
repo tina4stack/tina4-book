@@ -6,6 +6,26 @@ This chapter covers every v3 release from the initial launch through the current
 
 ---
 
+## v3.10.39 — April 1, 2026
+
+### New Features
+
+**`Container.singleton(name, &block)`** — Register a memoized factory. The block is called once on first `resolve()` and the same instance is returned on all subsequent calls. `register()` with a block is now always transient (new instance per call), matching Python's behavior.
+
+```ruby
+Tina4::Container.singleton(:db) { Tina4::Database.new(ENV["DATABASE_URL"]) }
+db1 = Tina4::Container.resolve(:db)  # creates instance
+db2 = Tina4::Container.resolve(:db)  # same instance
+```
+
+**`Router.match(path, method)`** — alias for `find_route()` (parity with Python, PHP, Node.js).
+
+**`Router.get_routes` and `Router.list_routes`** — explicit listing methods (remove ambiguous `routes` alias).
+
+**AI installer** — `ai_spec.rb` and smoke tests updated to reflect the menu-based API (`installed?`, `install_selected`, `install_all`, `generate_context`).
+
+---
+
 ## v3.10.38 -- April 1, 2026
 
 ### Code Metrics & Bubble Chart
