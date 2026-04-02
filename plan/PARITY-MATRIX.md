@@ -135,10 +135,11 @@ Last updated: 2026-04-02 | Version: 3.10.55 (pending release)
 
 | Framework | Test Files | Tests | Runner |
 |-----------|-----------|-------|--------|
-| Python | 52 | ~2,400 | pytest |
-| PHP | 54 | ~1,800 | PHPUnit |
-| Ruby | 63 | ~2,400 | RSpec |
-| Node.js | 57 | ~2,580 | tsx |
+| Python | 82 | 2,112 | pytest |
+| PHP | 64 | 2,220 | PHPUnit |
+| Ruby | 74 | 2,333 | RSpec |
+| Node.js | 60 | 2,646 | tsx |
+| **Total** | **280** | **9,311** | |
 
 ## Known Gaps
 
