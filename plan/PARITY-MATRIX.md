@@ -1,6 +1,6 @@
 # Tina4 — Cross-Framework Parity Matrix
 
-Last updated: 2026-04-02 | Version: 3.10.54
+Last updated: 2026-04-02 | Version: 3.10.55 (pending release)
 
 ## Feature Parity
 
@@ -142,22 +142,28 @@ Last updated: 2026-04-02 | Version: 3.10.54
 
 ## Known Gaps
 
-| Gap | Frameworks Missing | Priority | Notes |
-|-----|-------------------|----------|-------|
-| ~~MongoDB driver~~ | ~~All 4~~ | ~~Medium~~ | Implemented in v3.10.55 |
-| Route groups | Python (partial) | Low | Uses static prefix state, not a class |
-| Frond sandbox mode | Ruby, Node (partial) | Low | |
-| Frond fragment caching | Ruby, Node (partial) | Low | |
-| ~~ORM relationships~~ | ~~All (partial)~~ | ~~Medium~~ | All 4 have full has_many/has_one/belongs_to + eager loading |
-| ~~AutoCRUD~~ | ~~Node (partial)~~ | ~~Low~~ | All 4 at parity |
-| ~~Redis session handler~~ | ~~PHP~~ | ~~Medium~~ | Fixed — PHP has it |
-| ~~ODBC driver~~ | ~~PHP, Ruby, Node~~ | ~~Low~~ | All 4 at parity |
-| ~~Minified CSS/JS bundles~~ | ~~Ruby~~ | ~~Medium~~ | Fixed — Ruby has them |
+**None.** All 108 features are at 100% parity across Python, PHP, Ruby, and Node.js.
+
+### Resolved (this session)
+
+| Gap | Resolution |
+|-----|-----------|
+| MongoDB driver | Implemented — pymongo, ext-mongodb, mongo gem, mongodb npm |
+| ODBC driver | Implemented — pyodbc, pdo_odbc, ruby-odbc, odbc npm |
+| Route groups (Python) | RouteGroup class added — matches PHP/Ruby/Node |
+| ORM relationships | All 4 have declarative + imperative styles |
+| Frond sandbox mode | Already implemented in all 4 (was false positive) |
+| Frond fragment caching | Already implemented in all 4 (was false positive) |
+| AutoCRUD (Node) | Already at parity (was false positive) |
+| Redis session handler (PHP) | Already existed (was false positive) |
+| Minified CSS/JS (Ruby) | Already existed (was false positive) |
+| Pagination inconsistency | Standardized: limit/offset primary, merged dual-key response |
 
 ## Version History
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.10.55 | 2026-04-02 | MongoDB adapter (all 4), ODBC adapter (PHP/Ruby/Node), pagination standardized, Python RouteGroup class, Ruby imperative relationships, metrics dep lines fix |
 | 3.10.54 | 2026-04-02 | Auto AI dual-port, TINA4_NO_RELOAD, bug fixes (#101-#105), CORS fix, DATABASE_URL discovery, ORM query() docs, metrics dep lines fix |
 | 3.10.50 | 2026-04-02 | Issue #106 fixes, session TTL/GC, dev admin auth bypass, test expansion to ~9,100 |
 | 3.10.48 | 2026-04-02 | TINA4_NO_BROWSER, --production flag, gallery fixes |
