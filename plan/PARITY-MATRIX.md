@@ -94,7 +94,7 @@ Last updated: 2026-04-02 | Version: 3.10.54
 | **Sessions** | | | | |
 | File session handler | Yes | Yes | Yes | Yes |
 | Database session handler | Yes | Yes | Yes | Yes |
-| Redis session handler | Yes | No | Yes | Yes |
+| Redis session handler | Yes | Yes | Yes | Yes |
 | Valkey session handler | Yes | Yes | Yes | Yes |
 | MongoDB session handler | Yes | Yes | Yes | Yes |
 | Session TTL / GC | Yes | Yes | Yes | Yes |
@@ -127,8 +127,8 @@ Last updated: 2026-04-02 | Version: 3.10.54
 | AI context installer (menu-driven) | Yes | Yes | Yes | Yes |
 | Scaffold copies CSS/JS on init | Yes | Yes | Yes | Yes |
 | **Static Assets** | | | | |
-| Minified CSS (tina4.min.css) | Yes | Yes | No | Yes |
-| Minified JS (tina4.min.js, frond.min.js) | Yes | Yes | No | Yes |
+| Minified CSS (tina4.min.css) | Yes | Yes | Yes | Yes |
+| Minified JS (tina4.min.js, frond.min.js) | Yes | Yes | Yes | Yes |
 | HtmlElement builder | Yes | Yes | Yes | Yes |
 
 ## Test Coverage
@@ -150,9 +150,9 @@ Last updated: 2026-04-02 | Version: 3.10.54
 | Frond fragment caching | Ruby, Node (partial) | Low | |
 | ORM relationships | All (partial) | Medium | has_many/has_one/belongs_to exist but incomplete |
 | AutoCRUD | Node (partial) | Low | |
-| Redis session handler | PHP | Medium | |
+| ~~Redis session handler~~ | ~~PHP~~ | ~~Medium~~ | Fixed — PHP has it |
 | ODBC driver | PHP, Ruby, Node | Low | Python only |
-| Minified CSS/JS bundles | Ruby | Medium | |
+| ~~Minified CSS/JS bundles~~ | ~~Ruby~~ | ~~Medium~~ | Fixed — Ruby has them |
 
 ## Version History
 
