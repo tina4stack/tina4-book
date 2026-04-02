@@ -10,7 +10,7 @@ Last updated: 2026-04-02 | Version: 3.10.54
 | Router (GET/POST/PUT/PATCH/DELETE/ANY) | Yes | Yes | Yes | Yes |
 | Path params ({id:int}, {price:float}) | Yes | Yes | Yes | Yes |
 | Wildcard routes (*) | Yes | Yes | Yes | Yes |
-| Route grouping | Partial | Yes | Yes | Yes |
+| Route grouping | Yes | Yes | Yes | Yes |
 | Route discovery (auto-load src/) | Yes | Yes | Yes | Yes |
 | Server (built-in) | Yes | Yes | Yes | Yes |
 | Request object | Yes | Yes | Yes | Yes |
@@ -41,8 +41,8 @@ Last updated: 2026-04-02 | Version: 3.10.54
 | MySQL driver | Yes | Yes | Yes | Yes |
 | MSSQL driver | Yes | Yes | Yes | Yes |
 | Firebird driver | Yes | Yes | Yes | Yes |
-| MongoDB driver | No | No | No | No |
-| ODBC driver | Yes | No | No | No |
+| MongoDB driver | Yes | Yes | Yes | Yes |
+| ODBC driver | Yes | Yes | Yes | Yes |
 | DatabaseResult | Yes | Yes | Yes | Yes |
 | SQL translation | Yes | Yes | Yes | Yes |
 | Query caching (TINA4_DB_CACHE) | Yes | Yes | Yes | Yes |
@@ -58,7 +58,7 @@ Last updated: 2026-04-02 | Version: 3.10.54
 | query() → QueryBuilder | Yes | Yes | Yes | Yes |
 | select() with filter/order/limit | Yes | Yes | Yes | Yes |
 | autoMap / snakeToCamel (lowercase-safe) | Yes | Yes | Yes | Yes |
-| Relationships (has_many/has_one/belongs_to) | Partial | Partial | Partial | Partial |
+| Relationships (has_many/has_one/belongs_to) | Yes | Yes | Yes | Yes |
 | Soft delete | Yes | Yes | Yes | Yes |
 | AutoCRUD | Yes | Yes | Yes | Yes |
 | **Template Engine (Frond)** | | | | |
@@ -70,8 +70,8 @@ Last updated: 2026-04-02 | Version: 3.10.54
 | Filters | Yes | Yes | Yes | Yes |
 | Custom filters/globals/tests | Yes | Yes | Yes | Yes |
 | SafeString | Yes | Yes | Yes | Yes |
-| Fragment caching | Yes | Yes | Partial | Partial |
-| Sandbox mode | Yes | Yes | Partial | Partial |
+| Fragment caching | Yes | Yes | Yes | Yes |
+| Sandbox mode | Yes | Yes | Yes | Yes |
 | form_token / formTokenValue | Yes | Yes | Yes | Yes |
 | Arithmetic in {% set %} | Yes | Yes | Yes | Yes |
 | Filter-aware conditions | Yes | Yes | Yes | Yes |
@@ -144,14 +144,14 @@ Last updated: 2026-04-02 | Version: 3.10.54
 
 | Gap | Frameworks Missing | Priority | Notes |
 |-----|-------------------|----------|-------|
-| MongoDB driver | All 4 | Medium | QueryBuilder.toMongo() exists but no database adapter |
+| ~~MongoDB driver~~ | ~~All 4~~ | ~~Medium~~ | Implemented in v3.10.55 |
 | Route groups | Python (partial) | Low | Uses static prefix state, not a class |
 | Frond sandbox mode | Ruby, Node (partial) | Low | |
 | Frond fragment caching | Ruby, Node (partial) | Low | |
-| ORM relationships | All (partial) | Medium | has_many/has_one/belongs_to exist but incomplete |
+| ~~ORM relationships~~ | ~~All (partial)~~ | ~~Medium~~ | All 4 have full has_many/has_one/belongs_to + eager loading |
 | ~~AutoCRUD~~ | ~~Node (partial)~~ | ~~Low~~ | All 4 at parity |
 | ~~Redis session handler~~ | ~~PHP~~ | ~~Medium~~ | Fixed — PHP has it |
-| ODBC driver | PHP, Ruby, Node | Low | Python only |
+| ~~ODBC driver~~ | ~~PHP, Ruby, Node~~ | ~~Low~~ | All 4 at parity |
 | ~~Minified CSS/JS bundles~~ | ~~Ruby~~ | ~~Medium~~ | Fixed — Ruby has them |
 
 ## Version History
