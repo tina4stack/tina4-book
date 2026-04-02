@@ -1,6 +1,6 @@
 # Tina4 — Cross-Framework Parity Matrix
 
-Last updated: 2026-04-01 | Version: 3.10.40
+Last updated: 2026-04-02 | Version: 3.10.54
 
 ## Feature Parity
 
@@ -10,21 +10,30 @@ Last updated: 2026-04-01 | Version: 3.10.40
 | Router (GET/POST/PUT/PATCH/DELETE/ANY) | Yes | Yes | Yes | Yes |
 | Path params ({id:int}, {price:float}) | Yes | Yes | Yes | Yes |
 | Wildcard routes (*) | Yes | Yes | Yes | Yes |
-| Route grouping | Yes | Yes | Yes | Yes |
+| Route grouping | Partial | Yes | Yes | Yes |
 | Route discovery (auto-load src/) | Yes | Yes | Yes | Yes |
 | Server (built-in) | Yes | Yes | Yes | Yes |
 | Request object | Yes | Yes | Yes | Yes |
 | Response object | Yes | Yes | Yes | Yes |
 | Static file serving | Yes | Yes | Yes | Yes |
-| CORS middleware | Yes | Yes | Yes | Yes |
+| CORS middleware (proper origin matching) | Yes | Yes | Yes | Yes |
 | Health endpoint | Yes | Yes | Yes | Yes |
+| TINA4_DEBUG env var | Yes | Yes | Yes | Yes |
+| TINA4_NO_BROWSER + --no-browser | Yes | Yes | Yes | Yes |
+| TINA4_NO_RELOAD + --no-reload | Yes | Yes | Yes | Yes |
+| Auto AI dual-port (port+1) | Yes | Yes | Yes | Yes |
+| TINA4_NO_AI_PORT | Yes | Yes | Yes | Yes |
+| --production flag | Yes | Yes | Yes | Yes |
+| Star wiggle animation | Yes | Yes | Yes | Yes |
 | **Auth & Security** | | | | |
 | JWT auth (zero-dep) | Yes | Yes | Yes | Yes |
 | Password hashing | Yes | Yes | Yes | Yes |
 | Form token (CSRF) | Yes | Yes | Yes | Yes |
 | CSRF middleware | Yes | Yes | Yes | Yes |
 | Rate limiter | Yes | Yes | Yes | Yes |
+| Security headers middleware | Yes | Yes | Yes | Yes |
 | Validator | Yes | Yes | Yes | Yes |
+| noauth / secured decorators | Yes | Yes | Yes | Yes |
 | **Database** | | | | |
 | URL-based multi-driver connection | Yes | Yes | Yes | Yes |
 | SQLite driver | Yes | Yes | Yes | Yes |
@@ -32,28 +41,37 @@ Last updated: 2026-04-01 | Version: 3.10.40
 | MySQL driver | Yes | Yes | Yes | Yes |
 | MSSQL driver | Yes | Yes | Yes | Yes |
 | Firebird driver | Yes | Yes | Yes | Yes |
+| MongoDB driver | No | No | Yes | Partial |
 | ODBC driver | Yes | No | No | No |
 | DatabaseResult | Yes | Yes | Yes | Yes |
 | SQL translation | Yes | Yes | Yes | Yes |
-| Query caching | Yes | Yes | Yes | Yes |
+| Query caching (TINA4_DB_CACHE) | Yes | Yes | Yes | Yes |
 | get_next_id (race-safe) | Yes | Yes | Yes | Yes |
-| Transactions | Yes | Yes | Yes | Yes |
+| Transactions (commit safe without txn) | Yes | Yes | Yes | Yes |
+| Connection pooling | Yes | Yes | Yes | Yes |
+| fetch() default limit = 100 | Yes | Yes | Yes | Yes |
+| DATABASE_URL auto-discovery (ORM) | Yes | Yes | Yes | Yes |
+| Firebird path parsing (absolute safe) | Yes | Yes | Yes | Yes |
 | **ORM** | | | | |
 | Active Record (save/load/delete) | Yes | Yes | Yes | Yes |
 | Field types | Yes | Yes | Yes | Yes |
-| Relationships (has_many/has_one/belongs_to) | Yes | Yes | Yes | Yes |
+| query() → QueryBuilder | Yes | Yes | Yes | Yes |
+| select() with filter/order/limit | Yes | Yes | Yes | Yes |
+| autoMap / snakeToCamel (lowercase-safe) | Yes | Yes | Yes | Yes |
+| Relationships (has_many/has_one/belongs_to) | Partial | Partial | Partial | Partial |
 | Soft delete | Yes | Yes | Yes | Yes |
-| QueryBuilder | Yes | Yes | Yes | Yes |
-| AutoCRUD | Yes | Yes | Yes | Yes |
+| AutoCRUD | Yes | Yes | Yes | Partial |
 | **Template Engine (Frond)** | | | | |
 | Twig-compatible syntax | Yes | Yes | Yes | Yes |
 | Block inheritance (extends/block) | Yes | Yes | Yes | Yes |
 | parent()/super() in blocks | Yes | Yes | Yes | Yes |
 | Include/import/macro | Yes | Yes | Yes | Yes |
+| {% import "file" as alias %} | Yes | Yes | Yes | Yes |
 | Filters | Yes | Yes | Yes | Yes |
 | Custom filters/globals/tests | Yes | Yes | Yes | Yes |
 | SafeString | Yes | Yes | Yes | Yes |
-| Fragment caching | Yes | Yes | Yes | Yes |
+| Fragment caching | Yes | Yes | Partial | Partial |
+| Sandbox mode | Yes | Yes | Partial | Partial |
 | form_token / formTokenValue | Yes | Yes | Yes | Yes |
 | Arithmetic in {% set %} | Yes | Yes | Yes | Yes |
 | Filter-aware conditions | Yes | Yes | Yes | Yes |
@@ -79,6 +97,7 @@ Last updated: 2026-04-01 | Version: 3.10.40
 | Redis session handler | Yes | No | Yes | Yes |
 | Valkey session handler | Yes | Yes | Yes | Yes |
 | MongoDB session handler | Yes | Yes | Yes | Yes |
+| Session TTL / GC | Yes | Yes | Yes | Yes |
 | **Infrastructure** | | | | |
 | Migrations | Yes | Yes | Yes | Yes |
 | Seeder / FakeData | Yes | Yes | Yes | Yes |
@@ -93,16 +112,20 @@ Last updated: 2026-04-01 | Version: 3.10.40
 | Service runner | Yes | Yes | Yes | Yes |
 | **Dev Tools** | | | | |
 | DevAdmin dashboard | Yes | Yes | Yes | Yes |
+| Database tab (split-screen) | Yes | Yes | Yes | Yes |
+| Metrics (bubble chart) | Yes | Yes | Yes | Yes |
+| Metrics dependency lines | Yes | Yes | Yes | Yes |
 | DevMailbox | Yes | Yes | Yes | Yes |
 | DevReload (live-reload) | Yes | Yes | Yes | Yes |
 | Gallery (interactive examples) | Yes | Yes | Yes | Yes |
-| Metrics (code analysis + bubble chart) | Yes | Yes | Yes | Yes |
+| Dev toolbar injection | Yes | Yes | Yes | Yes |
 | Version check | Yes | Yes | Yes | Yes |
 | **Testing & CLI** | | | | |
 | TestClient | Yes | Yes | Yes | Yes |
 | Inline testing | Yes | Yes | Yes | Yes |
 | CLI (init, serve, migrate, generate) | Yes | Yes | Yes | Yes |
 | AI context installer (menu-driven) | Yes | Yes | Yes | Yes |
+| Scaffold copies CSS/JS on init | Yes | Yes | Yes | Yes |
 | **Static Assets** | | | | |
 | Minified CSS (tina4.min.css) | Yes | Yes | No | Yes |
 | Minified JS (tina4.min.js, frond.min.js) | Yes | Yes | No | Yes |
@@ -110,24 +133,33 @@ Last updated: 2026-04-01 | Version: 3.10.40
 
 ## Test Coverage
 
-| Framework | Test Files | Test Methods | Runner |
-|-----------|-----------|-------------|--------|
-| Python | 52 | 2,018 | pytest |
-| PHP | 54 | 1,551 | PHPUnit |
-| Ruby | 63 | 1,784 | RSpec |
-| Node.js | 57 | ~152 | node --test |
+| Framework | Test Files | Tests | Runner |
+|-----------|-----------|-------|--------|
+| Python | 52 | ~2,400 | pytest |
+| PHP | 54 | ~1,800 | PHPUnit |
+| Ruby | 63 | ~2,400 | RSpec |
+| Node.js | 57 | ~2,580 | tsx |
 
 ## Known Gaps
 
-| Gap | Frameworks Missing | Priority |
-|-----|-------------------|----------|
-| ODBC driver | PHP, Ruby, Node.js | Low |
-| Redis session handler | PHP | Medium |
-| Minified CSS/JS bundles | Ruby | High |
-| Node.js test depth | Node.js (most tests have 1 assertion) | High |
+| Gap | Frameworks Missing | Priority | Notes |
+|-----|-------------------|----------|-------|
+| MongoDB driver | Python, PHP | Low | Ruby and Node have it |
+| Route groups | Python (partial) | Low | Uses static prefix state, not a class |
+| Frond sandbox mode | Ruby, Node (partial) | Low | |
+| Frond fragment caching | Ruby, Node (partial) | Low | |
+| ORM relationships | All (partial) | Medium | has_many/has_one/belongs_to exist but incomplete |
+| AutoCRUD | Node (partial) | Low | |
+| Redis session handler | PHP | Medium | |
+| ODBC driver | PHP, Ruby, Node | Low | Python only |
+| Minified CSS/JS bundles | Ruby | Medium | |
 
 ## Version History
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 3.10.38 | 2026-04-01 | Metrics (bubble chart), AI installer (menu-driven), demo cleanup, dashboard full-width, sticky header/tabs, file analysis sort by worst first |
+| 3.10.54 | 2026-04-02 | Auto AI dual-port, TINA4_NO_RELOAD, bug fixes (#101-#105), CORS fix, DATABASE_URL discovery, ORM query() docs, metrics dep lines fix |
+| 3.10.50 | 2026-04-02 | Issue #106 fixes, session TTL/GC, dev admin auth bypass, test expansion to ~9,100 |
+| 3.10.48 | 2026-04-02 | TINA4_NO_BROWSER, --production flag, gallery fixes |
+| 3.10.42 | 2026-04-01 | Database tab redesign, star wiggle, copy/paste, fetch limit=100 |
+| 3.10.38 | 2026-04-01 | Metrics (bubble chart), AI installer, dashboard cleanup |
