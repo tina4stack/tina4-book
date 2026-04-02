@@ -844,3 +844,31 @@ source ~/.zshrc
 **Cause:** The CLI cannot detect the language without a `Gemfile`.
 
 **Fix:** Make sure your project has a `Gemfile` so the CLI detects Ruby. Or use `tina4 deploy:docker --lang ruby`.
+
+---
+
+## 20. Documentation
+
+```bash
+tina4 docs      # Download framework-specific book chapters to .tina4-docs/
+tina4 books     # Download the complete Tina4 book (all languages) to tina4-book/
+```
+
+`tina4 docs` detects your project language and downloads only the relevant chapters. The documentation is available in Markdown format, optimised for AI tools and local reference.
+
+---
+
+## 21. Test Port (Dual-Port Development)
+
+When `TINA4_DEBUG=true`, Tina4 automatically starts a second HTTP server on `port + 1000`:
+
+- **Main port** (e.g. 7147) — hot-reload enabled, for AI dev tools
+- **Test port** (e.g. 8147) — stable, no hot-reload, for user testing
+
+This prevents the browser from refreshing mid-test when AI tools edit files.
+
+| Setting | Effect |
+|---------|--------|
+| `TINA4_NO_AI_PORT=true` | Disables the test port entirely |
+| `TINA4_NO_RELOAD=true` | Disables hot-reload on the main port too |
+| `--no-reload` | CLI flag equivalent of TINA4_NO_RELOAD |
