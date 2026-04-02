@@ -41,7 +41,7 @@ Last updated: 2026-04-02 | Version: 3.10.54
 | MySQL driver | Yes | Yes | Yes | Yes |
 | MSSQL driver | Yes | Yes | Yes | Yes |
 | Firebird driver | Yes | Yes | Yes | Yes |
-| MongoDB driver | No | No | Yes | Partial |
+| MongoDB driver | No | No | No | No |
 | ODBC driver | Yes | No | No | No |
 | DatabaseResult | Yes | Yes | Yes | Yes |
 | SQL translation | Yes | Yes | Yes | Yes |
@@ -60,7 +60,7 @@ Last updated: 2026-04-02 | Version: 3.10.54
 | autoMap / snakeToCamel (lowercase-safe) | Yes | Yes | Yes | Yes |
 | Relationships (has_many/has_one/belongs_to) | Partial | Partial | Partial | Partial |
 | Soft delete | Yes | Yes | Yes | Yes |
-| AutoCRUD | Yes | Yes | Yes | Partial |
+| AutoCRUD | Yes | Yes | Yes | Yes |
 | **Template Engine (Frond)** | | | | |
 | Twig-compatible syntax | Yes | Yes | Yes | Yes |
 | Block inheritance (extends/block) | Yes | Yes | Yes | Yes |
@@ -144,12 +144,12 @@ Last updated: 2026-04-02 | Version: 3.10.54
 
 | Gap | Frameworks Missing | Priority | Notes |
 |-----|-------------------|----------|-------|
-| MongoDB driver | Python, PHP | Low | Ruby and Node have it |
+| MongoDB driver | All 4 | Medium | QueryBuilder.toMongo() exists but no database adapter |
 | Route groups | Python (partial) | Low | Uses static prefix state, not a class |
 | Frond sandbox mode | Ruby, Node (partial) | Low | |
 | Frond fragment caching | Ruby, Node (partial) | Low | |
 | ORM relationships | All (partial) | Medium | has_many/has_one/belongs_to exist but incomplete |
-| AutoCRUD | Node (partial) | Low | |
+| ~~AutoCRUD~~ | ~~Node (partial)~~ | ~~Low~~ | All 4 at parity |
 | ~~Redis session handler~~ | ~~PHP~~ | ~~Medium~~ | Fixed — PHP has it |
 | ODBC driver | PHP, Ruby, Node | Low | Python only |
 | ~~Minified CSS/JS bundles~~ | ~~Ruby~~ | ~~Medium~~ | Fixed — Ruby has them |
