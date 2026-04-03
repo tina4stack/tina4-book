@@ -121,23 +121,22 @@
 
 ## Issues to Fix (Priority Order)
 
-| # | Issue | Severity | Frameworks |
-|---|-------|----------|------------|
-| 1 | **Ruby uses bcrypt, others PBKDF2** — hashes not portable | CRITICAL | Ruby |
-| 2 | **Node.js PBKDF2 delimiter `:` not `$`** — hashes not portable | CRITICAL | Node.js |
-| 3 | **Python expires_in is minutes, others seconds** | CRITICAL | Python |
-| 4 | **Ruby API key validation not timing-safe** | HIGH | Ruby |
-| 5 | **PHP/Node require explicit secret param** — Python/Ruby read env | MEDIUM | PHP, Node.js |
-| 6 | **Python iterations 260000 vs PHP/Node 100000** | MEDIUM | All |
-| 7 | **Python doesn't support RS256** | MEDIUM | Python |
-| 8 | **PHP/Node missing API key fallback in authenticateRequest** | LOW | PHP, Node.js |
+| # | Issue | Severity | Status |
+|---|-------|----------|--------|
+| 1 | ~~Ruby uses bcrypt~~ | CRITICAL | FIXED — now PBKDF2-SHA256, hashes portable |
+| 2 | ~~Node.js delimiter `:` not `$`~~ | CRITICAL | FIXED — `$` delimiter, backward compat on read |
+| 3 | ~~expires_in units differ~~ | CRITICAL | FIXED — all use MINUTES (default 60) |
+| 4 | ~~Ruby API key not timing-safe~~ | HIGH | FIXED — uses OpenSSL.fixed_length_secure_compare |
+| 5 | ~~PHP/Node require explicit secret~~ | MEDIUM | FIXED — all read SECRET from env with warning |
+| 6 | ~~Iterations differ~~ | MEDIUM | FIXED — all default to 260000 |
+| 7 | **Python doesn't support RS256** | MEDIUM | TODO — needs stdlib `rsa` module |
+| 8 | ~~PHP/Node missing API key fallback~~ | LOW | FIXED — authenticateRequest falls back to API key |
 
 ## Documentation Gaps
 
-| # | Gap |
-|---|-----|
-| 1 | Python CLAUDE.md doesn't flag minutes vs seconds for expires_in |
-| 2 | Cross-framework hash incompatibility not documented anywhere |
-| 3 | PHP CLAUDE.md missing refreshToken, authenticateRequest, validateApiKey |
-| 4 | Node.js CLAUDE.md has no Auth method stubs at all |
-| 5 | Ruby bcrypt vs PBKDF2 difference not flagged as parity issue |
+| # | Gap | Status |
+|---|-----|--------|
+| 1 | ~~expires_in units~~ | FIXED — all minutes now |
+| 2 | ~~Cross-framework hash incompatibility~~ | FIXED — all PBKDF2 with `$` delimiter |
+| 3 | PHP CLAUDE.md missing refreshToken, authenticateRequest, validateApiKey | TODO |
+| 4 | Node.js CLAUDE.md has no Auth method stubs | TODO |
