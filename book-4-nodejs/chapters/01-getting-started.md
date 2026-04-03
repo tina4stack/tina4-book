@@ -651,7 +651,7 @@ tina4 serve
   Server running at http://0.0.0.0:7148
 ```
 
-The CLI adds live reload and other development features. For direct Node.js execution (advanced usage), see [Chapter 21: CLI](21-cli.md).
+The CLI adds live reload and other development features. For direct Node.js execution (advanced usage), see [Chapter 30: CLI](30-cli.md).
 
 ---
 

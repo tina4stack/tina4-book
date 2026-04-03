@@ -1,4 +1,4 @@
-# Chapter 13: Email with Messenger
+# Chapter 16: Email with Messenger
 
 ## 1. Every App Sends Email
 
@@ -624,7 +624,7 @@ With `TINA4_DEBUG=true`, the email appears in the dev dashboard. Inspect the ren
 
 ## 12. Sending Email via Queues
 
-In production, do not send email inside a route handler. The SMTP handshake takes time. The user waits. Push email work to the queue system (Chapter 11):
+In production, do not send email inside a route handler. The SMTP handshake takes time. The user waits. Push email work to the queue system (Chapter 12):
 
 ```php
 <?php

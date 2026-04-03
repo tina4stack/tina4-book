@@ -1,4 +1,4 @@
-# Chapter 26: Upgrading from v2 to v3
+# Chapter 36: Upgrading from v2 to v3
 
 ## 1. Overview
 
@@ -446,13 +446,13 @@ Features that did not exist in v2. Each is covered in its own chapter:
 
 - **Built-in HTTP server** -- No Apache or Nginx needed for development (Chapter 1).
 - **Connection pooling** -- `pool` parameter on database connections (Chapter 5).
-- **Query builder** -- Fluent SQL without raw strings (Chapter 12).
-- **Job queues** -- Background task processing (Chapter 13).
-- **WebSocket support** -- Real-time communication built in (Chapter 14).
-- **Email sending** -- Native SMTP, no SwiftMailer (Chapter 15).
-- **Caching layer** -- File, Redis, Valkey, Mongo backends (Chapter 16).
-- **GraphQL** -- Built-in GraphQL endpoint (Chapter 18).
-- **CLI tooling** -- `tina4` command for scaffolding, migrations, serving (Chapter 21).
+- **Query builder** -- Fluent SQL without raw strings (Chapter 7).
+- **Job queues** -- Background task processing (Chapter 12).
+- **WebSocket support** -- Real-time communication built in (Chapter 23).
+- **Email sending** -- Native SMTP, no SwiftMailer (Chapter 16).
+- **Caching layer** -- File, Redis, Valkey, Mongo backends (Chapter 11).
+- **GraphQL** -- Built-in GraphQL endpoint (Chapter 22).
+- **CLI tooling** -- `tina4` command for scaffolding, migrations, serving (Chapter 30).
 - **Auto-mapping in ORM** -- `$autoMap = true` eliminates manual field mappings (Chapter 6).
 - **Rate limiting** -- Per-IP rate limiting via env vars (Chapter 10).
 - **CSRF protection** -- Built-in, enabled by default (Chapter 10).
@@ -526,7 +526,7 @@ Follow these steps in order. Check each one off as you go.
 
 13. **Run migrations.** Start the server and trigger a migration run. Tina4 auto-upgrades the tracking table. Verify your existing migrations still apply cleanly.
 
-14. **Test every route.** Hit every endpoint. Check auth behaviour. Verify response formats. The test chapter (Chapter 19) covers how to write automated tests.
+14. **Test every route.** Hit every endpoint. Check auth behaviour. Verify response formats. The test chapter (Chapter 18) covers how to write automated tests.
 
 15. **Remove leftover v2 files.** Delete the old `routes/`, `orm/`, and `templates/` directories at the project root (now that everything is under `src/`). Clean up any v2-specific config files.
 

@@ -1,4 +1,4 @@
-# Chapter 30: Release Notes
+# Chapter 35: Release Notes
 
 ## Version History
 
@@ -743,7 +743,7 @@ The v3.0.0 release replaced the entire v2 codebase. Zero external dependencies. 
 - **`tina4 generate` scaffolding.** Generate models, routes, migrations, and middleware from the command line.
 - **Custom error pages.** Self-contained 404, 403, and 500 pages with clean, framework-neutral design.
 
-For the full migration guide, see Chapter 29: Upgrading from v2 to v3.
+For the full migration guide, see Chapter 36: Upgrading from v2 to v3.
 
 ---
 

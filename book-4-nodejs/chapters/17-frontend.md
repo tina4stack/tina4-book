@@ -1,4 +1,4 @@
-# Chapter 15: Frontend Integration
+# Chapter 17: Frontend Integration
 
 ## 1. Beyond JSON APIs
 
@@ -407,7 +407,7 @@ The element with id `loadingSpinner` appears while the request flies and disappe
 
 frond.js toggles `display: block` and `display: none` on the element. No extra CSS needed.
 
-### WebSocket (Covered in Chapter 12)
+### WebSocket (Covered in Chapter 23)
 
 ```javascript
 const ws = frond.ws("/ws/chat/general");

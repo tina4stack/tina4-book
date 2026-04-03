@@ -1,4 +1,4 @@
-# Chapter 8: Middleware
+# Chapter 10: Middleware
 
 ## 1. The Gatekeepers
 
@@ -745,7 +745,7 @@ end
 
 # Chapter 10: Security
 
-Every route you write is a door. Chapter 7 gave you locks. Chapter 8 gave you guards. Chapter 9 gave you session keys. This chapter ties them together into a defence that works without thinking about it.
+Every route you write is a door. Chapter 8 gave you locks. Chapter 10 gave you guards. Chapter 9 gave you session keys. This chapter ties them together into a defence that works without thinking about it.
 
 Tina4 ships secure by default. POST routes require authentication. CSRF tokens protect forms. Security headers harden every response. The framework does the boring security work so you focus on building features. But you need to understand what it does — and why — so you don't accidentally undo it.
 

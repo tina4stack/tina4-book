@@ -1,4 +1,4 @@
-# Chapter 21: Building a Complete App
+# Chapter 34: Building a Complete App
 
 ## 1. Putting It All Together
 
@@ -1384,14 +1384,14 @@ This chapter used every major concept from the book:
 | Twig templates | Chapter 4 |
 | Database queries | Chapter 5 |
 | ORM models (User, Task) | Chapter 6 |
-| JWT authentication | Chapter 7 |
-| Auth middleware | Chapter 8 |
-| Email notifications (Messenger) | Chapter 13 |
-| Cache (dashboard stats) | Chapter 14 |
-| Frontend (tina4css dashboard) | Chapter 15 |
-| WebSocket (live updates) | Chapter 12 |
-| Testing (full test suite) | Chapter 17 |
-| Docker deployment | Chapter 20 |
+| JWT authentication | Chapter 8 |
+| Auth middleware | Chapter 10 |
+| Email notifications (Messenger) | Chapter 16 |
+| Cache (dashboard stats) | Chapter 11 |
+| Frontend (tina4css dashboard) | Chapter 17 |
+| WebSocket (live updates) | Chapter 23 |
+| Testing (full test suite) | Chapter 18 |
+| Docker deployment | Chapter 33 |
 
 ---
 

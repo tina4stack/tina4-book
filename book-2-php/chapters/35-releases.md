@@ -1,10 +1,10 @@
-# Chapter 30: Release Notes
+# Chapter 35: Release Notes
 
 ## Version History
 
 Tina4 PHP follows semantic versioning. The major number changes when something breaks. The minor number changes when something new arrives. The patch number changes when something gets fixed. Each release is available on Packagist.
 
-This chapter covers the full v3 line -- from the first release candidate through the current stable release. If you are upgrading from v2, read Chapter 29 first. It covers every breaking change and gives you a migration checklist.
+This chapter covers the full v3 line -- from the first release candidate through the current stable release. If you are upgrading from v2, read Chapter 36 first. It covers every breaking change and gives you a migration checklist.
 
 ---
 

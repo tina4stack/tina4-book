@@ -1,4 +1,4 @@
-# Chapter 15: Frontend with tina4css
+# Chapter 17: Frontend with tina4css
 
 ## 1. The Problem with Frontend Toolchains
 
@@ -449,7 +449,7 @@ The `data-frond-submit` attribute tells frond.js the URL to POST to. The `data-f
 
 ### Token Management
 
-When your application uses JWT authentication (Chapter 7), frond.js manages tokens automatically:
+When your application uses JWT authentication (Chapter 8), frond.js manages tokens automatically:
 
 ```javascript
 // Store the token after login

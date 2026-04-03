@@ -1,4 +1,4 @@
-# Chapter 13: Email with Messenger
+# Chapter 16: Email with Messenger
 
 ## 1. Every App Sends Email
 
@@ -634,7 +634,7 @@ With `TINA4_DEBUG=true`, the email appears in the dev dashboard instead of reach
 
 ## 12. Sending Email via Queues
 
-In production, never send email inside a route handler. The SMTP call blocks the response. Use the queue system from Chapter 11:
+In production, never send email inside a route handler. The SMTP call blocks the response. Use the queue system from Chapter 12:
 
 ```python
 from tina4_python.core.router import post, template

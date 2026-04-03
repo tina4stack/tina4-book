@@ -1,4 +1,4 @@
-# Chapter 26: Upgrading from v2 to v3
+# Chapter 36: Upgrading from v2 to v3
 
 ## 1. Overview
 
@@ -527,14 +527,14 @@ TINA4_SESSION_SAMESITE=Strict
 
 v3 adds capabilities that did not exist in v2. Each has its own chapter:
 
-- **Events system** -- publish and subscribe to application events (Chapter 20)
-- **GraphQL engine** -- schema-first GraphQL with resolvers (Chapter 18)
+- **Events system** -- publish and subscribe to application events (Chapter 13)
+- **GraphQL engine** -- schema-first GraphQL with resolvers (Chapter 22)
 - **WSDL/SOAP services** -- consume and expose SOAP endpoints
-- **WebSocket with Redis backplane** -- real-time with horizontal scaling (Chapter 14)
-- **Response caching middleware** -- cache responses with TTL and invalidation (Chapter 16)
+- **WebSocket with Redis backplane** -- real-time with horizontal scaling (Chapter 23)
+- **Response caching middleware** -- cache responses with TTL and invalidation (Chapter 11)
 - **DI container** -- dependency injection for services and repositories
-- **Queue system** -- RabbitMQ, Kafka, and MongoDB backends (Chapter 13)
-- **Swagger/OpenAPI auto-generation** -- live API docs from route decorators (Chapter 11)
+- **Queue system** -- RabbitMQ, Kafka, and MongoDB backends (Chapter 12)
+- **Swagger/OpenAPI auto-generation** -- live API docs from route decorators (Chapter 20)
 - **Auto-CRUD endpoint generator** -- CRUD routes from ORM models with one line
 - **Seeder/fake data** -- populate databases with realistic test data
 - **i18n translations** -- multi-language support with translation files

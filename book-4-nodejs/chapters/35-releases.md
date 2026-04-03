@@ -1,4 +1,4 @@
-# Chapter 30: Release Notes
+# Chapter 35: Release Notes
 
 Tina4 Node.js follows semantic versioning. The major version (3) marks the ground-up rewrite. The minor version tracks feature additions. The patch version tracks fixes, template engine corrections, and cross-framework parity updates.
 

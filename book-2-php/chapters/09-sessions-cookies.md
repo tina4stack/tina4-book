@@ -4,7 +4,7 @@
 
 Your e-commerce site needs a shopping cart that survives page reloads, remembers the user's language, and flashes success messages after form submissions. HTTP has no memory. Every request is independent. Sessions and cookies give the server a way to remember who is asking and what they have been doing.
 
-Chapter 7 introduced sessions for authentication. This chapter goes deeper: session backends, flash messages, cookies, remember-me tokens, and security configuration.
+Chapter 8 introduced sessions for authentication. This chapter goes deeper: session backends, flash messages, cookies, remember-me tokens, and security configuration.
 
 ---
 

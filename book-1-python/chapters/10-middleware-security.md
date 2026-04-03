@@ -1,4 +1,4 @@
-# Chapter 8: Middleware
+# Chapter 10: Middleware
 
 ## 1. The Pipeline Pattern
 
@@ -608,7 +608,7 @@ Build a complete API key system with key management and usage tracking.
 ### Test with:
 
 ```bash
-# Create an API key (requires auth token from Chapter 7)
+# Create an API key (requires auth token from Chapter 8)
 curl -X POST http://localhost:7145/admin/api-keys \
   -H "Authorization: Bearer YOUR_AUTH_TOKEN" \
   -H "Content-Type: application/json" \
@@ -826,7 +826,7 @@ async def api_status(request, response):
 
 # Chapter 10: Security
 
-Every route you write is a door. Chapter 7 gave you locks. Chapter 8 gave you guards. Chapter 9 gave you session keys. This chapter ties them together into a defence that works without thinking about it.
+Every route you write is a door. Chapter 8 gave you locks. Chapter 10 gave you guards. Chapter 9 gave you session keys. This chapter ties them together into a defence that works without thinking about it.
 
 Tina4 ships secure by default. POST routes require authentication. CSRF tokens protect forms. Security headers harden every response. The framework does the boring security work so you focus on building features. But you need to understand what it does — and why — so you don't accidentally undo it.
 

@@ -1,4 +1,4 @@
-# Chapter 30: Release Notes
+# Chapter 35: Release Notes
 
 Tina4 Ruby follows semantic versioning. The major version (3) marks the ground-up rewrite from v2. Minor versions (3.1, 3.2, etc.) introduce features and non-breaking API additions. Patch versions carry bug fixes and small improvements.
 
