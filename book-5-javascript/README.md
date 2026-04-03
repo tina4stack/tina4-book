@@ -1,4 +1,4 @@
-# tina4-js: The Sub-3KB Reactive Framework
+# tina4-js: The 1.5KB Reactive Core
 
 ## A Practical Guide to Building Modern Web Applications
 
@@ -6,7 +6,7 @@
 
 You install a framework. It pulls 200 packages. It creates a dozen configuration files. It generates a project scaffold larger than your application will ever be. You spend an afternoon reading documentation before you write a single line of business logic.
 
-tina4-js takes a different path. Under 3KB core gzipped. Zero dependencies. No virtual DOM. No build step required.
+tina4-js takes a different path. 1.5KB core gzipped. Under 6KB for the full framework. Zero dependencies. No virtual DOM. No build step required.
 
 Signals for state. Tagged templates for DOM. Web Components for encapsulation. A router for navigation. An HTTP client for APIs. WebSocket for real-time. PWA for installability. Seven modules. One import. That is the entire framework.
 

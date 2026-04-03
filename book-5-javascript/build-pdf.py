@@ -334,7 +334,7 @@ def build_pdf():
         rightMargin=1*inch,
         topMargin=0.8*inch,
         bottomMargin=0.8*inch,
-        title="tina4-js: The Sub-3KB Reactive Framework",
+        title="tina4-js: The 1.5KB Reactive Core",
         author="Andre van Zuydam",
         subject="A practical guide to building modern web applications with tina4-js",
     )

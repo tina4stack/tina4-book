@@ -110,7 +110,7 @@ Tina4 is four implementations of the same framework: Python, PHP, Ruby, and Node
 | 40 | **Localization** | JSON locale files; `t()` function; `{placeholder}` interpolation; fallback chain |
 | 41 | **Structured Logging** | `Log.info/debug/warning/error`; log levels; file output with rotation |
 | 42 | **DI Container** | `Container.register` (transient) and `Container.singleton` (cached) |
-| 43 | **Frontend (tina4-js)** | Sub-3KB reactive JS: signals, templating, routing, WebSocket client |
+| 43 | **Frontend (tina4-js)** | 1.5KB core gzipped reactive JS: signals, templating, routing, WebSocket client |
 | 44 | **MCP Dev Tools** | Model Context Protocol integration: route inspection, ORM access, log streaming |
 
 ---
@@ -154,7 +154,7 @@ Tina4 is deliberately minimal:
 
 - **No ORM magic / active record inflation**: Queries are explicit; the ORM maps rows to objects, it does not generate SQL automatically from relationships.
 - **No dependency scanning**: The DI container is explicit. You register what you want, not what a scanner finds.
-- **No bundled frontend framework**: `tina4-js` is a separate 3KB library you opt into. Tina4 itself is backend-only.
+- **No bundled frontend framework**: `tina4-js` is a separate library (1.5KB core, under 6KB full) you opt into. Tina4 itself is backend-only.
 - **No cloud vendor lock-in**: Queues, cache, sessions, and email are backend-agnostic. The backend is a config variable.
 
 The goal is a framework you can understand completely in a weekend and build on confidently for years.
