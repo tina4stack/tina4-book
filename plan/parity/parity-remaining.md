@@ -47,7 +47,7 @@ All 4 frameworks auto-generate WSDL at `?wsdl` and handle SOAP requests.
 | `listeners(event)` | YES | YES | YES | YES | OK |
 | `clear()` | YES | YES | YES | YES | OK |
 
-- [ ] **Node.js missing `emit_async()`** — TODO (low priority, async emit can be done manually)
+- [x] ~~Node.js missing `emit_async()`~~ — FIXED: `emitAsync()` added
 
 ## Api Client (Outbound HTTP) — FULL PARITY (100%)
 
@@ -83,7 +83,7 @@ All use zero dependencies (stdlib HTTP clients).
 | Interpolation `{placeholder}` | YES | YES | YES | YES | OK |
 | Nested keys (dot notation) | YES | YES | YES | YES | OK |
 
-- [ ] **Minor:** Ruby uses YAML files, others use JSON — BY DESIGN
+- [x] ~~Ruby uses YAML, others JSON~~ — FIXED: all 4 now support both JSON and YAML (zero-dep parser)
 
 ## HtmlElement — FULL PARITY (100%)
 
@@ -103,9 +103,9 @@ All use zero dependencies (stdlib HTTP clients).
 |-------|--------|-------|
 | GraphQL | **100%** | schema_sdl + introspect added to all |
 | WSDL/SOAP | **100%** | Node DOM parser fixed |
-| Events | **95%** | Node missing emit_async (TODO) |
+| Events | **100%** | emitAsync added |
 | Api Client | **100%** | Audit was wrong — all 4 have it |
 | Swagger | **100%** | BY DESIGN differences |
-| i18n | **95%** | Ruby YAML vs JSON (BY DESIGN) |
+| i18n | **100%** | All support JSON + YAML |
 | HtmlElement | **100%** | No issues |
 | Seeder | **100%** | No issues |
