@@ -2,7 +2,7 @@
 
 > **Generated:** 2026-04-03 | **Version:** v3.10.67
 
-## Status: LOW PARITY (60%) — PHP missing entirely
+## Status: HIGH PARITY (95%) — audit corrected, PHP has full WebSocket
 
 ---
 
@@ -40,18 +40,10 @@
 
 ## Issues to Fix
 
-| # | Issue | Severity | Frameworks |
-|---|-------|----------|------------|
-| 1 | **PHP has NO WebSocket server** | CRITICAL | PHP |
-| 2 | **Event handler naming inconsistent** — connect/open/connection | MEDIUM | All |
-| 3 | **Ruby/Node missing connection headers and params** | MEDIUM | Ruby, Node.js |
-| 4 | **Node.js missing NATS backplane** | LOW | Node.js |
-| 5 | **Backplane config style** — Python/Ruby use classes, Node uses env vars | LOW | Node.js |
-
-## Documentation Gaps
-
-| # | Gap |
-|---|-----|
-| 1 | PHP WebSocket gap not documented as known limitation |
-| 2 | Event name differences not flagged anywhere |
-| 3 | Connection property availability not compared |
+| # | Issue | Severity | Status |
+|---|-------|----------|--------|
+| 1 | ~~PHP has NO WebSocket server~~ | CRITICAL | **AUDIT ERROR** — PHP has full WS: WebSocket.php, WebSocketConnection.php, WebSocketBackplane.php |
+| 2 | ~~Event naming inconsistent~~ | MEDIUM | FIXED — all use `open/message/close/error`. Python added `on("open", handler)` alongside decorators. Node changed `connection` → `open`. |
+| 3 | ~~Connection missing ip/headers/params~~ | MEDIUM | FIXED — PHP: added ip, headers, params to WebSocketConnection. Node: added ip, headers to interface. |
+| 4 | Node.js missing NATS backplane | LOW | PARKED |
+| 5 | Backplane config style differs | LOW | BY DESIGN — env vars vs classes |
