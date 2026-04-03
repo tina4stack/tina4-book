@@ -141,12 +141,12 @@ odbc:///DSN=MyDSN
 
 ## Issues to Fix
 
-| # | Issue | Severity | Frameworks |
-|---|-------|----------|------------|
-| 1 | `execute()` return type: Python `DatabaseResult`, PHP `bool`, Ruby `hash`, Node `unknown` | MEDIUM | All |
-| 2 | Python DatabaseResult missing `limit`/`offset` fields | LOW | Python |
-| 3 | PHP `get_columns` on adapter not Database class | LOW | PHP |
-| 4 | Node.js missing `cache_stats()` API | LOW | Node.js |
+| # | Issue | Severity | Status |
+|---|-------|----------|--------|
+| 1 | ~~`execute()` return type differs~~ | MEDIUM | FIXED — all return bool for writes, DatabaseResult for RETURNING/CALL/EXEC. Python has last_error/get_error(). |
+| 2 | Python DatabaseResult missing `limit`/`offset` fields | LOW | PARKED — minor |
+| 3 | PHP `get_columns` on adapter not Database class | LOW | PARKED — minor |
+| 4 | Node.js missing `cache_stats()` API | LOW | PARKED — minor |
 
 ## Documentation Gaps
 
