@@ -37,16 +37,16 @@ Core CRUD methods (get/set/delete/has/all/clear/destroy) are consistent. Flash, 
 
 ## Issues to Fix
 
-| # | Issue | Severity | Frameworks |
-|---|-------|----------|------------|
-| 1 | **Node.js has duplicate `clear()` method** (two definitions) | HIGH | Node.js |
-| 2 | **Flash API differs** — Python/Ruby: dual-mode `flash(key, value?)`. PHP/Node: separate `flash()` + `getFlash()` | MEDIUM | All |
-| 3 | **`regenerate()` return** — Ruby returns `nil`, others return new session ID string | MEDIUM | Ruby |
-| 4 | **`save()` visibility** — Node.js makes it private, others expose it | MEDIUM | Node.js |
-| 5 | **Session ID access** — Python: `session.session_id` property. PHP: `getSessionId()`. Ruby: `session.id`. Node: `getId()` | LOW | All |
-| 6 | **`cookie_header()` helper** — only Python/Ruby have it | LOW | PHP, Node.js |
-| 7 | **Constructor differs** — Python takes handler instance, PHP/Node take backend string, Ruby takes env | LOW | All |
-| 8 | **Persistence model** — Python/Ruby use dirty flag (lazy save). PHP/Node auto-save on every set/delete | LOW | All |
+| # | Issue | Severity | Status |
+|---|-------|----------|--------|
+| 1 | ~~Node.js duplicate `clear()`~~ | HIGH | FIXED — removed first, kept metadata-preserving version |
+| 2 | ~~Flash API differs~~ | MEDIUM | FIXED — all dual-mode flash() + get_flash/getFlash alias |
+| 3 | ~~Ruby `regenerate()` returns nil~~ | MEDIUM | FIXED — returns new session ID |
+| 4 | ~~Node.js `save()` private~~ | MEDIUM | FIXED — made public |
+| 5 | ~~Node `getId()` naming~~ | LOW | FIXED — renamed to `getSessionId()` |
+| 6 | `cookie_header()` only Python/Ruby | LOW | PARKED — nice-to-have |
+| 7 | Constructor differs | LOW | BY DESIGN — language idioms |
+| 8 | Persistence model differs | LOW | BY DESIGN — lazy vs auto-save |
 
 ## Documentation Gaps
 
