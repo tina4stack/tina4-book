@@ -274,15 +274,15 @@
 
 ### Critical (behavior differences)
 
-| # | Issue | Frameworks Affected |
-|---|-------|-------------------|
-| 1 | **PHP query methods are instance methods** — findById, findOrFail, all, select, selectOne, where, count, withTrashed, createTable, scope should all be class/static methods | PHP |
-| 2 | **`all()` return types differ** — Python: `(list, int)` tuple, PHP: dict, Ruby/Node: array | All |
-| 3 | **`select()` return types differ** — Python returns tuple, others return array | Python vs PHP/Ruby/Node |
-| 4 | **`scope()` semantics differ** — Python/Ruby register a method, PHP/Node return results | All |
-| 5 | **PHP `count()` has no params** — others accept conditions/params | PHP |
-| 6 | **Node.js has no `where()` method** — uses findAll with where param | Node.js |
-| 7 | **`save()` return type differs** — Python: self, PHP/Ruby: bool, Node: void | All |
+| # | Issue | Frameworks Affected | Status |
+|---|-------|-------------------|--------|
+| 1 | ~~PHP query methods are instance methods~~ | PHP | **BY DESIGN** — `User().where()` is same pattern in Python. Instance carries DB context. |
+| 2 | **`all()` return types differ** — Python: `(list, int)` tuple, PHP: dict, Ruby/Node: array | All | TODO |
+| 3 | **`select()` return types differ** — Python returns tuple, others return array | Python vs PHP/Ruby/Node | TODO |
+| 4 | **`scope()` semantics differ** — Python/Ruby register a method, PHP/Node return results | All | TODO |
+| 5 | **PHP `count()` has no params** — others accept conditions/params | PHP | TODO |
+| 6 | **Node.js has no `where()` method** — uses findAll with where param | Node.js | TODO |
+| 7 | **`save()` return type differs** — Python: self, PHP/Ruby: bool, Node: void | All | TODO |
 
 ### Moderate (naming/param differences) — ALL FIXED 2026-04-03
 
