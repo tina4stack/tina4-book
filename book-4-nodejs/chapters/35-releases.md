@@ -6,6 +6,9 @@ This chapter covers every release from v3.0.0 through v3.10.x. Each section grou
 
 ---
 
+## v3.10.66 (2026-04-03)
+- **Metrics file detail fix** — clicking bubbles in framework scanning mode now resolves paths correctly via scan root tracking
+
 ## v3.10.65 (2026-04-03)
 - **Metrics 3-stage test detection** — filename, path, and content matching
 - **Metrics framework mode** — scans framework source with correct relative paths
