@@ -284,15 +284,15 @@
 | 6 | **Node.js has no `where()` method** — uses findAll with where param | Node.js |
 | 7 | **`save()` return type differs** — Python: self, PHP/Ruby: bool, Node: void | All |
 
-### Moderate (naming/param differences)
+### Moderate (naming/param differences) — ALL FIXED 2026-04-03
 
-| # | Issue | Frameworks Affected |
-|---|-------|-------------------|
-| 8 | **Node.js `withTrashed` uses `skip` not `offset`** | Node.js |
-| 9 | **PHP `toArray()` is dict, Python/Ruby/Node `toArray()` is value list** | PHP vs others |
-| 10 | **`toJson()` include param** — Python/Ruby support it, PHP/Node don't | PHP, Node.js |
-| 11 | **Ruby relationship methods named `query_has_one/many/belongs_to`** | Ruby |
-| 12 | **Node.js `hasMany()` instance method missing limit/offset** | Node.js |
+| # | Issue | Status |
+|---|-------|--------|
+| 8 | ~~Node.js `withTrashed` uses `skip` not `offset`~~ | FIXED — renamed to `offset` |
+| 9 | ~~PHP `toArray()` is dict~~ | FIXED — `toDict()` is primary, `toArray()` returns values, `toAssoc()` added as alias everywhere |
+| 10 | ~~`toJson()` include param missing in PHP/Node~~ | FIXED — added `include` param |
+| 11 | ~~Ruby relationship methods named `query_*`~~ | FIXED — `imperative_has_one/many/belongs_to` aliases added |
+| 12 | ~~Node.js `hasMany()` missing limit/offset~~ | FIXED — added `limit=100, offset=0` params |
 
 ### Documentation gaps
 
@@ -301,7 +301,6 @@
 | 1 | Book chapters don't cover `load()` new API (just fixed, book says raw SQL) |
 | 2 | `scope()` semantics not explained (register vs execute) |
 | 3 | Return type differences between frameworks not documented anywhere |
-| 4 | `toArray()` semantic difference (PHP dict vs others flat list) not flagged |
 
 ---
 
