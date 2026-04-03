@@ -22,6 +22,20 @@ print(tina4_python.__version__)
 
 ---
 
+## v3.10.68 (2026-04-03) — Full Parity Release
+- **100% API parity** across Python, PHP, Ruby, Node.js — 30+ issues fixed
+- **ORM:** save() returns self/false, all/select/where return arrays, toDict/toAssoc standardized, scope() registers reusable method, where()/all() on Node, count() on PHP
+- **Auth:** expires_in in minutes, PBKDF2 260k iterations, env SECRET fallback, API key fallback in authenticateRequest
+- **Session:** dual-mode flash(), get_flash/getFlash, cookieHeader on all, getSessionId on Node, save() public on Node
+- **Database:** execute() returns bool/DatabaseResult for RETURNING, get_last_id/get_error on all, getColumns on PHP, cacheStats on Node
+- **Request/Response:** Node files as dict, Python query property, cookies on PHP/Node, contentType on Node, xml() on PHP/Node, Ruby callable response
+- **Queue:** consume() poll_interval (long-running generator with built-in sleep)
+- **WebSocket:** event naming standardized (open/message/close/error), connection ip/headers/params, Python on() string API
+- **GraphQL:** schema_sdl()/schemaSdl() and introspect() on all 4
+- **WSDL:** Node.js zero-dep DOM parser (replaced regex)
+- **Events:** emitAsync()/emit_async() on all 4
+- **i18n:** zero-dep YAML locale file support on Python/PHP/Node (Ruby already had it)
+
 ## v3.10.67 (2026-04-03)
 - **BREAKING: request.files content is now raw bytes** — previously base64-encoded; remove any `base64.b64decode()` calls when saving uploaded files. Write `file["content"]` directly to disk
 - **load() is now an instance method** — `model.load(sql, params)` calls selectOne internally, populates the instance, returns `True`/`False`. Use `Model.find(id)` for PK lookups

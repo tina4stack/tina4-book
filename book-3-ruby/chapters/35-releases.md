@@ -6,6 +6,19 @@ This chapter covers every v3 release from the initial launch through the current
 
 ---
 
+## v3.10.68 (2026-04-03) — Full Parity Release
+- **100% API parity** across Python, PHP, Ruby, Node.js — 30+ issues fixed
+- **ORM:** save() returns self/false, arrays not tuples, toDict/toAssoc, scope registers method, where()/all() on Node, count() on PHP
+- **Auth:** expires_in minutes, PBKDF2 260k, env SECRET fallback, API key fallback
+- **Session:** dual-mode flash(), get_flash, cookieHeader, getSessionId
+- **Database:** execute() bool/DatabaseResult, get_last_id/get_error, getColumns, cacheStats
+- **Request/Response:** files dict, query, cookies, contentType, xml(), callable
+- **Queue:** consume() poll_interval
+- **WebSocket:** event naming, connection properties
+- **GraphQL:** schema_sdl() + introspect() on all 4
+- **Events:** emitAsync() on all 4
+- **i18n:** zero-dep YAML support
+
 ## v3.10.67 (2026-04-03)
 - **load() is now an instance method** — `model.load(sql, params)` calls select_one internally, populates the instance, returns `true`/`false`. Use `find(id)` for PK lookups
 - **api.upload()** added to tina4-js — sends FormData with Bearer token auth for multipart file uploads
