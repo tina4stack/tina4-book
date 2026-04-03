@@ -44,7 +44,7 @@ Core CRUD methods (get/set/delete/has/all/clear/destroy) are consistent. Flash, 
 | 3 | ~~Ruby `regenerate()` returns nil~~ | MEDIUM | FIXED — returns new session ID |
 | 4 | ~~Node.js `save()` private~~ | MEDIUM | FIXED — made public |
 | 5 | ~~Node `getId()` naming~~ | LOW | FIXED — renamed to `getSessionId()` |
-| 6 | `cookie_header()` only Python/Ruby | LOW | PARKED — nice-to-have |
+| 6 | ~~`cookie_header()` only Python/Ruby~~ | LOW | FIXED — added to PHP/Node |
 | 7 | Constructor differs | LOW | BY DESIGN — language idioms |
 | 8 | Persistence model differs | LOW | BY DESIGN — lazy vs auto-save |
 
