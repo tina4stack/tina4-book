@@ -45,5 +45,5 @@
 | 1 | ~~PHP has NO WebSocket server~~ | CRITICAL | **AUDIT ERROR** — PHP has full WS: WebSocket.php, WebSocketConnection.php, WebSocketBackplane.php |
 | 2 | ~~Event naming inconsistent~~ | MEDIUM | FIXED — all use `open/message/close/error`. Python added `on("open", handler)` alongside decorators. Node changed `connection` → `open`. |
 | 3 | ~~Connection missing ip/headers/params~~ | MEDIUM | FIXED — PHP: added ip, headers, params to WebSocketConnection. Node: added ip, headers to interface. |
-| 4 | Node.js missing NATS backplane | LOW | PARKED |
+| 4 | ~~Node.js missing NATS backplane~~ | LOW | **AUDIT ERROR** — all 4 frameworks have Redis + NATS backplane |
 | 5 | Backplane config style differs | LOW | BY DESIGN — env vars vs classes |
