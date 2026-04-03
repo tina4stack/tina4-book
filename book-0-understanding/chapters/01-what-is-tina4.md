@@ -1,12 +1,20 @@
 # Chapter 1: What Is Tina4?
 
-## The "Not a Framework" Philosophy
+## The AI Framework Philosophy
 
-You install a framework. It pulls 70 packages. It creates 14 configuration files. It generates a folder structure that looks like an architect had a breakdown. Twenty minutes later, you still haven't written a line of your own code.
+**TINA4 — The Intelligent Native Application 4ramework.**
 
-Tina4 is a toolkit. One package. One folder structure. Zero configuration files beyond a `.env`. You write your code, drop it in the right folder, and the framework discovers it.
+Four words. Each one carries weight.
 
-Here is a complete API endpoint in Tina4:
+**Intelligent.** The framework understands AI. Every project ships with a CLAUDE.md file that gives AI assistants complete knowledge of the framework's conventions, API, and structure. Your AI writes correct code on the first try because the framework told it how.
+
+**Native.** Zero third-party dependencies. Every feature — the template engine, the JWT library, the SCSS compiler, the queue system, the GraphQL parser — is built from scratch using the language's standard library. No supply chain risk. No version conflicts. No surprises.
+
+**Application.** This builds real production applications. Routing, ORM, authentication, queues, WebSocket, email, GraphQL, SOAP — 44 features, all included. One package. One install. Ship today.
+
+**4ramework.** Four languages. One API. Python, PHP, Ruby, Node.js — learn the conventions once, build in any of them. The "4" is both the number and "for" — a framework *for* developers who value their time.
+
+Here is a complete API endpoint:
 
 ```php
 <?php
@@ -19,13 +27,13 @@ Router::get("/api/greeting/{name}", function ($request, $response) {
 });
 ```
 
-No base controller. No service provider. No bootstrapping ritual. Drop that file into `src/routes/`, start the server, and it works.
+No base controller. No service provider. No bootstrapping ritual. Drop that file into `src/routes/`, start the server, and it works. Your AI assistant knows this too — it reads the same conventions you do.
 
-The philosophy fits in one sentence: **you write code, Tina4 stays out of the way.**
+The philosophy fits in one sentence: **the framework that gets out of the way — for humans AND for AI.**
 
-Routes go in `src/routes/`. Templates go in `src/templates/`. Models go in `src/orm/`. Learn the convention once. Never think about it again.
+Routes go in `src/routes/`. Templates go in `src/templates/`. Models go in `src/orm/`. Learn the convention once. Your AI learns it once. Neither of you thinks about it again.
 
-This is not laziness. This is a decade of watching developers waste entire afternoons on configuration files, dependency conflicts, and framework upgrades that break everything. Tina4 was born from that frustration.
+A decade of watching developers waste afternoons on configuration files, dependency conflicts, and framework upgrades that break everything. Then AI arrived and made the problem worse — every framework's ambiguity became the AI's confusion. Tina4 was born from both frustrations. One structure. One way to do things. The AI never guesses wrong because there is only one right answer.
 
 ---
 
@@ -33,7 +41,7 @@ This is not laziness. This is a decade of watching developers waste entire after
 
 Tina4 v3 has **zero third-party dependencies** for its core features. The template engine, the JWT library, the SCSS compiler, the queue system, the GraphQL parser, the logger, the rate limiter — every piece is built from scratch using the language's standard library.
 
-This is not showing off. It is a survival strategy.
+This is a survival strategy — for you and for your AI assistant.
 
 ### Security
 

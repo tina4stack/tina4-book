@@ -165,4 +165,4 @@ Every chapter includes:
 
 ---
 
-*Tina4 — This is not a framework. https://tina4.com*
+*Tina4 — The Intelligent Native Application 4ramework. https://tina4.com*
