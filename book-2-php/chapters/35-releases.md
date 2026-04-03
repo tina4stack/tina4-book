@@ -8,6 +8,12 @@ This chapter covers the full v3 line -- from the first release candidate through
 
 ---
 
+## v3.10.67 (2026-04-03)
+- **load() returns bool** — `$model->load($sql, $params)` calls selectOne internally, populates the instance, returns `true`/`false`. Use `findById()` for PK lookups
+- **api.upload()** added to tina4-js — sends FormData with Bearer token auth for multipart file uploads
+- **ORM CLAUDE.md rewrite** — all method stubs now match actual API signatures
+- **File upload docs** — `$request->files` format documented in CLAUDE.md
+
 ## v3.10.66 (2026-04-03)
 - **Metrics file detail fix** — clicking bubbles in framework scanning mode now resolves paths correctly via scan root tracking
 

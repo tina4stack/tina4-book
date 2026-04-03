@@ -22,6 +22,13 @@ print(tina4_python.__version__)
 
 ---
 
+## v3.10.67 (2026-04-03)
+- **BREAKING: request.files content is now raw bytes** — previously base64-encoded; remove any `base64.b64decode()` calls when saving uploaded files. Write `file["content"]` directly to disk
+- **load() is now an instance method** — `model.load(sql, params)` calls selectOne internally, populates the instance, returns `True`/`False`. Use `Model.find(id)` for PK lookups
+- **api.upload()** added to tina4-js — sends FormData with Bearer token auth for multipart file uploads
+- **ORM CLAUDE.md rewrite** — all method stubs now match actual API signatures
+- **tina4-js skill** — critical input binding warning, routing docs (`{param}` not `:param`), file upload pattern
+
 ## v3.10.66 (2026-04-03)
 - **Metrics file detail fix** — clicking bubbles in framework scanning mode now resolves paths correctly via scan root tracking
 
