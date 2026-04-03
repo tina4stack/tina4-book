@@ -143,10 +143,10 @@ odbc:///DSN=MyDSN
 
 | # | Issue | Severity | Status |
 |---|-------|----------|--------|
-| 1 | ~~`execute()` return type differs~~ | MEDIUM | FIXED — all return bool for writes, DatabaseResult for RETURNING/CALL/EXEC. Python has last_error/get_error(). |
-| 2 | Python DatabaseResult missing `limit`/`offset` fields | LOW | PARKED — minor |
-| 3 | PHP `get_columns` on adapter not Database class | LOW | PARKED — minor |
-| 4 | Node.js missing `cache_stats()` API | LOW | PARKED — minor |
+| 1 | ~~`execute()` return type~~ | MEDIUM | FIXED — bool for writes, DatabaseResult for RETURNING. get_error()/get_last_id() on all. |
+| 2 | ~~Python DatabaseResult limit/offset~~ | LOW | FIXED — all adapters populate limit/offset |
+| 3 | ~~PHP getColumns on adapter~~ | LOW | FIXED — getColumns() added to Database class |
+| 4 | ~~Node.js missing cacheStats()~~ | LOW | FIXED — cacheStats() added |
 
 ## Documentation Gaps
 
