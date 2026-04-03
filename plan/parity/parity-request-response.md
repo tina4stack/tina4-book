@@ -23,15 +23,15 @@
 
 ## Issues — Request
 
-| # | Issue | Severity | Frameworks |
-|---|-------|----------|------------|
-| 1 | **Ruby `body` vs `body_parsed`** — others have single parsed `body` | MEDIUM | Ruby |
-| 2 | **Ruby header keys use underscores** — others use hyphens | MEDIUM | Ruby |
-| 3 | **Ruby `files` uses tempfile** — others use raw bytes/Buffer in `content` | MEDIUM | Ruby |
-| 4 | **Node.js `files` is array** — others are dict keyed by field name | MEDIUM | Node.js |
-| 5 | **Python has no separate `query` property** — merged into params | LOW | Python |
-| 6 | **PHP/Node don't expose `cookies` on request** | LOW | PHP, Node.js |
-| 7 | **Node.js no `content_type` property** — must use `headers["content-type"]` | LOW | Node.js |
+| # | Issue | Severity | Status |
+|---|-------|----------|--------|
+| 1 | Ruby `body` vs `body_parsed` | MEDIUM | BY DESIGN — Rack idiom |
+| 2 | Ruby header keys underscores | MEDIUM | BY DESIGN — Rack normalizes |
+| 3 | Ruby `files` uses tempfile | MEDIUM | BY DESIGN — Rack manages temps |
+| 4 | ~~Node.js `files` is array~~ | MEDIUM | FIXED — dict keyed by fieldName |
+| 5 | ~~Python no `query` property~~ | LOW | FIXED — `query` added separate from `params` |
+| 6 | ~~PHP/Node no `cookies`~~ | LOW | FIXED — parsed from Cookie header |
+| 7 | ~~Node no `contentType`~~ | LOW | FIXED — contentType property added |
 
 ---
 
@@ -42,24 +42,24 @@
 | `json(data, status?)` | YES | YES | YES | YES | OK |
 | `html(content, status?)` | YES | YES | YES | YES | OK |
 | `text(content, status?)` | YES | YES | YES | YES | OK |
-| `xml(content, status?)` | YES | NO | YES | NO | MISSING |
+| `xml(content, status?)` | YES | YES | YES | YES | OK |
 | `redirect(url, status?)` | YES (302) | YES (302) | YES (302) | YES (302) | OK |
 | `render(template, data)` | YES (sync) | YES (sync) | YES (sync) | YES (async) | OK |
 | `file(path, options?)` | YES | YES | YES | YES | OK |
 | `status(code)` | setter only | setter only | getter+setter | setter only | INCONSISTENT |
 | `header(name, value)` | setter only | setter only | getter+setter | setter only | INCONSISTENT |
 | `cookie(name, value, opts)` | YES | YES | YES | YES | OK (naming differs) |
-| Callable `response(data)` | YES | YES | NO | YES | MISSING Ruby |
+| Callable `response(data)` | YES | YES | YES (call) | YES | OK |
 
 ## Issues — Response
 
-| # | Issue | Severity | Frameworks |
-|---|-------|----------|------------|
-| 1 | **`xml()` missing** in PHP and Node.js | MEDIUM | PHP, Node.js |
-| 2 | **Ruby `status()` / `header()` are getter+setter** — others are setter only | LOW | Ruby |
-| 3 | **Ruby missing callable `response(data, status, content_type)`** | LOW | Ruby |
-| 4 | **Cookie option naming** — `http_only` (Py) vs `httponly` (PHP) vs `httpOnly` (Node) | LOW | All |
-| 5 | **Node.js `render()` is async** — others are sync | MEDIUM | Node.js |
+| # | Issue | Severity | Status |
+|---|-------|----------|--------|
+| 1 | ~~`xml()` missing in PHP/Node~~ | MEDIUM | FIXED — added to both |
+| 2 | Ruby `status()`/`header()` getter+setter | LOW | BY DESIGN — Ruby idiom |
+| 3 | ~~Ruby missing callable response~~ | LOW | FIXED — `response.call(data, status, content_type)` |
+| 4 | Cookie option naming differs | LOW | BY DESIGN — language conventions |
+| 5 | Node.js `render()` async | MEDIUM | BY DESIGN — Node is async |
 
 ## Documentation Gaps
 
