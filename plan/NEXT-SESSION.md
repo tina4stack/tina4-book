@@ -46,3 +46,7 @@ Verify branded welcome page works with `tina4 init tina4js`.
 
 ## Priority 9: npm publish
 Sync npm package version (root package.json) with releases.
+
+## Parked: Archive old repos
+Defer to a dedicated session. 19 v2 split packages + 10 legacy repos to archive.
+See repo inventory in this file above.
