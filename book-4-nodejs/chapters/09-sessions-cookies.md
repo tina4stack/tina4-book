@@ -99,7 +99,10 @@ Access session data through `req.session`. It is available in every route handle
 | `req.session.save()` | Persist session data (auto-called after response) |
 | `req.session.regenerate()` | Generate a new session ID, preserve data |
 | `req.session.flash(key, value)` | Set flash data (one-time read) |
-| `req.session.getFlash(key)` | Read and remove flash data |
+| `req.session.flash(key)` | Read and remove flash data (dual-mode) |
+| `req.session.getFlash(key)` | Explicit getter alias for flash(key) |
+| `req.session.getSessionId()` | Get current session ID |
+| `req.session.cookieHeader()` | Get Set-Cookie header value |
 | `req.session.all()` | Get all session data as an object |
 
 ---
@@ -249,10 +252,12 @@ Router.post("/api/contact", async (req, res) => {
 
 ### Reading a Flash Message
 
+Flash is dual-mode: `flash(key, value)` sets, `flash(key)` gets and removes. `getFlash()` is an explicit alias.
+
 ```typescript
 Router.get("/contact", async (req, res) => {
-    const flashMessage = req.session.getFlash("message");
-    const flashType = req.session.getFlash("message_type") ?? "info";
+    const flashMessage = req.session.flash("message");       // get + auto-remove
+    const flashType = req.session.flash("message_type") ?? "info";
 
     return res.html("contact.html", {
         flash_message: flashMessage,

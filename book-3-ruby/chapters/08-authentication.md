@@ -36,27 +36,27 @@ The token has three parts separated by dots: header, payload, and signature. The
 
 ### Token Expiry
 
-By default, tokens expire after 1 hour (3600 seconds). Configure the expiry when generating the token:
+By default, tokens expire after 60 minutes. Configure the expiry when generating the token:
 
 ```ruby
-# Default: 1 hour
+# Default: 60 minutes
 token = Tina4::Auth.get_token(payload)
 
-# Custom: 24 hours
-token = Tina4::Auth.get_token(payload, expires_in: 86400)
+# Custom: 24 hours (1440 minutes)
+token = Tina4::Auth.get_token(payload, expires_in: 1440)
 
-# Custom: 7 days
-token = Tina4::Auth.get_token(payload, expires_in: 604800)
+# Custom: 7 days (10080 minutes)
+token = Tina4::Auth.get_token(payload, expires_in: 10080)
 ```
 
-The `expires_in` value is in **seconds**. Common settings:
+The `expires_in` value is in **minutes**. Common settings:
 
 | Value | Duration |
 |-------|----------|
-| `900` | 15 minutes |
-| `3600` | 1 hour (default) |
-| `86400` | 24 hours |
-| `604800` | 7 days |
+| `15` | 15 minutes |
+| `60` | 1 hour (default) |
+| `1440` | 24 hours |
+| `10080` | 7 days |
 
 ### Validating a Token
 

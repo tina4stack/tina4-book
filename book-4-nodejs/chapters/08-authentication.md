@@ -42,26 +42,26 @@ The `secret` parameter is required -- pass your secret key directly or read it f
 
 ### Token Expiry
 
-Pass the expiry time as the third argument to `getToken()` in **seconds**:
+Pass the expiry time as the third argument to `getToken()` in **minutes**:
 
 ```typescript
-const token = Auth.getToken(payload, secret, 3600); // 1 hour (default)
+const token = Auth.getToken(payload, secret, 60); // 1 hour (default)
 ```
 
 | Value | Duration |
 |-------|----------|
-| `900` | 15 minutes |
-| `3600` | 1 hour (default) |
-| `86400` | 24 hours |
-| `604800` | 7 days |
+| `15` | 15 minutes |
+| `60` | 1 hour (default) |
+| `1440` | 24 hours |
+| `10080` | 7 days |
 
 You can also configure the default expiry in `.env`:
 
 ```env
-TINA4_JWT_EXPIRY=86400
+TINA4_JWT_EXPIRY=1440
 ```
 
-The value is in seconds. `86400` is 24 hours.
+The value is in minutes. `1440` is 24 hours.
 
 ### Validating a Token
 
@@ -949,7 +949,7 @@ Router.put("/api/profile/password", async (req, res) => {
 
 **Problem:** Tokens that worked yesterday now return 401.
 
-**Cause:** The default token lifetime is 1 hour (3600 seconds). After that, the token is invalid even if the signature is correct.
+**Cause:** The default token lifetime is 60 minutes. After that, the token is invalid even if the signature is correct.
 
 **Fix:** Issue a new token at login. If your application needs long-lived sessions, use refresh tokens: a short-lived access token (15 minutes) paired with a long-lived refresh token (7 days) that can be used to get a new access token without re-entering credentials.
 
