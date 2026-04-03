@@ -277,12 +277,12 @@
 | # | Issue | Frameworks Affected | Status |
 |---|-------|-------------------|--------|
 | 1 | ~~PHP query methods are instance methods~~ | PHP | **BY DESIGN** — `User().where()` is same pattern in Python. Instance carries DB context. |
-| 2 | **`all()` return types differ** — Python: `(list, int)` tuple, PHP: dict, Ruby/Node: array | All | TODO |
-| 3 | **`select()` return types differ** — Python returns tuple, others return array | Python vs PHP/Ruby/Node | TODO |
+| 2 | ~~`all()` return types differ~~ | All | FIXED — all return array of ORM objects |
+| 3 | ~~`select()` return types differ~~ | All | FIXED — all return array of ORM objects |
 | 4 | **`scope()` semantics differ** — Python/Ruby register a method, PHP/Node return results | All | TODO |
 | 5 | **PHP `count()` has no params** — others accept conditions/params | PHP | TODO |
 | 6 | ~~Node.js has no `where()` method~~ | Node.js | FIXED — `where()` added, `findAll` renamed to `all()` |
-| 7 | **`save()` return type differs** — Python: self, PHP/Ruby: bool, Node: void | All | TODO |
+| 7 | ~~`save()` return type differs~~ | All | FIXED — all return self/this on success, false/null on failure (fluent) |
 
 ### Moderate (naming/param differences) — ALL FIXED 2026-04-03
 
