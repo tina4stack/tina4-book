@@ -129,7 +129,7 @@
 | 4 | ~~Ruby API key not timing-safe~~ | HIGH | FIXED — uses OpenSSL.fixed_length_secure_compare |
 | 5 | ~~PHP/Node require explicit secret~~ | MEDIUM | FIXED — all read SECRET from env with warning |
 | 6 | ~~Iterations differ~~ | MEDIUM | FIXED — all default to 260000 |
-| 7 | **Python doesn't support RS256** | MEDIUM | TODO — needs stdlib `rsa` module |
+| 7 | Python doesn't support RS256 | MEDIUM | PARKED — install `cryptography` module for RS256 |
 | 8 | ~~PHP/Node missing API key fallback~~ | LOW | FIXED — authenticateRequest falls back to API key |
 
 ## Documentation Gaps
