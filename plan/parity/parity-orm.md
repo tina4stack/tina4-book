@@ -281,7 +281,7 @@
 | 3 | **`select()` return types differ** — Python returns tuple, others return array | Python vs PHP/Ruby/Node | TODO |
 | 4 | **`scope()` semantics differ** — Python/Ruby register a method, PHP/Node return results | All | TODO |
 | 5 | **PHP `count()` has no params** — others accept conditions/params | PHP | TODO |
-| 6 | **Node.js has no `where()` method** — uses findAll with where param | Node.js | TODO |
+| 6 | ~~Node.js has no `where()` method~~ | Node.js | FIXED — `where()` added, `findAll` renamed to `all()` |
 | 7 | **`save()` return type differs** — Python: self, PHP/Ruby: bool, Node: void | All | TODO |
 
 ### Moderate (naming/param differences) — ALL FIXED 2026-04-03
