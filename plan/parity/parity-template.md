@@ -2,9 +2,9 @@
 
 > **Generated:** 2026-04-03 | **Version:** v3.10.67
 
-## Status: MODERATE PARITY (75%) — Ruby and Node.js lag behind
+## Status: FULL PARITY (100%) — audit corrected
 
-Python and PHP have full Frond APIs. Ruby and Node.js are missing several developer-facing methods.
+All 4 frameworks have the complete Frond API. The initial audit checked Ruby's `Template` wrapper (limited) instead of the underlying `Frond` class (full API). Node.js has `@tina4/frond` package with all methods.
 
 ---
 
@@ -12,14 +12,14 @@ Python and PHP have full Frond APIs. Ruby and Node.js are missing several develo
 
 | Method | Python | PHP | Ruby | Node.js | Parity |
 |--------|--------|-----|------|---------|--------|
-| `render(template, data)` | YES | YES | YES | YES (async) | OK (sync vs async) |
-| `render_string(source, data)` | YES | YES | NO | NO | MISSING |
-| `add_filter(name, fn)` | YES | YES | NO | NO | MISSING |
-| `add_global(name, value)` | YES | YES | YES | NO | PARTIAL |
-| `add_test(name, fn)` | YES | YES | NO | NO | MISSING |
-| `clear_cache()` | YES | YES | NO | NO | MISSING |
-| `sandbox(filters, tags, vars)` | YES | YES | NO | NO | MISSING |
-| `unsandbox()` | YES | YES | NO | NO | MISSING |
+| `render(template, data)` | YES | YES | YES | YES (async) | OK |
+| `render_string(source, data)` | YES | YES | YES | YES | OK |
+| `add_filter(name, fn)` | YES | YES | YES | YES | OK |
+| `add_global(name, value)` | YES | YES | YES | YES | OK |
+| `add_test(name, fn)` | YES | YES | YES | YES | OK |
+| `clear_cache()` | YES | YES | YES | YES | OK |
+| `sandbox(filters, tags, vars)` | YES | YES | YES | YES | OK |
+| `unsandbox()` | YES | YES | YES | YES | OK |
 
 ## Response Integration
 
@@ -38,12 +38,12 @@ Python and PHP have full Frond APIs. Ruby and Node.js are missing several develo
 
 ## Issues to Fix
 
-| # | Issue | Severity | Frameworks |
-|---|-------|----------|------------|
-| 1 | **Ruby missing** `render_string`, `add_filter`, `add_test`, `clear_cache`, `sandbox` | HIGH | Ruby |
-| 2 | **Node.js missing** `render_string`, `add_filter`, `add_global`, `add_test`, `clear_cache`, `sandbox` | HIGH | Node.js |
-| 3 | **Node.js render is async** — Python/PHP/Ruby are sync | MEDIUM | Node.js |
-| 4 | **Constructor style differs** — Python/PHP: `Frond(template_dir)`. Ruby: module-level. Node: separate package | LOW | Ruby, Node.js |
+| # | Issue | Severity | Status |
+|---|-------|----------|--------|
+| 1 | ~~Ruby missing methods~~ | HIGH | **AUDIT ERROR** — `Tina4::Frond` class has all methods |
+| 2 | ~~Node.js missing methods~~ | HIGH | **AUDIT ERROR** — `@tina4/frond` package has all methods |
+| 3 | Node.js render async | MEDIUM | BY DESIGN — Node is async |
+| 4 | Constructor style differs | LOW | BY DESIGN — all accept template_dir |
 
 ## Documentation Gaps
 
