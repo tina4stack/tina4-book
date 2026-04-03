@@ -280,7 +280,7 @@
 | 2 | ~~`all()` return types differ~~ | All | FIXED — all return array of ORM objects |
 | 3 | ~~`select()` return types differ~~ | All | FIXED — all return array of ORM objects |
 | 4 | **`scope()` semantics differ** — Python/Ruby register a method, PHP/Node return results | All | TODO |
-| 5 | **PHP `count()` has no params** — others accept conditions/params | PHP | TODO |
+| 5 | ~~PHP `count()` has no params~~ | PHP | FIXED — `count($conditions, $params)` added |
 | 6 | ~~Node.js has no `where()` method~~ | Node.js | FIXED — `where()` added, `findAll` renamed to `all()` |
 | 7 | ~~`save()` return type differs~~ | All | FIXED — all return self/this on success, false/null on failure (fluent) |
 
