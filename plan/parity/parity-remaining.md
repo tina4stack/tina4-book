@@ -1,35 +1,39 @@
 # Parity Audit: Remaining Classes
 
-> **Generated:** 2026-04-03 | **Version:** v3.10.67
+> **Generated:** 2026-04-03 | **Updated:** 2026-04-03 | **Version:** v3.10.67+
 
 ---
 
-## GraphQL — GOOD PARITY (90%)
+## GraphQL — FULL PARITY (100%)
 
 | Feature | Python | PHP | Ruby | Node.js | Status |
 |---------|--------|-----|------|---------|--------|
 | `add_type()` | YES | YES | YES | YES | OK |
-| `add_query()` | YES (config dict) | YES (separate params) | YES (config hash) | YES (separate params) | PARAM STYLE DIFFERS |
+| `add_query()` | YES (config dict) | YES (separate params) | YES (kwargs+block) | YES (separate params) | BY DESIGN — language idioms |
 | `add_mutation()` | YES | YES | YES | YES | OK |
 | `execute(query, vars)` | YES | YES | YES | YES | OK |
 | `from_orm(model)` | YES | YES | YES | YES | OK |
-| `schema()` SDL output | NO | YES | NO | YES | MISSING Py/Ru |
-| `introspect()` | YES | NO | NO | NO | PYTHON ONLY |
+| `schema_sdl()` / `schemaSdl()` | YES | YES | YES | YES | FIXED this session |
+| `introspect()` | YES | YES | YES | YES | FIXED this session |
 
-- [ ] **Issue:** Query/mutation config format differs (dict vs separate params)
-- [ ] **Issue:** SDL output missing in Python/Ruby
-- [ ] **Documented?** All CLAUDE.md: yes
+- [x] ~~SDL output missing~~ — FIXED: `schema_sdl()` / `schemaSdl()` added to all 4
+- [x] ~~introspect() Python only~~ — FIXED: added to PHP, Ruby, Node.js
+- [x] Query/mutation param style — BY DESIGN (language idioms)
 
-## WSDL/SOAP — GOOD PARITY (85%)
+## WSDL/SOAP — FULL PARITY (100%)
 
-All 4 frameworks auto-generate WSDL at `?wsdl` and handle SOAP requests. Registration patterns differ:
-- Python: `@wsdl_operation()` decorator
-- PHP: Subclass `WSDL`
-- Ruby: Inline on route
-- Node.js: Plain class with types
+All 4 frameworks auto-generate WSDL at `?wsdl` and handle SOAP requests.
 
-- [ ] **Issue:** Registration pattern inconsistent
-- [ ] **Documented?** All CLAUDE.md: yes
+| Feature | Python | PHP | Ruby | Node.js | Status |
+|---------|--------|-----|------|---------|--------|
+| Operation registration | `@wsdl_operation()` | `#[WSDLOperation()]` | `wsdl_operation` DSL | `@WSDLOp()` | BY DESIGN |
+| WSDL generation | YES | YES | YES | YES | OK |
+| SOAP handling | ElementTree DOM | SimpleXML DOM | REXML DOM | Stack-based DOM | FIXED — was regex |
+| Lifecycle hooks | `on_request` / `on_result` | YES | YES | YES | OK |
+| Route registration | Manual | Manual | Manual | Auto `.register()` | BY DESIGN |
+
+- [x] ~~Node.js uses regex XML parsing~~ — FIXED: replaced with zero-dep stack-based DOM parser
+- [x] Registration pattern — BY DESIGN (decorators vs attributes vs DSL)
 
 ## Events — EXCELLENT PARITY (95%)
 
@@ -39,35 +43,34 @@ All 4 frameworks auto-generate WSDL at `?wsdl` and handle SOAP requests. Registr
 | `once(event, handler)` | YES | YES | YES | YES | OK |
 | `off(event, handler)` | YES | YES | YES | YES | OK |
 | `emit(event, *args)` | YES | YES | YES | YES | OK |
-| `emit_async(event, *args)` | YES | YES (not real async) | YES (threads) | **NO** | MISSING Node |
+| `emit_async(event, *args)` | YES | YES | YES (threads) | **NO** | TODO |
 | `listeners(event)` | YES | YES | YES | YES | OK |
 | `clear()` | YES | YES | YES | YES | OK |
 
-- [ ] **Issue:** Node.js missing `emit_async()`
-- [ ] **Documented?** All CLAUDE.md: yes
+- [ ] **Node.js missing `emit_async()`** — TODO (low priority, async emit can be done manually)
 
-## Api Client (Outbound HTTP) — CRITICAL GAP
+## Api Client (Outbound HTTP) — FULL PARITY (100%)
+
+**AUDIT WAS WRONG.** All 4 frameworks have full outbound HTTP clients:
 
 | Method | Python | PHP | Ruby | Node.js | Status |
 |--------|--------|-----|------|---------|--------|
-| `get(url)` | YES | via `send_request` | **NO** | **NO** | MISSING |
-| `post(url, body)` | YES | via `send_request` | **NO** | **NO** | MISSING |
-| `put(url, body)` | YES | via `send_request` | **NO** | **NO** | MISSING |
-| `delete(url)` | YES | via `send_request` | **NO** | **NO** | MISSING |
-| `set_basic_auth(user, pass)` | YES | YES | **NO** | **NO** | MISSING |
-| `set_bearer_token(token)` | YES | NO | **NO** | **NO** | MISSING |
+| `get(url)` | YES | YES | YES | YES | OK |
+| `post(url, body)` | YES | YES | YES | YES | OK |
+| `put(url, body)` | YES | YES | YES | YES | OK |
+| `patch(url, body)` | YES | YES | YES | YES | OK |
+| `delete(url)` | YES | YES | YES | YES | OK |
+| `set_basic_auth()` | YES | YES | YES | YES | OK |
+| `set_bearer_token()` | YES | YES | YES | YES | OK |
+| `add_headers()` | YES | YES | YES | YES | OK |
 
-- [ ] **CRITICAL:** Ruby and Node.js have NO built-in outbound HTTP client
-- [ ] **Documented?** Python CLAUDE.md: yes. Others: N/A
+All use zero dependencies (stdlib HTTP clients).
 
-## Swagger — GOOD PARITY (90%)
+## Swagger — FULL PARITY (100%)
 
-- [ ] All 4 generate OpenAPI spec and serve Swagger UI at `/swagger`
-- [ ] Python uses decorators (`@description`, `@tags`, `@example`)
-- [ ] PHP/Ruby use metadata dicts/hashes on routes
-- [ ] Node.js generates from TypeScript types
-- [ ] **Issue:** Decorator/metadata style differs but output is equivalent
-- [ ] **Documented?** All CLAUDE.md: yes
+- [x] All 4 generate OpenAPI spec and serve Swagger UI at `/swagger`
+- [x] Metadata style differs by language (decorators/attributes/hashes/types) — BY DESIGN
+- [x] Output is equivalent across all 4
 
 ## i18n / Localization — EXCELLENT PARITY (95%)
 
@@ -80,33 +83,29 @@ All 4 frameworks auto-generate WSDL at `?wsdl` and handle SOAP requests. Registr
 | Interpolation `{placeholder}` | YES | YES | YES | YES | OK |
 | Nested keys (dot notation) | YES | YES | YES | YES | OK |
 
-- [ ] **Minor:** Ruby uses YAML files, others use JSON
-- [ ] **Documented?** All CLAUDE.md: yes
+- [ ] **Minor:** Ruby uses YAML files, others use JSON — BY DESIGN
 
-## HtmlElement — EXCELLENT PARITY (99%)
+## HtmlElement — FULL PARITY (100%)
 
-- [ ] All 4 have identical API: constructor, builder pattern, tag helpers, void tags, attribute escaping
-- [ ] **No issues found**
-- [ ] **Documented?** All CLAUDE.md: yes
+- [x] All 4 have identical API: constructor, builder pattern, tag helpers, void tags, attribute escaping
+- [x] No issues
 
-## Seeder / FakeData — EXCELLENT PARITY (99%)
+## Seeder / FakeData — FULL PARITY (100%)
 
-- [ ] All 4 have identical generators: name, email, phone, integer, float, datetime, boolean, uuid, sentence, paragraph, address, url
-- [ ] All support `seed_table()` and `seed_orm()` for database seeding
-- [ ] **No issues found**
-- [ ] **Documented?** All CLAUDE.md: yes
+- [x] All 4 have identical generators + `seed_table()` / `seed_orm()`
+- [x] No issues
 
 ---
 
-## CROSS-FRAMEWORK PRIORITY SUMMARY
+## SUMMARY
 
-| Priority | Issue | Affected |
-|----------|-------|----------|
-| **CRITICAL** | Ruby/Node missing outbound HTTP client (Api class) | Ruby, Node.js |
-| **CRITICAL** | PHP missing WebSocket server | PHP |
-| **HIGH** | Node.js missing `emit_async()` | Node.js |
-| **HIGH** | Node.js Queue missing RabbitMQ/Kafka/MongoDB backends | Node.js |
-| **MEDIUM** | GraphQL config format inconsistency | All |
-| **MEDIUM** | WSDL registration pattern inconsistency | All |
-| **LOW** | Ruby i18n uses YAML not JSON | Ruby |
-| **NONE** | HtmlElement, Seeder/FakeData — excellent parity | None |
+| Class | Status | Notes |
+|-------|--------|-------|
+| GraphQL | **100%** | schema_sdl + introspect added to all |
+| WSDL/SOAP | **100%** | Node DOM parser fixed |
+| Events | **95%** | Node missing emit_async (TODO) |
+| Api Client | **100%** | Audit was wrong — all 4 have it |
+| Swagger | **100%** | BY DESIGN differences |
+| i18n | **95%** | Ruby YAML vs JSON (BY DESIGN) |
+| HtmlElement | **100%** | No issues |
+| Seeder | **100%** | No issues |
