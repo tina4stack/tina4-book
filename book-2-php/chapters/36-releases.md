@@ -1,5 +1,13 @@
 # Chapter 35: Release Notes
 
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
+
 ## Version History
 
 Tina4 PHP follows semantic versioning. The major number changes when something breaks. The minor number changes when something new arrives. The patch number changes when something gets fixed. Each release is available on Packagist.
@@ -165,7 +173,23 @@ The password hash format now uses `$` as a separator (matching Python, Ruby, and
 
 ```
 # BEFORE: pbkdf2_sha256:100000:salt:hash
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 # AFTER:  pbkdf2_sha256$100000$salt$hash
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 ```
 
 Existing hashed passwords stored in your database **will not verify** after upgrade. Rehash passwords on next user login:
@@ -243,12 +267,36 @@ The `tina4 ai` CLI command stopped returning a stub message and started doing re
 
 ```bash
 # Detect tools and install context files
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 tina4 ai
 
 # Install for all known AI tools
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 tina4 ai --all
 
 # Overwrite existing context files
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 tina4 ai --force
 ```
 
@@ -799,9 +847,25 @@ These are the changes that will break existing code. See Chapter 29 for a full m
 
 ```bash
 # v2
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 composer require tina4stack/tina4php
 
 # v3
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 composer require tina4stack/tina4-php
 ```
 

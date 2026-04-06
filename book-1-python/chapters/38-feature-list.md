@@ -87,6 +87,7 @@ Tina4 is four implementations of the same framework: Python, PHP, Ruby, and Node
 | 31 | **Events** | `emit` / `on` / `once` / `off`; priority ordering; async via `emit_async` |
 | 32 | **Email (Messenger)** | SMTP email with HTML bodies, attachments, cc/bcc; dev interception mode |
 | 33 | **WebSocket** | `@ws` route decorator; broadcast, rooms, ping/pong; `tina4-js` client library |
+| 34 | **SSE / Streaming** | `response.stream()` for Server-Sent Events; async generator, chunked transfer encoding, keep-alive |
 
 ---
 
@@ -94,10 +95,10 @@ Tina4 is four implementations of the same framework: Python, PHP, Ruby, and Node
 
 | # | Feature | Description |
 |---|---------|-------------|
-| 34 | **Swagger / OpenAPI** | Auto-generated OpenAPI 3.0 spec and Swagger UI at `/swagger` |
-| 35 | **GraphQL** | Schema-first GraphQL with resolvers via `@graphql_query` and `@graphql_mutation` |
-| 36 | **API Client** | Outbound HTTP: `Api.get/post/put/patch/delete`; auth headers, SSL, timeout |
-| 37 | **WSDL / SOAP** | SOAP 1.1 service with `@wsdl_operation`; auto WSDL at `?wsdl` |
+| 35 | **Swagger / OpenAPI** | Auto-generated OpenAPI 3.0 spec and Swagger UI at `/swagger` |
+| 36 | **GraphQL** | Schema-first GraphQL with resolvers via `@graphql_query` and `@graphql_mutation` |
+| 37 | **API Client** | Outbound HTTP: `Api.get/post/put/patch/delete`; auth headers, SSL, timeout |
+| 38 | **WSDL / SOAP** | SOAP 1.1 service with `@wsdl_operation`; auto WSDL at `?wsdl` |
 
 ---
 
@@ -105,13 +106,13 @@ Tina4 is four implementations of the same framework: Python, PHP, Ruby, and Node
 
 | # | Feature | Description |
 |---|---------|-------------|
-| 38 | **Scaffolding** | `tina4 new`, `tina4 make:route`, `tina4 make:model`, `tina4 make:migration` |
-| 39 | **Testing** | Built-in test client with `client.get/post/put/delete`; fixture helpers |
-| 40 | **Localization** | JSON locale files; `t()` function; `{placeholder}` interpolation; fallback chain |
-| 41 | **Structured Logging** | `Log.info/debug/warning/error`; log levels; file output with rotation |
-| 42 | **DI Container** | `Container.register` (transient) and `Container.singleton` (cached) |
-| 43 | **Frontend (tina4-js)** | 1.5KB core gzipped reactive JS: signals, templating, routing, WebSocket client |
-| 44 | **MCP Dev Tools** | Model Context Protocol integration: route inspection, ORM access, log streaming |
+| 39 | **Scaffolding** | `tina4 new`, `tina4 make:route`, `tina4 make:model`, `tina4 make:migration` |
+| 40 | **Testing** | Built-in test client with `client.get/post/put/delete`; fixture helpers |
+| 41 | **Localization** | JSON locale files; `t()` function; `{placeholder}` interpolation; fallback chain |
+| 42 | **Structured Logging** | `Log.info/debug/warning/error`; log levels; file output with rotation |
+| 43 | **DI Container** | `Container.register` (transient) and `Container.singleton` (cached) |
+| 44 | **Frontend (tina4-js)** | 1.5KB core gzipped reactive JS: signals, templating, routing, WebSocket client |
+| 45 | **MCP Dev Tools** | Model Context Protocol integration: route inspection, ORM access, log streaming |
 
 ---
 
@@ -141,7 +142,7 @@ Every feature in the table above ships in all four Tina4 implementations:
 |--------|-------|
 | Total tests | 9,311 |
 | Test files | 280 |
-| Cross-language parity tests | 44 feature × 4 implementations |
+| Cross-language parity tests | 45 feature × 4 implementations |
 | Minimum coverage per feature | 100% (all four languages) |
 
 Parity is enforced by the CI pipeline. A feature is not considered shipped until tests pass in all four languages. A bug fix must be applied to all four before it is closed.

@@ -1,5 +1,13 @@
 # Chapter 35: Release Notes
 
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
+
 ## Version History
 
 Tina4 Python follows semantic versioning. The major version (3) marks the ground-up rewrite from v2. Minor versions (3.1, 3.2, ...) introduce features. Patch versions fix bugs and polish edges.
@@ -10,6 +18,14 @@ Every release ships through PyPI. Upgrade with:
 uv add tina4-python@latest
 
 # or with pip
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 pip install --upgrade tina4-python
 ```
 
@@ -180,9 +196,25 @@ This release aligns the Python framework with the other three Tina4 implementati
 
 ```python
 # BEFORE (v3.10.38 and earlier)
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 Auth.check_password(hashed, password)
 
 # AFTER (v3.10.39+)
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 Auth.check_password(password, hashed)  # password first — matches PHP, Ruby, Node.js
 ```
 
@@ -190,9 +222,25 @@ Auth.check_password(password, hashed)  # password first — matches PHP, Ruby, N
 
 ```python
 # BEFORE
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 routes = Router.all()
 
 # AFTER
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 routes = Router.get_routes()   # or Router.list_routes()
 ```
 
@@ -214,6 +262,14 @@ One-call header authentication: checks Bearer JWT, Bearer API key, and Basic aut
 ```python
 payload = Auth.authenticate_request(request.headers)
 # Returns: dict on success, None on failure
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 ```
 
 **`ORM.find_by_id(pk)` with `find()` and `load()` as aliases**
@@ -333,6 +389,14 @@ class UserProfile(ORM):
 
 ```python
 # Before (broken) — middleware was silently skipped
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 @app.middleware
 def log_request(request, response):
     print(f"Request: {request.method} {request.url}")
@@ -346,6 +410,14 @@ def get_users(request, response):
 
 ```python
 # After (fixed in v3.10.1) — middleware runs on every matching route
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 @app.middleware
 def log_request(request, response):
     print(f"Request: {request.method} {request.url}")
@@ -377,11 +449,27 @@ def get_users(request, response):
 
 ```python
 # Before (broken on SQLite)
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 user = User()
 user.name = "Alice"
 user.save()  # raised "cannot commit -- no transaction is active"
 
 # After (fixed in v3.10.25) — save() wraps in a transaction automatically
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 user = User()
 user.name = "Alice"
 user.save()  # works on all database engines including SQLite
@@ -399,12 +487,28 @@ user.save()  # works on all database engines including SQLite
 
 ```python
 # Before (broken) — decorator had no effect
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 @app.get("/public")
 @noauth
 def public_page(response):
     return response("Open to all")  # still required auth
 
 # After (fixed in v3.10.1) — decorator works as expected
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 @app.get("/public")
 @noauth
 def public_page(response):
@@ -426,6 +530,14 @@ class User(ORM):
     table_name = "users"
 
 # Fluent query through the ORM
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 admins = User.query() \
     .where("role = ?", ["admin"]) \
     .order_by("name") \
@@ -433,6 +545,14 @@ admins = User.query() \
     .get()
 
 # Standalone query
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 from tina4_python import QueryBuilder
 
 results = QueryBuilder.table("orders") \
@@ -447,12 +567,28 @@ results = QueryBuilder.table("orders") \
 
 ```python
 # Before v3.9.0
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 @app.get("/users/{id}")
 def get_user(request, response):
     user_id = request.params["id"]
     return response(f"User {user_id}")
 
 # v3.9.0 and later
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 @app.get("/users/{id:int}")
 def get_user(id, request, response):
     return response(f"User {id}")  # id is already an int
@@ -472,8 +608,32 @@ def dashboard(request, response):
 
 ```python
 # CSRF is on by default in v3.9.1+
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 # Disable for API-only apps:
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 # TINA4_CSRF_ENABLED=false
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 ```
 
 **File-based queue backend (v3.9.1).** Replaced the SQLite queue with a JSON file-based backend. Zero dependencies. Full cross-platform parity with the PHP and Ruby implementations.
@@ -487,6 +647,14 @@ query = QueryBuilder.table("users") \
     .limit(10) \
     .to_mongo()
 # Returns a MongoDB-compatible query dict
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 ```
 
 **WebSocket backplane (v3.9.2).** Redis pub/sub for scaling WebSocket broadcast across multiple server instances.
@@ -499,9 +667,25 @@ query = QueryBuilder.table("users") \
 
 ```python
 # Before
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 request.session.unset("cart")
 
 # After
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 request.session.delete("cart")
 ```
 
@@ -522,6 +706,14 @@ from tina4_python import Database
 
 db = Database("sqlite:///app.db", pool=4)
 # Four connections rotate across requests
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 ```
 
 **Validator class (v3.8.1).** Input validation with an error response envelope.
@@ -586,6 +778,14 @@ src/
 
 ```python
 # Before v3.6.0
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 from tina4_python import Auth
 
 token = Auth.create_token(payload)       # old name
@@ -594,20 +794,52 @@ valid = Auth.validate_token(token)       # old name
 
 ```python
 # v3.6.0 and later
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 from tina4_python import Auth
 
 token = Auth.get_token(payload)          # new primary name
 valid = Auth.valid_token(token)          # new primary name
 # create_token and validate_token still work as aliases
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 ```
 
 **Pagination parameter rename (v3.6.0).** `skip` became `offset` across all query methods.
 
 ```python
 # Before
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 users = User.find(skip=10, limit=5)
 
 # After
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 users = User.find(offset=10, limit=5)
 ```
 
@@ -615,9 +847,25 @@ users = User.find(offset=10, limit=5)
 
 ```python
 # Before
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 token = Auth.create_token(payload, token_expiry=3600)  # seconds
 
 # After
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 token = Auth.get_token(payload, expires_in=60)          # minutes
 ```
 
@@ -677,11 +925,27 @@ def handle_upload(request, response):
 
 ```python
 # Before
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 @app.consume("emails")
 def send_email(job):
     to = job.data["to"]
 
 # After
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 @app.consume("emails")
 def send_email(job):
     to = job.payload["to"]
@@ -691,9 +955,25 @@ def send_email(job):
 
 ```python
 # Before
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 name = request.files[0].file_name
 
 # After
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 name = request.files[0].filename
 ```
 
@@ -709,21 +989,53 @@ name = request.files[0].filename
 
 ```python
 # No parameters — fire and forget
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 @app.get("/ping")
 def ping():
     return "pong"
 
 # Response only
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 @app.get("/hello")
 def hello(response):
     return response("Hello")
 
 # Request only (type-hinted)
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 @app.post("/echo")
 def echo(request: Request):
     return request.body
 
 # Both
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 @app.get("/users")
 def users(request, response):
     return response({"users": []})
@@ -745,25 +1057,65 @@ def users(request, response):
 
 ```python
 # Before
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 from tina4_python import Queue, Database
 db = Database("sqlite:///queue.db")
 queue = Queue("emails", db=db)
 
 # After
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 from tina4_python import Queue
 queue = Queue("emails")
 # Backend set via TINA4_QUEUE_BACKEND env var
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 ```
 
 **Producer/Consumer classes removed (v3.2.0).** Use `queue.produce()` and `queue.consume()` directly.
 
 ```python
 # Before
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 from tina4_python import Producer, Consumer
 producer = Producer(queue)
 producer.send({"to": "user@example.com"})
 
 # After
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 queue.produce({"to": "user@example.com"})
 ```
 

@@ -50,6 +50,7 @@
 | `header(name, value)` | setter only | setter only | getter+setter | setter only | INCONSISTENT |
 | `cookie(name, value, opts)` | YES | YES | YES | YES | OK (naming differs) |
 | Callable `response(data)` | YES | YES | YES (call) | YES | OK |
+| `stream(generator)` | YES | YES | YES | YES | OK |
 
 ## Issues — Response
 

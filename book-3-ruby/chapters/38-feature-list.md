@@ -1,6 +1,6 @@
 # Chapter 37: Complete Feature List
 
-A reference of all 44 features in Tina4 Ruby, grouped by category.
+A reference of all 45 features in Tina4 Ruby, grouped by category.
 
 ---
 
@@ -111,6 +111,7 @@ A reference of all 44 features in Tina4 Ruby, grouped by category.
 | 38 | SOAP Client | `Tina4::WSDL::Client.new(wsdl_url)` | Call remote SOAP services by parsing their WSDL. |
 | 39 | GraphQL | `Tina4::GraphQL` | Schema-first GraphQL endpoint. Types, queries, mutations, subscriptions. |
 | 40 | WebSocket | `Tina4::WebSocket` | Real-time bidirectional communication. `on_message`, `broadcast`, `rooms`. |
+| 41 | SSE / Streaming | `response.stream` | Server-Sent Events for real-time data push via `response.stream(generator)`. |
 
 ---
 
@@ -118,10 +119,10 @@ A reference of all 44 features in Tina4 Ruby, grouped by category.
 
 | # | Feature | Class / Method | Description |
 |---|---------|---------------|-------------|
-| 41 | Swagger / OpenAPI | `Tina4::Swagger` | Auto-generates OpenAPI 3.0 docs from route comments. `/swagger` serves the UI. |
-| 42 | DI Container | `Tina4::Container` | Register, resolve, and replace services. `registered?`, `clear!`. |
-| 43 | CLI | `tina4` command | `new`, `server`, `migrate`, `scaffold`, `routes`, `version`. |
-| 44 | MCP Dev Tools | `Tina4::MCP` | Model Context Protocol server for AI assistant integration. |
+| 42 | Swagger / OpenAPI | `Tina4::Swagger` | Auto-generates OpenAPI 3.0 docs from route comments. `/swagger` serves the UI. |
+| 43 | DI Container | `Tina4::Container` | Register, resolve, and replace services. `registered?`, `clear!`. |
+| 44 | CLI | `tina4` command | `new`, `server`, `migrate`, `scaffold`, `routes`, `version`. |
+| 45 | MCP Dev Tools | `Tina4::MCP` | Model Context Protocol server for AI assistant integration. |
 
 ---
 

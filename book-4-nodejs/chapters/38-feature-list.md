@@ -1,6 +1,6 @@
 # Chapter 37: Complete Feature List
 
-This chapter catalogs all 44 features in Tina4 for Node.js, grouped by category. Use it as a reference when starting a project or auditing what you need.
+This chapter catalogs all 45 features in Tina4 for Node.js, grouped by category. Use it as a reference when starting a project or auditing what you need.
 
 ---
 
@@ -86,6 +86,7 @@ This chapter catalogs all 44 features in Tina4 for Node.js, grouped by category.
 | 34 | **Email (SMTP)** | `Messenger` class | 16 |
 | 35 | **WebSocket** | `WebSocket` server, `ws.on`, `ws.send` | 23 |
 | 36 | **Events System** | `Events.on`, `.emit`, `.once`, `.off`, `.clear` | 13 |
+| 37 | **SSE / Streaming** | `response.stream(generator)` for Server-Sent Events | — |
 
 ---
 
@@ -93,12 +94,12 @@ This chapter catalogs all 44 features in Tina4 for Node.js, grouped by category.
 
 | # | Feature | Class / Function | Chapter |
 |---|---------|-----------------|---------|
-| 37 | **Structured Logging** | `Log.info/debug/warn/error`, `TINA4_LOG_LEVEL` | 15 |
-| 38 | **Localization** | `I18n`, JSON locale files, `t(key, vars)` | 14 |
-| 39 | **API Client** | `api` singleton, `get/post/put/delete` | 21 |
-| 40 | **DI Container** | `Container`, `register`, `singleton`, `get`, `has` | 25 |
-| 41 | **WSDL / SOAP** | `WSDL.load`, `wsdl_operation`, SOAP server | 24 |
-| 42 | **GraphQL** | Schema, resolvers, `Router.graphql` | 22 |
+| 38 | **Structured Logging** | `Log.info/debug/warn/error`, `TINA4_LOG_LEVEL` | 15 |
+| 39 | **Localization** | `I18n`, JSON locale files, `t(key, vars)` | 14 |
+| 40 | **API Client** | `api` singleton, `get/post/put/delete` | 21 |
+| 41 | **DI Container** | `Container`, `register`, `singleton`, `get`, `has` | 25 |
+| 42 | **WSDL / SOAP** | `WSDL.load`, `wsdl_operation`, SOAP server | 24 |
+| 43 | **GraphQL** | Schema, resolvers, `Router.graphql` | 22 |
 
 ---
 
@@ -106,8 +107,8 @@ This chapter catalogs all 44 features in Tina4 for Node.js, grouped by category.
 
 | # | Feature | Class / Function | Chapter |
 |---|---------|-----------------|---------|
-| 43 | **Swagger / OpenAPI** | Auto-generated from JSDoc `@noauth`, `@path` | 20 |
-| 44 | **Dev Dashboard** | `/__dev` — routes, queues, cache, logs | 29 |
+| 44 | **Swagger / OpenAPI** | Auto-generated from JSDoc `@noauth`, `@path` | 20 |
+| 45 | **Dev Dashboard** | `/__dev` — routes, queues, cache, logs | 29 |
 
 ---
 

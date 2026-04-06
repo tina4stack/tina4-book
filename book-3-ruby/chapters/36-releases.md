@@ -1,5 +1,13 @@
 # Chapter 35: Release Notes
 
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
+
 Tina4 Ruby follows semantic versioning. The major version (3) marks the ground-up rewrite from v2. Minor versions (3.1, 3.2, etc.) introduce features and non-breaking API additions. Patch versions carry bug fixes and small improvements.
 
 This chapter covers every v3 release from the initial launch through the current stable line. Each section groups releases by minor version, highlights the changes that affect your code, and shows migration steps for anything that breaks.
@@ -201,12 +209,60 @@ Version parity release. All four Tina4 frameworks now share the same version num
 
 ```ruby
 # BEFORE (broken): macro output escaped
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 # Template: {{ my_macro() }}
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 # Rendered: &lt;div class=&quot;card&quot;&gt;...&lt;/div&gt;
 
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
+
 # AFTER (fixed): macro output treated as safe HTML
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 # Template: {{ my_macro() }}
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 # Rendered: <div class="card">...</div>
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 ```
 
 ### v3.10.25 -- ORM Transaction Fix (March 30)
@@ -215,10 +271,26 @@ Version parity release. All four Tina4 frameworks now share the same version num
 
 ```ruby
 # BEFORE (broken):
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 user = User.new(name: "Alice")
 user.save  # => RuntimeError: cannot commit
 
 # AFTER (fixed): save/delete wrap operations in a transaction block
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 user = User.new(name: "Alice")
 user.save  # => works on all database engines
 ```
@@ -229,6 +301,14 @@ Form tokens now include a nonce in the JWT payload. Each token is unique per for
 
 ```ruby
 # In your Frond template:
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 <input type="hidden" name="formToken" value="{{ formTokenValue() }}">
 ```
 
@@ -238,10 +318,42 @@ Form tokens now include a nonce in the JWT payload. Each token is unique per for
 
 ```ruby
 # BEFORE (broken):
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 # {{ status == "active" ? "Yes" : "No" }}  =>  parse error
 
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
+
 # AFTER (fixed):
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 # {{ status == "active" ? "Yes" : "No" }}  =>  "Yes"
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 ```
 
 ### v3.10.16 -- Template Filters: to_json, js_escape (March 28)
@@ -250,6 +362,14 @@ Three new Frond template filters for working with data in JavaScript contexts.
 
 ```ruby
 # Convert a Ruby hash to JSON inside a template:
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 <script>
   const data = {{ user|to_json }};
   const name = "{{ user.name|js_escape }}";
@@ -295,12 +415,60 @@ Write operations (`save`, `delete`) now auto-commit by default. No more forgotte
 
 ```ruby
 # BEFORE (broken):
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 # {% set key = "name" %}
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 # {{ user[key] }}  =>  empty
 
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
+
 # AFTER (fixed):
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 # {% set key = "name" %}
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 # {{ user[key] }}  =>  "Alice"
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 ```
 
 ### v3.10.10 -- Firebird Migration Runner Fixes (March 28)
@@ -353,6 +521,14 @@ Three features arrived together.
 
 ```ruby
 # Through the ORM:
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 admins = User.query
   .where("role = ?", ["admin"])
   .order_by("name")
@@ -360,6 +536,14 @@ admins = User.query
   .get
 
 # Standalone:
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 rows = Tina4::QueryBuilder.from("users")
   .where("active = ?", [true])
   .select("name", "email")
@@ -385,12 +569,36 @@ end
 
 ```ruby
 # BEFORE (v3.8.x): all routes open
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 Tina4::Router.post("/api/users") do |request, response|
   # anyone could call this
 end
 
 # AFTER (v3.9.1): unauthenticated requests get 401
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 # To allow public access, add .public:
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 Tina4::Router.post("/api/users").public do |request, response|
   # open to all
 end
@@ -425,6 +633,14 @@ A built-in middleware that sets `X-Frame-Options`, `Strict-Transport-Security`, 
 
 ```ruby
 # In your .env:
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 TINA4_MAX_UPLOAD_SIZE=10485760  # 10 MB (default)
 ```
 
@@ -475,9 +691,25 @@ Any `.twig` or `.html` file in `src/templates/` is now browsable by URL path. `/
 
 ```ruby
 # BEFORE (v3.5.x):
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 users = User.fetch(limit: 10, skip: 20)
 
 # AFTER (v3.6.0):
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 users = User.fetch(limit: 10, offset: 20)
 ```
 
@@ -511,23 +743,63 @@ Other changes:
 
 ```ruby
 # BEFORE (v3.3.x):
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 token = auth.create_token(payload)
 valid = auth.validate_token(token)
 
 # AFTER (v3.4.0 -- preferred):
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 token = auth.get_token(payload)
 valid = auth.valid_token(token)
 
 # Old names still work but are deprecated.
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 ```
 
 **HS256 authentication.** Set `TINA4_AUTH_SECRET` in your `.env` and auth uses HS256. Provide RSA key files and it uses RS256. The framework picks the right algorithm.
 
 ```ruby
 # .env for HS256:
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 TINA4_AUTH_SECRET=my-secret-key
 
 # .env for RS256:
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 TINA4_AUTH_PRIVATE_KEY=keys/private.pem
 TINA4_AUTH_PUBLIC_KEY=keys/public.pem
 ```
@@ -563,12 +835,28 @@ TINA4_AUTH_PUBLIC_KEY=keys/public.pem
 
 ```ruby
 # BEFORE (v3.2.x):
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 producer = Tina4::Producer.new(queue)
 producer.send(message)
 consumer = Tina4::Consumer.new(queue)
 consumer.listen { |msg| handle(msg) }
 
 # AFTER (v3.3.0):
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 queue.produce("channel", { data: "payload" })
 queue.consume("channel") do |job|
   handle(job)
@@ -608,17 +896,49 @@ Route handlers now accept zero, one, or two parameters. The framework detects wh
 
 ```ruby
 # Zero params -- just return a response:
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 Tina4::Router.get("/health") { "OK" }
 
 # One param -- response only:
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 Tina4::Router.get("/hello") { |response| response.html("Hello") }
 
 # Two params -- request and response:
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 Tina4::Router.get("/echo") do |request, response|
   response.json({ body: request.body })
 end
 
 # Named :request or :req -- single param receives the request:
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 Tina4::Router.post("/submit") { |request| process(request.body) }
 ```
 
@@ -654,10 +974,26 @@ user.posts  # => eager-loaded array of Post objects
 
 ```ruby
 # .env:
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 TINA4_CACHE=redis
 TINA4_CACHE_REDIS_URL=redis://localhost:6379
 
 # Code stays the same:
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 Tina4::Cache.set("key", "value", ttl: 300)
 Tina4::Cache.get("key")
 ```

@@ -1,6 +1,6 @@
 # Chapter 37: Complete Feature List
 
-Tina4 PHP ships 44 production-ready features across every layer of a web application. This chapter lists all of them, grouped by category, with a brief description and a PHP snippet for each.
+Tina4 PHP ships 45 production-ready features across every layer of a web application. This chapter lists all of them, grouped by category, with a brief description and a PHP snippet for each.
 
 ---
 
@@ -440,7 +440,22 @@ WebSocket::on('message', function ($client, $message) {
 });
 ```
 
-### 35. WSDL / SOAP
+### 35. SSE / Streaming
+
+Server-Sent Events for real-time data push. Pass a generator callable to `response->stream()`.
+
+```php
+Router::get('/events', function ($req, $res) {
+    $res->stream(function () {
+        while (true) {
+            yield "data: " . json_encode(['time' => date('c')]) . "\n\n";
+            sleep(1);
+        }
+    });
+});
+```
+
+### 36. WSDL / SOAP
 
 Auto-generate WSDL from annotated PHP classes.
 
@@ -461,7 +476,7 @@ Router::soap('/payment', new PaymentService());
 
 ## Real-time and Messaging
 
-### 36. Messenger (Email)
+### 37. Messenger (Email)
 
 SMTP email with attachments. Configurable via environment.
 
@@ -479,7 +494,7 @@ Messenger::send(
 
 ## Queue
 
-### 37. Queue System
+### 38. Queue System
 
 File, RabbitMQ, Kafka, and MongoDB backends. Same API for all.
 
@@ -499,7 +514,7 @@ foreach ($queue->consume('emails') as $job) {
 
 ## Sessions
 
-### 38. Session Handlers
+### 39. Session Handlers
 
 File, database, Redis, Valkey, and MongoDB backends.
 
@@ -521,7 +536,7 @@ Session::destroy();
 
 ## Infrastructure
 
-### 39. Migrations
+### 40. Migrations
 
 Versioned database schema migrations. Run via CLI.
 
@@ -538,7 +553,7 @@ return [
 ];
 ```
 
-### 40. Localization (I18n)
+### 41. Localization (I18n)
 
 JSON locale files. Dot-notation keys. Interpolation. Fallback.
 
@@ -551,7 +566,7 @@ echo $i18n->t('welcome', ['name' => 'Alice']);
 // Willkommen, Alice!
 ```
 
-### 41. Events (Observer Pattern)
+### 42. Events (Observer Pattern)
 
 `on()`, `once()`, `off()`, `emit()`. Priority dispatch.
 
@@ -562,7 +577,7 @@ Events::on('order.placed', fn($data) => sendConfirmation($data['email']), 10);
 Events::emit('order.placed', ['email' => 'alice@example.com', 'total' => 59.99]);
 ```
 
-### 42. Structured Logging
+### 43. Structured Logging
 
 Log levels. JSON output. Context fields. Env-controlled level filter.
 
@@ -577,7 +592,7 @@ Debug::message("Payment failed", TINA4_LOG_ERROR, [
 ]);
 ```
 
-### 43. DI Container
+### 44. DI Container
 
 `register()`, `singleton()`, `get()`, `has()`, `reset()`.
 
@@ -589,7 +604,7 @@ $container->singleton('db', fn() => new \Tina4\Database(getenv('DATABASE_URL')))
 $db = $container->get('db');
 ```
 
-### 44. Service Runner
+### 45. Service Runner
 
 Long-running background workers. Supervisor and systemd compatible.
 
@@ -652,15 +667,16 @@ $runner->start();
 | 32 | Swagger / OpenAPI | APIs & Protocols |
 | 33 | GraphQL engine | APIs & Protocols |
 | 34 | WebSocket server | APIs & Protocols |
-| 35 | WSDL / SOAP server | APIs & Protocols |
-| 36 | Messenger (email) | Messaging |
-| 37 | Queue system (4 backends) | Queue |
-| 38 | Session handlers (5 backends) | Sessions |
-| 39 | Migrations | Infrastructure |
-| 40 | Localization (I18n) | Infrastructure |
-| 41 | Events (observer pattern) | Infrastructure |
-| 42 | Structured logging | Infrastructure |
-| 43 | DI Container | Infrastructure |
-| 44 | Service Runner | Infrastructure |
+| 35 | SSE / Streaming (response.stream) | APIs & Protocols |
+| 36 | WSDL / SOAP server | APIs & Protocols |
+| 37 | Messenger (email) | Messaging |
+| 38 | Queue system (4 backends) | Queue |
+| 39 | Session handlers (5 backends) | Sessions |
+| 40 | Migrations | Infrastructure |
+| 41 | Localization (I18n) | Infrastructure |
+| 42 | Events (observer pattern) | Infrastructure |
+| 43 | Structured logging | Infrastructure |
+| 44 | DI Container | Infrastructure |
+| 45 | Service Runner | Infrastructure |
 
-All 44 features are at 100% parity across Tina4 PHP, Python, Ruby, and Node.js.
+All 45 features are at 100% parity across Tina4 PHP, Python, Ruby, and Node.js.

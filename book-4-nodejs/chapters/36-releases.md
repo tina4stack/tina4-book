@@ -1,5 +1,13 @@
 # Chapter 35: Release Notes
 
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
+
 Tina4 Node.js follows semantic versioning. The major version (3) marks the ground-up rewrite. The minor version tracks feature additions. The patch version tracks fixes, template engine corrections, and cross-framework parity updates.
 
 This chapter covers every release from v3.0.0 through v3.10.x. Each section groups releases by minor version, lists features added, bugs fixed, and breaking changes with migration code where relevant.
@@ -868,6 +876,14 @@ Switch between memory, Redis, and file-based caching with a single environment v
 
 ```bash
 # .env
+
+## v3.10.70 (2026-04-06)
+
+- **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
+- **New:** Chapter 24 added to documentation: Server-Sent Events
+- Feature count: 45 (was 44)
+- Full parity across Python, PHP, Ruby, Node.js
+
 TINA4_CACHE_BACKEND=redis
 TINA4_MESSENGER_BACKEND=redis
 TINA4_QUEUE_BACKEND=sqlite
