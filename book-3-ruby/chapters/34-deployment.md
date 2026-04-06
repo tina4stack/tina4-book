@@ -16,7 +16,7 @@ Development defaults optimize for debugging. Production defaults optimize for pe
 
 Create a production `.env`:
 
-```env
+```bash
 # Core
 TINA4_DEBUG=false
 TINA4_LOG_LEVEL=WARNING
@@ -310,7 +310,7 @@ Tina4 handles this when it receives a `SIGTERM` signal (the standard shutdown si
 
 ### Configuring Shutdown Timeout
 
-```env
+```bash
 TINA4_SHUTDOWN_TIMEOUT=30
 ```
 
@@ -670,7 +670,7 @@ Your app runs in production. You need to know when it breaks, slows down, or run
 
 Switch to JSON-formatted logs for production. Structured logs feed into aggregation services:
 
-```env
+```bash
 TINA4_LOG_FORMAT=json
 ```
 
@@ -701,7 +701,7 @@ Services that ingest JSON logs:
 
 Enable metrics in `.env`:
 
-```env
+```bash
 TINA4_METRICS=true
 ```
 

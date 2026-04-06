@@ -57,7 +57,7 @@ const token = Auth.getToken(payload, secret, 60); // 1 hour (default)
 
 You can also configure the default expiry in `.env`:
 
-```env
+```bash
 TINA4_JWT_EXPIRY=1440
 ```
 
@@ -102,7 +102,7 @@ Tina4 Node.js uses **HS256** (HMAC-SHA256) for JWT signing. It uses only the sta
 
 Set the secret key in `.env`:
 
-```env
+```bash
 SECRET=my-super-secret-key-at-least-32-chars
 ```
 
@@ -562,7 +562,7 @@ Tina4 supports server-side sessions for storing per-user state between requests.
 
 Set the session backend in `.env`:
 
-```env
+```bash
 # File-based sessions (default)
 TINA4_SESSION_BACKEND=file
 
@@ -622,7 +622,7 @@ Sessions complement JWT tokens. Use JWT for stateless API authentication. Use se
 
 ### Session Options
 
-```env
+```bash
 TINA4_SESSION_LIFETIME=3600       # Session lifetime in seconds (default: 3600)
 TINA4_SESSION_NAME=tina4_session  # Cookie name for the session ID
 ```

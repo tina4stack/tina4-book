@@ -12,7 +12,7 @@ SMTP configuration. Plain text fallbacks. Attachment encoding. Connection timeou
 
 All email configuration lives in `.env`:
 
-```env
+```bash
 TINA4_MAIL_HOST=smtp.example.com
 TINA4_MAIL_PORT=587
 TINA4_MAIL_USERNAME=your-email@example.com
@@ -38,7 +38,7 @@ Messenger also accepts legacy `SMTP_*` prefixed variables as fallback. The `TINA
 
 **Gmail:**
 
-```env
+```bash
 TINA4_MAIL_HOST=smtp.gmail.com
 TINA4_MAIL_PORT=587
 TINA4_MAIL_USERNAME=your-email@gmail.com
@@ -50,7 +50,7 @@ Gmail requires an "App Password" (not your regular password) when two-factor aut
 
 **Mailgun:**
 
-```env
+```bash
 TINA4_MAIL_HOST=smtp.mailgun.org
 TINA4_MAIL_PORT=587
 TINA4_MAIL_USERNAME=postmaster@mg.yourdomain.com
@@ -60,7 +60,7 @@ TINA4_MAIL_ENCRYPTION=tls
 
 **SendGrid:**
 
-```env
+```bash
 TINA4_MAIL_HOST=smtp.sendgrid.net
 TINA4_MAIL_PORT=587
 TINA4_MAIL_USERNAME=apikey
@@ -295,7 +295,7 @@ Custom headers serve several purposes. Tracking headers like `X-Ticket-Id` let y
 
 Messenger reads email through IMAP. Configure the IMAP server in `.env`:
 
-```env
+```bash
 TINA4_MAIL_IMAP_HOST=imap.example.com
 TINA4_MAIL_IMAP_PORT=993
 ```
@@ -436,7 +436,7 @@ This means you can test email functionality without configuring SMTP during deve
 
 If you need to test real email delivery during development, override the interception:
 
-```env
+```bash
 TINA4_MAIL_INTERCEPT=false
 ```
 

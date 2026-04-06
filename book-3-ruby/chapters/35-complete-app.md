@@ -68,7 +68,7 @@ bundle install
 
 Update `.env`:
 
-```env
+```bash
 TINA4_DEBUG=true
 JWT_SECRET=taskflow-dev-secret-change-in-production
 JWT_EXPIRY=86400
@@ -931,7 +931,7 @@ All green. The application works.
 
 Use the Dockerfile and docker-compose.yml from Chapter 33. Create `.env.production`:
 
-```env
+```bash
 TINA4_DEBUG=false
 TINA4_LOG_LEVEL=WARNING
 JWT_SECRET=your-production-secret-at-least-32-characters

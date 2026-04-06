@@ -66,7 +66,7 @@ CORS (Cross-Origin Resource Sharing) controls which domains can call your API fr
 
 Tina4 provides both a function-based `cors()` middleware and a class-based `CorsMiddleware`. Configure via `.env`:
 
-```env
+```bash
 TINA4_CORS_ORIGINS=http://localhost:3000,https://myapp.com
 TINA4_CORS_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
 TINA4_CORS_HEADERS=Content-Type,Authorization,X-Request-ID
@@ -77,7 +77,7 @@ With these settings, only `localhost:3000` and `myapp.com` can make cross-origin
 
 For development, allow all origins:
 
-```env
+```bash
 TINA4_CORS_ORIGINS=*
 ```
 
@@ -125,7 +125,7 @@ Preflight `OPTIONS` requests return `204 No Content` with the correct CORS heade
 
 The rate limiter prevents a single client from flooding your API. It uses a sliding-window algorithm that tracks requests per IP in memory. Configure via `.env`:
 
-```env
+```bash
 TINA4_RATE_LIMIT=60
 TINA4_RATE_WINDOW=60
 ```
@@ -224,7 +224,7 @@ It sets the following headers by default:
 
 Override any header via environment variables in `.env`:
 
-```env
+```bash
 TINA4_FRAME_OPTIONS=SAMEORIGIN
 TINA4_CSP=default-src 'self'; script-src 'self' https://cdn.example.com
 TINA4_HSTS=max-age=63072000; includeSubDomains; preload
@@ -1297,7 +1297,7 @@ Three scenarios skip CSRF checks automatically:
 
 For internal microservices behind a firewall — where no browser ever touches the API — you can disable CSRF entirely:
 
-```env
+```bash
 TINA4_CSRF=false
 ```
 
@@ -1340,7 +1340,7 @@ Every response from Tina4 carries security headers. The `SecurityHeadersMiddlewa
 
 Strict Transport Security tells the browser to always use HTTPS. Disabled by default (it breaks local development on HTTP). Enable it in production:
 
-```env
+```bash
 TINA4_HSTS=31536000
 ```
 
@@ -1350,7 +1350,7 @@ This sets a one-year HSTS policy with `includeSubDomains`. Once a browser sees t
 
 Override any header via environment variables:
 
-```env
+```bash
 TINA4_FRAME_OPTIONS=DENY
 TINA4_CSP=default-src 'self'; script-src 'self' https://cdn.example.com
 TINA4_REFERRER_POLICY=no-referrer
@@ -1593,7 +1593,7 @@ Brute-force login attempts. Credential stuffing. API abuse. Rate limiting stops 
 
 Tina4 includes a sliding-window rate limiter that tracks requests per IP address. It activates automatically.
 
-```env
+```bash
 TINA4_RATE_LIMIT=100
 TINA4_RATE_WINDOW=60
 ```
@@ -1651,7 +1651,7 @@ When your frontend runs on a different origin than your API (common in developme
 
 Tina4 handles CORS automatically. The relevant security settings:
 
-```env
+```bash
 TINA4_CORS_ORIGINS=*
 TINA4_CORS_CREDENTIALS=true
 ```
@@ -1664,7 +1664,7 @@ Two rules to remember:
 
 Production CORS:
 
-```env
+```bash
 TINA4_CORS_ORIGINS=https://app.example.com,https://admin.example.com
 TINA4_CORS_CREDENTIALS=true
 ```
@@ -1715,7 +1715,7 @@ Before you deploy, verify:
 
 **Fix:** Move scripts to external `.js` files (the right approach) or relax the CSP:
 
-```env
+```bash
 TINA4_CSP=default-src 'self'; script-src 'self' 'unsafe-inline'
 ```
 

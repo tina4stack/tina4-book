@@ -115,7 +115,7 @@ public/
 
 Origin-aware CORS. Configurable via environment.
 
-```env
+```bash
 TINA4_CORS_ORIGINS=https://app.example.com,https://admin.example.com
 TINA4_CORS_METHODS=GET,POST,PUT,DELETE
 ```
@@ -232,7 +232,7 @@ $all     = $db->fetchAll("SELECT * FROM products WHERE active = 1");
 
 Cache identical queries. Controlled by environment.
 
-```env
+```bash
 TINA4_DB_CACHE=true
 TINA4_DB_CACHE_TTL=300
 ```
@@ -518,7 +518,7 @@ foreach ($queue->consume('emails') as $job) {
 
 File, database, Redis, Valkey, and MongoDB backends.
 
-```env
+```bash
 TINA4_SESSION_HANDLER=redis
 TINA4_SESSION_HOST=localhost
 TINA4_SESSION_TTL=3600

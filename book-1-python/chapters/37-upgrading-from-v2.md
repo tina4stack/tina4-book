@@ -483,13 +483,13 @@ matches = Auth.check_password(hashed, "my-secret-password")  # True
 
 JWT uses HMAC-SHA256. Set the signing key in `.env`:
 
-```env
+```bash
 SECRET=your-long-random-secret-key
 ```
 
 Token lifetime defaults to 60 minutes. Override with:
 
-```env
+```bash
 TINA4_TOKEN_LIMIT=120
 ```
 
@@ -501,7 +501,7 @@ v2 had basic file-based sessions. v3 supports pluggable backends.
 
 Set the backend in `.env`:
 
-```env
+```bash
 TINA4_SESSION_BACKEND=file
 ```
 
@@ -517,7 +517,7 @@ Available backends:
 
 Session cookies default to `SameSite=Lax`. Override with:
 
-```env
+```bash
 TINA4_SESSION_SAMESITE=Strict
 ```
 
@@ -615,7 +615,7 @@ Follow this order. Each step builds on the previous one.
 
 7. **Update database connections**
    Switch to URL format in `.env`:
-   ```env
+   ```bash
    DATABASE_URL=sqlite:///data/app.db
    ```
 

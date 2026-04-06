@@ -12,7 +12,7 @@ Tina4's dev tools are not an afterthought. They ship with the framework from day
 
 Set `TINA4_DEBUG=true` in your `.env`:
 
-```env
+```bash
 TINA4_DEBUG=true
 ```
 

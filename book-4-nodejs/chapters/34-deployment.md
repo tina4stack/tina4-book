@@ -16,7 +16,7 @@ Development defaults optimize for debugging. Production defaults optimize for pe
 
 Create a production `.env`:
 
-```env
+```bash
 # Core
 TINA4_DEBUG=false
 TINA4_LOG_LEVEL=WARNING
@@ -218,14 +218,14 @@ docker compose down
 
 For multi-core utilization, Tina4 supports Node.js cluster mode:
 
-```env
+```bash
 TINA4_CLUSTER=true
 TINA4_CLUSTER_WORKERS=4
 ```
 
 Or set workers to `auto` to match CPU cores:
 
-```env
+```bash
 TINA4_CLUSTER_WORKERS=auto
 ```
 
@@ -310,7 +310,7 @@ Tina4 handles this when it receives a `SIGTERM` signal (the standard shutdown si
 
 ### Configuring Shutdown Timeout
 
-```env
+```bash
 TINA4_SHUTDOWN_TIMEOUT=30
 ```
 
@@ -618,7 +618,7 @@ A single server handles many applications. When traffic outgrows one server, you
 
 Use cluster mode with more workers:
 
-```env
+```bash
 TINA4_CLUSTER=true
 TINA4_CLUSTER_WORKERS=8
 ```
@@ -672,7 +672,7 @@ docker compose up -d --scale app=4
 
 Run multiple instances behind a load balancer. Use Redis for shared sessions, cache, and queues:
 
-```env
+```bash
 TINA4_SESSION_HANDLER=redis
 TINA4_CACHE_BACKEND=redis
 TINA4_QUEUE_BACKEND=rabbitmq
@@ -703,7 +703,7 @@ Your app runs in production. You need to know when it breaks, slows down, or run
 
 Switch to JSON-formatted logs for production. Structured logs feed into aggregation services:
 
-```env
+```bash
 TINA4_LOG_FORMAT=json
 ```
 

@@ -219,7 +219,7 @@ $db = new \Tina4\DataSQLite3("data/app.db");
 
 **v3:**
 
-```env
+```bash
 DATABASE_URL=sqlite:///data/app.db
 ```
 
@@ -234,7 +234,7 @@ $db = new Database("sqlite:///data/app.db");
 
 All drivers use the same `Database` class. The URL scheme selects the driver:
 
-```env
+```bash
 # SQLite
 DATABASE_URL=sqlite:///data/app.db
 

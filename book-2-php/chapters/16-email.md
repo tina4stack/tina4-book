@@ -14,7 +14,7 @@ Tina4's `Messenger` class handles all of it. Configure in `.env`. Create an inst
 
 All email configuration lives in `.env`:
 
-```env
+```bash
 TINA4_MAIL_SMTP_HOST=smtp.example.com
 TINA4_MAIL_SMTP_PORT=587
 TINA4_MAIL_SMTP_USERNAME=your-email@example.com
@@ -38,7 +38,7 @@ TINA4_MAIL_FROM_NAME=My Store
 
 **Gmail:**
 
-```env
+```bash
 TINA4_MAIL_SMTP_HOST=smtp.gmail.com
 TINA4_MAIL_SMTP_PORT=587
 TINA4_MAIL_SMTP_USERNAME=your-email@gmail.com
@@ -50,7 +50,7 @@ Note: Gmail requires an "App Password" (not your regular password) when two-fact
 
 **Mailgun:**
 
-```env
+```bash
 TINA4_MAIL_SMTP_HOST=smtp.mailgun.org
 TINA4_MAIL_SMTP_PORT=587
 TINA4_MAIL_SMTP_USERNAME=postmaster@mg.yourdomain.com
@@ -60,7 +60,7 @@ TINA4_MAIL_SMTP_ENCRYPTION=tls
 
 **SendGrid:**
 
-```env
+```bash
 TINA4_MAIL_SMTP_HOST=smtp.sendgrid.net
 TINA4_MAIL_SMTP_PORT=587
 TINA4_MAIL_SMTP_USERNAME=apikey
@@ -319,7 +319,7 @@ Common custom headers:
 
 Tina4's Messenger reads emails via IMAP:
 
-```env
+```bash
 TINA4_MAIL_IMAP_HOST=imap.example.com
 TINA4_MAIL_IMAP_PORT=993
 TINA4_MAIL_IMAP_USERNAME=support@example.com
@@ -491,7 +491,7 @@ Test email without configuring a real SMTP server. Inspect the output without po
 
 To test real email delivery during development:
 
-```env
+```bash
 TINA4_MAIL_INTERCEPT=false
 ```
 

@@ -16,7 +16,7 @@ Development defaults optimize for debugging. Production defaults optimize for pe
 
 Create a production `.env`:
 
-```env
+```bash
 # Core
 TINA4_DEBUG=false
 TINA4_LOG_LEVEL=WARNING
@@ -112,7 +112,7 @@ tina4 serve
 
 Fine-tune uvicorn through environment variables:
 
-```env
+```bash
 TINA4_WORKERS=4
 TINA4_WORKER_TIMEOUT=30
 TINA4_KEEP_ALIVE=5
@@ -329,7 +329,7 @@ Tina4 handles this when it receives a `SIGTERM` signal (the standard shutdown si
 
 ### Configuring Shutdown Timeout
 
-```env
+```bash
 TINA4_SHUTDOWN_TIMEOUT=30
 ```
 
@@ -547,7 +547,7 @@ A single server handles many applications. When traffic outgrows one server, you
 
 Uvicorn runs multiple worker processes by default. Configure the count in `.env`:
 
-```env
+```bash
 TINA4_WORKERS=4
 ```
 
@@ -648,7 +648,7 @@ Your app runs in production. You need to know when it breaks, slows down, or run
 
 Switch to JSON-formatted logs for production. Structured logs feed into aggregation services:
 
-```env
+```bash
 TINA4_LOG_FORMAT=json
 ```
 

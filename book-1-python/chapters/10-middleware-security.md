@@ -20,7 +20,7 @@ CORS (Cross-Origin Resource Sharing) controls which websites can call your API f
 
 Configure via `.env`:
 
-```env
+```bash
 TINA4_CORS_ORIGINS=https://app.example.com,https://admin.example.com
 TINA4_CORS_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
 TINA4_CORS_HEADERS=Content-Type,Authorization,X-Request-ID
@@ -32,7 +32,7 @@ With these settings, only `app.example.com` and `admin.example.com` can make cro
 
 For development, you can allow all origins:
 
-```env
+```bash
 TINA4_CORS_ORIGINS=*
 ```
 
@@ -63,7 +63,7 @@ The rate limiter prevents abuse by limiting how many requests a single IP can ma
 
 Configure via `.env`:
 
-```env
+```bash
 TINA4_RATE_LIMIT=60
 TINA4_RATE_WINDOW=60
 ```
@@ -982,7 +982,7 @@ Three scenarios skip CSRF checks automatically:
 
 For internal microservices behind a firewall — where no browser ever touches the API — you can disable CSRF entirely:
 
-```env
+```bash
 TINA4_CSRF=false
 ```
 
@@ -1025,7 +1025,7 @@ Every response from Tina4 carries security headers. The `SecurityHeadersMiddlewa
 
 Strict Transport Security tells the browser to always use HTTPS. Disabled by default (it breaks local development on HTTP). Enable it in production:
 
-```env
+```bash
 TINA4_HSTS=31536000
 ```
 
@@ -1035,7 +1035,7 @@ This sets a one-year HSTS policy with `includeSubDomains`. Once a browser sees t
 
 Override any header via environment variables:
 
-```env
+```bash
 TINA4_FRAME_OPTIONS=DENY
 TINA4_CSP=default-src 'self'; script-src 'self' https://cdn.example.com
 TINA4_REFERRER_POLICY=no-referrer
@@ -1257,7 +1257,7 @@ Brute-force login attempts. Credential stuffing. API abuse. Rate limiting stops 
 
 Tina4 includes a sliding-window rate limiter that tracks requests per IP address. It activates automatically.
 
-```env
+```bash
 TINA4_RATE_LIMIT=100
 TINA4_RATE_WINDOW=60
 ```
@@ -1299,7 +1299,7 @@ When your frontend runs on a different origin than your API (common in developme
 
 Tina4 handles CORS automatically. The relevant security settings:
 
-```env
+```bash
 TINA4_CORS_ORIGINS=*
 TINA4_CORS_CREDENTIALS=true
 ```
@@ -1312,7 +1312,7 @@ Two rules to remember:
 
 Production CORS:
 
-```env
+```bash
 TINA4_CORS_ORIGINS=https://app.example.com,https://admin.example.com
 TINA4_CORS_CREDENTIALS=true
 ```
@@ -1363,7 +1363,7 @@ Before you deploy, verify:
 
 **Fix:** Move scripts to external `.js` files (the right approach) or relax the CSP:
 
-```env
+```bash
 TINA4_CSP=default-src 'self'; script-src 'self' 'unsafe-inline'
 ```
 

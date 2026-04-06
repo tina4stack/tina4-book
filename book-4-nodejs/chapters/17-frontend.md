@@ -1160,7 +1160,7 @@ src/public/css/custom.css  → /css/custom.css
 
 Tina4 is the API backend. Point your frontend build tool's output to `src/public/`:
 
-```env
+```bash
 # Vue
 VITE_OUTPUT_DIR=../my-tina4-project/src/public
 
@@ -1170,7 +1170,7 @@ BUILD_PATH=../my-tina4-project/src/public
 
 Or use CORS to run them on separate ports during development:
 
-```env
+```bash
 CORS_ORIGINS=http://localhost:3000,http://localhost:5173
 ```
 

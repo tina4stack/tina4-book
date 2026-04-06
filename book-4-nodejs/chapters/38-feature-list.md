@@ -238,7 +238,7 @@ This chapter catalogs all 45 features in Tina4 for Node.js, grouped by category.
 
 ## 3. Environment Variables Reference
 
-```env
+```bash
 # Server
 TINA4_PORT=7145
 TINA4_ENV=development

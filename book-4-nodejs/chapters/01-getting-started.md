@@ -534,7 +534,7 @@ The `tina4.css` file in the base template is Tina4's built-in CSS utility framew
 
 Open the `.env` file at the root of your project:
 
-```env
+```bash
 TINA4_DEBUG=true
 ```
 
@@ -569,7 +569,7 @@ tina4 serve --port 8080
 
 Or add it to your `.env` file:
 
-```env
+```bash
 TINA4_DEBUG=true
 TINA4_PORT=8080
 ```
@@ -720,7 +720,7 @@ mkdir -p src/routes src/templates src/public
 
 ### Step 5: Create `.env`
 
-```env
+```bash
 TINA4_DEBUG=true
 ```
 
@@ -1179,7 +1179,7 @@ Router.get("/store", async (req, res) => {
 
 **Fix:** Stop the other process, or change the port:
 
-```env
+```bash
 TINA4_PORT=8080
 ```
 
