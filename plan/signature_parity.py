@@ -120,12 +120,30 @@ def extract_php_signatures(filepath):
             if cpos <= pos:
                 owner = name
         return owner
+    # Pre-build a list of @return docblock positions for quick lookup.
+    # Capture the type token only — stop before description words (space after type).
+    # Handles: bool, ?array, string[], array<string, mixed>, array<int,mixed>|null, etc.
+    docblock_return = re.compile(r'@return\s+((?:[\w\\?|]+|<[^>]*>|\[\])+)')
+    docblock_returns = [(m.start(), m.end(), m.group(1).strip()) for m in docblock_return.finditer(src)]
+
+    def _docblock_return_for(method_pos):
+        """Return the @return type from the docblock immediately before method_pos, or ''."""
+        # Find the last docblock that ends before this method (within 200 chars)
+        for start, end, ret_type in reversed(docblock_returns):
+            if end <= method_pos and (method_pos - end) < 200:
+                return ret_type
+        return ""
+
     classes = defaultdict(dict)
     for m in method_pattern.finditer(src):
         name, params_raw, ret = m.group(1), m.group(2), (m.group(3) or "").strip()
         if name == "__construct" or name.startswith("__"):
             continue
         owner = _class_for_pos(m.start())
+        # Prefer @return docblock over native return type (it carries generics)
+        doc_ret = _docblock_return_for(m.start())
+        if doc_ret:
+            ret = doc_ret
         params = []
         for p in params_raw.split(","):
             p = p.strip()
@@ -183,6 +201,22 @@ def extract_ruby_signatures(filepath):
         inner = params_raw.strip("()")
         params = [p.strip() for p in inner.split(",") if p.strip()]
         classes[owner][name] = {"params": params, "returns": ret, "async": False}
+    # Detect `alias new_name old_name` and `alias_method :new_name, :old_name`
+    alias_pattern = re.compile(
+        r'^\s{0,12}alias(?:_method)?\s+:?(\w+)\s+:?(\w+)',
+        re.MULTILINE
+    )
+    for m in alias_pattern.finditer(src):
+        new_name, old_name = m.group(1), m.group(2)
+        if new_name.startswith("_") or old_name.startswith("_"):
+            continue
+        owner = _class_for_pos(m.start())
+        # Copy the original method's signature if known; otherwise mark as alias
+        if old_name in classes[owner]:
+            classes[owner][new_name] = classes[owner][old_name]
+        else:
+            classes[owner][new_name] = {"params": [], "returns": "alias", "async": False}
+
     for cls, methods in classes.items():
         if methods:
             result[cls] = methods
@@ -204,14 +238,17 @@ def extract_ts_signatures(filepath):
                 owner = name
         return owner
 
+    # "delete" is excluded here because it's a JS keyword in expressions (delete obj.prop),
+    # but it is also a valid ORM instance method name — we allow it through and rely on
+    # the context check (indentation + preceding modifiers) to distinguish.
     skip = {"constructor", "if", "for", "while", "switch", "catch", "return",
-            "typeof", "instanceof", "new", "delete", "void", "throw"}
+            "typeof", "instanceof", "new", "void", "throw"}
     classes = defaultdict(dict)
 
     # Single-line method pattern (indented 0-4 spaces)
     pattern = re.compile(
         r'^\s{0,4}(?:(?:public|protected|private|static|async|override)\s+)*\*?\s*'
-        r'([a-z]\w*)\s*(?:<[^>]*>)?\s*\(([^)]*)\)\s*(?::\s*([\w<>\[\]|&?, ]+?))?'
+        r'([a-z]\w*)\s*(?:<[^>\n]*(?:>[^>\n]*)*>)?\s*\(([^)\n]*)\)\s*(?::\s*([\w<>\[\]|&?, ]+?))?'
         r'\s*(?:\{|;|$)',
         re.MULTILINE
     )
@@ -234,7 +271,7 @@ def extract_ts_signatures(filepath):
     # Matches: `  static methodName<T ...>(` or `  async methodName(` at start of a line
     multiline_decl = re.compile(
         r'^\s{0,6}(?:(?:public|protected|private|static|async|override)\s+)*'
-        r'([a-z]\w*)\s*(?:<[^>]*>)?\s*\(\s*$',
+        r'([a-z]\w*)\s*(?:<[^>\n]*(?:>[^>\n]*)*>)?\s*\(\s*$',
         re.MULTILINE
     )
     for m in multiline_decl.finditer(src):
@@ -266,6 +303,47 @@ def extract_ts_signatures(filepath):
         params_list = [p.strip() for p in params_raw.split(',') if p.strip()]
         params_list = [p for p in params_list if not p.startswith('this:')]
         # Try to get return type after the closing paren
+        after = src[i+1:i+80].strip()
+        ret_m = re.match(r':\s*([\w<>\[\]|&?, ]+?)\s*(?:\{|$)', after)
+        ret = ret_m.group(1).strip() if ret_m else ""
+        is_async = bool(re.search(r'\basync\b', src[line_start:m.start()]))
+        classes[owner][name] = {"params": params_list, "returns": ret, "async": is_async}
+
+    # Third pass: TypeScript static methods with `this: new (...)` generic constraints.
+    # These have nested parens in the first parameter that defeat [^)\n]*, e.g.:
+    #   static findById<T extends BaseModel>(this: new (...) => T, id: unknown): T | null
+    this_param_decl = re.compile(
+        r'^\s{1,6}(?:(?:public|protected|private|static|async|override)\s+)+'
+        r'([a-z]\w*)\s*(?:<[^>\n]*>)?\s*\(this:\s*new\s*\(',
+        re.MULTILINE
+    )
+    for m in this_param_decl.finditer(src):
+        name = m.group(1)
+        if name in skip or name.startswith("_"):
+            continue
+        line_start = src.rfind('\n', 0, m.start()) + 1
+        line = src[line_start:m.start() + len(name) + 10]
+        if 'private' in line:
+            continue
+        owner = _class_for_pos(m.start())
+        if name in classes[owner]:
+            continue
+        # Collect all params by paren-depth tracking
+        paren_start = src.index('(', m.start())
+        depth = 0
+        i = paren_start
+        while i < len(src):
+            if src[i] == '(':
+                depth += 1
+            elif src[i] == ')':
+                depth -= 1
+                if depth == 0:
+                    break
+            i += 1
+        params_raw = src[paren_start+1:i].replace('\n', ' ')
+        params_list = [p.strip() for p in params_raw.split(',') if p.strip()]
+        # Strip 'this:' TypeScript fake parameter
+        params_list = [p for p in params_list if not p.startswith('this:')]
         after = src[i+1:i+80].strip()
         ret_m = re.match(r':\s*([\w<>\[\]|&?, ]+?)\s*(?:\{|$)', after)
         ret = ret_m.group(1).strip() if ret_m else ""
@@ -316,9 +394,9 @@ FEATURE_SOURCES = {
     },
     "Queue": {
         "Python": BASE / "tina4-python/tina4_python/queue/__init__.py",
-        "PHP":    BASE / "tina4-php/Tina4/Queue.php",
+        "PHP":    (BASE / "tina4-php/Tina4/Queue.php", "Queue"),
         "Ruby":   BASE / "tina4-ruby/lib/tina4/queue.rb",
-        "Node":   BASE / "tina4-nodejs/packages/core/src/queue.ts",
+        "Node":   (BASE / "tina4-nodejs/packages/core/src/queue.ts", "Queue"),
     },
     "Job": {
         "Python": BASE / "tina4-python/tina4_python/queue/job.py",
@@ -407,14 +485,30 @@ def normalise_type(t):
     # PHP typed arrays: array<string, *> or array<int, *> → dict or list
     # array<string, X> is an associative array → dict
     t = re.sub(r'\barray<\s*string\s*,\s*[^>]+>', 'dict', t, flags=re.IGNORECASE)
-    # array<int, X> is an indexed array → list
-    t = re.sub(r'\barray<\s*int\s*,\s*[^>]+>', 'list', t, flags=re.IGNORECASE)
+    # array<int, X> is an indexed array → list[X] (preserve inner type for comparison)
+    def _int_array_to_list(m):
+        inner = m.group(1).strip()
+        # Normalise the inner type (static→Self etc.) but avoid recursion for complex types
+        inner = re.sub(r'\b(static|self|this)\b', 'Self', inner)
+        inner = re.sub(r'\bBoolean\b', 'bool', inner, flags=re.IGNORECASE)
+        inner = re.sub(r'\bInteger\b', 'int', inner, flags=re.IGNORECASE)
+        inner = re.sub(r'\bString\b', 'str', inner, flags=re.IGNORECASE)
+        inner = re.sub(r'\bnil\b', 'None', inner)
+        inner = re.sub(r'\bnull\b', 'None', inner, flags=re.IGNORECASE)
+        inner = re.sub(r'\bT\b', 'Self', inner)
+        if inner.lower() in ('mixed', 'any', ''):
+            return 'list'
+        return f'list[{inner}]'
+    t = re.sub(r'\barray<\s*int\s*,\s*([^>]+)>', _int_array_to_list, t, flags=re.IGNORECASE)
     # array{key: type, ...} (shape arrays) → dict
     t = re.sub(r'\barray\{[^}]+\}', 'dict', t, flags=re.IGNORECASE)
     # Generic array<X> without explicit key type → list
     t = re.sub(r'\barray<[^>]+>', 'list', t, flags=re.IGNORECASE)
 
     # PHP @return int|string|null style — keep as-is after other transforms
+
+    # PHP nullable shorthand: ?Type → Type|None
+    t = re.sub(r'^\?(\w[\w\\]*)', r'\1|None', t)
 
     # Framework Self/static/this
     t = re.sub(r'\b(static|self|this)\b', 'Self', t)
@@ -435,15 +529,38 @@ def normalise_type(t):
     t = re.sub(r'\bString\b', 'str', t, flags=re.IGNORECASE)
     t = re.sub(r'\bnumber\b', 'int', t, flags=re.IGNORECASE)
     t = re.sub(r'\bfloat\b', 'float', t, flags=re.IGNORECASE)
+    # false/true are specific boolean literals — treat as bool in type position
+    t = re.sub(r'\bfalse\b', 'bool', t)
+    t = re.sub(r'\btrue\b', 'bool', t)
 
     # Void/null
     t = re.sub(r'\bvoid\b', 'None', t, flags=re.IGNORECASE)
     t = re.sub(r'\bnull\b', 'None', t, flags=re.IGNORECASE)
+    t = re.sub(r'\bnil\b', 'None', t)
+
+    # Strip surrounding quotes from forward references ('ClassName' → ClassName)
+    t = re.sub(r"^['\"](.+)['\"]$", r'\1', t)
+
+    # Erase generic unknown params: list[unknown] → list
+    t = re.sub(r'\blist\[unknown\]', 'list', t, flags=re.IGNORECASE)
+
+    # object (PHP stdClass) → dict
+    t = re.sub(r'\bobject\b', 'dict', t, flags=re.IGNORECASE)
 
     # ORM model references
     t = re.sub(r'\bModel\b', 'Self', t)
     t = re.sub(r'\bORM\b', 'Self', t)
 
+    # Queue job references (cross-language: QueueJob → dict)
+    t = re.sub(r'\bQueueJob\b', 'dict', t)
+
+    # TypeScript generic T/R used for model return type → Self
+    # (T/R extends BaseModel is TypeScript's equivalent of Python/Ruby Self)
+    t = re.sub(r'\bT\b', 'Self', t)
+    t = re.sub(r'\bR\b', 'Self', t)
+
+    # Normalise whitespace and union spacing: "Self | false" == "Self|false"
+    t = re.sub(r'\s*\|\s*', '|', t)
     t = re.sub(r'\s+', ' ', t)
     return t.strip()
 
@@ -456,9 +573,10 @@ def compare_returns(methods_by_lang):
     non_empty = [v for v in returns.values() if v]
     if not non_empty:
         return "", returns, False
-    # Check if all non-empty returns agree (ignoring missing/untyped)
+    # Only flag a mismatch when at least 2 frameworks have explicit (non-empty) return
+    # type annotations that disagree. Untyped (empty) is compatible with anything.
     unique = set(non_empty)
-    has_mismatch = len(unique) > 1
+    has_mismatch = len(non_empty) >= 2 and len(unique) > 1
     canonical = max(non_empty, key=len)  # pick most informative
     return canonical, returns, has_mismatch
 
@@ -676,6 +794,14 @@ def main():
             for lang in LANGS:
                 if lang not in all_methods[canon]:
                     all_methods[canon][lang] = None
+
+        # Noise filter: drop methods that exist in only 1 framework.
+        # Single-framework methods are almost always language-internal helpers.
+        all_methods = {
+            canon: by_lang
+            for canon, by_lang in all_methods.items()
+            if sum(1 for m in by_lang.values() if m is not None) >= 2
+        }
 
         # Count issues — mutually exclusive: missing > mismatch > ok
         total_methods = len(all_methods)
