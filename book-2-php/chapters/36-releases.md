@@ -1,5 +1,15 @@
 # Chapter 35: Release Notes
 
+## v3.10.83 (2026-04-08)
+
+- **fix:** CORS headers now set before auth short-circuit (#106)
+- **fix:** ORM find/all/where no longer crash with DatabaseResult object (#108)
+- **fix:** toObject() returns stdClass, not array (#107)
+- **fix:** Firebird absolute path no longer strips leading slash (#101)
+- **feat:** WebSocket rooms — joinRoom, leaveRoom, broadcastToRoom, getRoomConnections, roomCount
+- **feat:** queue signature parity — instance-scoped, no topic params on public methods
+- **feat:** auth alias cleanup — removed createToken/validateToken aliases
+
 ## v3.10.70 (2026-04-06)
 
 - **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
