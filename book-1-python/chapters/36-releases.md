@@ -1,5 +1,10 @@
 # Chapter 35: Release Notes
 
+## v3.10.85 (2026-04-09)
+
+- **refactor:** Split queue adapters into separate files — `queue/rabbitmq_backend.py`, `queue/kafka_backend.py`, `queue/mongo_backend.py` (one class per file, aligning with PHP/Node/Ruby architecture)
+- **fix:** Updated remaining tests to use bool `valid_token()` + `get_payload()` pattern
+
 ## v3.10.84 (2026-04-09)
 
 - **fix:** Router/middleware was setting `request.user` / `request.auth` / auth payload to `true` (boolean) instead of the actual JWT payload dict after `validToken()` was changed to return bool — any code reading `request.user["sub"]` etc. would have failed silently or crashed

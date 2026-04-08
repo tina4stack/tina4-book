@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.10.85 (2026-04-09)
+
+- Version bump for parity with Python and PHP releases
+
 ## v3.10.84 (2026-04-09)
 
 - **fix:** Router/middleware was setting `request.user` / `request.auth` / auth payload to `true` (boolean) instead of the actual JWT payload after `validToken()` was changed to return bool — any code reading `request.user.sub` etc. would have failed silently or crashed
