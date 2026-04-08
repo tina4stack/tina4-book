@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "signature-parity",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["mdview", "/Users/andrevanzuydam/IdeaProjects/tina4-book/plan/SIGNATURE-PARITY.md", "--port", "7200"],
+      "port": 7200
+    }
+  ]
+}
