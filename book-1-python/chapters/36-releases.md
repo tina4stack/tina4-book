@@ -1,5 +1,11 @@
 # Chapter 35: Release Notes
 
+## v3.10.83 (2026-04-08)
+
+- **fix:** prevent orphaned session files on WebSocket and anonymous requests (#36)
+- **feat:** WebSocket rooms — `join_room`, `leave_room`, `broadcast_to_room`, `room_count`, `get_room_connections`
+- **feat:** queue signature parity — instance-scoped `push`/`pop`/`retry`, no topic params on public methods
+
 ## v3.10.70 (2026-04-06)
 
 - **New:** SSE (Server-Sent Events) support via `response.stream()` — pass a generator, framework handles chunked transfer encoding, keep-alive, and `text/event-stream` content type
