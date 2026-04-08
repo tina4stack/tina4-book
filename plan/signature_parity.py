@@ -203,15 +203,18 @@ def extract_ts_signatures(filepath):
             if cpos <= pos:
                 owner = name
         return owner
+
+    skip = {"constructor", "if", "for", "while", "switch", "catch", "return",
+            "typeof", "instanceof", "new", "delete", "void", "throw"}
+    classes = defaultdict(dict)
+
+    # Single-line method pattern (indented 0-4 spaces)
     pattern = re.compile(
         r'^\s{0,4}(?:(?:public|protected|private|static|async|override)\s+)*\*?\s*'
         r'([a-z]\w*)\s*(?:<[^>]*>)?\s*\(([^)]*)\)\s*(?::\s*([\w<>\[\]|&?, ]+?))?'
         r'\s*(?:\{|;|$)',
         re.MULTILINE
     )
-    skip = {"constructor", "if", "for", "while", "switch", "catch", "return",
-            "typeof", "instanceof", "new", "delete", "void", "throw"}
-    classes = defaultdict(dict)
     for m in pattern.finditer(src):
         name = m.group(1)
         if name in skip or name.startswith("_"):
@@ -226,6 +229,48 @@ def extract_ts_signatures(filepath):
         is_async = bool(re.search(r'\basync\b', src[line_start:m.start()]))
         owner = _class_for_pos(m.start())
         classes[owner][name] = {"params": params, "returns": ret, "async": is_async}
+
+    # Multi-line method pattern — method name on its own line, params span multiple lines
+    # Matches: `  static methodName<T ...>(` or `  async methodName(` at start of a line
+    multiline_decl = re.compile(
+        r'^\s{0,6}(?:(?:public|protected|private|static|async|override)\s+)*'
+        r'([a-z]\w*)\s*(?:<[^>]*>)?\s*\(\s*$',
+        re.MULTILINE
+    )
+    for m in multiline_decl.finditer(src):
+        name = m.group(1)
+        if name in skip or name.startswith("_"):
+            continue
+        line_start = src.rfind('\n', 0, m.start()) + 1
+        line = src[line_start:m.start() + len(name) + 10]
+        if 'private' in line:
+            continue
+        owner = _class_for_pos(m.start())
+        # Already captured by single-line pattern?
+        if name in classes[owner]:
+            continue
+        # Collect params until closing paren
+        paren_start = src.index('(', m.start())
+        depth = 0
+        i = paren_start
+        while i < len(src):
+            if src[i] == '(':
+                depth += 1
+            elif src[i] == ')':
+                depth -= 1
+                if depth == 0:
+                    break
+            i += 1
+        params_raw = src[paren_start+1:i].replace('\n', ' ')
+        # Strip 'this:' TypeScript fake parameter
+        params_list = [p.strip() for p in params_raw.split(',') if p.strip()]
+        params_list = [p for p in params_list if not p.startswith('this:')]
+        # Try to get return type after the closing paren
+        after = src[i+1:i+80].strip()
+        ret_m = re.match(r':\s*([\w<>\[\]|&?, ]+?)\s*(?:\{|$)', after)
+        ret = ret_m.group(1).strip() if ret_m else ""
+        is_async = bool(re.search(r'\basync\b', src[line_start:m.start()]))
+        classes[owner][name] = {"params": params_list, "returns": ret, "async": is_async}
 
     # Also detect `static propName = functionRef` assignments inside a class body
     static_assign = re.compile(
