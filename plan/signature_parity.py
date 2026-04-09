@@ -229,9 +229,9 @@ def extract_ts_signatures(filepath):
     result = {}
     class_decl = re.compile(r'export\s+(?:abstract\s+)?class\s+(\w+)')
     class_positions = [(m.group(1), m.end()) for m in class_decl.finditer(src)]
-    if not class_positions:
-        return result
     def _class_for_pos(pos):
+        if not class_positions:
+            return None
         owner = class_positions[0][0]
         for name, cpos in class_positions:
             if cpos <= pos:
@@ -265,7 +265,8 @@ def extract_ts_signatures(filepath):
         params = [p.strip() for p in params_raw.split(",") if p.strip()]
         is_async = bool(re.search(r'\basync\b', src[line_start:m.start()]))
         owner = _class_for_pos(m.start())
-        classes[owner][name] = {"params": params, "returns": ret, "async": is_async}
+        if owner:
+            classes[owner][name] = {"params": params, "returns": ret, "async": is_async}
 
     # Multi-line method pattern — method name on its own line, params span multiple lines
     # Matches: `  static methodName<T ...>(` or `  async methodName(` at start of a line
@@ -307,7 +308,7 @@ def extract_ts_signatures(filepath):
         ret_m = re.match(r':\s*([\w<>\[\]|&?, ]+?)\s*(?:\{|$)', after)
         ret = ret_m.group(1).strip() if ret_m else ""
         is_async = bool(re.search(r'\basync\b', src[line_start:m.start()]))
-        classes[owner][name] = {"params": params_list, "returns": ret, "async": is_async}
+        if owner: classes[owner][name] = {"params": params_list, "returns": ret, "async": is_async}
 
     # Third pass: TypeScript static methods with `this: new (...)` generic constraints.
     # These have nested parens in the first parameter that defeat [^)\n]*, e.g.:
@@ -348,7 +349,7 @@ def extract_ts_signatures(filepath):
         ret_m = re.match(r':\s*([\w<>\[\]|&?, ]+?)\s*(?:\{|$)', after)
         ret = ret_m.group(1).strip() if ret_m else ""
         is_async = bool(re.search(r'\basync\b', src[line_start:m.start()]))
-        classes[owner][name] = {"params": params_list, "returns": ret, "async": is_async}
+        if owner: classes[owner][name] = {"params": params_list, "returns": ret, "async": is_async}
 
     # Also detect `static propName = functionRef` assignments inside a class body
     static_assign = re.compile(
@@ -376,11 +377,53 @@ def extract_ts_signatures(filepath):
         if fn_m:
             params = [p.strip() for p in fn_m.group(1).split(",") if p.strip()]
             ret = (fn_m.group(2) or "").strip()
-            classes[owner][prop_name] = {"params": params, "returns": ret, "async": False}
+            if owner: classes[owner][prop_name] = {"params": params, "returns": ret, "async": False}
 
     for cls, methods in classes.items():
         if methods:
             result[cls] = methods
+
+    # Fourth pass: TypeScript interface method signatures.
+    # Handles factory-function patterns where methods live in an interface
+    # rather than a class (e.g. JobLifecycle in job.ts).
+    iface_decl = re.compile(r'export\s+interface\s+(\w+)\s*\{', re.MULTILINE)
+    iface_method = re.compile(
+        r'^\s{1,4}([a-z]\w*)\s*\(([^)]*)\)\s*:\s*([\w<>\[\]|&?, ]+?)\s*;',
+        re.MULTILINE
+    )
+    for im in iface_decl.finditer(src):
+        iface_name = im.group(1)
+        # Find matching closing brace
+        brace_start = im.end() - 1
+        depth = 0
+        j = brace_start
+        while j < len(src):
+            if src[j] == '{':
+                depth += 1
+            elif src[j] == '}':
+                depth -= 1
+                if depth == 0:
+                    break
+            j += 1
+        iface_body = src[brace_start:j]
+        for mm in iface_method.finditer(iface_body):
+            mname = mm.group(1)
+            if mname in skip or mname.startswith("_"):
+                continue
+            params_raw = mm.group(2).strip()
+            params = [p.strip() for p in params_raw.split(",") if p.strip()]
+            ret = mm.group(3).strip()
+            # Merge into an existing class whose name appears in the interface name
+            target = iface_name
+            for cname in list(result.keys()):
+                if cname in iface_name or iface_name.endswith(cname):
+                    target = cname
+                    break
+            if target not in result:
+                result[target] = {}
+            if mname not in result[target]:
+                result[target][mname] = {"params": params, "returns": ret, "async": False}
+
     return result
 
 # ── Feature area sources ──────────────────────────────────────────────────────
@@ -402,7 +445,7 @@ FEATURE_SOURCES = {
         "Python": BASE / "tina4-python/tina4_python/queue/job.py",
         "PHP":    BASE / "tina4-php/Tina4/Job.php",
         "Ruby":   BASE / "tina4-ruby/lib/tina4/job.rb",
-        "Node":   BASE / "tina4-nodejs/packages/core/src/queue.ts",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/job.ts",
     },
     "Auth": {
         "Python": BASE / "tina4-python/tina4_python/auth/__init__.py",

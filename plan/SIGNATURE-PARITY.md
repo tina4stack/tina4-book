@@ -11,7 +11,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 |---------|--------:|--------:|------------:|----------:|
 | ORM | 35 | 16 | 15 | 4 |
 | Queue | 14 | 3 | 9 | 2 |
-| Job | 7 | 0 | 1 | 6 |
+| Job | 7 | 4 | 3 | 0 |
 | Auth | 8 | 6 | 2 | 0 |
 | Database | 29 | 4 | 9 | 16 |
 | Router | 18 | 2 | 11 | 5 |
@@ -358,42 +358,15 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
-| `complete` | `()` | `()` | `()` | — | ⚠️ missing: Node |
-| `fail` | `error` | `reason` | `reason` | — | ⚠️ missing: Node |
-| `reject` | `reason` | `reason` | `reason` | — | ⚠️ missing: Node |
-| `retry` | `delay_seconds` | `delaySeconds` | `queue, delay_seconds` | `delaySeconds?` | ⚠️ return type differs |
-| `to_array` | `()` | `()` | `()` | — | ⚠️ missing: Node |
-| `to_hash` | `()` | `()` | `()` | — | ⚠️ missing: Node |
-| `to_json` | `()` | `()` | `*_args` | — | ⚠️ missing: Node |
+| `complete` | `()` | `()` | `()` | `()` | ✅ |
+| `fail` | `error` | `reason` | `reason` | `reason?` | ✅ |
+| `reject` | `reason` | `reason` | `reason` | `reason?` | ✅ |
+| `retry` | `delay_seconds` | `delaySeconds` | `delay_seconds, queue` | `delaySeconds?` | ⚠️ param count differs |
+| `to_array` | `()` | `()` | `()` | `()` | ✅ |
+| `to_hash` | `()` | `()` | `()` | `()` | ⚠️ return type differs |
+| `to_json` | `()` | `()` | `*_args` | `()` | ⚠️ param count differs |
 
 ### Mismatch Details
-
-#### `complete`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `untyped` |
-| PHP | `` | `None` |
-| Ruby | `` | `untyped` |
-| Node | — not implemented — | — |
-
-#### `fail`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `error: str = ''` | `untyped` |
-| PHP | `reason: string '' = ''` | `None` |
-| Ruby | `reason = ""` | `untyped` |
-| Node | — not implemented — | — |
-
-#### `reject`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `reason: str = ''` | `untyped` |
-| PHP | `reason: string '' = ''` | `None` |
-| Ruby | `reason = ""` | `untyped` |
-| Node | — not implemented — | — |
 
 #### `retry`
 
@@ -401,17 +374,8 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 |-----------|-----------|-------------|
 | Python | `delay_seconds: int = 0` | `untyped` |
 | PHP | `delaySeconds: int 0 = 0` | `None` |
-| Ruby | `queue:, delay_seconds: 0` | `untyped` |
-| Node | `delaySeconds?: number` | `bool` |
-
-#### `to_array`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `list` |
-| PHP | `` | `list` |
-| Ruby | `` | `untyped` |
-| Node | — not implemented — | — |
+| Ruby | `delay_seconds: 0, queue: nil` | `untyped` |
+| Node | `delaySeconds?: number` | `None` |
 
 #### `to_hash`
 
@@ -420,7 +384,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `` | `dict` |
 | PHP | `` | `list` |
 | Ruby | `` | `untyped` |
-| Node | — not implemented — | — |
+| Node | `` | `dict` |
 
 #### `to_json`
 
@@ -429,7 +393,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `` | `str` |
 | PHP | `` | `str` |
 | Ruby | `*_args` | `untyped` |
-| Node | — not implemented — | — |
+| Node | `` | `str` |
 
 ## Auth
 
