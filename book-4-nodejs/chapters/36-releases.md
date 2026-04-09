@@ -1,5 +1,18 @@
 # Chapter 35: Release Notes
 
+## v3.10.88 (2026-04-09)
+
+- **fix:** `{{ value|dump }}` filter now handles complex objects safely. The previous implementation used `JSON.stringify` which crashed on circular references and BigInt, silently dropped functions/Symbols/`undefined`, and serialised `Map`/`Set`/`Error`/class instances as empty `{}`. Replaced with an `inspectValue()` inspector that matches PHP's `var_dump`, Python's `repr`, and Ruby's `inspect`:
+  - Circular references: `[Circular]`
+  - BigInt: `123n`
+  - Date: `Date(2026-04-09T13:00:00.000Z)`
+  - Map / Set: `Map(2) { "a" => 1, "b" => 2 }` / `Set(3) { 1, 2, 3 }`
+  - Error: `Error("boom")`
+  - Class instances: `User { name: "Alice", age: 30 }` (class name preserved)
+  - Functions: `[Function: name]`
+  - Depth-capped at 8 levels to prevent runaway graphs
+- **test:** 11 new edge-case assertions in `frond.test.ts` (frond.test now 254 passing).
+
 ## v3.10.87 (2026-04-09)
 
 - **fix:** Dev toolbar no longer vanishes after a hot-reload. The CLI watcher used to call `server.router.clear()` on every file change — including template/CSS/JS asset edits — which left a brief window of 404 responses that bypass the dev toolbar injection. The watcher now reports whether a `.ts/.tsx/.js/.jsx` source file changed; router re-discovery only runs on code changes, and asset edits pass through without touching the router. Matches the PHP v3.10.87 fix.
