@@ -1,6 +1,6 @@
 # Parity Audit: Template / Frond Engine
 
-> **Generated:** 2026-04-03 | **Version:** v3.10.67
+> **Generated:** 2026-04-03 | **Updated:** 2026-04-09 | **Version:** v3.10.89
 
 ## Status: FULL PARITY (100%) — audit corrected
 
@@ -35,6 +35,27 @@ All 4 frameworks have the complete Frond API. The initial audit checked Ruby's `
 ## Built-in Filters
 
 - [ ] **PARITY: OK** — all 4 have 40+ identical filters (upper, lower, capitalize, trim, length, escape, etc.)
+
+## Dump Helper (v3.10.89+)
+
+All 4 frameworks expose `dump` as **both a filter and a callable global function**. Both forms delegate to a single `render_dump` helper per framework so they produce identical output.
+
+| Framework | Filter | Function | Shared helper |
+|-----------|--------|----------|---------------|
+| Python | `{{ x\|dump }}` | `{{ dump(x) }}` | `_render_dump()` |
+| PHP | `{{ x\|dump }}` | `{{ dump($x) }}` | `Frond::renderDump()` |
+| Ruby | `{{ x\|dump }}` | `{{ dump(x) }}` | `Tina4::Frond.render_dump` |
+| Node.js | `{{ x\|dump }}` | `{{ dump(x) }}` | `renderDump()` |
+
+**Production gating.** All 4 implementations check `TINA4_DEBUG=true` at call time. In production (env var unset or `false`) both filter and function return an empty string — prevents accidental leaks of internal state, object shapes, and sensitive values through rendered HTML.
+
+**Output format.** Language-native inspection wrapped in `<pre>` and HTML-escaped:
+- Python: `repr(v)` — prints `{...}` for cycles
+- PHP: `var_dump($v)` — prints `*RECURSION*` for cycles
+- Ruby: `v.inspect` — prints `{...}` for cycles
+- Node.js: `inspectValue(v)` — custom inspector with `[Circular]`, BigInt, Map/Set, Error, Date support
+
+- [x] **PARITY: OK** — all 4 implementations cross-tested and released in v3.10.89
 
 ## Issues to Fix
 
