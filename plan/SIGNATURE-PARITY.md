@@ -1,6 +1,6 @@
 # Tina4 Signature Parity Report
 
-> Auto-generated on 2026-04-09
+> Auto-generated on 2026-04-10
 
 Compares public method signatures (params + return types) across Python, PHP, Ruby, and Node.js.
 Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = mismatch or missing.
@@ -9,68 +9,83 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Feature | Methods | ✅ Match | ⚠️ Mismatch | ⚠️ Missing |
 |---------|--------:|--------:|------------:|----------:|
-| ORM | 35 | 16 | 15 | 4 |
-| Queue | 14 | 3 | 9 | 2 |
-| Job | 7 | 4 | 3 | 0 |
+| ORM | 37 | 37 | 0 | 0 |
+| Queue | 15 | 14 | 1 | 0 |
+| Job | 7 | 6 | 1 | 0 |
 | Auth | 8 | 6 | 2 | 0 |
-| Database | 29 | 4 | 9 | 16 |
-| Router | 18 | 2 | 11 | 5 |
-| Session | 17 | 6 | 7 | 4 |
-| Migration | 11 | 0 | 7 | 4 |
-| MCP | 5 | 2 | 2 | 1 |
-| Frond | 8 | 3 | 5 | 0 |
-| GraphQL | 12 | 1 | 7 | 4 |
+| Database | 28 | 28 | 0 | 0 |
+| Router | 19 | 19 | 0 | 0 |
+| Session | 17 | 17 | 0 | 0 |
+| Migration | 13 | 11 | 2 | 0 |
+| MCP | 13 | 10 | 3 | 0 |
+| Frond | 10 | 10 | 0 | 0 |
+| GraphQL | 13 | 9 | 4 | 0 |
+| Api | 9 | 3 | 6 | 0 |
+| Cache | 7 | 7 | 0 | 0 |
+| Container | 5 | 5 | 0 | 0 |
+| Events | 8 | 6 | 2 | 0 |
+| WebSocket | 14 | 8 | 4 | 2 |
+| WSDL | 5 | 0 | 0 | 5 |
+| Swagger | 1 | 0 | 0 | 1 |
+| I18n | 7 | 7 | 0 | 0 |
+| Seeder | 33 | 33 | 0 | 0 |
+| QueryBuilder | 16 | 15 | 0 | 1 |
+| Validator | 11 | 11 | 0 | 0 |
+| HtmlElement | 1 | 0 | 0 | 1 |
+| Testing | 8 | 1 | 0 | 7 |
+| Messenger | 10 | 4 | 2 | 4 |
+| Logger | 7 | 5 | 0 | 2 |
+| AI | 5 | 4 | 0 | 1 |
+| Request | 4 | 0 | 0 | 4 |
+| Response | 18 | 10 | 2 | 6 |
+| Middleware | 13 | 11 | 0 | 2 |
+| AutoCrud | 5 | 0 | 0 | 5 |
+| SqlTranslation | 17 | 16 | 1 | 0 |
+| Metrics | 3 | 0 | 0 | 3 |
 
 ## ORM
 
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
-| `all` | `limit, offset, include` | `limit, offset, include` | `limit, offset, order_by, include` | `unknown>), where?, params?, include?` | ⚠️ param count differs |
-| `belongs_to` | `related_class, foreign_key` | `relatedClass, foreignKey` | `name, class_name, foreign_key` | `relatedClass, unknown>), foreignKey` | ⚠️ return type differs |
-| `cached` | `sql, params, ttl, limit, offset` | `sql, params, ttl, limit, offset, include` | `sql, params, ttl, limit, offset, include` | `unknown>), sql, params?, ttl` | ⚠️ param count differs |
+| `all` | `limit, offset, include, order_by` | `limit, offset, include, orderBy` | `()` | `where?, params?, include?, orderBy?` | ✅ |
+| `belongs_to` | `related_class, foreign_key` | `relatedClass, foreignKey` | `name` | `foreignKey` | ℹ️ return type differs |
+| `cached` | `sql, params, ttl, limit, offset, include` | `sql, params, ttl, limit, offset, include` | `sql, params` | `sql, params?, ttl, limit, offset, include?` | ✅ |
+| `camel_to_snake` | `name` | `name` | `name` | `name` | ✅ |
 | `clear_cache` | `()` | `()` | `()` | `()` | ✅ |
-| `clear_rel_cache` | — | `()` | — | `()` | ⚠️ missing: Python, Ruby |
+| `clear_rel_cache` | `()` | `()` | `()` | `()` | ✅ |
 | `count` | `conditions, params` | `conditions, params` | `conditions, params` | `conditions?, params?` | ✅ |
-| `create` | `data, **kwargs` | `data` | `attributes` | `unknown>), data, unknown>` | ⚠️ param count differs |
+| `create` | `data` | `data` | `attributes` | `data` | ✅ |
 | `create_table` | `()` | `()` | `()` | `()` | ✅ |
 | `delete` | `()` | `()` | `()` | `()` | ✅ |
-| `eager_load` | — | `include, db` | `instances, include_list` | — | ⚠️ missing: Python, Node |
-| `exists` | `pk_value` | `()` | `pk_value` | `id` | ⚠️ param count differs |
-| `find` | `filter, limit, offset, order_by, include` | `filter, limit, offset, orderBy, include` | `filter, limit, offset, order_by, include, **extra_filter` | `unknown>), filter?, unknown>, limit, offset, orderBy?, include?` | ⚠️ param count differs |
-| `find_by_id` | `pk_value, include` | `id, include` | `id` | `unknown>), id, include?` | ⚠️ param count differs |
-| `find_or_fail` | `pk_value` | `id` | `id` | `unknown>), id` | ⚠️ param count differs |
+| `eager_load` | `instances, include_list` | `instances, include, db` | `instances, include_list` | `instances, includeList` | ℹ️ return type differs |
+| `exists` | `pk_value` | `pkValue` | `pk_value` | `pkValue` | ✅ |
+| `find` | `filter, limit, offset, order_by, include` | `filter, limit, offset, orderBy, include` | `filter` | `filter?, limit, offset, orderBy?, include?` | ✅ |
+| `find_by_id` | `pk_value, include` | `id, include` | `id` | `id, include?` | ✅ |
+| `find_or_fail` | `pk_value` | `id` | `id` | `id` | ✅ |
 | `force_delete` | `()` | `()` | `()` | `()` | ✅ |
-| `get_db` | — | `()` | — | `()` | ⚠️ missing: Python, Ruby |
-| `get_db_column` | — | `property` | — | `prop` | ⚠️ missing: Python, Ruby |
-| `has_many` | `related_class, foreign_key, limit, offset` | `relatedClass, foreignKey, limit, offset` | `name, class_name, foreign_key` | `relatedClass, unknown>), foreignKey, limit, offset` | ⚠️ return type differs |
-| `has_one` | `related_class, foreign_key` | `relatedClass, foreignKey` | `name, class_name, foreign_key` | `relatedClass, unknown>), foreignKey` | ⚠️ return type differs |
-| `load` | `filter, params, include` | `filter, params, include` | `filter, params, include` | `filter?, params?, include?` | ✅ |
+| `get_db` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `get_db_column` | `prop` | `property` | `property` | `prop` | ℹ️ return type differs |
+| `has_many` | `related_class, foreign_key, limit, offset` | `relatedClass, foreignKey, limit, offset` | `name` | `foreignKey, limit, offset` | ℹ️ return type differs |
+| `has_one` | `related_class, foreign_key` | `relatedClass, foreignKey` | `name` | `foreignKey` | ℹ️ return type differs |
+| `load` | `filter, params, include` | `filter, params, include` | `filter, params` | `filter?, params?, include?` | ✅ |
 | `query` | `()` | `()` | `()` | `()` | ✅ |
 | `restore` | `()` | `()` | `()` | `()` | ✅ |
 | `save` | `()` | `()` | `()` | `()` | ✅ |
 | `scope` | `name, filter_sql, params` | `name, filterSql, params` | `name, filter_sql, params` | `name, filterSql, params?` | ✅ |
-| `select` | `sql, params, limit, offset, include` | `sql, params, limit, offset, include` | `*fields` | `unknown>), sql, params?` | ⚠️ param count differs |
-| `select_one` | `sql, params, include` | `sql, params, include` | `sql, params, include` | `unknown>), sql, params?, include?` | ⚠️ param count differs |
+| `select` | `sql, params, limit, offset, include` | `sql, params, limit, offset, include` | `*fields` | `sql, params?` | ✅ |
+| `select_one` | `sql, params, include` | `sql, params, include` | `sql, params` | `sql, params?, include?` | ✅ |
+| `snake_to_camel` | `name` | `name` | `name` | `name` | ✅ |
 | `to_array` | `()` | `()` | `()` | `()` | ✅ |
-| `to_assoc` | `include` | `include` | `include` | `include?` | ✅ |
-| `to_dict` | `include` | `include` | `include` | `include?` | ✅ |
-| `to_json` | `include` | `include` | `include, **_args` | `include?` | ✅ |
+| `to_assoc` | `include` | `include` | `()` | `include?` | ✅ |
+| `to_dict` | `include` | `include` | `()` | `include?` | ✅ |
+| `to_json` | `include` | `include` | `()` | `include?` | ✅ |
 | `to_list` | `()` | `()` | `()` | `()` | ✅ |
-| `to_object` | `()` | `()` | `include` | `()` | ⚠️ param count differs |
+| `to_object` | `()` | `()` | `()` | `()` | ✅ |
 | `validate` | `()` | `()` | `()` | `()` | ✅ |
-| `where` | `filter_sql, params, limit, offset, include` | `filterSql, params, limit, offset, include` | `conditions, params, include` | `unknown>), conditions, params?, limit, offset, include?` | ⚠️ param count differs |
-| `with_trashed` | `filter_sql, params, limit, offset` | `filterSql, params, limit, offset` | `conditions, params, limit, offset` | `unknown>), conditions?, params?, limit?, offset?` | ⚠️ param count differs |
+| `where` | `filter_sql, params, limit, offset, include` | `filterSql, params, limit, offset, include` | `conditions, params` | `conditions, params?, limit, offset, include?` | ✅ |
+| `with_trashed` | `filter_sql, params, limit, offset` | `filterSql, params, limit, offset` | `conditions, params` | `conditions?, params?, limit?, offset?` | ✅ |
 
 ### Mismatch Details
-
-#### `all`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `limit: int = 100, offset: int = 0, include: list[str] = None` | `list[Self]` |
-| PHP | `limit: int 100 = 100, offset: int 0 = 0, include: ?array null = null` | `list[Self]` |
-| Ruby | `limit: nil, offset: nil, order_by: nil, include: nil` | `list[Self]` |
-| Node | `unknown>) => T, where?: string, params?: unknown[], include?: string[]` | `list[Self]` |
 
 #### `belongs_to`
 
@@ -81,94 +96,31 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Ruby | `name, class_name: nil, foreign_key: nil` | `None` |
 | Node | `relatedClass: typeof BaseModel & (new (data?: Record<string, unknown>) => R), foreignKey: string` | `Self|None` |
 
-#### `cached`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `sql: str, params: list = None, ttl: int = 60, limit: int = 20, offset: int = 0` | `list[Self]` |
-| PHP | `sql: string, params: array [] = [], ttl: int 60 = 60, limit: int 20 = 20, offset: int 0 = 0, include: ?array null = null` | `list[Self]` |
-| Ruby | `sql, params = [], ttl: 60, limit: 20, offset: 0, include: nil` | `list[Self]` |
-| Node | `unknown>) => T, sql: string, params?: unknown[], ttl = 60` | `list[Self]` |
-
-#### `clear_rel_cache`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | — not implemented — | — |
-| PHP | `` | `None` |
-| Ruby | — not implemented — | — |
-| Node | `` | `None` |
-
-#### `create`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `data: dict = None, **kwargs` | `Self` |
-| PHP | `data: array [] = []` | `Self` |
-| Ruby | `attributes = {}` | `Self` |
-| Node | `unknown>) => T, data: Record<string, unknown>` | `Self` |
-
 #### `eager_load`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | — not implemented — | — |
-| PHP | `include: array, db: DatabaseAdapter` | `None` |
+| Python | `instances: list, include_list: list[str]` | `None` |
+| PHP | `instances: array &$instances, include: array, db: ?DatabaseAdapter null = null` | `None` |
 | Ruby | `instances, include_list` | `untyped` |
-| Node | — not implemented — | — |
-
-#### `exists`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `pk_value` | `bool` |
-| PHP | `` | `bool` |
-| Ruby | `pk_value` | `bool` |
-| Node | `id: unknown` | `bool` |
-
-#### `find`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `filter: dict = None, limit: int = 100, offset: int = 0, order_by: str = None, include: list[str] = None` | `list[Self]` |
-| PHP | `filter: array [] = [], limit: int 100 = 100, offset: int 0 = 0, orderBy: ?string null = null, include: ?array null = null` | `list[Self]` |
-| Ruby | `filter = {}, limit: 100, offset: 0, order_by: nil, include: nil, **extra_filter` | `list[Self]` |
-| Node | `unknown>) => T, filter?: Record<string, unknown>, limit = 100, offset = 0, orderBy?: string, include?: string[]` | `list[Self]` |
-
-#### `find_by_id`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `pk_value, include: list[str] = None` | `Self|None` |
-| PHP | `id: int|string, include: ?array null = null` | `Self|None` |
-| Ruby | `id` | `Self|None` |
-| Node | `unknown>) => T, id: unknown, include?: string[]` | `Self|None` |
-
-#### `find_or_fail`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `pk_value` | `Self` |
-| PHP | `id: int|string` | `Self` |
-| Ruby | `id` | `Self` |
-| Node | `unknown>) => T, id: unknown` | `Self` |
+| Node | `instances: BaseModel[], includeList: string[]` | `Promise<None>` |
 
 #### `get_db`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | — not implemented — | — |
+| Python | `` | `untyped` |
 | PHP | `` | `DatabaseAdapter|None` |
-| Ruby | — not implemented — | — |
+| Ruby | `` | `Database` |
 | Node | `` | `DatabaseAdapter` |
 
 #### `get_db_column`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | — not implemented — | — |
+| Python | `prop: str` | `str` |
 | PHP | `property: string` | `str` |
-| Ruby | — not implemented — | — |
+| Ruby | `property` | `Symbol` |
 | Node | `prop: string` | `str` |
 
 #### `has_many`
@@ -189,69 +141,25 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Ruby | `name, class_name: nil, foreign_key: nil` | `None` |
 | Node | `relatedClass: typeof BaseModel & (new (data?: Record<string, unknown>) => R), foreignKey: string` | `Self|None` |
 
-#### `select`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `sql: str, params: list = None, limit: int = 20, offset: int = 0, include: list[str] = None` | `list[Self]` |
-| PHP | `sql: string, params: array [] = [], limit: int 20 = 20, offset: int 0 = 0, include: ?array null = null` | `list[Self]` |
-| Ruby | `*fields` | `untyped` |
-| Node | `unknown>) => T, sql: string, params?: unknown[]` | `list[Self]` |
-
-#### `select_one`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `sql: str, params: list = None, include: list[str] = None` | `Self|None` |
-| PHP | `sql: string, params: array [] = [], include: ?array null = null` | `Self|None` |
-| Ruby | `sql, params = [], include: nil` | `Self|None` |
-| Node | `unknown>) => T, sql: string, params?: unknown[], include?: string[]` | `Self|None` |
-
-#### `to_object`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `dict` |
-| PHP | `` | `dict` |
-| Ruby | `include: nil` | `dict` |
-| Node | `` | `dict` |
-
-#### `where`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `filter_sql: str, params: list = None, limit: int = 20, offset: int = 0, include: list[str] = None` | `list[Self]` |
-| PHP | `filterSql: string, params: array [] = [], limit: int 20 = 20, offset: int 0 = 0, include: ?array null = null` | `list[Self]` |
-| Ruby | `conditions, params = [], include: nil` | `list[Self]` |
-| Node | `unknown>) => T, conditions: string, params?: unknown[], limit: number = 20, offset: number = 0, include?: string[]` | `list[Self]` |
-
-#### `with_trashed`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `filter_sql: str = '1=1', params: list = None, limit: int = 20, offset: int = 0` | `list[Self]` |
-| PHP | `filterSql: string = '1=1', params: array [] = [], limit: int 20 = 20, offset: int 0 = 0` | `list[Self]` |
-| Ruby | `conditions = "1=1", params = [], limit: 20, offset: 0` | `list[Self]` |
-| Node | `unknown>) => T, conditions?: string, params?: unknown[], limit?: number, offset?: number` | `list[Self]` |
-
 ## Queue
 
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
 | `clear` | `()` | `()` | `()` | `()` | ✅ |
-| `consume` | `topic, job_id, poll_interval, iterations` | `topic, id, pollInterval` | `topic, id, poll_interval, iterations, &block` | `topic?, id?, pollInterval, iterations` | ⚠️ return type differs |
-| `dead_letters` | `()` | `()` | `()` | `maxRetries?` | ⚠️ return type differs |
-| `failed` | `()` | `()` | `()` | `()` | ⚠️ return type differs |
-| `get_topic` | — | `()` | — | `()` | ⚠️ missing: Python, Ruby |
-| `pop` | `()` | `()` | `()` | `()` | ⚠️ return type differs |
-| `pop_by_id` | `job_id` | `id` | `id` | `id` | ⚠️ return type differs |
-| `process` | — | `handlerOrQueue, queueOrHandlerOrOptions, options` | — | `handler, options?` | ⚠️ missing: Python, Ruby |
-| `produce` | `topic, data, priority, delay_seconds` | `topic, payload, delay` | `topic, payload, priority` | `topic, payload, delay?, priority` | ⚠️ param count differs |
-| `purge` | `status` | `status` | `status` | `status, maxRetries?` | ⚠️ param count differs |
-| `push` | `data, priority, delay_seconds` | `payload, delay, priority` | `payload, priority, delay_seconds` | `payload, delay?, priority` | ✅ |
-| `retry` | `job_id, delay_seconds` | `jobId, delaySeconds` | `delay_seconds` | `delaySeconds?` | ⚠️ param count differs |
-| `retry_failed` | `()` | `()` | `()` | `maxRetries?` | ⚠️ param count differs |
-| `size` | `status` | `status` | `status` | `status` | ✅ |
+| `consume` | `topic, id, poll_interval, iterations, batch_size` | `topic, id, pollInterval, batchSize` | `topic, id, poll_interval, iterations, batch_size, handler` | `topicOrOptions?, id?, pollInterval, iterations, batchSize` | ℹ️ return type differs |
+| `dead_letters` | `max_retries` | `maxRetries` | `max_retries` | `maxRetries?` | ✅ |
+| `failed` | `()` | `()` | `()` | `()` | ✅ |
+| `get_topic` | `()` | `()` | `()` | `()` | ✅ |
+| `pop` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `pop_batch` | `count` | `count` | `count` | `count` | ℹ️ return type differs |
+| `pop_by_id` | `id` | `id` | `id` | `id` | ℹ️ return type differs |
+| `process` | `handler, topic, max_jobs, batch_size` | `handlerOrQueue, queueOrHandlerOrOptions, options` | `topic, max_jobs, batch_size, handler` | `handler, options?` | ✅ |
+| `produce` | `topic, data, priority, delay_seconds` | `topic, payload, priority, delaySeconds` | `topic, payload, priority, delay_seconds` | `topic, payload, priority, delay` | ✅ |
+| `purge` | `status, max_retries` | `status, maxRetries` | `status, max_retries` | `status, maxRetries?` | ✅ |
+| `push` | `data, priority, delay_seconds` | `payload, priority, delay` | `payload, priority, delay_seconds` | `payload, delay?, priority` | ✅ |
+| `retry` | `job_id, delay_seconds` | `jobId, delaySeconds` | `job_id, delay_seconds` | `jobId?, delaySeconds?` | ✅ |
+| `retry_failed` | `max_retries` | `maxRetries` | `max_retries` | `maxRetries?` | ✅ |
+| `size` | `status` | `status` | `()` | `status` | ✅ |
 
 ### Mismatch Details
 
@@ -259,100 +167,37 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `topic: str = None, job_id: str = None, poll_interval: float = 1.0, iterations: int = 0` | `untyped` |
-| PHP | `topic: string '' = '', id: ?string null = null, pollInterval: float 1.0 = 1.0` | `\Generator` |
-| Ruby | `topic = nil, id: nil, poll_interval: 1.0, iterations: 0, &block` | `untyped` |
-| Node | `topic?: string, id?: string, pollInterval: number = 1000, iterations: number = 0` | `AsyncGenerator<dict>` |
-
-#### `dead_letters`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `list[dict]` |
-| PHP | `` | `list[list]` |
-| Ruby | `` | `list[dict]` |
-| Node | `maxRetries?: number` | `list[dict]` |
-
-#### `failed`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `list[dict]` |
-| PHP | `` | `list[list]` |
-| Ruby | `` | `list[dict]` |
-| Node | `` | `list[dict]` |
-
-#### `get_topic`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | — not implemented — | — |
-| PHP | `` | `str` |
-| Ruby | — not implemented — | — |
-| Node | `` | `str` |
+| Python | `topic: str = None, id: str = None, poll_interval: float = 1.0, iterations: int = 0, batch_size: int = 1` | `untyped` |
+| PHP | `topic: string '' = '', id: ?string null = null, pollInterval: float 1.0 = 1.0, batchSize: int 1 = 1` | `\Generator` |
+| Ruby | `topic = nil, id: nil, poll_interval: 1.0, iterations: 0, batch_size: 1, &block` | `untyped` |
+| Node | `topicOrOptions?: string | ConsumeOptions, id?: string, pollInterval: number = 1000, iterations: number = 0, batchSize: number = 1` | `AsyncGenerator<dict|list[dict]>` |
 
 #### `pop`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `` | `Job|None` |
+| Python | `` | `dict|None` |
 | PHP | `` | `list|None` |
-| Ruby | `` | `Job|None` |
+| Ruby | `` | `dict|None` |
 | Node | `` | `dict|None` |
+
+#### `pop_batch`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `count: int` | `list` |
+| PHP | `count: int` | `list[dict]` |
+| Ruby | `count` | `untyped` |
+| Node | `count: number` | `list[dict]` |
 
 #### `pop_by_id`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `job_id: str` | `Job|None` |
+| Python | `id: str` | `dict|None` |
 | PHP | `id: string` | `list|None` |
 | Ruby | `id` | `untyped` |
 | Node | `id: string` | `dict|None` |
-
-#### `process`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | — not implemented — | — |
-| PHP | `handlerOrQueue: callable|string, queueOrHandlerOrOptions: callable|string|array '' = '', options: array [] = []` | `None` |
-| Ruby | — not implemented — | — |
-| Node | `handler: (job: QueueJob) => Promise<void> | void, options?: ProcessOptions` | `None` |
-
-#### `produce`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `topic: str, data: dict, priority: int = 0, delay_seconds: int = 0` | `untyped` |
-| PHP | `topic: string, payload: mixed, delay: int 0 = 0` | `str` |
-| Ruby | `topic, payload, priority = 0` | `untyped` |
-| Node | `topic: string, payload: unknown, delay?: number, priority: number = 0` | `str` |
-
-#### `purge`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `status: str = 'completed'` | `int` |
-| PHP | `status: string` | `int` |
-| Ruby | `status` | `int` |
-| Node | `status: string, maxRetries?: number` | `int` |
-
-#### `retry`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `job_id: str, delay_seconds: int = 0` | `bool` |
-| PHP | `jobId: string, delaySeconds: int 0 = 0` | `bool` |
-| Ruby | `delay_seconds = 0` | `bool` |
-| Node | `delaySeconds?: number` | `bool` |
-
-#### `retry_failed`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `int` |
-| PHP | `` | `int` |
-| Ruby | `` | `int` |
-| Node | `maxRetries?: number` | `int` |
 
 ## Job
 
@@ -361,21 +206,12 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `complete` | `()` | `()` | `()` | `()` | ✅ |
 | `fail` | `error` | `reason` | `reason` | `reason?` | ✅ |
 | `reject` | `reason` | `reason` | `reason` | `reason?` | ✅ |
-| `retry` | `delay_seconds` | `delaySeconds` | `delay_seconds, queue` | `delaySeconds?` | ⚠️ param count differs |
+| `retry` | `delay_seconds` | `delaySeconds` | `delay_seconds` | `delaySeconds?` | ✅ |
 | `to_array` | `()` | `()` | `()` | `()` | ✅ |
-| `to_hash` | `()` | `()` | `()` | `()` | ⚠️ return type differs |
+| `to_hash` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
 | `to_json` | `()` | `()` | `*_args` | `()` | ⚠️ param count differs |
 
 ### Mismatch Details
-
-#### `retry`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `delay_seconds: int = 0` | `untyped` |
-| PHP | `delaySeconds: int 0 = 0` | `None` |
-| Ruby | `delay_seconds: 0, queue: nil` | `untyped` |
-| Node | `delaySeconds?: number` | `None` |
 
 #### `to_hash`
 
@@ -399,88 +235,49 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
-| `authenticate_request` | `headers` | `headers` | `headers` | `headers, string | string[] | undefined>, secret?, algorithm` | ⚠️ param count differs |
+| `authenticate_request` | `headers, secret, algorithm` | `headers, secret, algorithm` | `headers, secret, algorithm` | `headers, string | string[] | undefined>, secret?, algorithm` | ✅ |
 | `check_password` | `password, hashed` | `password, hash` | `password, hash` | `"secret123", hash` | ✅ |
 | `get_payload` | `token` | `token` | `token` | `token` | ✅ |
-| `get_token` | `payload, expires_in` | `payload, expiresIn` | `payload, expires_in` | `payload, unknown>, expiresIn` | ⚠️ param count differs |
+| `get_token` | `payload, expires_in, secret` | `payload, secret, expiresIn` | `payload, expires_in, secret` | `payload, unknown>, secretOrExpiresIn?, expiresIn, algorithm?` | ✅ |
 | `hash_password` | `password, salt, iterations` | `password, salt, iterations` | `password, salt, iterations` | `password, salt?, iterations` | ✅ |
 | `refresh_token` | `token, expires_in` | `token, expiresIn` | `token, expires_in` | `token, expiresIn` | ✅ |
-| `valid_token` | `token` | `token` | `token` | `token` | ✅ |
-| `validate_api_key` | `provided, expected` | `provided, expected` | `provided, expected` | `provided, expected?` | ✅ |
-
-### Mismatch Details
-
-#### `authenticate_request`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `headers: dict` | `dict|None` |
-| PHP | `headers: array` | `dict|None` |
-| Ruby | `headers` | `untyped` |
-| Node | `headers: Record<string, string | string[] | undefined>, secret?: string, algorithm: string = "HS256"` | `dict|None` |
-
-#### `get_token`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `payload: dict, expires_in: int = None` | `str` |
-| PHP | `payload: array, expiresIn: int 3600 = 3600` | `str` |
-| Ruby | `payload, expires_in: 60` | `untyped` |
-| Node | `payload: Record<string, unknown>, expiresIn: number = 3600` | `str` |
+| `valid_token` | `token` | `token, secret` | `token` | `token, secret?, algorithm?` | ✅ |
+| `validate_api_key` | `provided, expected` | `provided, expected` | `provided` | `provided, expected?` | ✅ |
 
 ## Database
 
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
-| `active_count` | `()` | — | `()` | — | ⚠️ missing: PHP, Node |
-| `cache_clear` | `()` | `()` | `()` | — | ⚠️ missing: Node |
-| `cache_stats` | `()` | `()` | `()` | `()` | ⚠️ return type differs |
-| `checkin` | `adapter` | — | `_driver` | — | ⚠️ missing: PHP, Node |
-| `checkout` | `()` | — | `()` | — | ⚠️ missing: PHP, Node |
+| `active_count` | `()` | `()` | `()` | `()` | ✅ |
+| `cache_clear` | `()` | `()` | `()` | `()` | ✅ |
+| `cache_stats` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `checkin` | `adapter` | `adapter` | `_driver` | `_adapter` | ✅ |
+| `checkout` | `()` | `()` | `()` | `()` | ✅ |
 | `close` | `()` | `()` | `()` | `()` | ✅ |
-| `close_all` | `()` | — | `()` | — | ⚠️ missing: PHP, Node |
-| `commit` | `()` | `()` | — | `()` | ⚠️ missing: Ruby |
-| `create` | — | `url, autoCommit, username, password, pool` | — | `url, username?, password?, pool` | ⚠️ missing: Python, Ruby |
-| `delete` | `table, filter_sql, params` | `table, filter, whereParams` | `table, filter` | `table, filter?, unknown>` | ⚠️ return type differs |
-| `execute` | `sql, params` | `sql, params` | `sql, params` | `sql, params?` | ⚠️ return type differs |
-| `execute_many` | `sql, params_list` | `sql, paramsList` | `sql, params_list` | `sql, paramSets` | ⚠️ return type differs |
-| `fetch` | `sql, params, limit, offset` | `sql, params, limit, offset` | `sql, params, limit, offset` | `sql, params?, limit?, offset?` | ✅ |
-| `fetch_one` | `sql, params` | `sql, params` | `sql, params` | `sql, params?` | ⚠️ return type differs |
-| `from_env` | — | `envKey, autoCommit` | — | `envKey, pool` | ⚠️ missing: Python, Ruby |
-| `get_active_pool_count` | — | `()` | — | `()` | ⚠️ missing: Python, Ruby |
-| `get_adapter` | — | `()` | — | `()` | ⚠️ missing: Python, Ruby |
-| `get_columns` | `table` | `tableName` | — | `tableName` | ⚠️ missing: Ruby |
+| `close_all` | `()` | `()` | `()` | `()` | ✅ |
+| `commit` | `()` | `()` | `()` | `()` | ✅ |
+| `create` | `url, username, password, pool` | `url, autoCommit, username, password, pool` | `url, pool` | `url, username?, password?, pool` | ℹ️ return type differs |
+| `delete` | `table, filter_sql, params` | `table, filter, whereParams` | `table, filter, params` | `table, filter?, params?` | ℹ️ return type differs |
+| `execute` | `sql, params` | `sql, params` | `sql, params` | `sql, params?` | ℹ️ return type differs |
+| `execute_many` | `sql, params_list` | `sql, paramsList` | `sql, params_list` | `sql, paramSets` | ℹ️ return type differs |
+| `fetch` | `sql, params, limit, offset` | `sql, params, limit, offset` | `sql, params` | `sql, params?, limit?, offset?` | ✅ |
+| `fetch_one` | `sql, params` | `sql, params` | `sql, params` | `sql, params?` | ℹ️ return type differs |
+| `from_env` | `env_key, pool` | `envKey, autoCommit, pool` | `pool` | `envKey, pool` | ℹ️ return type differs |
+| `get_adapter` | `()` | `()` | `()` | `()` | ✅ |
+| `get_columns` | `table` | `tableName` | `table_name` | `tableName` | ✅ |
 | `get_error` | `()` | `()` | `()` | `()` | ✅ |
-| `get_last_id` | `()` | `()` | `()` | `()` | ⚠️ return type differs |
+| `get_last_id` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
 | `get_next_id` | `table, pk_column, generator_name` | `table, pkColumn, generatorName` | `table, pk_column, generator_name` | `table, pkColumn, generatorName?` | ✅ |
-| `get_pool_size` | — | `()` | — | `()` | ⚠️ missing: Python, Ruby |
-| `get_tables` | `()` | `()` | — | `()` | ⚠️ missing: Ruby |
-| `insert` | `table, data` | `table, data` | `table, data` | `table, data, unknown>` | ⚠️ return type differs |
-| `rollback` | `()` | `()` | — | `()` | ⚠️ missing: Ruby |
-| `size` | `()` | — | `()` | — | ⚠️ missing: PHP, Node |
-| `start_transaction` | `()` | `()` | — | `()` | ⚠️ missing: Ruby |
-| `table_exists` | `name` | `tableName` | `()` | `name` | ⚠️ param count differs |
-| `update` | `table, data, filter_sql, params` | `table, data, filterSql, params` | `table, data, filter` | `table, data, unknown>, filter?, unknown>` | ⚠️ return type differs |
+| `get_tables` | `()` | `()` | `()` | `()` | ✅ |
+| `insert` | `table, data` | `table, data` | `table, data` | `table, data` | ℹ️ return type differs |
+| `pool_size` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `rollback` | `()` | `()` | `()` | `()` | ✅ |
+| `size` | `()` | `()` | `()` | `()` | ✅ |
+| `start_transaction` | `()` | `()` | `()` | `()` | ✅ |
+| `table_exists` | `name` | `tableName` | `table_name` | `name` | ✅ |
+| `update` | `table, data, filter_sql, params` | `table, data, filterSql, params` | `table, data, filter, params` | `table, data, filter?, params?` | ℹ️ return type differs |
 
 ### Mismatch Details
-
-#### `active_count`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `int` |
-| PHP | — not implemented — | — |
-| Ruby | `` | `untyped` |
-| Node | — not implemented — | — |
-
-#### `cache_clear`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `untyped` |
-| PHP | `` | `None` |
-| Ruby | `` | `untyped` |
-| Node | — not implemented — | — |
 
 #### `cache_stats`
 
@@ -491,49 +288,13 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Ruby | `` | `untyped` |
 | Node | `` | `untyped` |
 
-#### `checkin`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `adapter: DatabaseAdapter` | `None` |
-| PHP | — not implemented — | — |
-| Ruby | `_driver` | `untyped` |
-| Node | — not implemented — | — |
-
-#### `checkout`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `DatabaseAdapter` |
-| PHP | — not implemented — | — |
-| Ruby | `` | `untyped` |
-| Node | — not implemented — | — |
-
-#### `close_all`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `None` |
-| PHP | — not implemented — | — |
-| Ruby | `` | `untyped` |
-| Node | — not implemented — | — |
-
-#### `commit`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `untyped` |
-| PHP | `` | `None` |
-| Ruby | — not implemented — | — |
-| Node | `` | `None` |
-
 #### `create`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | — not implemented — | — |
+| Python | `url: str, username: str = '', password: str = '', pool: int = 0` | `Database` |
 | PHP | `url: string, autoCommit: ?bool null = null, username: string '' = '', password: string '' = '', pool: int 0 = 0` | `Self` |
-| Ruby | — not implemented — | — |
+| Ruby | `url, username: "", password: "", pool: 0` | `untyped` |
 | Node | `url: string, username?: string, password?: string, pool: number = 0` | `Promise<Database>` |
 
 #### `delete`
@@ -542,8 +303,8 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 |-----------|-----------|-------------|
 | Python | `table: str, filter_sql: str | dict | list = '', params: list = None` | `DatabaseResult` |
 | PHP | `table: string, filter: string|array '' = '', whereParams: array [] = []` | `bool` |
-| Ruby | `table, filter = {}` | `untyped` |
-| Node | `table: string, filter?: Record<string, unknown>` | `DatabaseWriteResult` |
+| Ruby | `table, filter = {}, params = nil` | `untyped` |
+| Node | `table: string, filter?: Record<string, unknown>, params?: unknown[]` | `DatabaseWriteResult` |
 
 #### `execute`
 
@@ -561,7 +322,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `sql: str, params_list: list[list] = None` | `DatabaseResult` |
 | PHP | `sql: string, paramsList: array [] = []` | `list[bool]` |
 | Ruby | `sql, params_list = []` | `untyped` |
-| Node | `sql: string, paramSets: unknown[][]` | `list` |
+| Node | `sql: string, paramSets: unknown[][] = []` | `list` |
 
 #### `fetch_one`
 
@@ -576,37 +337,10 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | — not implemented — | — |
-| PHP | `envKey: string 'DATABASE_URL' = 'DATABASE_URL', autoCommit: ?bool null = null` | `Self|None` |
-| Ruby | — not implemented — | — |
+| Python | `env_key: str = 'DATABASE_URL', pool: int = 0` | `Database|None` |
+| PHP | `envKey: string 'DATABASE_URL' = 'DATABASE_URL', autoCommit: ?bool null = null, pool: int 0 = 0` | `Self|None` |
+| Ruby | `env_key: "DATABASE_URL", pool: 0` | `untyped` |
 | Node | `envKey = "DATABASE_URL", pool: number = 0` | `Promise<Database>` |
-
-#### `get_active_pool_count`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | — not implemented — | — |
-| PHP | `` | `int` |
-| Ruby | — not implemented — | — |
-| Node | `` | `int` |
-
-#### `get_adapter`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | — not implemented — | — |
-| PHP | `` | `DatabaseAdapter` |
-| Ruby | — not implemented — | — |
-| Node | `` | `DatabaseAdapter` |
-
-#### `get_columns`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `table: str` | `list[dict]` |
-| PHP | `tableName: string` | `list[dict]` |
-| Ruby | — not implemented — | — |
-| Node | `tableName: string` | `untyped` |
 
 #### `get_last_id`
 
@@ -617,24 +351,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Ruby | `` | `untyped` |
 | Node | `` | `str|int` |
 
-#### `get_pool_size`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | — not implemented — | — |
-| PHP | `` | `DatabaseAdapter` |
-| Ruby | — not implemented — | — |
-| Node | `` | `int` |
-
-#### `get_tables`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `list[str]` |
-| PHP | `` | `list[str]` |
-| Ruby | — not implemented — | — |
-| Node | `` | `list[str]` |
-
 #### `insert`
 
 | Framework | Signature | Return Type |
@@ -644,41 +360,14 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Ruby | `table, data` | `untyped` |
 | Node | `table: string, data: Record<string, unknown>` | `DatabaseWriteResult` |
 
-#### `rollback`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `untyped` |
-| PHP | `` | `None` |
-| Ruby | — not implemented — | — |
-| Node | `` | `None` |
-
-#### `size`
+#### `pool_size`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
 | Python | `` | `int` |
-| PHP | — not implemented — | — |
+| PHP | `` | `DatabaseAdapter` |
 | Ruby | `` | `untyped` |
-| Node | — not implemented — | — |
-
-#### `start_transaction`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `untyped` |
-| PHP | `` | `None` |
-| Ruby | — not implemented — | — |
-| Node | `` | `None` |
-
-#### `table_exists`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `name: str` | `bool` |
-| PHP | `tableName: string` | `bool` |
-| Ruby | `` | `untyped` |
-| Node | `name: string` | `bool` |
+| Node | `` | `int` |
 
 #### `update`
 
@@ -686,60 +375,52 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 |-----------|-----------|-------------|
 | Python | `table: str, data: dict, filter_sql: str = '', params: list = None` | `DatabaseResult` |
 | PHP | `table: string, data: array, filterSql: string '' = '', params: array [] = []` | `bool` |
-| Ruby | `table, data, filter = {}` | `untyped` |
-| Node | `table: string, data: Record<string, unknown>, filter?: Record<string, unknown>` | `DatabaseWriteResult` |
+| Ruby | `table, data, filter = {}, params = nil` | `untyped` |
+| Node | `table: string, data: Record<string, unknown>, filter?: Record<string, unknown>, params?: unknown[]` | `DatabaseWriteResult` |
 
 ## Router
 
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
-| `add_route` | — | — | `method, path, handler, auth_handler, swagger_meta, middleware, template` | `definition` | ⚠️ missing: Python, PHP |
-| `any` | `path, handler, **options` | `path, callback` | `path, middleware, swagger_meta, template, &block` | `path, handler, middlewares?, meta?` | ⚠️ return type differs |
-| `cache` | `max_age` | `()` | `()` | `()` | ⚠️ param count differs |
-| `clear` | `()` | `()` | `()` | `()` | ⚠️ return type differs |
-| `delete` | `path, handler, **options` | `path, callback` | `path, middleware, swagger_meta, template, &block` | `path, handler, middlewares?, meta?` | ⚠️ return type differs |
-| `get` | `path, handler, **options` | `path, callback` | `path, middleware, swagger_meta, template, &block` | `path, handler, middlewares?, meta?` | ⚠️ return type differs |
-| `get_routes` | `()` | `()` | `()` | `()` | ⚠️ return type differs |
-| `get_web_socket_routes` | — | `()` | — | `()` | ⚠️ missing: Python, Ruby |
-| `group` | `prefix, callback, middleware` | `prefix, callback, middleware` | `prefix, auth_handler, middleware, &block` | — | ⚠️ missing: Node |
-| `list_routes` | `()` | `()` | `()` | `()` | ⚠️ return type differs |
-| `match` | `method, path` | `method, path` | `()` | `method, pathname` | ⚠️ return type differs |
-| `no_auth` | — | `()` | `()` | `()` | ⚠️ missing: Python |
-| `patch` | `path, handler, **options` | `path, callback` | `path, middleware, swagger_meta, template, &block` | `path, handler, middlewares?, meta?` | ⚠️ return type differs |
-| `post` | `path, handler, **options` | `path, callback` | `path, middleware, swagger_meta, template, &block` | `path, handler, middlewares?, meta?` | ⚠️ return type differs |
-| `put` | `path, handler, **options` | `path, callback` | `path, middleware, swagger_meta, template, &block` | `path, handler, middlewares?, meta?` | ⚠️ return type differs |
+| `add` | `method, path, handler, middleware, swagger_meta, template` | `method, path, handler, middleware, swaggerMeta, template` | `method, path, handler` | `method, path, handler, middleware?, swaggerMeta?, template?` | ℹ️ return type differs |
+| `any` | `path, handler, middleware, swagger_meta, template` | `path, handler, middleware, swaggerMeta, template` | `path, handler` | `path, handler, middleware?, swaggerMeta?, template?` | ℹ️ return type differs |
+| `cache` | `()` | `()` | `()` | `()` | ✅ |
+| `clear` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `delete` | `path, handler, middleware, swagger_meta, template` | `path, handler, middleware, swaggerMeta, template` | `path, handler` | `path, handler, middleware?, swaggerMeta?, template?` | ℹ️ return type differs |
+| `get` | `path, handler, middleware, swagger_meta, template` | `path, handler, middleware, swaggerMeta, template` | `path, handler` | `path, handler, middleware?, swaggerMeta?, template?` | ℹ️ return type differs |
+| `get_routes` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `get_web_socket_routes` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `group` | `prefix, callback, middleware` | `prefix, callback, middleware` | `prefix, handler` | `prefix, callback, middlewares?` | ✅ |
+| `list_routes` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `match` | `method, path` | `method, path` | `method, path` | `method, path` | ℹ️ return type differs |
+| `middleware` | `*middleware_classes` | `middleware` | `*middleware_classes` | `...middlewareClasses` | ✅ |
+| `no_auth` | `()` | `()` | `()` | `()` | ✅ |
+| `patch` | `path, handler, middleware, swagger_meta, template` | `path, handler, middleware, swaggerMeta, template` | `path, handler` | `path, handler, middleware?, swaggerMeta?, template?` | ℹ️ return type differs |
+| `post` | `path, handler, middleware, swagger_meta, template` | `path, handler, middleware, swaggerMeta, template` | `path, handler` | `path, handler, middleware?, swaggerMeta?, template?` | ℹ️ return type differs |
+| `put` | `path, handler, middleware, swagger_meta, template` | `path, handler, middleware, swaggerMeta, template` | `path, handler` | `path, handler, middleware?, swaggerMeta?, template?` | ℹ️ return type differs |
 | `secure` | `()` | `()` | `()` | `()` | ✅ |
-| `use` | — | `class` | `klass` | `middlewareClass` | ⚠️ missing: Python |
-| `websocket` | `path, handler` | `path, handler` | `path, &block` | `path, handler` | ✅ |
+| `use` | `middleware_class` | `class` | `klass` | `middlewareClass` | ✅ |
+| `websocket` | `path, handler` | `path, handler` | `path, handler` | `path, handler` | ✅ |
 
 ### Mismatch Details
 
-#### `add_route`
+#### `add`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | — not implemented — | — |
-| PHP | — not implemented — | — |
+| Python | `method: str, path: str, handler, middleware: list = None, swagger_meta: dict = None, template: str = None, **options` | `RouteRef` |
+| PHP | `method: string, path: string, handler: callable, middleware: array [] = [], swaggerMeta: array [] = [], template: ?string null = null` | `Self` |
 | Ruby | `method, path, handler, auth_handler: nil, swagger_meta: {}, middleware: [], template: nil` | `untyped` |
-| Node | `definition: RouteDefinition` | `RouteRef` |
+| Node | `method: string, path: string, handler: RouteHandler, middleware?: Middleware[], swaggerMeta?: RouteMeta, template?: string` | `RouteRef` |
 
 #### `any`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `path: str, handler, **options` | `RouteRef` |
-| PHP | `path: string, callback: callable` | `Self` |
+| Python | `path: str, handler, middleware: list = None, swagger_meta: dict = None, template: str = None, **options` | `RouteRef` |
+| PHP | `path: string, handler: callable, middleware: array [] = [], swaggerMeta: array [] = [], template: ?string null = null` | `Self` |
 | Ruby | `path, middleware: [], swagger_meta: {}, template: nil, &block` | `untyped` |
-| Node | `path: string, handler: RouteHandler, middlewares?: Middleware[], meta?: RouteMeta` | `RouteRef` |
-
-#### `cache`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `max_age: int | None = None` | `untyped` |
-| PHP | `` | `Self` |
-| Ruby | `` | `untyped` |
-| Node | `` | `Self` |
+| Node | `path: string, handler: RouteHandler, middleware?: Middleware[], swaggerMeta?: RouteMeta, template?: string` | `RouteRef` |
 
 #### `clear`
 
@@ -754,19 +435,19 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `path: str, handler, **options` | `RouteRef` |
-| PHP | `path: string, callback: callable` | `Self` |
+| Python | `path: str, handler, middleware: list = None, swagger_meta: dict = None, template: str = None, **options` | `RouteRef` |
+| PHP | `path: string, handler: callable, middleware: array [] = [], swaggerMeta: array [] = [], template: ?string null = null` | `Self` |
 | Ruby | `path, middleware: [], swagger_meta: {}, template: nil, &block` | `untyped` |
-| Node | `path: string, handler: RouteHandler, middlewares?: Middleware[], meta?: RouteMeta` | `RouteRef` |
+| Node | `path: string, handler: RouteHandler, middleware?: Middleware[], swaggerMeta?: RouteMeta, template?: string` | `RouteRef` |
 
 #### `get`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `path: str, handler, **options` | `RouteRef` |
-| PHP | `path: string, callback: callable` | `Self` |
+| Python | `path: str, handler, middleware: list = None, swagger_meta: dict = None, template: str = None, **options` | `RouteRef` |
+| PHP | `path: string, handler: callable, middleware: array [] = [], swaggerMeta: array [] = [], template: ?string null = null` | `Self` |
 | Ruby | `path, middleware: [], swagger_meta: {}, template: nil, &block` | `untyped` |
-| Node | `path: string, handler: RouteHandler, middlewares?: Middleware[], meta?: RouteMeta` | `RouteRef` |
+| Node | `path: string, handler: RouteHandler, middleware?: Middleware[], swaggerMeta?: RouteMeta, template?: string` | `RouteRef` |
 
 #### `get_routes`
 
@@ -781,19 +462,10 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | — not implemented — | — |
+| Python | `` | `list[dict]` |
 | PHP | `` | `list[dict]` |
-| Ruby | — not implemented — | — |
+| Ruby | `` | `untyped` |
 | Node | `` | `list[WebSocketRouteDefinition]` |
-
-#### `group`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `prefix: str, callback, middleware = None` | `untyped` |
-| PHP | `prefix: string, callback: callable, middleware: array [] = []` | `None` |
-| Ruby | `prefix, auth_handler: nil, middleware: [], &block` | `untyped` |
-| Node | — not implemented — | — |
 
 #### `list_routes`
 
@@ -810,75 +482,57 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 |-----------|-----------|-------------|
 | Python | `method: str, path: str` | `tuple[dict|None, dict]` |
 | PHP | `method: string, path: string` | `list` |
-| Ruby | `` | `untyped` |
-| Node | `method: string, pathname: string` | `MatchResult|None` |
-
-#### `no_auth`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | — not implemented — | — |
-| PHP | `` | `Self` |
-| Ruby | `` | `untyped` |
-| Node | `` | `Self` |
+| Ruby | `method, path` | `untyped` |
+| Node | `method: string, path: string` | `MatchResult|None` |
 
 #### `patch`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `path: str, handler, **options` | `RouteRef` |
-| PHP | `path: string, callback: callable` | `Self` |
+| Python | `path: str, handler, middleware: list = None, swagger_meta: dict = None, template: str = None, **options` | `RouteRef` |
+| PHP | `path: string, handler: callable, middleware: array [] = [], swaggerMeta: array [] = [], template: ?string null = null` | `Self` |
 | Ruby | `path, middleware: [], swagger_meta: {}, template: nil, &block` | `untyped` |
-| Node | `path: string, handler: RouteHandler, middlewares?: Middleware[], meta?: RouteMeta` | `RouteRef` |
+| Node | `path: string, handler: RouteHandler, middleware?: Middleware[], swaggerMeta?: RouteMeta, template?: string` | `RouteRef` |
 
 #### `post`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `path: str, handler, **options` | `RouteRef` |
-| PHP | `path: string, callback: callable` | `Self` |
+| Python | `path: str, handler, middleware: list = None, swagger_meta: dict = None, template: str = None, **options` | `RouteRef` |
+| PHP | `path: string, handler: callable, middleware: array [] = [], swaggerMeta: array [] = [], template: ?string null = null` | `Self` |
 | Ruby | `path, middleware: [], swagger_meta: {}, template: nil, &block` | `untyped` |
-| Node | `path: string, handler: RouteHandler, middlewares?: Middleware[], meta?: RouteMeta` | `RouteRef` |
+| Node | `path: string, handler: RouteHandler, middleware?: Middleware[], swaggerMeta?: RouteMeta, template?: string` | `RouteRef` |
 
 #### `put`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `path: str, handler, **options` | `RouteRef` |
-| PHP | `path: string, callback: callable` | `Self` |
+| Python | `path: str, handler, middleware: list = None, swagger_meta: dict = None, template: str = None, **options` | `RouteRef` |
+| PHP | `path: string, handler: callable, middleware: array [] = [], swaggerMeta: array [] = [], template: ?string null = null` | `Self` |
 | Ruby | `path, middleware: [], swagger_meta: {}, template: nil, &block` | `untyped` |
-| Node | `path: string, handler: RouteHandler, middlewares?: Middleware[], meta?: RouteMeta` | `RouteRef` |
-
-#### `use`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | — not implemented — | — |
-| PHP | `class: string` | `None` |
-| Ruby | `klass` | `untyped` |
-| Node | `middlewareClass: any` | `None` |
+| Node | `path: string, handler: RouteHandler, middleware?: Middleware[], swaggerMeta?: RouteMeta, template?: string` | `RouteRef` |
 
 ## Session
 
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
-| `all` | `()` | `()` | `()` | `()` | ⚠️ return type differs |
+| `all` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
 | `clear` | `()` | `()` | `()` | `()` | ✅ |
 | `cookie_header` | `cookie_name` | `cookieName` | `cookie_name` | `cookieName` | ✅ |
 | `delete` | `key` | `key` | `key` | `key` | ✅ |
-| `destroy` | `session_id` | `()` | `()` | `sessionId` | ⚠️ param count differs |
-| `flash` | `key, value` | `key, value` | `key, value` | `key, value?` | ⚠️ return type differs |
-| `gc` | `max_lifetime` | `()` | `max_age` | `_maxLifetime` | ⚠️ param count differs |
-| `get` | `key, default` | `key, default` | `key, default` | `key, defaultValue?` | ⚠️ return type differs |
-| `get_flash` | `key, default` | `key, default` | `key, default` | `key, defaultValue?` | ⚠️ return type differs |
-| `get_session_id` | — | `()` | — | `()` | ⚠️ missing: Python, Ruby |
-| `has` | `key` | `key` | `()` | `key` | ⚠️ param count differs |
-| `read` | `session_id` | — | — | `sessionId` | ⚠️ missing: PHP, Ruby |
+| `destroy` | `()` | `()` | `()` | `()` | ✅ |
+| `flash` | `key, value` | `key, value` | `key, value` | `key, value?` | ℹ️ return type differs |
+| `gc` | `()` | `maxLifetime` | `max_lifetime` | `()` | ✅ |
+| `get` | `key, default` | `key, default` | `key, default` | `key, defaultValue?` | ℹ️ return type differs |
+| `get_flash` | `key, default` | `key, default` | `key, default` | `key, defaultValue?` | ℹ️ return type differs |
+| `get_session_id` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `has` | `key` | `key` | `key` | `key` | ✅ |
+| `read` | `session_id` | `sessionId` | `session_id` | `sessionId` | ℹ️ return type differs |
 | `regenerate` | `()` | `()` | `()` | `()` | ✅ |
 | `save` | `()` | `()` | `()` | `()` | ✅ |
 | `set` | `key, value` | `key, value` | `key, value` | `key, value` | ✅ |
-| `start` | `session_id` | `sessionId` | — | `sessionId?` | ⚠️ missing: Ruby |
-| `write` | `session_id, data, ttl` | — | — | `sessionId, data, ttl` | ⚠️ missing: PHP, Ruby |
+| `start` | `session_id` | `sessionId` | `session_id` | `sessionId?` | ✅ |
+| `write` | `session_id, data, ttl` | `sessionId, data, ttl` | `session_id, data, ttl` | `sessionId, data, ttl?` | ✅ |
 
 ### Mismatch Details
 
@@ -891,15 +545,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Ruby | `` | `untyped` |
 | Node | `` | `dict` |
 
-#### `destroy`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `session_id: str` | `untyped` |
-| PHP | `` | `None` |
-| Ruby | `` | `untyped` |
-| Node | `sessionId: string` | `None` |
-
 #### `flash`
 
 | Framework | Signature | Return Type |
@@ -908,15 +553,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | PHP | `key: string, value: mixed null = null` | `mixed` |
 | Ruby | `key, value = nil` | `untyped` |
 | Node | `key: string, value?: unknown` | `unknown` |
-
-#### `gc`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `max_lifetime: int` | `untyped` |
-| PHP | `` | `None` |
-| Ruby | `max_age = nil` | `untyped` |
-| Node | `_maxLifetime: number` | `None` |
 
 #### `get`
 
@@ -940,62 +576,37 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | — not implemented — | — |
+| Python | `` | `str|None` |
 | PHP | `` | `str` |
-| Ruby | — not implemented — | — |
-| Node | `` | `str|None` |
-
-#### `has`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `key: str` | `bool` |
-| PHP | `key: string` | `bool` |
 | Ruby | `` | `untyped` |
-| Node | `key: string` | `bool` |
+| Node | `` | `str|None` |
 
 #### `read`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
 | Python | `session_id: str` | `dict` |
-| PHP | — not implemented — | — |
-| Ruby | — not implemented — | — |
+| PHP | `sessionId: string` | `list|None` |
+| Ruby | `session_id` | `untyped` |
 | Node | `sessionId: string` | `SessionData|None` |
-
-#### `start`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `session_id: str = None` | `str` |
-| PHP | `sessionId: ?string null = null` | `str` |
-| Ruby | — not implemented — | — |
-| Node | `sessionId?: string` | `str` |
-
-#### `write`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `session_id: str, data: dict, ttl: int` | `untyped` |
-| PHP | — not implemented — | — |
-| Ruby | — not implemented — | — |
-| Node | `sessionId: string, data: SessionData, ttl: number` | `None` |
 
 ## Migration
 
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
-| `create` | `description` | `description` | `name` | `description` | ⚠️ return type differs |
-| `down` | — | — | `db` | `()` | ⚠️ missing: Python, PHP |
-| `get_applied` | `()` | `()` | `()` | `()` | ⚠️ return type differs |
-| `get_files` | `()` | `()` | `()` | `()` | ⚠️ return type differs |
-| `get_pending` | `()` | `()` | `()` | `()` | ⚠️ return type differs |
-| `migrate` | `()` | `()` | `()` | `()` | ⚠️ return type differs |
-| `record_migration` | — | — | `name, batch, passed` | `name, batch` | ⚠️ missing: Python, PHP |
-| `remove_migration_record` | — | — | `name` | `migration.name` | ⚠️ missing: Python, PHP |
-| `rollback` | `steps` | `steps` | `steps` | `steps` | ⚠️ return type differs |
-| `status` | `()` | `()` | `()` | `()` | ⚠️ return type differs |
-| `up` | — | — | `db` | `()` | ⚠️ missing: Python, PHP |
+| `create` | `description, kind` | `description, kind` | `description, kind` | `description` | ℹ️ return type differs |
+| `create_migration` | `description, migration_folder, kind` | `description, migrationsDir, kind` | `description` | `description, options?` | ℹ️ return type differs |
+| `down` | `db` | `()` | `db` | `()` | ⚠️ param count differs |
+| `get_applied` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `get_applied_migrations` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `get_files` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `get_pending` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `migrate` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `record_migration` | `name, batch, passed` | `name, batch, passed` | `name, batch` | `name, batch` | ✅ |
+| `remove_migration_record` | `name` | `name` | `name` | `migration.name` | ✅ |
+| `rollback` | `steps` | `steps` | `steps` | `steps` | ℹ️ return type differs |
+| `status` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `up` | `db` | `()` | `db` | `()` | ⚠️ param count differs |
 
 ### Mismatch Details
 
@@ -1003,17 +614,26 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `description: str` | `str` |
-| PHP | `description: string` | `str` |
-| Ruby | `name` | `untyped` |
-| Node | `description: string` | `Promise<` |
+| Python | `description: str, kind: str = 'sql'` | `str` |
+| PHP | `description: string, kind: string 'sql' = 'sql'` | `str` |
+| Ruby | `description, kind = "ruby"` | `untyped` |
+| Node | `description: string, kind: "sql" | "class" = "sql"` | `Promise<str|` |
+
+#### `create_migration`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `description: str, migration_folder: str = 'migrations', kind: str = 'sql'` | `str` |
+| PHP | `description: string, migrationsDir: string 'migrations' = 'migrations', kind: string 'sql' = 'sql'` | `str` |
+| Ruby | `description, migrations_dir: "migrations", kind: "sql"` | `untyped` |
+| Node | `description: string, options?: { migrationsDir?: string }` | `Promise<` |
 
 #### `down`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | — not implemented — | — |
-| PHP | — not implemented — | — |
+| Python | `db` | `None` |
+| PHP | `` | `None\n` |
 | Ruby | `db` | `untyped` |
 | Node | `` | `untyped` |
 
@@ -1025,6 +645,15 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | PHP | `` | `list[dict]` |
 | Ruby | `` | `untyped` |
 | Node | `` | `Promise<list[str]>` |
+
+#### `get_applied_migrations`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `list[dict]` |
+| PHP | `` | `list[dict]` |
+| Ruby | `` | `untyped` |
+| Node | `` | `list<` |
 
 #### `get_files`
 
@@ -1053,24 +682,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Ruby | `` | `untyped` |
 | Node | `` | `Promise<MigrationResult>` |
 
-#### `record_migration`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | — not implemented — | — |
-| PHP | — not implemented — | — |
-| Ruby | `name, batch, passed: 1` | `untyped` |
-| Node | `name, batch` | `untyped` |
-
-#### `remove_migration_record`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | — not implemented — | — |
-| PHP | — not implemented — | — |
-| Ruby | `name` | `untyped` |
-| Node | `migration.name` | `untyped` |
-
 #### `rollback`
 
 | Framework | Signature | Return Type |
@@ -1093,8 +704,8 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | — not implemented — | — |
-| PHP | — not implemented — | — |
+| Python | `db` | `None` |
+| PHP | `` | `None\n` |
 | Ruby | `db` | `untyped` |
 | Node | `` | `untyped` |
 
@@ -1102,22 +713,30 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
-| `handle_message` | `raw_data` | `rawData` | `raw_data` | `rawData, unknown>` | ⚠️ param count differs |
+| `decode_request` | `data` | `data` | `data` | `data` | ℹ️ return type differs |
+| `encode_error` | `request_id, code, message, data` | `requestId, code, message, data` | `request_id, code, message, data` | `requestId, code, message, data?` | ✅ |
+| `encode_notification` | `method, params` | `method, params` | `method, params` | `method, params?` | ✅ |
+| `encode_response` | `request_id, result` | `requestId, result` | `request_id, result` | `requestId, result` | ✅ |
+| `handle_message` | `raw_data` | `rawData` | `raw_data` | `rawData` | ✅ |
+| `is_localhost` | `()` | `()` | `()` | `()` | ✅ |
+| `mcp_resource` | `uri, description, mime_type, server` | `uri, description, mimeType, server` | `uri, handler` | `uri, description, mimeType, server?` | ✅ |
+| `mcp_tool` | `name, description, server` | `name, description, server` | `name, handler` | `name, description, server?, params?` | ✅ |
+| `register` | `server` | `server` | `server` | `server` | ✅ |
 | `register_resource` | `uri, handler, description, mime_type` | `uri, handler, description, mimeType` | `uri, handler, description, mime_type` | `uri, handler, description, mimeType` | ✅ |
-| `register_routes` | `router_module` | `()` | `()` | — | ⚠️ missing: Node |
-| `register_tool` | `name, handler, description, schema` | `name, handler, description, schema` | `name, handler, description, schema` | `name, handler, unknown>), description, schema?` | ⚠️ param count differs |
+| `register_routes` | `router_module` | `()` | `()` | `router` | ⚠️ param count differs |
+| `register_tool` | `name, handler, description, schema` | `name, handler, description, schema` | `name, handler, description, schema` | `name, handler, description, schema?` | ✅ |
 | `write_claude_config` | `port` | `port` | `port` | `port` | ✅ |
 
 ### Mismatch Details
 
-#### `handle_message`
+#### `decode_request`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `raw_data: str | dict` | `str` |
-| PHP | `rawData: string|array` | `str` |
-| Ruby | `raw_data` | `untyped` |
-| Node | `rawData: string | Record<string, unknown>` | `str` |
+| Python | `data: str | bytes | dict` | `tuple` |
+| PHP | `data: string|array` | `list` |
+| Ruby | `data` | `untyped` |
+| Node | `data: string | Record<string, unknown>` | `untyped` |
 
 #### `register_routes`
 
@@ -1126,29 +745,22 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `router_module` | `untyped` |
 | PHP | `` | `None` |
 | Ruby | `` | `untyped` |
-| Node | — not implemented — | — |
-
-#### `register_tool`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `name: str, handler, description: str = '', schema: dict | None = None` | `untyped` |
-| PHP | `name: string, handler: callable, description: string '' = '', schema: ?array null = null` | `None` |
-| Ruby | `name, handler, description = "", schema = nil` | `untyped` |
-| Node | `name: string, handler: (args: Record<string, unknown>) => unknown, description = "", schema?: JsonSchema` | `None` |
+| Node | `router: {     post: (pattern: string, handler: (req: unknown, res: unknown) => unknown) => { noAuth: () => unknown };     get: (pattern: string, handler: (req: unknown, res: unknown) => unknown) => { noAuth: () => unknown };   }` | `None` |
 
 ## Frond
 
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
-| `add_filter` | `name, fn` | `name, fn` | `name, &blk` | `name, fn` | ✅ |
+| `add_filter` | `name, fn` | `name, fn` | `name, handler` | `name, fn` | ✅ |
 | `add_global` | `name, value` | `name, value` | `name, value` | `name, value` | ✅ |
-| `add_test` | `name, fn` | `name, fn` | `name, &blk` | `name, fn` | ⚠️ return type differs |
+| `add_test` | `name, fn` | `name, fn` | `name, handler` | `name, fn` | ℹ️ return type differs |
 | `clear_cache` | `()` | `()` | `()` | `()` | ✅ |
-| `render` | `template, data` | `template, data` | `template, data` | `template, data?, unknown>` | ⚠️ param count differs |
-| `render_string` | `source, data` | `source, data, templateName` | `source, data` | `source, data?, unknown>` | ⚠️ param count differs |
-| `sandbox` | `allowed_filters, allowed_tags, allowed_vars` | `filters, tags, vars` | `filters, tags, vars` | `filters?, tags?, vars?` | ⚠️ return type differs |
-| `unsandbox` | `()` | `()` | `()` | `()` | ⚠️ return type differs |
+| `render` | `template, data` | `template, data` | `template, data` | `template, data?` | ✅ |
+| `render_dump` | `v` | `v` | `value` | `value` | ✅ |
+| `render_string` | `source, data` | `source, data, templateName` | `source, data` | `source, data?` | ✅ |
+| `sandbox` | `allowed_filters, allowed_tags, allowed_vars` | `filters, tags, vars` | `()` | `filters?, tags?, vars?` | ℹ️ return type differs |
+| `set_form_token_session_id` | `session_id` | `sessionId` | `session_id` | `sessionId` | ✅ |
+| `unsandbox` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
 
 ### Mismatch Details
 
@@ -1160,24 +772,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | PHP | `name: string, fn: callable` | `dict` |
 | Ruby | `name, &blk` | `untyped` |
 | Node | `name: string, fn: TestFn` | `None` |
-
-#### `render`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `template: str, data: dict = None` | `str` |
-| PHP | `template: string, data: array [] = []` | `str` |
-| Ruby | `template, data = {}` | `untyped` |
-| Node | `template: string, data?: Record<string, unknown>` | `str` |
-
-#### `render_string`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `source: str, data: dict = None` | `str` |
-| PHP | `source: string, data: array [] = [], templateName: ?string null = null` | `str` |
-| Ruby | `source, data = {}` | `untyped` |
-| Node | `source: string, data?: Record<string, unknown>` | `str` |
 
 #### `sandbox`
 
@@ -1201,18 +795,19 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
-| `add_mutation` | `name, config` | `name, args, returnType, resolver` | `name, type, args, description, &resolve` | `name, args, string>, returnType, resolver` | ⚠️ return type differs |
-| `add_query` | `name, config` | `name, args, returnType, resolver` | `name, type, args, description, &resolve` | `name, args, string>, returnType, resolver` | ⚠️ return type differs |
-| `add_type` | `name, fields` | `name, fields` | `type` | `name, fields, GraphQLField>` | ⚠️ return type differs |
-| `advance` | `()` | — | `()` | `()` | ⚠️ missing: PHP |
-| `execute` | `query, variables, context` | `query, variables` | `document, variables, context, operation_name` | `query, variables?, unknown>` | ⚠️ return type differs |
-| `expect` | `type, value` | — | `type, value` | `type, value?` | ⚠️ missing: PHP |
-| `from_orm` | `orm_class` | `ormInstance` | `klass` | `modelClass, { type, adapter?, unknown>>(sql, params?, params?` | ⚠️ return type differs |
-| `introspect` | `()` | `()` | `()` | `()` | ⚠️ return type differs |
-| `match` | `type, value` | — | `type, value` | `type, value?` | ⚠️ missing: PHP |
-| `parse` | `()` | `()` | `()` | `()` | ⚠️ return type differs |
-| `peek` | `()` | — | `offset` | `()` | ⚠️ missing: PHP |
+| `add_mutation` | `name, args, return_type, resolver` | `name, args, returnType, resolver` | `name, args, return_type, resolver, handler` | `name, args, returnType, resolver` | ℹ️ return type differs |
+| `add_query` | `name, args, return_type, resolver` | `name, args, returnType, resolver` | `name, args, return_type, resolver, handler` | `name, args, returnType, resolver` | ℹ️ return type differs |
+| `add_type` | `name, fields` | `name, fields` | `name_or_type, fields` | `name, fields` | ℹ️ return type differs |
+| `advance` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `execute` | `query, variables, context` | `query, variables` | `query` | `query, variables?` | ℹ️ return type differs |
+| `expect` | `type, value` | `type, value` | `type, value` | `type, value?` | ℹ️ return type differs |
+| `from_orm` | `orm_class` | `ormInstance` | `klass` | `modelClass, adapter?` | ℹ️ return type differs |
+| `introspect` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `match` | `type, value` | `type, value` | `type, value` | `type, value?` | ℹ️ return type differs |
+| `parse` | `()` | `()` | `type_str` | `()` | ⚠️ param count differs |
+| `peek` | `()` | `offset` | `offset` | `()` | ℹ️ return type differs |
 | `schema_sdl` | `()` | `()` | `()` | `()` | ✅ |
+| `tokenize` | `source` | `source` | `src` | `source` | ℹ️ return type differs |
 
 ### Mismatch Details
 
@@ -1220,18 +815,18 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `name: str, config: dict` | `untyped` |
+| Python | `name: str, args: dict, return_type: str, resolver: callable` | `untyped` |
 | PHP | `name: string, args: array, returnType: string, resolver: callable` | `Self` |
-| Ruby | `name, type:, args: {}, description: nil, &resolve` | `untyped` |
+| Ruby | `name, args = {}, return_type = nil, resolver = nil, &block` | `untyped` |
 | Node | `name: string, args: Record<string, string>, returnType: string, resolver: ResolverFn` | `GraphQL` |
 
 #### `add_query`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `name: str, config: dict` | `untyped` |
+| Python | `name: str, args: dict, return_type: str, resolver: callable` | `untyped` |
 | PHP | `name: string, args: array, returnType: string, resolver: callable` | `Self` |
-| Ruby | `name, type:, args: {}, description: nil, &resolve` | `untyped` |
+| Ruby | `name, args = {}, return_type = nil, resolver = nil, &block` | `untyped` |
 | Node | `name: string, args: Record<string, string>, returnType: string, resolver: ResolverFn` | `GraphQL` |
 
 #### `add_type`
@@ -1240,7 +835,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 |-----------|-----------|-------------|
 | Python | `name: str, fields: dict[str, str]` | `untyped` |
 | PHP | `name: string, fields: array` | `Self` |
-| Ruby | `type` | `untyped` |
+| Ruby | `name_or_type, fields = nil` | `untyped` |
 | Node | `name: string, fields: Record<string, GraphQLField>` | `GraphQL` |
 
 #### `advance`
@@ -1248,7 +843,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
 | Python | `` | `Token` |
-| PHP | — not implemented — | — |
+| PHP | `` | `list` |
 | Ruby | `` | `untyped` |
 | Node | `` | `Token` |
 
@@ -1258,7 +853,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 |-----------|-----------|-------------|
 | Python | `query: str, variables: dict = None, context: dict = None` | `dict` |
 | PHP | `query: string, variables: ?array null = null` | `list` |
-| Ruby | `document, variables: {}, context: {}, operation_name: nil` | `untyped` |
+| Ruby | `query, variables: {}, context: {}, operation_name: nil` | `untyped` |
 | Node | `query: string, variables?: Record<string, unknown>` | `GraphQLResult` |
 
 #### `expect`
@@ -1266,7 +861,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
 | Python | `type: str, value: str = None` | `Token` |
-| PHP | — not implemented — | — |
+| PHP | `type: string, value: ?string null = null` | `list` |
 | Ruby | `type, value = nil` | `untyped` |
 | Node | `type: string, value?: string` | `Token` |
 
@@ -1293,7 +888,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
 | Python | `type: str, value: str = None` | `Token|None` |
-| PHP | — not implemented — | — |
+| PHP | `type: string, value: ?string null = null` | `list|None` |
 | Ruby | `type, value = nil` | `untyped` |
 | Node | `type: string, value?: string` | `Token|None` |
 
@@ -1303,7 +898,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 |-----------|-----------|-------------|
 | Python | `` | `dict` |
 | PHP | `` | `list` |
-| Ruby | `` | `untyped` |
+| Ruby | `type_str` | `untyped` |
 | Node | `` | `untyped` |
 
 #### `peek`
@@ -1311,6 +906,1544 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
 | Python | `` | `Token|None` |
-| PHP | — not implemented — | — |
+| PHP | `offset: int 0 = 0` | `list|None` |
 | Ruby | `offset = 0` | `untyped` |
 | Node | `` | `Token|None` |
+
+#### `tokenize`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `source: str` | `list[Token]` |
+| PHP | `source: string` | `list` |
+| Ruby | `src` | `untyped` |
+| Node | `source: string` | `list[Token]` |
+
+## Api
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `add_headers` | `headers` | `headers` | `headers` | `headers` | ✅ |
+| `delete` | `path, body` | `path, body` | `path, body` | `path, body?` | ℹ️ return type differs |
+| `get` | `path, params` | `path, params` | `path, params` | `path, params?` | ℹ️ return type differs |
+| `patch` | `path, body, content_type` | `path, body, contentType` | `path, body, content_type` | `path, body?, contentType` | ℹ️ return type differs |
+| `post` | `path, body, content_type` | `path, body, contentType` | `path, body, content_type` | `path, body?, contentType` | ℹ️ return type differs |
+| `put` | `path, body, content_type` | `path, body, contentType` | `path, body, content_type` | `path, body?, contentType` | ℹ️ return type differs |
+| `send_request` | `method, path, body, content_type` | `method, path, body, contentType` | `method, path, body, content_type` | `method, path, body?, contentType` | ℹ️ return type differs |
+| `set_basic_auth` | `username, password` | `username, password` | `username, password` | `username, password` | ✅ |
+| `set_bearer_token` | `token` | `token` | `token` | `token` | ✅ |
+
+### Mismatch Details
+
+#### `delete`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `path: str = '', body = None` | `dict` |
+| PHP | `path: string '' = '', body: mixed null = null` | `list` |
+| Ruby | `path, body: nil` | `untyped` |
+| Node | `path: string, body?: unknown` | `Promise<ApiResult>` |
+
+#### `get`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `path: str = '', params: dict = None` | `dict` |
+| PHP | `path: string '' = '', params: array [] = []` | `list` |
+| Ruby | `path, params: {}` | `untyped` |
+| Node | `path: string, params?: Record<string, string>` | `Promise<ApiResult>` |
+
+#### `patch`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `path: str = '', body = None, content_type: str = 'application/json'` | `dict` |
+| PHP | `path: string '' = '', body: mixed null = null, contentType: string 'application/json' = 'application/json'` | `list` |
+| Ruby | `path, body: nil, content_type: "application/json"` | `untyped` |
+| Node | `path: string, body?: unknown, contentType: string = "application/json"` | `Promise<ApiResult>` |
+
+#### `post`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `path: str = '', body = None, content_type: str = 'application/json'` | `dict` |
+| PHP | `path: string '' = '', body: mixed null = null, contentType: string 'application/json' = 'application/json'` | `list` |
+| Ruby | `path, body: nil, content_type: "application/json"` | `untyped` |
+| Node | `path: string, body?: unknown, contentType: string = "application/json"` | `Promise<ApiResult>` |
+
+#### `put`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `path: str = '', body = None, content_type: str = 'application/json'` | `dict` |
+| PHP | `path: string '' = '', body: mixed null = null, contentType: string 'application/json' = 'application/json'` | `list` |
+| Ruby | `path, body: nil, content_type: "application/json"` | `untyped` |
+| Node | `path: string, body?: unknown, contentType: string = "application/json"` | `Promise<ApiResult>` |
+
+#### `send_request`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `method: str, path: str = '', body = None, content_type: str = 'application/json'` | `dict` |
+| PHP | `method: string 'GET' = 'GET', path: string '' = '', body: mixed null = null, contentType: string 'application/json' = 'application/json'` | `list` |
+| Ruby | `method = "GET", path = "", body: nil, content_type: "application/json"` | `untyped` |
+| Node | `method: string, path: string, body?: unknown, contentType: string = "application/json"` | `Promise<ApiResult>` |
+
+## Cache
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `cache_clear` | `()` | `()` | `()` | `()` | ✅ |
+| `cache_delete` | `key` | `key` | `key` | `key` | ✅ |
+| `cache_get` | `key` | `key` | `key` | `key` | ℹ️ return type differs |
+| `cache_set` | `key, value, ttl` | `key, value, ttl` | `key, value` | `key, value, ttl?` | ✅ |
+| `cache_stats` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `clear_cache` | `()` | `()` | `()` | `()` | ✅ |
+| `sweep` | `()` | `()` | `()` | `()` | ✅ |
+
+### Mismatch Details
+
+#### `cache_get`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `key: str` | `untyped` |
+| PHP | `key: string` | `mixed` |
+| Ruby | `key` | `untyped` |
+| Node | `key: string` | `unknown|undefined` |
+
+#### `cache_stats`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `dict` |
+| PHP | `` | `list` |
+| Ruby | `` | `untyped` |
+| Node | `` | `untyped` |
+
+## Container
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `get` | `name` | `name` | `name` | `name` | ℹ️ return type differs |
+| `has` | `name` | `name` | `name` | `name` | ✅ |
+| `register` | `name, factory` | `name, factory` | `name, instance, handler` | `name, factory` | ✅ |
+| `reset` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `singleton` | `name, factory` | `name, factory` | `name, handler` | `name, factory` | ✅ |
+
+### Mismatch Details
+
+#### `get`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `name: str` | `untyped` |
+| PHP | `name: string` | `mixed` |
+| Ruby | `name` | `untyped` |
+| Node | `name: string` | `Self` |
+
+#### `reset`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `None` |
+| PHP | `` | `bool` |
+| Ruby | `` | `untyped` |
+| Node | `` | `None` |
+
+## Events
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `clear` | `()` | `()` | `()` | `()` | ✅ |
+| `emit` | `event, *args` | `event, args` | `event, *args` | `event, ...args` | ✅ |
+| `emit_async` | `event, *args` | `event, args` | `event, *args` | `event, ...args` | ℹ️ return type differs |
+| `events` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `listeners` | `event` | `event` | `event` | `event` | ℹ️ return type differs |
+| `off` | `event, listener` | `event, callback` | `event, callback` | `event, callback?` | ✅ |
+| `on` | `event, listener, priority` | `event, callback, priority` | `event, priority, handler` | `event, callback, priority` | ✅ |
+| `once` | `event, listener, priority` | `event, callback, priority` | `event, priority, handler` | `event, callback, priority` | ✅ |
+
+### Mismatch Details
+
+#### `emit_async`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `event: str, *args, **kwargs` | `list` |
+| PHP | `event: string, args: mixed` | `None` |
+| Ruby | `event, *args` | `untyped` |
+| Node | `event: string, ...args: unknown[]` | `Promise<list>` |
+
+#### `events`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `list[str]` |
+| PHP | `` | `list` |
+| Ruby | `` | `untyped` |
+| Node | `` | `list[str]` |
+
+#### `listeners`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `event: str` | `list[callable]` |
+| PHP | `event: string` | `list` |
+| Ruby | `event` | `untyped` |
+| Node | `event: string` | `list None>` |
+
+## WebSocket
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `broadcast` | `message, exclude_self` | `message, excludeIds, path` | `message` | `message, excludeIds?, path?` | ✅ |
+| `broadcast_to_room` | `room_name, message, exclude_self` | `roomName, message, excludeIds` | `room_name, message` | `roomName, message, excludeIds?` | ✅ |
+| `build_frame` | — | — | `opcode, data` | `opcode, payload, fin` | ⚠️ missing: Python, PHP |
+| `close` | `code, reason` | `clientId, code, reason` | `()` | `clientId, code, reason` | ⚠️ param count differs |
+| `compute_accept_key` | — | `key` | — | `key` | ⚠️ missing: Python, Ruby |
+| `get_clients` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `get_room_connections` | `room_name` | `roomName` | `room_name` | `roomName` | ℹ️ return type differs |
+| `join_room` | `room_name` | `clientId, roomName` | `room_name` | `clientId, roomName` | ⚠️ param count differs |
+| `leave_room` | `room_name` | `clientId, roomName` | `room_name` | `clientId, roomName` | ⚠️ param count differs |
+| `on` | `event, handler` | `event, handler` | `event, handler` | `event, handler` | ℹ️ return type differs |
+| `room_count` | `room_name` | `roomName` | `room_name` | `roomName` | ✅ |
+| `send` | `message` | `clientId, message` | `message` | `clientId, message` | ⚠️ param count differs |
+| `start` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `stop` | `()` | `()` | `()` | `()` | ✅ |
+
+### Mismatch Details
+
+#### `build_frame`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | — not implemented — | — |
+| PHP | — not implemented — | — |
+| Ruby | `opcode, data` | `untyped` |
+| Node | `opcode: number, payload: Buffer, fin: boolean = true` | `Buffer` |
+
+#### `close`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `code: int = CLOSE_NORMAL, reason: str = ''` | `untyped` |
+| PHP | `clientId: string, code: int 1000 = 1000, reason: string '' = ''` | `None` |
+| Ruby | `code: 1000, reason: ""` | `untyped` |
+| Node | `clientId: string, code: number = 1000, reason: string = ""` | `None` |
+
+#### `compute_accept_key`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | — not implemented — | — |
+| PHP | `key: string` | `str` |
+| Ruby | — not implemented — | — |
+| Node | `key: string` | `str` |
+
+#### `get_clients`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `dict` |
+| PHP | `` | `list` |
+| Ruby | `` | `untyped` |
+| Node | `` | `Map<str, WebSocketClient>` |
+
+#### `get_room_connections`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `room_name: str` | `list['WebSocketConnection']` |
+| PHP | `roomName: string` | `list[str]` |
+| Ruby | `room_name` | `untyped` |
+| Node | `roomName: string` | `list[str]` |
+
+#### `join_room`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `room_name: str` | `None` |
+| PHP | `clientId: string, roomName: string` | `None` |
+| Ruby | `room_name` | `untyped` |
+| Node | `clientId: string, roomName: string` | `None` |
+
+#### `leave_room`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `room_name: str` | `None` |
+| PHP | `clientId: string, roomName: string` | `None` |
+| Ruby | `room_name` | `untyped` |
+| Node | `clientId: string, roomName: string` | `None` |
+
+#### `on`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `event: str, handler: Callable` | `untyped` |
+| PHP | `event: string, handler: callable` | `Self` |
+| Ruby | `event, &block` | `untyped` |
+| Node | `event: string, handler: Function` | `WebSocketServer` |
+
+#### `send`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `message: str | bytes` | `untyped` |
+| PHP | `clientId: string, message: string` | `None` |
+| Ruby | `message` | `untyped` |
+| Node | `clientId: string, message: string` | `None` |
+
+#### `start`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `untyped` |
+| PHP | `` | `None` |
+| Ruby | `host: "0.0.0.0", port: 7147` | `untyped` |
+| Node | `` | `Promise<None>` |
+
+## WSDL
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `generate_wsdl` | `()` | — | `()` | `endpointUrl?` | ⚠️ missing: PHP |
+| `handle` | `()` | `()` | `()` | — | ⚠️ missing: Node |
+| `on_request` | `request` | — | `request` | `_request` | ⚠️ missing: PHP |
+| `on_result` | `result` | — | `result` | `result` | ⚠️ missing: PHP |
+| `wsdl_operation` | `response_schema` | — | `()` | — | ⚠️ missing: PHP, Node |
+
+### Mismatch Details
+
+#### `generate_wsdl`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `str` |
+| PHP | — not implemented — | — |
+| Ruby | `` | `untyped` |
+| Node | `endpointUrl?: string` | `str` |
+
+#### `handle`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `str` |
+| PHP | `` | `Response` |
+| Ruby | `` | `untyped` |
+| Node | — not implemented — | — |
+
+#### `on_request`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `request` | `untyped` |
+| PHP | — not implemented — | — |
+| Ruby | `request` | `untyped` |
+| Node | `_request: unknown` | `None` |
+
+#### `on_result`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `result` | `untyped` |
+| PHP | — not implemented — | — |
+| Ruby | `result` | `untyped` |
+| Node | `result: Record<string, unknown>` | `dict` |
+
+#### `wsdl_operation`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `response_schema: dict = None` | `untyped` |
+| PHP | — not implemented — | — |
+| Ruby | `output: {}` | `untyped` |
+| Node | — not implemented — | — |
+
+## Swagger
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `generate` | `routes` | — | `()` | — | ⚠️ missing: PHP, Node |
+
+### Mismatch Details
+
+#### `generate`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `routes: list[dict]` | `dict` |
+| PHP | — not implemented — | — |
+| Ruby | `` | `untyped` |
+| Node | — not implemented — | — |
+
+## I18n
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `add_translation` | `locale, key, value` | `locale, key, value` | `locale, key, value` | `locale, key, value` | ✅ |
+| `available_locales` | `()` | `()` | `()` | `()` | ✅ |
+| `get_locale` | `()` | `()` | `()` | `()` | ✅ |
+| `load_translations` | `locale` | `locale` | `locale` | `locale` | ✅ |
+| `set_locale` | `locale` | `locale` | `locale` | `locale` | ✅ |
+| `t` | `key` | `key, params, locale` | `key` | `key, params?, locale?` | ✅ |
+| `translate` | `key, params, locale` | `key, params, locale` | `key, params` | `key, params?, locale?` | ✅ |
+
+## Seeder
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `address` | `()` | `()` | `()` | `()` | ✅ |
+| `boolean` | `()` | `()` | `()` | `()` | ✅ |
+| `choice` | `items` | `items` | `items` | `items` | ℹ️ return type differs |
+| `city` | `()` | `()` | `()` | `()` | ✅ |
+| `color_hex` | `()` | `()` | `()` | `()` | ✅ |
+| `company` | `()` | `()` | `()` | `()` | ✅ |
+| `country` | `()` | `()` | `()` | `()` | ✅ |
+| `credit_card` | `()` | `()` | `()` | `()` | ✅ |
+| `currency` | `()` | `()` | `()` | `()` | ✅ |
+| `date` | `start_year, end_year` | `start, end` | `()` | `start?, end?` | ✅ |
+| `datetime` | `start_year, end_year` | `startYear, endYear` | `()` | `startYear, endYear` | ℹ️ return type differs |
+| `email` | `()` | `()` | `()` | `()` | ✅ |
+| `first_name` | `()` | `()` | `()` | `()` | ✅ |
+| `for_field` | `field_def, column_name` | `fieldDef, columnName` | `field_def, column_name` | `fieldDef, columnName?` | ℹ️ return type differs |
+| `integer` | `min_val, max_val` | `min, max` | `()` | `min, max` | ✅ |
+| `ip_address` | `()` | `()` | `()` | `()` | ✅ |
+| `job_title` | `()` | `()` | `()` | `()` | ✅ |
+| `last_name` | `()` | `()` | `()` | `()` | ✅ |
+| `name` | `()` | `()` | `()` | `()` | ✅ |
+| `numeric` | `min_val, max_val, decimals` | `min, max, decimals` | `()` | `min, max, decimals` | ℹ️ return type differs |
+| `paragraph` | `sentences` | `sentences` | `()` | `sentences` | ✅ |
+| `phone` | `()` | `()` | `()` | `()` | ✅ |
+| `run` | `fn, count` | `seeder, count` | `count, handler` | `fn, count` | ℹ️ return type differs |
+| `seed` | `seed` | `seed` | `seed` | `seed` | ℹ️ return type differs |
+| `seed_dir` | `seed_folder` | `seedDir` | `()` | `seedDir?` | ℹ️ return type differs |
+| `seed_orm` | `orm_class, count, overrides, clear, seed` | `ormClass, count, overrides, clear, seed` | `orm_class` | `ormClass, count, overrides?, seed?` | ℹ️ return type differs |
+| `seed_table` | `db, table, count, field_map, overrides` | `db, tableName, count, fieldMap, overrides` | `table_name, columns` | `db, tableName, count, fieldMap?, overrides?` | ℹ️ return type differs |
+| `sentence` | `words` | `words` | `()` | `words` | ✅ |
+| `text` | `paragraphs` | `paragraphs` | `()` | `paragraphs` | ✅ |
+| `url` | `()` | `()` | `()` | `()` | ✅ |
+| `uuid` | `()` | `()` | `()` | `()` | ✅ |
+| `word` | `()` | `()` | `()` | `()` | ✅ |
+| `zip_code` | `()` | `()` | `()` | `()` | ✅ |
+
+### Mismatch Details
+
+#### `choice`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `items: list` | `untyped` |
+| PHP | `items: array` | `mixed` |
+| Ruby | `items` | `untyped` |
+| Node | `items: T[]` | `Self` |
+
+#### `datetime`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `start_year: int = 2020, end_year: int = 2025` | `str` |
+| PHP | `startYear: int 2020 = 2020, endYear: int 2025 = 2025` | `str` |
+| Ruby | `start_year: 2020, end_year: 2026` | `untyped` |
+| Node | `startYear = 2020, endYear = 2025` | `Date` |
+
+#### `for_field`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `field_def: dict, column_name: str = None` | `untyped` |
+| PHP | `fieldDef: array, columnName: string '' = ''` | `mixed` |
+| Ruby | `field_def, column_name = nil` | `untyped` |
+| Node | `fieldDef: FieldDefinition, columnName?: string` | `unknown` |
+
+#### `numeric`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `min_val: float = 0.0, max_val: float = 1000.0, decimals: int = 2` | `float` |
+| PHP | `min: float 0.0 = 0.0, max: float 1000.0 = 1000.0, decimals: int 2 = 2` | `float` |
+| Ruby | `min: 0.0, max: 1000.0, decimals: 2` | `untyped` |
+| Node | `min = 0, max = 1000, decimals = 2` | `int` |
+
+#### `run`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `fn, count: int = 1` | `list` |
+| PHP | `seeder: callable, count: int 10 = 10` | `list` |
+| Ruby | `count = 1, &block` | `untyped` |
+| Node | `fn: () => Record<string, unknown>, count = 1` | `list[dict]` |
+
+#### `seed`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `seed: int` | `FakeData` |
+| PHP | `seed: int` | `Self` |
+| Ruby | `seed` | `untyped` |
+| Node | `seed: number` | `FakeData` |
+
+#### `seed_dir`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `seed_folder: str = 'seeds'` | `list` |
+| PHP | `seedDir: string 'src/seeds' = 'src/seeds'` | `list` |
+| Ruby | `seed_folder: "seeds", clear: false` | `untyped` |
+| Node | `seedDir?: string` | `Promise<list[str]>` |
+
+#### `seed_orm`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `orm_class, count: int = 10, overrides: dict = None, clear: bool = False, seed: int = None` | `int` |
+| PHP | `ormClass: string, count: int 10 = 10, overrides: array [] = [], clear: bool false = false, seed: ?int null = null` | `int` |
+| Ruby | `orm_class, count: 10, overrides: {}, clear: false, seed: nil` | `untyped` |
+| Node | `ormClass: {     tableName: string;     fields: Record<string, FieldDefinition>;     _db?: string;     getDb?: () => DatabaseAdapter;   }, count = 10, overrides?: Record<string, unknown>, seed?: number` | `Promise<int>` |
+
+#### `seed_table`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `db, table: str, count: int = 10, field_map: dict[str, callable] = None, overrides: dict = None` | `int` |
+| PHP | `db: mixed, tableName: string, count: int 10 = 10, fieldMap: array [] = [], overrides: array [] = []` | `int` |
+| Ruby | `table_name, columns, count: 10, overrides: {}, clear: false, seed: nil` | `untyped` |
+| Node | `db: DatabaseAdapter, tableName: string, count = 10, fieldMap?: Record<string, (() => unknown) | unknown>, overrides?: Record<string, unknown>` | `Promise<int>` |
+
+## QueryBuilder
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `count` | `()` | `()` | `()` | `()` | ✅ |
+| `exists` | `()` | `()` | `()` | `()` | ✅ |
+| `first` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `from` | — | `table, db` | `table_name` | `tableName, db?` | ⚠️ missing: Python |
+| `get` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `group_by` | `column` | `column` | `column` | `column` | ℹ️ return type differs |
+| `having` | `expression, params` | `expression, params` | `expression, params` | `expression, params` | ℹ️ return type differs |
+| `join` | `table, on_clause` | `table, on` | `table, on_clause` | `table, onClause` | ℹ️ return type differs |
+| `left_join` | `table, on_clause` | `table, on` | `table, on_clause` | `table, onClause` | ℹ️ return type differs |
+| `limit` | `count, offset` | `count, offset` | `count, offset` | `count, offset?` | ℹ️ return type differs |
+| `or_where` | `condition, params` | `condition, params` | `condition, params` | `condition, params` | ℹ️ return type differs |
+| `order_by` | `expression` | `expression` | `expression` | `expression` | ℹ️ return type differs |
+| `select` | `*columns` | `columns` | `*columns` | `...cols` | ℹ️ return type differs |
+| `to_mongo` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `to_sql` | `()` | `()` | `()` | `()` | ✅ |
+| `where` | `condition, params` | `condition, params` | `condition, params` | `condition, params` | ℹ️ return type differs |
+
+### Mismatch Details
+
+#### `first`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `dict|None` |
+| PHP | `` | `list|None` |
+| Ruby | `` | `untyped` |
+| Node | `` | `Self|None` |
+
+#### `from`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | — not implemented — | — |
+| PHP | `table: string, db: ?DatabaseAdapter null = null` | `Self` |
+| Ruby | `table_name, db: nil` | `untyped` |
+| Node | `tableName: string, db?: DatabaseAdapter` | `QueryBuilder` |
+
+#### `get`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `untyped` |
+| PHP | `` | `mixed` |
+| Ruby | `` | `untyped` |
+| Node | `` | `list[Self]` |
+
+#### `group_by`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `column: str` | `QueryBuilder` |
+| PHP | `column: string` | `Self` |
+| Ruby | `column` | `untyped` |
+| Node | `column: string` | `QueryBuilder` |
+
+#### `having`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `expression: str, params: list = None` | `QueryBuilder` |
+| PHP | `expression: string, params: array [] = []` | `Self` |
+| Ruby | `expression, params = []` | `untyped` |
+| Node | `expression: string, params: unknown[] = []` | `QueryBuilder` |
+
+#### `join`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `table: str, on_clause: str` | `QueryBuilder` |
+| PHP | `table: string, on: string` | `Self` |
+| Ruby | `table, on_clause` | `untyped` |
+| Node | `table: string, onClause: string` | `QueryBuilder` |
+
+#### `left_join`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `table: str, on_clause: str` | `QueryBuilder` |
+| PHP | `table: string, on: string` | `Self` |
+| Ruby | `table, on_clause` | `untyped` |
+| Node | `table: string, onClause: string` | `QueryBuilder` |
+
+#### `limit`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `count: int, offset: int = None` | `QueryBuilder` |
+| PHP | `count: int, offset: ?int null = null` | `Self` |
+| Ruby | `count, offset = nil` | `untyped` |
+| Node | `count: number, offset?: number` | `QueryBuilder` |
+
+#### `or_where`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `condition: str, params: list = None` | `QueryBuilder` |
+| PHP | `condition: string, params: array [] = []` | `Self` |
+| Ruby | `condition, params = []` | `untyped` |
+| Node | `condition: string, params: unknown[] = []` | `QueryBuilder` |
+
+#### `order_by`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `expression: str` | `QueryBuilder` |
+| PHP | `expression: string` | `Self` |
+| Ruby | `expression` | `untyped` |
+| Node | `expression: string` | `QueryBuilder` |
+
+#### `select`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `*columns` | `QueryBuilder` |
+| PHP | `columns: string` | `Self` |
+| Ruby | `*columns` | `untyped` |
+| Node | `...cols: string[]` | `QueryBuilder` |
+
+#### `to_mongo`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `dict` |
+| PHP | `` | `list` |
+| Ruby | `` | `untyped` |
+| Node | `` | `untyped` |
+
+#### `where`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `condition: str, params: list = None` | `QueryBuilder` |
+| PHP | `condition: string, params: array [] = []` | `Self` |
+| Ruby | `condition, params = []` | `untyped` |
+| Node | `condition: string, params: unknown[] = []` | `QueryBuilder` |
+
+## Validator
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `email` | `field` | `field` | `field` | `field` | ℹ️ return type differs |
+| `errors` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `in_list` | `field, allowed` | `field, allowed` | `field, allowed` | `field, allowed` | ℹ️ return type differs |
+| `integer` | `field` | `field` | `field` | `field` | ℹ️ return type differs |
+| `is_valid` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `max` | `field, maximum` | `field, maximum` | `field, maximum` | `field, maximum` | ℹ️ return type differs |
+| `max_length` | `field, length` | `field, length` | `field, length` | `field, length` | ℹ️ return type differs |
+| `min` | `field, minimum` | `field, minimum` | `field, minimum` | `field, minimum` | ℹ️ return type differs |
+| `min_length` | `field, length` | `field, length` | `field, length` | `field, length` | ℹ️ return type differs |
+| `regex` | `field, pattern` | `field, pattern` | `field, pattern` | `field, pattern` | ℹ️ return type differs |
+| `required` | `*fields` | `fields` | `*fields` | `...fields` | ℹ️ return type differs |
+
+### Mismatch Details
+
+#### `email`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `field: str` | `Validator` |
+| PHP | `field: string` | `Self` |
+| Ruby | `field` | `untyped` |
+| Node | `field: string` | `Self` |
+
+#### `errors`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `list[dict[str, str]]` |
+| PHP | `` | `list[dict]` |
+| Ruby | `` | `untyped` |
+| Node | `` | `list[ValidationError]` |
+
+#### `in_list`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `field: str, allowed: list` | `Validator` |
+| PHP | `field: string, allowed: array` | `Self` |
+| Ruby | `field, allowed` | `untyped` |
+| Node | `field: string, allowed: unknown[]` | `Self` |
+
+#### `integer`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `field: str` | `Validator` |
+| PHP | `field: string` | `Self` |
+| Ruby | `field` | `untyped` |
+| Node | `field: string` | `Self` |
+
+#### `is_valid`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `bool` |
+| PHP | `` | `list[dict]` |
+| Ruby | `` | `untyped` |
+| Node | `` | `bool` |
+
+#### `max`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `field: str, maximum` | `Validator` |
+| PHP | `field: string, maximum: int|float` | `Self` |
+| Ruby | `field, maximum` | `untyped` |
+| Node | `field: string, maximum: number` | `Self` |
+
+#### `max_length`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `field: str, length: int` | `Validator` |
+| PHP | `field: string, length: int` | `Self` |
+| Ruby | `field, length` | `untyped` |
+| Node | `field: string, length: number` | `Self` |
+
+#### `min`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `field: str, minimum` | `Validator` |
+| PHP | `field: string, minimum: int|float` | `Self` |
+| Ruby | `field, minimum` | `untyped` |
+| Node | `field: string, minimum: number` | `Self` |
+
+#### `min_length`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `field: str, length: int` | `Validator` |
+| PHP | `field: string, length: int` | `Self` |
+| Ruby | `field, length` | `untyped` |
+| Node | `field: string, length: number` | `Self` |
+
+#### `regex`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `field: str, pattern: str` | `Validator` |
+| PHP | `field: string, pattern: string` | `Self` |
+| Ruby | `field, pattern` | `untyped` |
+| Node | `field: string, pattern: RegExp | string` | `Self` |
+
+#### `required`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `*fields` | `Validator` |
+| PHP | `fields: string` | `Self` |
+| Ruby | `*fields` | `untyped` |
+| Node | `...fields: string[]` | `Self` |
+
+## HtmlElement
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `add_html_helpers` | `namespace` | — | — | `h` | ⚠️ missing: PHP, Ruby |
+
+### Mismatch Details
+
+#### `add_html_helpers`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `namespace` | `untyped` |
+| PHP | — not implemented — | — |
+| Ruby | — not implemented — | — |
+| Node | `h` | `untyped` |
+
+## Testing
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `assert_equal` | `args, expected` | `args, expected` | `expected, actual, message` | `args, expected` | ℹ️ return type differs |
+| `assert_false` | `args` | `args` | — | `args` | ⚠️ missing: Ruby |
+| `assert_raises` | `exception_class, args` | `exceptionClass, args` | `exception_class, message` | — | ⚠️ missing: Node |
+| `assert_true` | `args` | `args` | — | `args` | ⚠️ missing: Ruby |
+| `reset` | — | `()` | `()` | — | ⚠️ missing: Python, Node |
+| `run_all` | — | `quiet, failfast` | `()` | — | ⚠️ missing: Python, Node |
+| `run_all_tests` | `quiet, failfast` | — | — | `options` | ⚠️ missing: PHP, Ruby |
+| `tests` | `*assertions` | `assertions, fn, name` | — | `...assertions` | ⚠️ missing: Ruby |
+
+### Mismatch Details
+
+#### `assert_equal`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `args: tuple, expected` | `untyped` |
+| PHP | `args: array, expected: mixed` | `list` |
+| Ruby | `expected, actual, message = nil` | `untyped` |
+| Node | `args: unknown[], expected: unknown` | `Assertion` |
+
+#### `assert_false`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `args: tuple` | `untyped` |
+| PHP | `args: array` | `list` |
+| Ruby | — not implemented — | — |
+| Node | `args: unknown[]` | `Assertion` |
+
+#### `assert_raises`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `exception_class: type, args: tuple` | `untyped` |
+| PHP | `exceptionClass: string, args: array` | `list` |
+| Ruby | `exception_class, message = nil` | `untyped` |
+| Node | — not implemented — | — |
+
+#### `assert_true`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `args: tuple` | `untyped` |
+| PHP | `args: array` | `list` |
+| Ruby | — not implemented — | — |
+| Node | `args: unknown[]` | `Assertion` |
+
+#### `reset`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | — not implemented — | — |
+| PHP | `` | `None` |
+| Ruby | `` | `untyped` |
+| Node | — not implemented — | — |
+
+#### `run_all`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | — not implemented — | — |
+| PHP | `quiet: bool false = false, failfast: bool false = false` | `list` |
+| Ruby | `` | `untyped` |
+| Node | — not implemented — | — |
+
+#### `run_all_tests`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `quiet: bool = False, failfast: bool = False` | `dict` |
+| PHP | — not implemented — | — |
+| Ruby | — not implemented — | — |
+| Node | `options: { quiet?: boolean; failfast?: boolean } = {}` | `TestResults` |
+
+#### `tests`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `*assertions` | `untyped` |
+| PHP | `assertions: array, fn: callable, name: string 'anonymous' = 'anonymous'` | `None` |
+| Ruby | — not implemented — | — |
+| Node | `...assertions: Assertion[]` | `untyped` |
+
+## Messenger
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `create_messenger` | `()` | — | `()` | — | ⚠️ missing: PHP, Node |
+| `folders` | `()` | `()` | `()` | — | ⚠️ missing: Node |
+| `inbox` | `folder, limit, offset` | `folder, limit, offset` | `()` | `limit, offset, folder` | ℹ️ return type differs |
+| `mark_read` | `uid, folder` | — | — | `uid, folder` | ⚠️ missing: PHP, Ruby |
+| `read` | `uid, folder, mark_read` | `uid, folder, markRead` | `uid` | `uid, folder` | ℹ️ return type differs |
+| `search` | `folder, subject, sender, since, before, unseen_only, limit` | `folder, subject, sender, since, before, unseenOnly, limit` | `()` | `query, folder` | ⚠️ param count differs |
+| `send` | `to, subject, body, html, text, cc, bcc, reply_to, attachments, headers` | `to, subject, body, html, text, cc, bcc, replyTo, attachments, headers` | `to, subject, body, headers` | `options` | ⚠️ param count differs |
+| `test_connection` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `test_imap_connection` | `()` | — | — | `()` | ⚠️ missing: PHP, Ruby |
+| `unread` | `folder` | `folder` | `()` | `folder` | ℹ️ return type differs |
+
+### Mismatch Details
+
+#### `create_messenger`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `**kwargs` | `Messenger` |
+| PHP | — not implemented — | — |
+| Ruby | `**options` | `untyped` |
+| Node | — not implemented — | — |
+
+#### `folders`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `list[str]` |
+| PHP | `` | `list` |
+| Ruby | `` | `untyped` |
+| Node | — not implemented — | — |
+
+#### `inbox`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `folder: str = 'INBOX', limit: int = 20, offset: int = 0` | `list[dict]` |
+| PHP | `folder: string 'INBOX' = 'INBOX', limit: int 20 = 20, offset: int 0 = 0` | `list` |
+| Ruby | `folder: "INBOX", limit: 20, offset: 0` | `untyped` |
+| Node | `limit: number = 20, offset: number = 0, folder: string = "INBOX"` | `Promise<list[ImapMessage]>` |
+
+#### `mark_read`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `uid: str | bytes, folder: str = 'INBOX'` | `untyped` |
+| PHP | — not implemented — | — |
+| Ruby | — not implemented — | — |
+| Node | `uid: string, folder: string = "INBOX"` | `Promise<None>` |
+
+#### `read`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `uid: str | bytes, folder: str = 'INBOX', mark_read: bool = True` | `dict` |
+| PHP | `uid: int, folder: string 'INBOX' = 'INBOX', markRead: bool true = true` | `list|None` |
+| Ruby | `uid, folder: "INBOX", mark_read: true` | `untyped` |
+| Node | `uid: string, folder: string = "INBOX"` | `Promise<ImapFullMessage>` |
+
+#### `search`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `folder: str = 'INBOX', subject: str = None, sender: str = None, since: str = None, before: str = None, unseen_only: bool = False, limit: int = 50` | `list[dict]` |
+| PHP | `folder: string 'INBOX' = 'INBOX', subject: ?string null = null, sender: ?string null = null, since: ?string null = null, before: ?string null = null, unseenOnly: bool false = false, limit: int 20 = 20` | `list` |
+| Ruby | `folder: "INBOX", subject: nil, sender: nil, since: nil, before: nil, unseen_only: false, limit: 20` | `untyped` |
+| Node | `query: string, folder: string = "INBOX"` | `Promise<list[ImapMessage]>` |
+
+#### `send`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `to: str | list[str], subject: str, body: str, html: bool = False, text: str = None, cc: str | list[str] = None, bcc: str | list[str] = None, reply_to: str = None, attachments: list = None, headers: dict = None` | `dict` |
+| PHP | `to: string|array, subject: string, body: string, html: bool false = false, text: ?string null = null, cc: array|string [] = [], bcc: array|string [] = [], replyTo: ?string null = null, attachments: array [] = [], headers: array [] = []` | `list` |
+| Ruby | `to:, subject:, body:, html: false, text: nil, cc: [], bcc: [], reply_to: nil, attachments: [], headers: {}` | `untyped` |
+| Node | `options: SendOptions` | `Promise<SendResult>` |
+
+#### `test_connection`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `dict` |
+| PHP | `` | `list` |
+| Ruby | `` | `untyped` |
+| Node | `` | `Promise<` |
+
+#### `test_imap_connection`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `dict` |
+| PHP | — not implemented — | — |
+| Ruby | — not implemented — | — |
+| Node | `` | `Promise<` |
+
+#### `unread`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `folder: str = 'INBOX'` | `int` |
+| PHP | `folder: string 'INBOX' = 'INBOX'` | `int` |
+| Ruby | `folder: "INBOX"` | `untyped` |
+| Node | `folder: string = "INBOX"` | `Promise<int>` |
+
+## Logger
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `configure` | — | `logDir, development, minLevel` | — | `options` | ⚠️ missing: Python, Ruby |
+| `debug` | `message` | `message, context` | `message, context` | `message, data?` | ✅ |
+| `error` | `message` | `message, context` | `message, context` | `message, data?` | ✅ |
+| `get_request_id` | `()` | `()` | — | `()` | ⚠️ missing: Ruby |
+| `info` | `message` | `message, context` | `message, context` | `message, data?` | ✅ |
+| `set_request_id` | `request_id` | `requestId` | `id` | `id` | ✅ |
+| `warning` | `message` | `message, context` | `message, context` | `message, data?` | ✅ |
+
+### Mismatch Details
+
+#### `configure`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | — not implemented — | — |
+| PHP | `logDir: string 'logs' = 'logs', development: bool false = false, minLevel: string self::LEVEL_DEBUG = self::LEVEL_DEBUG` | `None` |
+| Ruby | — not implemented — | — |
+| Node | `options: { logDir?: string; logFile?: string }` | `None` |
+
+#### `get_request_id`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `str|None` |
+| PHP | `` | `str|None` |
+| Ruby | — not implemented — | — |
+| Node | `` | `str|undefined` |
+
+## AI
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `generate_context` | `tool_name` | `toolName` | `tool_name` | `toolName` | ✅ |
+| `install_all` | `root` | `root` | `root` | `root` | ℹ️ return type differs |
+| `install_selected` | `root, selection` | `root, selection` | `root, selection` | `root, selection` | ✅ |
+| `is_installed` | `root, tool` | `root, tool` | — | `root, tool` | ⚠️ missing: Ruby |
+| `show_menu` | `root` | `root` | `root` | `root` | ℹ️ return type differs |
+
+### Mismatch Details
+
+#### `install_all`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `root: str = '.'` | `list[str]` |
+| PHP | `root: string "." = "."` | `list` |
+| Ruby | `root = "."` | `untyped` |
+| Node | `root: string = "."` | `list[str]` |
+
+#### `is_installed`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `root: str, tool: dict` | `bool` |
+| PHP | `root: string, tool: array` | `bool` |
+| Ruby | — not implemented — | — |
+| Node | `root: string, tool: AiTool` | `bool` |
+
+#### `show_menu`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `root: str = '.'` | `str` |
+| PHP | `root: string "." = "."` | `str` |
+| Ruby | `root = "."` | `untyped` |
+| Node | `root: string = "."` | `Promise<str>` |
+
+## Request
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `bearer_token` | — | `()` | `()` | — | ⚠️ missing: Python, Node |
+| `header` | — | `name` | `name` | — | ⚠️ missing: Python, Node |
+| `param` | `key, default` | — | `key` | — | ⚠️ missing: PHP, Node |
+| `parse_body` | — | — | `()` | `req` | ⚠️ missing: Python, PHP |
+
+### Mismatch Details
+
+#### `bearer_token`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | — not implemented — | — |
+| PHP | `` | `str|None` |
+| Ruby | `` | `untyped` |
+| Node | — not implemented — | — |
+
+#### `header`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | — not implemented — | — |
+| PHP | `name: string` | `str|None` |
+| Ruby | `name` | `untyped` |
+| Node | — not implemented — | — |
+
+#### `param`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `key: str, default = None` | `untyped` |
+| PHP | — not implemented — | — |
+| Ruby | `key` | `untyped` |
+| Node | — not implemented — | — |
+
+#### `parse_body`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | — not implemented — | — |
+| PHP | — not implemented — | — |
+| Ruby | `` | `untyped` |
+| Node | `req: Tina4Request` | `Promise<None>` |
+
+## Response
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `cookie` | `name, value, path, max_age, http_only, secure, same_site` | `name, value, options` | `name, value, opts` | `name, value, options?` | ℹ️ return type differs |
+| `error` | `code, message, status_code` | `code, message, status` | `code, message, status_code` | `code, message, status?` | ℹ️ return type differs |
+| `error_response` | `code, message, status` | `code, message, status` | — | `code, message, status` | ⚠️ missing: Ruby |
+| `file` | `file_path, download_name` | `path, contentType, download` | `path, content_type` | `filePath, options?` | ℹ️ return type differs |
+| `get_framework_frond` | `()` | `()` | — | — | ⚠️ missing: Ruby, Node |
+| `get_frond` | `()` | `()` | — | — | ⚠️ missing: Ruby, Node |
+| `header` | `name, value` | `name, value` | `name, value` | `name, value` | ℹ️ return type differs |
+| `html` | `content, status_code` | `content, status` | `content, status_or_opts` | `content, status?` | ℹ️ return type differs |
+| `json` | `data, status_code` | `data, status` | `data, status_or_opts` | `data, status?` | ℹ️ return type differs |
+| `redirect` | `url, status_code` | `url, status` | `url, status_or_opts` | `url, code?` | ℹ️ return type differs |
+| `render` | `template, data` | `templateName, data, status, templateDir` | `template_path, data` | `templateName, data?, status?, templateDir?` | ℹ️ return type differs |
+| `send` | — | `()` | `()` | `data, statusCode?, contentType?` | ⚠️ missing: Python |
+| `set_frond` | `engine` | `frond` | — | — | ⚠️ missing: Ruby, Node |
+| `status` | `code` | `code` | `code` | `code` | ℹ️ return type differs |
+| `stream` | `source, content_type` | `source, contentType` | `content_type, handler` | `source, contentType` | ℹ️ return type differs |
+| `template` | `template, data` | `templateName, data, status, templateDir` | — | `name, data?, status?, templateDir?` | ⚠️ missing: Ruby |
+| `text` | `content, status_code` | `content, status` | `content, status_or_opts` | `content, status?` | ℹ️ return type differs |
+| `xml` | `content, status_code` | `content, status` | `content` | `content, status?` | ℹ️ return type differs |
+
+### Mismatch Details
+
+#### `cookie`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `name: str, value: str, path: str = '/', max_age: int = 3600, http_only: bool = True, secure: bool = False, same_site: str = 'Lax'` | `Response` |
+| PHP | `name: string, value: string, options: array [] = []` | `Self` |
+| Ruby | `name, value, opts = {}` | `untyped` |
+| Node | `name: string, value: string, options?: CookieOptions` | `Tina4Response` |
+
+#### `error`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `code: str, message: str, status_code: int = 400` | `Response` |
+| PHP | `code: string, message: string, status: int 400 = 400` | `Self` |
+| Ruby | `code, message, status_code = 400` | `untyped` |
+| Node | `code: string, message: string, status?: number` | `Tina4Response` |
+
+#### `error_response`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `code: str, message: str, status: int = 400` | `dict` |
+| PHP | `code: string, message: string, status: int 400 = 400` | `list` |
+| Ruby | — not implemented — | — |
+| Node | `code: string, message: string, status: number = 400` | `dict` |
+
+#### `file`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `file_path: str, download_name: str = None` | `Response` |
+| PHP | `path: string, contentType: ?string null = null, download: bool false = false` | `Self` |
+| Ruby | `path, content_type: nil, download: false` | `untyped` |
+| Node | `filePath: string, options?: { download?: boolean; contentType?: string }` | `Tina4Response` |
+
+#### `get_framework_frond`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `untyped` |
+| PHP | `` | `Frond` |
+| Ruby | — not implemented — | — |
+| Node | — not implemented — | — |
+
+#### `get_frond`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `untyped` |
+| PHP | `` | `Frond` |
+| Ruby | — not implemented — | — |
+| Node | — not implemented — | — |
+
+#### `header`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `name: str, value: str` | `Response` |
+| PHP | `name: string, value: string` | `Self` |
+| Ruby | `name, value = nil` | `untyped` |
+| Node | `name: string, value: string | number | readonly string[]` | `Tina4Response` |
+
+#### `html`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `content: str, status_code: int = None` | `Response` |
+| PHP | `content: string, status: int 200 = 200` | `Self` |
+| Ruby | `content, status_or_opts = nil, status: nil` | `untyped` |
+| Node | `content: string, status?: number` | `Tina4Response` |
+
+#### `json`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `data, status_code: int = None` | `Response` |
+| PHP | `data: mixed, status: int 200 = 200` | `Self` |
+| Ruby | `data, status_or_opts = nil, status: nil` | `untyped` |
+| Node | `data: unknown, status?: number` | `Tina4Response` |
+
+#### `redirect`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `url: str, status_code: int = 302` | `Response` |
+| PHP | `url: string, status: int 302 = 302` | `Self` |
+| Ruby | `url, status_or_opts = nil, status: nil` | `untyped` |
+| Node | `url: string, code?: number` | `Tina4Response` |
+
+#### `render`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `template: str, data: dict = None` | `Response` |
+| PHP | `templateName: string, data: array [] = [], status: int 200 = 200, templateDir: string 'src/templates' = 'src/templates'` | `Self` |
+| Ruby | `template_path, data = {}, status: 200, template_dir: nil` | `untyped` |
+| Node | `templateName: string, data?: Record<string, unknown>, status?: number, templateDir?: string` | `Promise<Tina4Response>` |
+
+#### `send`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | — not implemented — | — |
+| PHP | `` | `None` |
+| Ruby | `` | `untyped` |
+| Node | `data: unknown, statusCode?: number, contentType?: string` | `Tina4Response` |
+
+#### `set_frond`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `engine` | `untyped` |
+| PHP | `frond: Frond` | `None` |
+| Ruby | — not implemented — | — |
+| Node | — not implemented — | — |
+
+#### `status`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `code: int` | `Response` |
+| PHP | `code: int` | `Self` |
+| Ruby | `code = nil` | `untyped` |
+| Node | `code: number` | `Tina4Response` |
+
+#### `stream`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `source, content_type: str = 'text/event-stream'` | `Response` |
+| PHP | `source: callable, contentType: string 'text/event-stream' = 'text/event-stream'` | `Self` |
+| Ruby | `content_type: "text/event-stream", &block` | `untyped` |
+| Node | `source: AsyncIterable<string | Buffer>, contentType: string = "text/event-stream"` | `Promise<Tina4Response>` |
+
+#### `template`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `template: str, data: dict = None` | `Response` |
+| PHP | `templateName: string, data: array [] = [], status: int 200 = 200, templateDir: string 'src/templates' = 'src/templates'` | `Self` |
+| Ruby | — not implemented — | — |
+| Node | `name: string, data?: Record<string, unknown>, status?: number, templateDir?: string` | `Promise<Tina4Response>` |
+
+#### `text`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `content: str, status_code: int = None` | `Response` |
+| PHP | `content: string, status: int 200 = 200` | `Self` |
+| Ruby | `content, status_or_opts = nil, status: nil` | `untyped` |
+| Node | `content: string, status?: number` | `Tina4Response` |
+
+#### `xml`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `content: str, status_code: int = None` | `Response` |
+| PHP | `content: string, status: int 200 = 200` | `Self` |
+| Ruby | `content, status: 200` | `untyped` |
+| Node | `content: string, status?: number` | `Tina4Response` |
+
+## Middleware
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `after_log` | `request, response` | `request, response` | `request, response` | `req, res` | ℹ️ return type differs |
+| `before_cors` | `request, response` | `request, response` | `request, response` | `req, res` | ℹ️ return type differs |
+| `before_csrf` | `request, response` | `request, response` | `request, response` | `req, res` | ℹ️ return type differs |
+| `before_log` | `request, response` | `request, response` | `request, response` | `req, res` | ℹ️ return type differs |
+| `before_rate_limit` | `request, response` | `request, response` | `request, response` | `req, res` | ℹ️ return type differs |
+| `before_security` | `request, response` | `request, response` | `request, response` | `req, res` | ℹ️ return type differs |
+| `check` | `ip` | `ip` | — | — | ⚠️ missing: Ruby, Node |
+| `get_global` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `is_preflight` | `request` | `method` | — | — | ⚠️ missing: Ruby, Node |
+| `reset` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `run_after` | `middleware_classes, request, response` | `middlewareClasses, request, response` | `middleware_classes, request, response` | `classes, req, res` | ℹ️ return type differs |
+| `run_before` | `middleware_classes, request, response` | `middlewareClasses, request, response` | `middleware_classes, request, response` | `classes, req, res` | ℹ️ return type differs |
+| `use` | `middleware_class` | `class` | `klass` | `fn` | ✅ |
+
+### Mismatch Details
+
+#### `after_log`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `request, response` | `untyped` |
+| PHP | `request: Request, response: Response` | `list` |
+| Ruby | `request, response` | `untyped` |
+| Node | `req: Tina4Request, res: Tina4Response` | `[Tina4Request, Tina4Response]` |
+
+#### `before_cors`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `request, response` | `untyped` |
+| PHP | `request: Request, response: Response` | `list` |
+| Ruby | `request, response` | `untyped` |
+| Node | `req: Tina4Request, res: Tina4Response` | `[Tina4Request, Tina4Response]` |
+
+#### `before_csrf`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `request, response` | `untyped` |
+| PHP | `request: Request, response: Response` | `list` |
+| Ruby | `request, response` | `untyped` |
+| Node | `req: Tina4Request, res: Tina4Response` | `[Tina4Request, Tina4Response]` |
+
+#### `before_log`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `request, response` | `untyped` |
+| PHP | `request: Request, response: Response` | `list` |
+| Ruby | `request, response` | `untyped` |
+| Node | `req: Tina4Request, res: Tina4Response` | `[Tina4Request, Tina4Response]` |
+
+#### `before_rate_limit`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `request, response` | `untyped` |
+| PHP | `request: Request, response: Response` | `list` |
+| Ruby | `request, response` | `untyped` |
+| Node | `req: Tina4Request, res: Tina4Response` | `[Tina4Request, Tina4Response]` |
+
+#### `before_security`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `request, response` | `untyped` |
+| PHP | `request: Request, response: Response` | `list` |
+| Ruby | `request, response` | `untyped` |
+| Node | `req: Tina4Request, res: Tina4Response` | `[Tina4Request, Tina4Response]` |
+
+#### `check`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `ip: str` | `tuple[bool, dict]` |
+| PHP | `ip: string` | `list` |
+| Ruby | — not implemented — | — |
+| Node | — not implemented — | — |
+
+#### `get_global`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `list` |
+| PHP | `` | `list` |
+| Ruby | `` | `untyped` |
+| Node | `` | `list[any]` |
+
+#### `is_preflight`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `request` | `bool` |
+| PHP | `method: string` | `bool` |
+| Ruby | — not implemented — | — |
+| Node | — not implemented — | — |
+
+#### `reset`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `None` |
+| PHP | `` | `list` |
+| Ruby | `` | `untyped` |
+| Node | `` | `None` |
+
+#### `run_after`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `middleware_classes, request, response` | `untyped` |
+| PHP | `middlewareClasses: array, request: Request, response: Response` | `list` |
+| Ruby | `middleware_classes, request, response` | `untyped` |
+| Node | `classes: any[], req: Tina4Request, res: Tina4Response` | `[Tina4Request, Tina4Response]` |
+
+#### `run_before`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `middleware_classes, request, response` | `untyped` |
+| PHP | `middlewareClasses: array, request: Request, response: Response` | `list` |
+| Ruby | `middleware_classes, request, response` | `untyped` |
+| Node | `classes: any[], req: Tina4Request, res: Tina4Response` | `[Tina4Request, Tina4Response, bool]` |
+
+## AutoCrud
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `clear` | `()` | — | `()` | — | ⚠️ missing: PHP, Node |
+| `discover` | `models_dir, prefix` | `modelsDir` | — | — | ⚠️ missing: Ruby, Node |
+| `generate_routes` | — | `()` | `()` | — | ⚠️ missing: Python, Node |
+| `models` | `()` | — | `()` | — | ⚠️ missing: PHP, Node |
+| `register` | `model_class, prefix` | `modelClass` | `model_class` | — | ⚠️ missing: Node |
+
+### Mismatch Details
+
+#### `clear`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `untyped` |
+| PHP | — not implemented — | — |
+| Ruby | `` | `untyped` |
+| Node | — not implemented — | — |
+
+#### `discover`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `models_dir: str = 'src/orm', prefix: str = '/api'` | `untyped` |
+| PHP | `modelsDir: string` | `list` |
+| Ruby | — not implemented — | — |
+| Node | — not implemented — | — |
+
+#### `generate_routes`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | — not implemented — | — |
+| PHP | `` | `list[dict]` |
+| Ruby | `prefix: "/api"` | `untyped` |
+| Node | — not implemented — | — |
+
+#### `models`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `` | `dict[str, type]` |
+| PHP | — not implemented — | — |
+| Ruby | `` | `untyped` |
+| Node | — not implemented — | — |
+
+#### `register`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `model_class, prefix: str = '/api'` | `untyped` |
+| PHP | `modelClass: string` | `Self` |
+| Ruby | `model_class` | `untyped` |
+| Node | — not implemented — | — |
+
+## SqlTranslation
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `auto_increment_syntax` | `sql, engine` | `sql, dialect` | `sql, engine` | `sql, engine` | ✅ |
+| `boolean_to_int` | `sql` | `sql` | `sql` | `sql` | ✅ |
+| `clear` | `()` | `()` | `()` | `()` | ✅ |
+| `clear_tag` | `tag` | `tag` | `tag` | `tag` | ✅ |
+| `concat_pipes_to_func` | `sql` | `sql` | `sql` | `sql` | ✅ |
+| `delete` | `key` | `key` | `key` | `key` | ✅ |
+| `get` | `key, default` | `key` | `key, default` | `key` | ℹ️ return type differs |
+| `has` | `key` | `key` | `key` | `key` | ✅ |
+| `ilike_to_like` | `sql` | `sql` | `sql` | `sql` | ✅ |
+| `limit_to_rows` | `sql` | `sql` | `sql` | `sql` | ✅ |
+| `limit_to_top` | `sql` | `sql` | `sql` | `sql` | ✅ |
+| `placeholder_style` | `sql, style` | `sql, style` | `sql, style` | `sql, style` | ✅ |
+| `query_key` | `sql, params` | `sql, params` | `sql, params` | `sql, params?` | ✅ |
+| `remember` | `key, ttl, factory` | `key, ttl, factory` | `key, ttl, handler` | `key, ttl, factory` | ℹ️ return type differs |
+| `set` | `key, value, ttl, tags` | `key, value, ttl, tags` | `key, value` | `key, value, ttl?, tags` | ✅ |
+| `size` | `()` | `()` | `()` | `()` | ✅ |
+| `sweep` | `()` | `()` | `()` | `()` | ✅ |
+
+### Mismatch Details
+
+#### `get`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `key: str, default = None` | `untyped` |
+| PHP | `key: string` | `mixed` |
+| Ruby | `key, default = nil` | `untyped` |
+| Node | `key: string` | `Self|undefined` |
+
+#### `remember`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `key: str, ttl: int, factory: callable` | `untyped` |
+| PHP | `key: string, ttl: int, factory: callable` | `mixed` |
+| Ruby | `key, ttl, &block` | `untyped` |
+| Node | `key: string, ttl: number, factory: () => T` | `Self` |
+
+## Metrics
+
+| Method | Python | PHP | Ruby | Node | Return Match |
+|--------|--------|-----|------|------|:------------:|
+| `file_detail` | — | `filePath` | `file_path` | `filePath` | ⚠️ missing: Python |
+| `full_analysis` | — | `root` | `root` | `root` | ⚠️ missing: Python |
+| `quick_metrics` | — | `root` | `root` | `root` | ⚠️ missing: Python |
+
+### Mismatch Details
+
+#### `file_detail`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | — not implemented — | — |
+| PHP | `filePath: string` | `list` |
+| Ruby | `file_path` | `untyped` |
+| Node | `filePath: string` | `dict` |
+
+#### `full_analysis`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | — not implemented — | — |
+| PHP | `root: string "src" = "src"` | `list` |
+| Ruby | `root = 'src'` | `untyped` |
+| Node | `root: string = "src"` | `dict` |
+
+#### `quick_metrics`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | — not implemented — | — |
+| PHP | `root: string "src" = "src"` | `list` |
+| Ruby | `root = 'src'` | `untyped` |
+| Node | `root: string = "src"` | `dict` |

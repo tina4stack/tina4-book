@@ -200,7 +200,7 @@ db1 = Tina4::Container.resolve(:db)  # creates instance
 db2 = Tina4::Container.resolve(:db)  # same instance
 ```
 
-**`Router.match(path, method)`** — alias for `find_route()` (parity with Python, PHP, Node.js).
+**`Router.match(method, path)`** — primary route lookup (replaces `find_route`; consistent with Python, PHP, Node.js). **`Router.add(method, path, handler)`** — primary imperative registration (replaces `add_route`; all convenience methods delegate to this).
 
 **`Router.get_routes` and `Router.list_routes`** — explicit listing methods (remove ambiguous `routes` alias).
 

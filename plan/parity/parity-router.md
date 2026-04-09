@@ -79,11 +79,10 @@ Route registration, parameter syntax, auth defaults, middleware, grouping, and W
 |-----------|--------|--------|
 | Python | `Router.match(method, path)` static | `(route, params)` tuple |
 | PHP | `Router::match(method, path)` static | `array` or `null` |
-| Ruby | `Router.find_route(path, method)` class | `[route, params]` or `nil` |
+| Ruby | `Router.match(method, path)` class | `[route, params]` or `nil` |
 | Node.js | `router.match(method, pathname)` instance | `MatchResult` or `null` |
 
-- [ ] **MINOR ISSUE:** Ruby param order is `(path, method)`, others are `(method, path)`
-- [ ] **MINOR ISSUE:** Ruby method name is `find_route`, others use `match`
+- [x] **FIXED:** Ruby now uses `match(method, path)` — consistent with all frameworks
 - [ ] **Documented?** Internal API, not developer-facing
 
 ## Handler Signature
@@ -106,7 +105,7 @@ Route registration, parameter syntax, auth defaults, middleware, grouping, and W
 
 | # | Issue | Severity | Frameworks |
 |---|-------|----------|------------|
-| 1 | Ruby `find_route(path, method)` param order reversed vs `match(method, path)` | LOW | Ruby |
+| 1 | ~~Ruby `find_route` renamed to `match(method, path)`~~ FIXED | DONE | Ruby |
 | 2 | Node.js also accepts `:id` and `[id]` syntax (others don't) | LOW | Node.js (compat only) |
 
 ## Documentation Gaps

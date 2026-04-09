@@ -1,6 +1,6 @@
 # Tina4 API Reference
 
-> Auto-generated on 2026-04-07
+> Auto-generated on 2026-04-09
 
 This document lists all public classes and methods extracted from the 4 Tina4 framework implementations.
 
@@ -20,7 +20,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `find(filter: dict=None, limit: int=100, offset: int=0, order_by: str=None, include: list[str]=None)` |
 | `load(filter: str=None, params: list=None, include: list[str]=None)` |
 | `find_or_fail(pk_value)` |
-| `all(limit: int=100, offset: int=0, include: list[str]=None)` |
+| `exists(pk_value)` |
+| `all(limit: int=100, offset: int=0, include: list[str]=None, order_by: str=None)` |
 | `select(sql: str, params: list=None, limit: int=20, offset: int=0, include: list[str]=None)` |
 | `select_one(sql: str, params: list=None, include: list[str]=None)` |
 | `where(filter_sql: str, params: list=None, limit: int=20, offset: int=0, include: list[str]=None)` |
@@ -29,6 +30,10 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `create_table()` |
 | `cached(sql: str, params: list=None, ttl: int=60, limit: int=20, offset: int=0)` |
 | `clear_cache()` |
+| `clear_rel_cache(instances: list=None)` |
+| `get_db()` |
+| `get_db_column(prop: str)` |
+| `eager_load(instances: list, include_list: list[str])` |
 | `has_one(related_class, foreign_key: str=None)` |
 | `has_many(related_class, foreign_key: str=None, limit: int=100, offset: int=0)` |
 | `belongs_to(related_class, foreign_key: str=None)` |
@@ -56,11 +61,11 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `getDb()` |
 | `fill($data)` |
 | `save()` |
-| `findById($id)` |
+| `findById($id, $include = null)` |
 | `load($filter = null, $params = [], $include = null)` |
 | `delete()` |
-| `find($filter = [], $limit = 100, $offset = 0, $orderBy = null)` |
-| `all($limit = 100, $offset = 0)` |
+| `find($filter = [], $limit = 100, $offset = 0, $orderBy = null, $include = null)` |
+| `all($limit = 100, $offset = 0, $include = null, $orderBy = null)` |
 | `count($conditions = null, $params = [])` |
 | `toDict($include = null)` |
 | `toAssoc($include = null)` |
@@ -71,9 +76,9 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `exists()` |
 | `getPrimaryKeyValue()` |
 | `getDbColumn($property)` |
-| `select($sql, $params = [], $limit = 20, $offset = 0)` |
+| `select($sql, $params = [], $limit = 20, $offset = 0, $include = null)` |
 | `selectOne($sql, $params = [], $include = null)` |
-| `where($filterSql, $params = [], $limit = 20, $offset = 0)` |
+| `where($filterSql, $params = [], $limit = 20, $offset = 0, $include = null)` |
 | `findOrFail($id)` |
 | `forceDelete()` |
 | `restore()` |
@@ -84,7 +89,9 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `hasOne($relatedClass, $foreignKey = null)` |
 | `hasMany($relatedClass, $foreignKey = null, $limit = 100, $offset = 0)` |
 | `belongsTo($relatedClass, $foreignKey = null)` |
-| `createTable($columns = [])` |
+| `createTable()` |
+| `cached($sql, $params = [], $ttl = 60, $limit = 20, $offset = 0, $include = null)` |
+| `clearCache()` |
 | `getData()` |
 | `markAsExisting()` |
 | `eagerLoad(array &$instances, $include, $db)` |
@@ -97,23 +104,6 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 |--------|
 | `self.snake_to_camel(name)` |
 | `self.camel_to_snake(name)` |
-| `save(@errors = []
-      @relationship_cache = {} # Clear relationship cache on save
-      validate_fields
-      return false unless @errors.empty?
-
-      data = to_db_hash(exclude_nil: true)` |
-| `delete(pk = self.class.primary_key_field || :id
-      pk_value = __send__(pk)` |
-| `force_delete(pk = self.class.primary_key_field || :id
-      pk_value = __send__(pk)` |
-| `restore(raise "Model does not support soft delete" unless self.class.soft_delete
-
-      pk = self.class.primary_key_field || :id
-      pk_value = __send__(pk)` |
-| `validate(errors = []
-      self.class.field_definitions.each do |name, opts|
-        value = __send__(name)` |
 | `load(filter = nil, params = [], include: nil)` |
 | `errors(@errors
     end
@@ -121,12 +111,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
     # Convert to hash using Ruby attribute names.
     # Optionally include relationships via the include keyword.
     def to_h(include: nil)` |
-| `to_array(to_h.values
-    end
-
-    alias to_list to_array
-
-    def to_json(include: nil, **_args)` |
+| `to_json(include: nil, **_args)` |
 | `to_s("#<#{self.class.name} #{to_h}>"
     end
 
@@ -170,6 +155,10 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `validate()` |
 | `createTable()` |
 | `findOrFail(T extends BaseModel>(this: new (data?: Record<string, unk...)` |
+| `exists(id: unknown)` |
+| `cached(T extends BaseModel>(
+    this: new (data?: Record<string...)` |
+| `clearCache()` |
 | `select(T extends BaseModel>(
     this: new (data?: Record<string...)` |
 | `selectOne(T extends BaseModel>(
@@ -192,6 +181,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
     this: T,
  ...)` |
 | `registerModel(name: string, modelClass: typeof BaseModel)` |
+| `eagerLoad(instances: BaseModel[], includeList: string[])` |
 | `clearRelCache()` |
 
 ## Router
@@ -201,6 +191,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | Method | 
 |--------|
 | `secure()` |
+| `no_auth()` |
 | `cache(max_age: int | None=None)` |
 
 ### Python — `RouteGroup` (`core/router.py`)
@@ -223,6 +214,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `websocket(path: str, handler)` |
 | `match_ws(path: str)` |
 | `all_ws()` |
+| `get_web_socket_routes()` |
+| `use(middleware_class)` |
 | `get(path: str, handler, **options)` |
 | `post(path: str, handler, **options)` |
 | `put(path: str, handler, **options)` |
@@ -411,8 +404,11 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `create($url, $autoCommit = null, $username = '', $password = '', $pool = 0)` |
 | `fromEnv($envKey = 'DATABASE_URL', $autoCommit = null)` |
 | `getAdapter()` |
-| `getPoolSize()` |
-| `getActivePoolCount()` |
+| `poolSize()` |
+| `activeCount()` |
+| `checkout()` |
+| `checkin($adapter)` |
+| `closeAll()` |
 | `query($sql, $params = [])` |
 | `fetch($sql, $params = [], $limit = 100, $offset = 0)` |
 | `fetchOne($sql, $params = [])` |
@@ -578,7 +574,9 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
       "odbc" => "Tina4::Drivers::OdbcDriver"
     }.freeze
 
-    def initialize(connection_string = nil, username: nil, password: nil, driver_name: nil, pool: 0)` |
+    # Static factory — cross-framework consistency: Database.create(url)` |
+| `self.create(url, username: "", password: "", pool: 0)` |
+| `self.from_env(env_key: "DATABASE_URL", pool: 0)` |
 | `connect(@driver.connect(@connection_string, username: @username, password: @password)` |
 | `close(if @pool
         @pool.close_all
@@ -645,12 +643,46 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
       raise e
     end
 
+    # Begin a transaction without a block — matches PHP/Python/Node API.
+    def start_transaction
+      current_driver.begin_transaction
+    end
+
+    # Commit the current transaction — matches PHP/Python/Node API.
+    def commit
+      current_driver.commit
+    end
+
+    # Roll back the current transaction — matches PHP/Python/Node API.
+    def rollback
+      current_driver.rollback
+    end
+
     def tables
       current_driver.tables
     end
 
+    # Cross-framework alias for tables — matches PHP/Python/Node get_tables.
+    alias get_tables tables
+
     def columns(table_name)` |
-| `get_next_id(table, pk_column: "id", generator_name: nil)` |
+| `get_adapter(current_driver
+    end
+
+    # Returns the configured pool size, or 1 for single-connection mode.
+    def pool_size
+      @pool_size > 0 ? @pool_size : 1
+    end
+
+    # Number of connections currently created (lazy pool connections counted)` |
+| `active_count(if @pool
+        @pool.active_count
+      else
+        @connected ? 1 : 0
+      end
+    end
+
+    # Check out a driver from the pool (or return the single driver)` |
 | `ensure_sequence_table(return if table_exists?("tina4_sequences")` |
 | `sequence_next(seq_name, table: nil, pk_column: "id")` |
 | `row_value(row, key)` |
@@ -843,8 +875,11 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `setAdapter(adapter)` |
 | `fromEnv(envKey = "DATABASE_URL", pool: number = 0)` |
 | `getAdapter()` |
-| `getPoolSize()` |
-| `getActivePoolCount()` |
+| `poolSize()` |
+| `activeCount()` |
+| `checkout()` |
+| `checkin(_adapter: DatabaseAdapter)` |
+| `closeAll()` |
 | `fetch(sql: string, params?: unknown[], limit?: number, offset?:...)` |
 | `fetchOne(T = Record<string, unknown>>(sql: string, params?: unknown[])` |
 | `execute(sql: string, params?: unknown[])` |
@@ -861,6 +896,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `executeMany(sql: string, paramSets: unknown[][])` |
 | `getError()` |
 | `cacheStats()` |
+| `cacheClear()` |
 | `getLastId()` |
 | `getNextId(table: string, pkColumn = "id", generatorName?: string)` |
 
@@ -891,8 +927,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `get_payload_static(token: str)` |
 | `refresh_token_static(token: str, expires_in: int=60)` |
 | `authenticate_request_static(headers: dict)` |
-| `validate_api_key_static(provided: str, expected: str=None)` |
-| `hash_password(password: str, iterations: int=260000)` |
+| `hash_password(password: str, salt: str=None, iterations: int=260000)` |
 | `check_password(password: str, hashed: str)` |
 | `validate_api_key(provided: str, expected: str=None)` |
 | `authenticate_request(headers: dict)` |
@@ -907,17 +942,15 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 | Method | 
 |--------|
-| `getToken($payload, $secret = null, $expiresIn = 60, $algorithm = 'HS256')` |
-| `validToken($token, $secret = null, $algorithm = 'HS256')` |
+| `getToken($payload, $expiresIn = 3600)` |
+| `validToken($token)` |
 | `getPayload($token)` |
 | `hashPassword($password, $salt = null, $iterations = 260000)` |
 | `checkPassword($password, $hash)` |
-| `middleware($secret, $algorithm = 'HS256')` |
-| `refreshToken($token, $secret = null, $expiresIn = 60, $algorithm = 'HS256')` |
-| `authenticateRequest($headers, $secret = null, $algorithm = 'HS256')` |
+| `middleware()` |
+| `refreshToken($token, $expiresIn = 3600)` |
+| `authenticateRequest($headers)` |
 | `validateApiKey($provided, $expected = null)` |
-| `createToken($payload, $secret, $expiresIn = 3600, $algorithm = 'HS256')` |
-| `validateToken($token, $secret, $algorithm = 'HS256')` |
 
 ### Node — `Auth` (`core/src/auth.ts`)
 
@@ -927,89 +960,68 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 ## Queue
 
-### Python — `Job` (`queue/__init__.py`)
-
-| Method | 
-|--------|
-| `data()` |
-| `complete()` |
-| `fail(error: str='')` |
-| `reject(reason: str='')` |
-| `retry(delay_seconds: int=0)` |
-
 ### Python — `Queue` (`queue/__init__.py`)
 
 | Method | 
 |--------|
 | `push(data: dict, priority: int=0, delay_seconds: int=0)` |
 | `pop()` |
+| `pop_batch(count: int)` |
+| `get_topic()` |
+| `process(handler, topic: str=None, max_jobs, batch_size)` |
 | `size(status: str='pending')` |
 | `purge(status: str='completed')` |
-| `retry_failed()` |
-| `dead_letters()` |
+| `retry_failed(max_retries: int=None)` |
+| `failed()` |
+| `dead_letters(max_retries: int=None)` |
+| `retry(job_id: str, delay_seconds: int=0)` |
+| `clear()` |
 | `produce(topic: str, data: dict, priority: int=0, delay_seconds: int=0)` |
-| `consume(topic: str=None, job_id: str=None, poll_interval: float=1.0, iterations: int=0)` |
-| `pop_by_id(topic: str, job_id: str)` |
+| `consume(topic: str=None, job_id: str=None, poll_interval: float=1.0, iterations: int=0, batch_size: int=1)` |
+| `pop_by_id(job_id: str)` |
 
-### PHP — `Job` (`Queue.php`)
+### PHP — `Queue` (`Queue.php`)
 
 | Method | 
 |--------|
-| `complete()` |
-| `fail($reason = '')` |
-| `reject($reason = '')` |
-| `toArray()` |
-| `getExternalBackend()` |
-| `push($payloadOrQueue, $queueOrPayload = '', $delay = 0, $priority = 0)` |
-| `pop($queue = '')` |
+| `push($payload, $delay = 0, $priority = 0)` |
+| `pop()` |
+| `popBatch($count)` |
 | `process($handlerOrQueue, $queueOrHandlerOrOptions = '', $options = [])` |
-| `size($queue = '', $status = 'pending')` |
-| `clear($queue = '')` |
-| `failed($queue = '')` |
-| `retry($jobId, $queue = null, $delaySeconds = 0)` |
-| `deadLetters($queue = '')` |
-| `purge($status, $queue = '')` |
-| `retryFailed($queue = '')` |
-| `produce($topic, $payload, $delay = 0)` |
-| `consume($topic = '', $id = null, $pollInterval = 1.0, $iterations = 0)` |
-| `popById($queue, $id)` |
-| `getBasePath()` |
+| `size($status = 'pending')` |
+| `clear()` |
+| `writeFailed($topic, $jobData)` |
+| `failed()` |
+| `retry($jobId, $delaySeconds = 0)` |
+| `deadLetters($maxRetries = null)` |
+| `purge($status)` |
+| `retryFailed($maxRetries = null)` |
+| `produce($topic, $payload, $priority = 0, $delaySeconds = 0)` |
+| `consume($topic = '', $id = null, $pollInterval = 1.0, $batchSize = 1)` |
+| `popById($id)` |
 | `getTopic()` |
 
 ### Ruby — `Tina4` (`queue.rb`)
 
 | Method | 
 |--------|
-| `retry(queue:, delay_seconds: 0)` |
-| `to_hash(h = {
-        id: @id,
-        topic: @topic,
-        payload: @payload,
-        created_at: @created_at.iso8601,
-        attempts: @attempts,
-        status: @status,
-        priority: @priority
-      }
-      h[:available_at] = @available_at.iso8601 if @available_at
-      h
-    end
-
-    def to_json(*_args)` |
-| `complete(@status = :completed
-    end
-
-    # Mark this job as failed with a reason.
-    def fail(reason = "")` |
-| `reject(reason = "")` |
 | `push(payload, priority: 0, delay_seconds: 0)` |
-| `pop(@backend.dequeue(@topic)` |
-| `dead_letters(return [] unless @backend.respond_to?(:dead_letters)` |
+| `pop_batch(count)` |
+| `retry(job_id = nil, delay_seconds: 0)` |
+| `dead_letters(max_retries: nil)` |
 | `purge(status)` |
-| `retry_failed(return 0 unless @backend.respond_to?(:retry_failed)` |
-| `produce(topic, payload)` |
-| `consume(topic = nil, id: nil, poll_interval: 1.0, iterations: 0, &block)` |
-| `pop_by_id(topic, id)` |
+| `retry_failed(max_retries: nil)` |
+| `produce(topic, payload, priority: 0, delay_seconds: 0)` |
+| `consume(topic = nil, id: nil, poll_interval: 1.0, iterations: 0, batch_size: 1, &block)` |
+| `pop_by_id(id)` |
 | `size(status: "pending")` |
+| `get_topic(@topic
+    end
+
+    # Consume all available jobs and pass each to handler, then stop.
+    #
+    # Simpler alternative to consume()` |
+| `process(topic: nil, max_jobs: nil, batch_size: 1, &handler)` |
 | `backend(@backend
     end
 
@@ -1034,23 +1046,19 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 | Method | 
 |--------|
-| `complete()` |
-| `fail(reason?: string)` |
-| `reject(reason?: string)` |
-| `retry(delaySeconds?: number)` |
 | `push(queue: string, payload: unknown, delay?: number)` |
 | `pop(queue: string)` |
 | `size(queue: string)` |
 | `clear(queue: string)` |
-| `mkdirSync(dir, { recursive: true })` |
-| `writeFileSync(join(dir, `${prefix}_${id}.queue-data`)` |
-| `process(handlerOrQueue: string | ((job: QueueJob)` |
-| `failed(queue?: string)` |
-| `deadLetters(queue?: string, maxRetries?: number)` |
-| `purge(statusOrQueue: string, statusOrMaxRetries?: string | numb...)` |
-| `retryFailed(queue?: string, maxRetries?: number)` |
-| `produce(topic: string, payload: unknown, delay?: number)` |
-| `popById(queue: string, id: string)` |
+| `popBatch(count: number)` |
+| `process(handler: (job: QueueJob | QueueJob[])` |
+| `failed()` |
+| `retry(jobId?: string, delaySeconds?: number)` |
+| `deadLetters(maxRetries?: number)` |
+| `purge(status: string, maxRetries?: number)` |
+| `retryFailed(maxRetries?: number)` |
+| `produce(topic: string, payload: unknown, priority: number = 0, de...)` |
+| `popById(id: string)` |
 | `getTopic()` |
 | `getMaxRetries()` |
 
@@ -1088,6 +1096,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | Method | 
 |--------|
 | `session_id()` |
+| `get_session_id()` |
 | `start(session_id: str=None)` |
 | `get(key: str, default=None)` |
 | `set(key: str, value)` |
@@ -1152,6 +1161,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `getSessionId()` |
 | `cookieHeader($cookieName = 'tina4_session')` |
 | `isStarted()` |
+| `read($sessionId)` |
+| `write($sessionId, $data, $ttl = 0)` |
 | `save()` |
 | `gc()` |
 
@@ -1183,18 +1194,29 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `get_flash(key, default = nil)` |
 | `regenerate(old_id = @id
       @id = SecureRandom.hex(32)` |
-| `gc(max_age = nil)` |
-| `cookie_header(samesite = ENV["TINA4_SESSION_SAMESITE"] || "Lax"
-      "#{@options[:cookie_name]}=#{@id}; Path=/; HttpOnly; SameSite=#{samesite}; Max-Age=#{@options[:max_age]}"
+| `start(session_id = nil)` |
+| `get_session_id(@id
     end
 
-    private
-
-    def extract_session_id(env)` |
+    # Reads raw session data for a given session ID from backend storage.
+    # Returns the data hash or nil.
+    def read(session_id)` |
+| `write(session_id, data, ttl = nil)` |
+| `gc(max_age = nil)` |
+| `cookie_header(cookie_name = nil)` |
+| `extract_session_id(env)` |
 | `load_session(existing = @handler.read(@id)` |
 | `create_handler(case @options[:handler].to_sym
       when :file
         Tina4::SessionHandlers::FileHandler.new(@options[:handler_options])` |
+| `to_hash(ensure_loaded
+      @session.to_hash
+    end
+
+    private
+
+    def ensure_loaded
+      @session ||= Session.new(@env, @options)` |
 
 ### Node — `FileSessionHandler` (`core/src/session.ts`)
 
@@ -1227,11 +1249,28 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | Method | 
 |--------|
 | `migrate()` |
-| `rollback()` |
+| `rollback($steps = 1)` |
 | `status()` |
 | `getAppliedMigrations()` |
 | `getPendingMigrations()` |
 | `getMigrationFiles()` |
+| `getApplied()` |
+| `getPending()` |
+| `getFiles()` |
+| `create($description, $kind = 'sql')` |
+| `up(\$db)` |
+| `down(\$db)` |
+| `recordMigration($fileName, $batch, $passed = 1)` |
+| `removeMigrationRecord($fileName)` |
+
+### PHP — `for` (`MigrationBase.php`)
+
+| Method | 
+|--------|
+| `up($db)` |
+| `down($db)` |
+| `up($db)` |
+| `down($db)` |
 
 ### Ruby — `Tina4` (`migration.rb`)
 
@@ -1244,7 +1283,15 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `status({
         completed: completed_migrations,
         pending: pending_migrations.map { |f| File.basename(f)` |
-| `create(name)` |
+| `create(description, kind = "ruby")` |
+| `record_migration(name, batch, passed: 1)` |
+| `remove_migration_record(name)` |
+| `get_applied(completed_migrations
+    end
+
+    # Get list of pending migration filenames (public alias for pending_migrations)` |
+| `get_pending(pending_migrations.map { |f| File.basename(f)` |
+| `get_files(migration_files = Dir.glob(File.join(@migrations_dir, "*.sql")` |
 | `resolve_migrations_dir(src_dir = File.join(Dir.pwd, "src", "migrations")` |
 | `ensure_tracking_table(unless @db.table_exists?(TRACKING_TABLE)` |
 | `completed_migrations(result = @db.fetch("SELECT migration_name FROM #{TRACKING_TABLE} WHERE passed = 1 ORDER BY id")` |
@@ -1258,12 +1305,29 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `split_sql_statements(sql, delimiter = ";")` |
 | `execute_sql_file(file)` |
 | `should_skip_for_firebird(stmt)` |
-| `record_migration(name, batch, passed: 1)` |
-| `remove_migration_record(name)` |
 | `classify(name)` |
 | `extract_class_name(content)` |
 | `up(db)` |
 | `down(db)` |
+
+### Node — `Migration` (`orm/src/migration.ts`)
+
+| Method | 
+|--------|
+| `typeof(db as any)` |
+| `up()` |
+| `recordMigration(name, batch)` |
+| `removeMigrationRecord(migration.name)` |
+| `readdirSync(dir)` |
+| `mkdirSync(dir, { recursive: true })` |
+| `writeFileSync(upPath, upTemplate, "utf-8")` |
+| `migrate()` |
+| `rollback(steps = 1)` |
+| `status()` |
+| `create(description: string, kind: "sql" | "class" = "sql")` |
+| `getApplied()` |
+| `getPending()` |
+| `getFiles()` |
 
 ## GraphQL
 
@@ -1310,6 +1374,10 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `getMutations()` |
 | `fromOrm($ormInstance)` |
 | `parse()` |
+| `peek($offset = 0)` |
+| `advance()` |
+| `expect($type, $value = null)` |
+| `match($type, $value = null)` |
 
 ### Ruby — `Tina4` (`graphql.rb`)
 
@@ -1528,6 +1596,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `addTest($name, $fn)` |
 | `sandbox($filters = null, $tags = null, $vars = null)` |
 | `unsandbox()` |
+| `renderDump($v)` |
 
 ### Ruby — `Tina4` (`frond.rb`)
 
@@ -1605,6 +1674,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
         # -- Text --
         "upper"      => ->(v, *_a)` |
 | `register_builtin_globals(@globals["form_token"] = ->(descriptor = "")` |
+| `self.render_dump(value)` |
 | `self.generate_form_jwt(descriptor = "")` |
 | `self.generate_form_token(descriptor = "")` |
 | `self.generate_form_token_value(descriptor = "")` |
@@ -1729,6 +1799,10 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `async send_json(data)` |
 | `async broadcast(message: str | bytes, exclude_self: bool=False)` |
 | `async broadcast_to(path: str, message: str | bytes)` |
+| `rooms()` |
+| `join_room(room_name: str)` |
+| `leave_room(room_name: str)` |
+| `async broadcast_to_room(room_name: str, message: str | bytes, exclude_self: bool=False)` |
 | `async ping(data: bytes=b'')` |
 | `async close(code: int=CLOSE_NORMAL, reason: str='')` |
 | `on(event: str, handler: Callable)` |
@@ -1750,6 +1824,9 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `async broadcast_all(message: str | bytes)` |
 | `async disconnect(ws_id: str)` |
 | `async disconnect_all(path: str=None)` |
+| `room_count(room_name: str)` |
+| `get_room_connections(room_name: str)` |
+| `async broadcast_to_room(room_name: str, message: str | bytes, exclude: str=None)` |
 
 ### Python — `WebSocketServer` (`websocket/__init__.py`)
 
@@ -1786,6 +1863,11 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `on($event, $handler)` |
 | `broadcast($message, $excludeIds = null, $path = null)` |
 | `send($clientId, $message)` |
+| `joinRoom($clientId, $roomName)` |
+| `leaveRoom($clientId, $roomName)` |
+| `getRoomConnections($roomName)` |
+| `roomCount($roomName)` |
+| `broadcastToRoom($roomName, $message, $excludeIds = null)` |
 | `start()` |
 | `getClients()` |
 | `stop()` |
@@ -1829,7 +1911,15 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 |--------|
 | `handle_upgrade(env, socket)` |
 | `broadcast(message, exclude: nil, path: nil)` |
+| `join_room_for(conn_id, room_name)` |
+| `leave_room_for(conn_id, room_name)` |
+| `room_count(room_name)` |
+| `get_room_connections(room_name)` |
+| `broadcast_to_room(room_name, message, exclude: nil)` |
 | `emit(event, *args)` |
+| `remove_from_all_rooms(conn_id)` |
+| `join_room(room_name)` |
+| `leave_room(room_name)` |
 | `send(message)` |
 | `send_pong(data)` |
 | `close(code: 1000, reason: "")` |
@@ -1894,6 +1984,12 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `start()` |
 | `stop()` |
 | `getClients()` |
+| `joinRoom(clientId: string, roomName: string)` |
+| `leaveRoom(clientId: string, roomName: string)` |
+| `getRoomConnections(roomName: string)` |
+| `roomCount(roomName: string)` |
+| `getClientRooms(clientId: string)` |
+| `broadcastToRoom(roomName: string, message: string, excludeIds?: string[])` |
 | `setBuffer(remaining)` |
 
 ### Node — `RedisBackplane` (`core/src/websocketBackplane.ts`)
@@ -2113,6 +2209,14 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `register_function(name: str, num_params: int, func: callable, deterministic: bool=True)` |
 | `adapter()` |
 | `pool()` |
+| `create(url: str, username: str='', password: str='', pool: int=0)` |
+| `from_env(env_key: str='DATABASE_URL', pool: int=0)` |
+| `get_adapter()` |
+| `pool_size()` |
+| `active_count()` |
+| `checkout()` |
+| `checkin(adapter: DatabaseAdapter)` |
+| `close_all()` |
 
 ### Python — `FirebirdAdapter` (`database/firebird.py`)
 
@@ -2226,34 +2330,6 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `warning(message: str, **kwargs)` |
 | `error(message: str, **kwargs)` |
 
-### Python — `MessageLog` (`dev_admin/__init__.py`)
-
-| Method | 
-|--------|
-| `log(category: str, message: str, data: dict=None, level: str='info')` |
-| `get(category: str=None, level: str=None, limit: int=100, offset: int=0)` |
-| `clear(category: str=None)` |
-| `count()` |
-
-### Python — `RequestInspector` (`dev_admin/__init__.py`)
-
-| Method | 
-|--------|
-| `capture(method: str, path: str, status: int, duration_ms: float, headers: dict=None, body_size: int=0, ip: str='')` |
-| `get(limit: int=50, method: str=None, status_min: int=None)` |
-| `clear()` |
-| `stats()` |
-
-### Python — `BrokenTracker` (`dev_admin/__init__.py`)
-
-| Method | 
-|--------|
-| `record(error_type: str, message: str, traceback_str: str='', context: dict=None)` |
-| `get_all()` |
-| `resolve(error_id: str)` |
-| `clear_resolved()` |
-| `health()` |
-
 ### Python — `Frond` (`frond/engine.py`)
 
 | Method | 
@@ -2307,6 +2383,27 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `seed(count: int=5, seed: int=None)` |
 | `count(folder: str=None)` |
 
+### Python — `MigrationBase` (`migration/runner.py`)
+
+| Method | 
+|--------|
+| `up(db)` |
+| `down(db)` |
+
+### Python — `Migration` (`migration/runner.py`)
+
+| Method | 
+|--------|
+| `migrate()` |
+| `rollback(steps: int=1)` |
+| `status()` |
+| `create(description: str, kind: str='sql')` |
+| `get_applied()` |
+| `get_pending()` |
+| `get_files()` |
+| `record_migration(name: str, batch: int, passed: int=1)` |
+| `remove_migration_record(name: str)` |
+
 ### Python — `Field` (`orm/fields.py`)
 
 | Method | 
@@ -2334,7 +2431,89 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `exists()` |
 | `to_mongo()` |
 
-### Python — `KafkaBackend` (`queue_backends/kafka_backend.py`)
+### Python — `Job` (`queue/job.py`)
+
+| Method | 
+|--------|
+| `data()` |
+| `complete()` |
+| `fail(error: str='')` |
+| `reject(reason: str='')` |
+| `retry(delay_seconds: int=0)` |
+| `to_array()` |
+| `to_hash()` |
+| `to_json()` |
+
+### Python — `KafkaBackend` (`queue/kafka_backend.py`)
+
+| Method | 
+|--------|
+| `push(data: dict, priority: int=0, delay_seconds: int=0)` |
+| `pop(queue_ref)` |
+| `size(status: str='pending')` |
+| `purge(status: str='completed')` |
+| `retry_failed()` |
+| `failed()` |
+| `dead_letters()` |
+| `retry_job(job_id: str, delay_seconds: int=0)` |
+| `clear()` |
+| `complete(job: Job)` |
+| `fail(job: Job, error: str='')` |
+| `retry(job: Job, delay_seconds: int=0)` |
+
+### Python — `LiteBackend` (`queue/lite_backend.py`)
+
+| Method | 
+|--------|
+| `push(data: dict, priority: int=0, delay_seconds: int=0)` |
+| `pop(queue_ref)` |
+| `pop_batch(count: int, queue_ref)` |
+| `size(status: str='pending')` |
+| `purge(status: str='completed')` |
+| `retry_failed(max_retries: int=None)` |
+| `failed()` |
+| `dead_letters(max_retries: int=None)` |
+| `retry_job(job_id: str, delay_seconds: int=0)` |
+| `clear()` |
+| `complete(job: Job)` |
+| `fail(job: Job, error: str='')` |
+| `retry(job: Job, delay_seconds: int=0)` |
+
+### Python — `MongoBackend` (`queue/mongo_backend.py`)
+
+| Method | 
+|--------|
+| `push(data: dict, priority: int=0, delay_seconds: int=0)` |
+| `pop(queue_ref)` |
+| `size(status: str='pending')` |
+| `purge(status: str='completed')` |
+| `retry_failed()` |
+| `failed()` |
+| `dead_letters()` |
+| `retry_job(job_id: str, delay_seconds: int=0)` |
+| `clear()` |
+| `complete(job: Job)` |
+| `fail(job: Job, error: str='')` |
+| `retry(job: Job, delay_seconds: int=0)` |
+
+### Python — `RabbitMQBackend` (`queue/rabbitmq_backend.py`)
+
+| Method | 
+|--------|
+| `push(data: dict, priority: int=0, delay_seconds: int=0)` |
+| `pop(queue_ref)` |
+| `size(status: str='pending')` |
+| `purge(status: str='completed')` |
+| `retry_failed()` |
+| `failed()` |
+| `dead_letters()` |
+| `retry_job(job_id: str, delay_seconds: int=0)` |
+| `clear()` |
+| `complete(job: Job)` |
+| `fail(job: Job, error: str='')` |
+| `retry(job: Job, delay_seconds: int=0)` |
+
+### Python — `KafkaConnector` (`queue_backends/kafka_backend.py`)
 
 | Method | 
 |--------|
@@ -2348,7 +2527,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `dead_letter(topic: str, message: dict)` |
 | `close()` |
 
-### Python — `MongoBackend` (`queue_backends/mongo_backend.py`)
+### Python — `MongoConnector` (`queue_backends/mongo_backend.py`)
 
 | Method | 
 |--------|
@@ -2362,7 +2541,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `dead_letter(topic: str, message: dict)` |
 | `close()` |
 
-### Python — `RabbitMQBackend` (`queue_backends/rabbitmq_backend.py`)
+### Python — `RabbitMQConnector` (`queue_backends/rabbitmq_backend.py`)
 
 | Method | 
 |--------|
@@ -2810,6 +2989,18 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `addTranslation($locale, $key, $value)` |
 | `getAvailableLocales()` |
 
+### PHP — `Job` (`Job.php`)
+
+| Method | 
+|--------|
+| `complete()` |
+| `fail($reason = '')` |
+| `reject($reason = '')` |
+| `retry($delaySeconds = 0)` |
+| `toArray()` |
+| `toHash()` |
+| `toJson()` |
+
 ### PHP — `Log` (`Log.php`)
 
 | Method | 
@@ -2937,6 +3128,29 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `deadLetter($topic, $message)` |
 | `size($topic)` |
 | `close()` |
+
+### PHP — `LiteBackend` (`Queue/LiteBackend.php`)
+
+| Method | 
+|--------|
+| `enqueue($topic, $message)` |
+| `dequeue($topic)` |
+| `dequeueBatch($topic, $count)` |
+| `acknowledge($topic, $messageId)` |
+| `requeue($topic, $message)` |
+| `deadLetter($topic, $message)` |
+| `size($topic)` |
+| `close()` |
+| `count($topic, $status = 'pending')` |
+| `clear($topic)` |
+| `failed($topic)` |
+| `retry($jobId, $topic = null, $delaySeconds = 0)` |
+| `deadLetters($topic)` |
+| `purge($status, $topic)` |
+| `retryFailed($topic)` |
+| `popById($topic, $id)` |
+| `writeFailed($topic, $jobData)` |
+| `getBasePath()` |
 
 ### PHP — `MongoBackend` (`Queue/MongoBackend.php`)
 
@@ -3318,6 +3532,36 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
           escaped = value.to_s
             .gsub("&", "&amp;")` |
 | `self.html_helpers` |
+
+### Ruby — `Tina4` (`job.rb`)
+
+| Method | 
+|--------|
+| `retry(delay_seconds: 0, queue: nil)` |
+| `to_array([@id, @topic, @payload, @priority, @attempts]
+    end
+
+    def to_hash
+      h = {
+        id: @id,
+        topic: @topic,
+        payload: @payload,
+        created_at: @created_at.iso8601,
+        attempts: @attempts,
+        status: @status,
+        priority: @priority
+      }
+      h[:available_at] = @available_at.iso8601 if @available_at
+      h
+    end
+
+    def to_json(*_args)` |
+| `complete(@status = :completed
+    end
+
+    # Mark this job as failed with a reason.
+    def fail(reason = "")` |
+| `reject(reason = "")` |
 
 ### Ruby — `Tina4` (`messenger.rb`)
 
@@ -3895,6 +4139,26 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `pop(queue: string)` |
 | `size(queue: string)` |
 | `clear(queue: string)` |
+
+### Node — `LiteBackend` (`core/src/queueBackends/liteBackend.ts`)
+
+| Method | 
+|--------|
+| `mkdirSync(dir, { recursive: true })` |
+| `push(queue: string, payload: unknown, delay?: number, priority...)` |
+| `writeFileSync(join(dir, `${prefix}_${id}.queue-data`)` |
+| `pop(queue: string, bridge: JobQueueBridge)` |
+| `popBatch(queue: string, bridge: JobQueueBridge, count: number)` |
+| `size(queue: string, status: string = "pending")` |
+| `clear(queue: string)` |
+| `failed(queue: string)` |
+| `retry(queue: string, jobId: string, delaySeconds?: number)` |
+| `deadLetters(queue: string, maxRetries: number = 3)` |
+| `purge(queue: string, status: string, maxRetries: number = 3)` |
+| `retryFailed(queue: string, maxRetries: number = 3)` |
+| `popById(queue: string, id: string)` |
+| `failJob(queue: string, job: QueueJob, error: string, maxRetries: ...)` |
+| `retryJob(queue: string, job: QueueJob, delaySeconds?: number)` |
 
 ### Node — `MongoBackend` (`core/src/queueBackends/mongoBackend.ts`)
 

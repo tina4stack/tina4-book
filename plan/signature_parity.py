@@ -20,13 +20,37 @@ from datetime import date
 
 BASE = Path("/Users/andrevanzuydam/IdeaProjects")
 
+def split_params(params_raw: str) -> list:
+    """Split a parameter string on commas, respecting angle-bracket depth (TypeScript generics)."""
+    parts = []
+    depth = 0
+    current = []
+    for ch in params_raw:
+        if ch in ('<', '[', '('):
+            depth += 1
+            current.append(ch)
+        elif ch in ('>', ']', ')'):
+            depth = max(0, depth - 1)
+            current.append(ch)
+        elif ch == ',' and depth == 0:
+            part = ''.join(current).strip()
+            if part:
+                parts.append(part)
+            current = []
+        else:
+            current.append(ch)
+    part = ''.join(current).strip()
+    if part:
+        parts.append(part)
+    return parts
+
 # ── Name normalisation ────────────────────────────────────────────────────────
 
 def to_snake(name):
     """Convert camelCase / PascalCase to snake_case for comparison."""
     s = re.sub(r'([A-Z]+)([A-Z][a-z])', r'\1_\2', name)
     s = re.sub(r'([a-z\d])([A-Z])', r'\1_\2', s)
-    return s.lower().strip('?')
+    return s.lower().strip('?!')
 
 # ── Python extraction (AST, full type info) ───────────────────────────────────
 
@@ -54,6 +78,34 @@ def extract_python_signatures(filepath):
     except SyntaxError:
         return {}
     result = {}
+
+    def _extract_func_params(item):
+        args = item.args
+        all_args = args.posonlyargs + args.args
+        defaults_offset = len(all_args) - len(args.defaults)
+        params = []
+        for i, arg in enumerate(all_args):
+            if arg.arg in ("self", "cls"):
+                continue
+            params.append(py_param(arg, args.defaults, i - defaults_offset))
+        if args.vararg:
+            params.append(f"*{args.vararg.arg}")
+        for i, kwarg in enumerate(args.kwonlyargs):
+            kd = args.kw_defaults[i]
+            ann = f": {ast.unparse(kwarg.annotation)}" if kwarg.annotation else ""
+            dflt = f" = {ast.unparse(kd)}" if kd else ""
+            params.append(f"{kwarg.arg}{ann}{dflt}")
+        if args.kwarg:
+            params.append(f"**{args.kwarg.arg}")
+        returns = ""
+        if item.returns:
+            try:
+                returns = ast.unparse(item.returns)
+            except Exception:
+                pass
+        return params, returns
+
+    # Class-level methods
     for node in ast.walk(tree):
         if not isinstance(node, ast.ClassDef):
             continue
@@ -66,37 +118,34 @@ def extract_python_signatures(filepath):
             name = item.name
             if name.startswith("_") or name == "__init__":
                 continue
-            args = item.args
-            all_args = args.posonlyargs + args.args
-            defaults_offset = len(all_args) - len(args.defaults)
-            params = []
-            for i, arg in enumerate(all_args):
-                if arg.arg in ("self", "cls"):
-                    continue
-                params.append(py_param(arg, args.defaults, i - defaults_offset))
-            if args.vararg:
-                params.append(f"*{args.vararg.arg}")
-            for i, kwarg in enumerate(args.kwonlyargs):
-                kd = args.kw_defaults[i]
-                ann = f": {ast.unparse(kwarg.annotation)}" if kwarg.annotation else ""
-                dflt = f" = {ast.unparse(kd)}" if kd else ""
-                params.append(f"{kwarg.arg}{ann}{dflt}")
-            if args.kwarg:
-                params.append(f"**{args.kwarg.arg}")
-            returns = ""
-            if item.returns:
-                try:
-                    returns = ast.unparse(item.returns)
-                except Exception:
-                    pass
+            params, returns = _extract_func_params(item)
             is_async = isinstance(item, ast.AsyncFunctionDef)
-            methods[name] = {
-                "params": params,
-                "returns": returns,
-                "async": is_async,
-            }
+            methods[name] = {"params": params, "returns": returns, "async": is_async}
         if methods:
             result[node.name] = methods
+
+    # Module-level functions (not nested inside a class)
+    module_fns = {}
+    class_names_in_file = {node.name for node in ast.walk(tree) if isinstance(node, ast.ClassDef)}
+    for node in tree.body:  # only top-level
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        name = node.name
+        if name.startswith("_") or name in class_names_in_file:
+            continue
+        params, returns = _extract_func_params(node)
+        is_async = isinstance(node, ast.AsyncFunctionDef)
+        module_fns[name] = {"params": params, "returns": returns, "async": is_async}
+
+    if module_fns:
+        stem = Path(filepath).stem
+        synthetic = stem.capitalize()
+        if synthetic not in result:
+            result[synthetic] = {}
+        for fname, fdata in module_fns.items():
+            if fname not in result[synthetic]:
+                result[synthetic][fname] = fdata
+
     return result
 
 # ── PHP extraction (regex, type hints) ───────────────────────────────────────
@@ -150,10 +199,12 @@ def extract_php_signatures(filepath):
             if not p:
                 continue
             parts = p.split()
-            var_part = next((x for x in reversed(parts) if x.startswith("$")), None)
+            # Handle reference params like &$instances and variadic like ...$args
+            var_part = next((x for x in reversed(parts) if x.startswith("$") or x.startswith("&$") or x.startswith("...$")), None)
             if not var_part:
                 continue
-            type_parts = [x for x in parts if not x.startswith("$") and "=" not in x]
+            var_part = var_part.lstrip("&").lstrip("...")
+            type_parts = [x for x in parts if not x.startswith("$") and not x.startswith("...") and "=" not in x]
             type_hint = " ".join(type_parts) if type_parts else ""
             default_match = re.search(r'=\s*(.+)$', p)
             default = " = " + default_match.group(1).strip() if default_match else ""
@@ -164,6 +215,69 @@ def extract_php_signatures(filepath):
     for cls, methods in classes.items():
         if methods:
             result[cls] = methods
+
+    # Module-level PHP functions (outside any class), e.g. mcp_tool(), mcp_resource()
+    # Build precise class body ranges to exclude
+    php_class_ranges: list[tuple[int,int]] = []
+    class_open_pattern = re.compile(r'(?:^|\n)(?:abstract\s+)?class\s+\w+[^{]*\{', re.MULTILINE)
+    for cm in class_open_pattern.finditer(src):
+        brace_pos = cm.end() - 1
+        depth = 0
+        j = brace_pos
+        while j < len(src):
+            if src[j] == '{':
+                depth += 1
+            elif src[j] == '}':
+                depth -= 1
+                if depth == 0:
+                    break
+            j += 1
+        php_class_ranges.append((brace_pos, j))
+
+    def _php_outside_class(pos: int) -> bool:
+        return not any(s <= pos <= e for s, e in php_class_ranges)
+
+    php_fn_pattern = re.compile(
+        r'^function\s+([a-z]\w*)\s*\(([^)]*)\)\s*(?::\s*([\w\\|?\[\]<>, ]+))?',
+        re.MULTILINE
+    )
+    module_fns_php = {}
+    for m in php_fn_pattern.finditer(src):
+        if not _php_outside_class(m.start()):
+            continue
+        fn_name = m.group(1)
+        if fn_name.startswith("_"):
+            continue
+        params_raw = m.group(2).strip()
+        ret = (m.group(3) or "").strip()
+        params = []
+        for p in params_raw.split(","):
+            p = p.strip()
+            if not p:
+                continue
+            parts = p.split()
+            var_part = next((x for x in reversed(parts) if x.startswith("$") or x.startswith("&$")), None)
+            if not var_part:
+                continue
+            var_part = var_part.lstrip("&")
+            type_parts = [x for x in parts if not x.startswith("$") and "=" not in x]
+            type_hint = " ".join(type_parts) if type_parts else ""
+            default_match = re.search(r'=\s*(.+)$', p)
+            default = " = " + default_match.group(1).strip() if default_match else ""
+            name_clean = var_part.lstrip("$")
+            ann = f": {type_hint}" if type_hint else ""
+            params.append(f"{name_clean}{ann}{default}")
+        module_fns_php[fn_name] = {"params": params, "returns": ret, "async": False}
+
+    if module_fns_php:
+        stem = Path(filepath).stem
+        synthetic = stem.capitalize()
+        if synthetic not in result:
+            result[synthetic] = {}
+        for fn_name, fdata in module_fns_php.items():
+            if fn_name not in result[synthetic]:
+                result[synthetic][fn_name] = fdata
+
     return result
 
 # ── Ruby extraction (regex, comments for types) ───────────────────────────────
@@ -172,14 +286,10 @@ def extract_ruby_signatures(filepath):
     src = Path(filepath).read_text(encoding="utf-8", errors="ignore")
     result = {}
     # Find all class/module declarations and their positions (use innermost class only)
-    decl_pattern = re.compile(r'^\s*class\s+([\w:]+)', re.MULTILINE)
+    decl_pattern = re.compile(r'^\s*(?:class|module)\s+([\w:]+)', re.MULTILINE)
     class_positions = [(m.group(1).split("::")[-1], m.end()) for m in decl_pattern.finditer(src)]
     if not class_positions:
-        # Fall back to any module/class
-        fallback = re.search(r'(?:class|module)\s+([\w:]+)', src)
-        if not fallback:
-            return result
-        class_positions = [(fallback.group(1).split("::")[-1], fallback.end())]
+        return result
     def _class_for_pos(pos):
         owner = class_positions[0][0]
         for name, cpos in class_positions:
@@ -187,7 +297,7 @@ def extract_ruby_signatures(filepath):
                 owner = name
         return owner
     method_pattern = re.compile(
-        r'^\s{0,12}def\s+((?:self\.)?\w+)\s*(\([^)]*\))?\s*(?:#\s*->\s*(.+))?',
+        r'^\s{0,12}def\s+((?:self\.)?[\w]+[?!]?)\s*(\([^)]*\))?\s*(?:#\s*->\s*(.+))?',
         re.MULTILINE
     )
     classes = defaultdict(dict)
@@ -246,12 +356,51 @@ def extract_ts_signatures(filepath):
     classes = defaultdict(dict)
 
     # Single-line method pattern (indented 0-4 spaces)
+    # Return type is captured loosely — stops at { or ; at end of line (handles Array<(fn) => void>)
     pattern = re.compile(
         r'^\s{0,4}(?:(?:public|protected|private|static|async|override)\s+)*\*?\s*'
-        r'([a-z]\w*)\s*(?:<[^>\n]*(?:>[^>\n]*)*>)?\s*\(([^)\n]*)\)\s*(?::\s*([\w<>\[\]|&?, ]+?))?'
+        r'([a-z]\w*)\s*(?:<[^>\n]*(?:>[^>\n]*)*>)?\s*\(([^)\n]*)\)\s*(?::\s*([^{;\n]+?))?'
         r'\s*(?:\{|;|$)',
         re.MULTILINE
     )
+    # Extra pass: methods with function-type params (contain nested parens, e.g. group(prefix, callback: (x) => void))
+    nested_paren_decl = re.compile(
+        r'^\s{0,6}(?:(?:public|protected|private|static|async|override)\s+)*'
+        r'([a-z]\w*)\s*(?:<[^>\n]*>)?\s*\(',
+        re.MULTILINE
+    )
+    for m in nested_paren_decl.finditer(src):
+        name = m.group(1)
+        if name in skip or name.startswith("_"):
+            continue
+        line_start = src.rfind('\n', 0, m.start()) + 1
+        line = src[line_start:m.start() + len(name) + 10]
+        if 'private' in line:
+            continue
+        owner = _class_for_pos(m.start())
+        if name in classes[owner]:
+            continue  # already captured by single-line pass
+        # Check if there are nested parens in the params
+        paren_start = src.index('(', m.start())
+        depth = 0
+        i = paren_start
+        while i < len(src):
+            if src[i] == '(': depth += 1
+            elif src[i] == ')':
+                depth -= 1
+                if depth == 0: break
+            i += 1
+        params_raw = src[paren_start+1:i].replace('\n', ' ')
+        if '(' not in params_raw:
+            continue  # simple params, already handled by single-line pass
+        params_list = split_params(params_raw)
+        params_list = [p for p in params_list if not p.startswith('this:')]
+        after = src[i+1:i+80].strip()
+        ret_m = re.match(r':\s*([\w<>\[\]|&?, ]+?)\s*(?:\{|$)', after)
+        ret = ret_m.group(1).strip() if ret_m else ""
+        is_async = bool(re.search(r'\basync\b', src[line_start:m.start()]))
+        if owner: classes[owner][name] = {"params": params_list, "returns": ret, "async": is_async}
+
     for m in pattern.finditer(src):
         name = m.group(1)
         if name in skip or name.startswith("_"):
@@ -262,7 +411,7 @@ def extract_ts_signatures(filepath):
             continue
         params_raw = m.group(2).strip()
         ret = (m.group(3) or "").strip()
-        params = [p.strip() for p in params_raw.split(",") if p.strip()]
+        params = split_params(params_raw)
         is_async = bool(re.search(r'\basync\b', src[line_start:m.start()]))
         owner = _class_for_pos(m.start())
         if owner:
@@ -301,7 +450,7 @@ def extract_ts_signatures(filepath):
             i += 1
         params_raw = src[paren_start+1:i].replace('\n', ' ')
         # Strip 'this:' TypeScript fake parameter
-        params_list = [p.strip() for p in params_raw.split(',') if p.strip()]
+        params_list = split_params(params_raw)
         params_list = [p for p in params_list if not p.startswith('this:')]
         # Try to get return type after the closing paren
         after = src[i+1:i+80].strip()
@@ -342,7 +491,7 @@ def extract_ts_signatures(filepath):
                     break
             i += 1
         params_raw = src[paren_start+1:i].replace('\n', ' ')
-        params_list = [p.strip() for p in params_raw.split(',') if p.strip()]
+        params_list = split_params(params_raw)
         # Strip 'this:' TypeScript fake parameter
         params_list = [p for p in params_list if not p.startswith('this:')]
         after = src[i+1:i+80].strip()
@@ -411,7 +560,7 @@ def extract_ts_signatures(filepath):
             if mname in skip or mname.startswith("_"):
                 continue
             params_raw = mm.group(2).strip()
-            params = [p.strip() for p in params_raw.split(",") if p.strip()]
+            params = split_params(params_raw)
             ret = mm.group(3).strip()
             # Merge into an existing class whose name appears in the interface name
             target = iface_name
@@ -423,6 +572,187 @@ def extract_ts_signatures(filepath):
                 result[target] = {}
             if mname not in result[target]:
                 result[target][mname] = {"params": params, "returns": ret, "async": False}
+
+    # Fifth pass: top-level exported functions (module-level, not inside a class).
+    # Used to pick up Node.js MCP module exports like encodeResponse, decodeRequest, etc.
+    # Groups them under a synthetic class name derived from the file stem (CamelCase).
+    module_fn = re.compile(
+        r'^export\s+(?:async\s+)?function\s+([a-z]\w*)\s*(?:<[^>]*>)?\s*\(([^)]*)\)'
+        r'\s*(?::\s*([\w<>\[\]|&?, ]+?))?\s*\{',
+        re.MULTILINE
+    )
+    # Also: export const name = (...) => ... or export const name = function(...)
+    module_const_fn = re.compile(
+        r'^export\s+const\s+([a-z]\w*)\s*=\s*(?:async\s+)?(?:function\s*\(([^)]*)\)|'
+        r'\(([^)]*)\)\s*(?::\s*[\w<>\[\]|&?, ]+?)?\s*=>)',
+        re.MULTILINE
+    )
+
+    # Build precise class body ranges (start_of_brace .. end_of_brace)
+    _class_ranges: list[tuple[int,int]] = []
+    for cls_name, cls_start in class_positions:
+        brace_pos = src.find('{', cls_start)
+        if brace_pos == -1:
+            continue
+        depth = 0
+        j = brace_pos
+        while j < len(src):
+            if src[j] == '{':
+                depth += 1
+            elif src[j] == '}':
+                depth -= 1
+                if depth == 0:
+                    break
+            j += 1
+        _class_ranges.append((brace_pos, j))
+
+    def _is_inside_class(pos: int) -> bool:
+        """Return True if pos is inside any class body (between braces)."""
+        return any(start <= pos <= end for start, end in _class_ranges)
+
+    module_fns: dict[str, dict] = {}
+    for m in module_fn.finditer(src):
+        if _is_inside_class(m.start()):
+            continue
+        name = m.group(1)
+        if name in skip or name.startswith("_"):
+            continue
+        params = split_params(m.group(2).strip())
+        ret = (m.group(3) or "").strip()
+        is_async = "async" in src[max(0, m.start()-5):m.start()+10]
+        module_fns[name] = {"params": params, "returns": ret, "async": is_async}
+
+    # Multi-line module-level function declarations (params span multiple lines)
+    module_fn_multiline = re.compile(
+        r'^export\s+(?:async\s+)?function\s+([a-z]\w*)\s*(?:<[^>\n]*>)?\s*\(\s*$',
+        re.MULTILINE
+    )
+    for m in module_fn_multiline.finditer(src):
+        if _is_inside_class(m.start()):
+            continue
+        name = m.group(1)
+        if name in skip or name.startswith("_") or name in module_fns:
+            continue
+        paren_start = src.index('(', m.start())
+        depth = 0
+        i = paren_start
+        while i < len(src):
+            if src[i] == '(':
+                depth += 1
+            elif src[i] == ')':
+                depth -= 1
+                if depth == 0:
+                    break
+            i += 1
+        params_raw = src[paren_start+1:i].replace('\n', ' ')
+        params = split_params(params_raw)
+        after = src[i+1:i+80].strip()
+        ret_m = re.match(r':\s*([\w<>\[\]|&?, ]+?)\s*(?:\{|$)', after)
+        ret = ret_m.group(1).strip() if ret_m else ""
+        is_async = bool(re.search(r'\basync\b', src[m.start():m.start()+20]))
+        module_fns[name] = {"params": params, "returns": ret, "async": is_async}
+
+    for m in module_const_fn.finditer(src):
+        if _is_inside_class(m.start()):
+            continue
+        name = m.group(1)
+        if name in skip or name.startswith("_") or name in module_fns:
+            continue
+        params_raw = (m.group(2) or m.group(3) or "").strip()
+        params = split_params(params_raw)
+        module_fns[name] = {"params": params, "returns": "", "async": False}
+
+    # Module-level const aliases: export const foo = existingFn
+    module_alias = re.compile(
+        r'^export\s+const\s+([a-z]\w*)\s*=\s*([a-z]\w*)\s*;',
+        re.MULTILINE
+    )
+    for m in module_alias.finditer(src):
+        if _is_inside_class(m.start()):
+            continue
+        alias_name = m.group(1)
+        target_name = m.group(2)
+        if alias_name in skip or alias_name.startswith("_") or alias_name in module_fns:
+            continue
+        # Look up target in module_fns or in existing result
+        if target_name in module_fns:
+            module_fns[alias_name] = module_fns[target_name]
+        else:
+            # Search for the function in the source
+            fn_pat = re.compile(
+                r'^export\s+(?:async\s+)?function\s+' + re.escape(target_name) +
+                r'\s*(?:<[^>]*>)?\s*\(([^)]*)\)\s*(?::\s*([\w<>\[\]|&?, ]+?))?\s*\{',
+                re.MULTILINE
+            )
+            fn_m = fn_pat.search(src)
+            if fn_m:
+                params = split_params(fn_m.group(1).strip())
+                ret = (fn_m.group(2) or "").strip()
+                module_fns[alias_name] = {"params": params, "returns": ret, "async": False}
+
+    if module_fns:
+        # Derive synthetic class name from filename stem (e.g. mcp.ts -> Mcp)
+        stem = Path(filepath).stem
+        synthetic = stem.capitalize()
+        if synthetic not in result:
+            result[synthetic] = {}
+        for fname, fdata in module_fns.items():
+            if fname not in result[synthetic]:
+                result[synthetic][fname] = fdata
+
+    # Sixth pass: function-object method assignments e.g. `response.json = function(...)`
+    # Used in response.ts where methods are attached to a callable function, not a class.
+    fn_prop_pattern = re.compile(
+        r'^\s{0,4}(\w+)\.([a-z]\w*)\s*=\s*(?:async\s+)?function\s*\(([^)]*)\)'
+        r'\s*(?::\s*([\w<>\[\]|&?, ]+?))?\s*\{',
+        re.MULTILINE
+    )
+    fn_obj_methods: dict[str, dict[str, dict]] = {}
+    for m in fn_prop_pattern.finditer(src):
+        obj_name = m.group(1)
+        method_name = m.group(2)
+        params_raw = m.group(3).strip()
+        ret = (m.group(4) or "").strip()
+        if method_name in skip or method_name.startswith("_"):
+            continue
+        if _is_inside_class(m.start()):
+            continue
+        params = split_params(params_raw)
+        is_async = bool(re.search(r'\basync\b', src[max(0, m.start()-5):m.start()+20]))
+        if obj_name not in fn_obj_methods:
+            fn_obj_methods[obj_name] = {}
+        fn_obj_methods[obj_name][method_name] = {"params": params, "returns": ret, "async": is_async}
+
+    # Also catch arrow function form: `response.stream = async function(...)` or
+    # `(response as any).stream = async function(...)`
+    fn_prop_cast_pattern = re.compile(
+        r'^\s{0,4}\(\w+\s+as\s+\w+\)\.([a-z]\w*)\s*=\s*(?:async\s+)?function\s*\(([^)]*)\)'
+        r'\s*(?::\s*([\w<>\[\]|&?, ]+?))?\s*\{',
+        re.MULTILINE
+    )
+    for m in fn_prop_cast_pattern.finditer(src):
+        method_name = m.group(1)
+        params_raw = m.group(2).strip()
+        ret = (m.group(3) or "").strip()
+        if method_name in skip or method_name.startswith("_"):
+            continue
+        # Assume same object as any existing fn_obj_methods key, or use file stem
+        stem = Path(filepath).stem
+        if stem not in fn_obj_methods:
+            fn_obj_methods[stem] = {}
+        if method_name not in fn_obj_methods[stem]:
+            params = split_params(params_raw)
+            is_async = bool(re.search(r'\basync\b', src[max(0, m.start()-5):m.start()+20]))
+            fn_obj_methods[stem][method_name] = {"params": params, "returns": ret, "async": is_async}
+
+    for obj_name, methods in fn_obj_methods.items():
+        # Map to the capitalised object name as a synthetic class
+        synthetic = obj_name.capitalize()
+        if synthetic not in result:
+            result[synthetic] = {}
+        for mname, mdata in methods.items():
+            if mname not in result[synthetic]:
+                result[synthetic][mname] = mdata
 
     return result
 
@@ -478,7 +808,8 @@ FEATURE_SOURCES = {
         "Node":   BASE / "tina4-nodejs/packages/orm/src/migration.ts",
     },
     "MCP": {
-        "Python": BASE / "tina4-python/tina4_python/mcp/__init__.py",
+        "Python": [BASE / "tina4-python/tina4_python/mcp/__init__.py",
+                   BASE / "tina4-python/tina4_python/mcp/protocol.py"],
         "PHP":    BASE / "tina4-php/Tina4/MCP.php",
         "Ruby":   BASE / "tina4-ruby/lib/tina4/mcp.rb",
         "Node":   BASE / "tina4-nodejs/packages/core/src/mcp.ts",
@@ -494,6 +825,156 @@ FEATURE_SOURCES = {
         "PHP":    BASE / "tina4-php/Tina4/GraphQL.php",
         "Ruby":   BASE / "tina4-ruby/lib/tina4/graphql.rb",
         "Node":   BASE / "tina4-nodejs/packages/core/src/graphql.ts",
+    },
+    "Api": {
+        "Python": BASE / "tina4-python/tina4_python/api/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/Api.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/api.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/api.ts",
+    },
+    "Cache": {
+        "Python": BASE / "tina4-python/tina4_python/cache/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/Cache.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/response_cache.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/cache.ts",
+    },
+    "Container": {
+        "Python": BASE / "tina4-python/tina4_python/container/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/Container.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/container.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/container.ts",
+    },
+    "Events": {
+        "Python": BASE / "tina4-python/tina4_python/core/events.py",
+        "PHP":    BASE / "tina4-php/Tina4/Events.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/events.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/events.ts",
+    },
+    "WebSocket": {
+        "Python": BASE / "tina4-python/tina4_python/websocket/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/WebSocket.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/websocket.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/websocket.ts",
+    },
+    "WSDL": {
+        "Python": BASE / "tina4-python/tina4_python/wsdl/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/WSDL.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/wsdl.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/wsdl.ts",
+    },
+    "Swagger": {
+        "Python": BASE / "tina4-python/tina4_python/swagger/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/Swagger.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/swagger.rb",
+        "Node":   BASE / "tina4-nodejs/packages/swagger/src/generator.ts",
+    },
+    "I18n": {
+        "Python": BASE / "tina4-python/tina4_python/i18n/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/I18n.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/localization.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/i18n.ts",
+    },
+    "Seeder": {
+        "Python": BASE / "tina4-python/tina4_python/seeder/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/FakeData.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/seeder.rb",
+        "Node":   [BASE / "tina4-nodejs/packages/core/src/fakeData.ts",
+                   BASE / "tina4-nodejs/packages/orm/src/fakeData.ts",
+                   BASE / "tina4-nodejs/packages/orm/src/seeder.ts"],
+    },
+    "QueryBuilder": {
+        "Python": BASE / "tina4-python/tina4_python/query_builder/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/QueryBuilder.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/query_builder.rb",
+        "Node":   BASE / "tina4-nodejs/packages/orm/src/queryBuilder.ts",
+    },
+    "Validator": {
+        "Python": BASE / "tina4-python/tina4_python/validator/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/Validator.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/validator.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/validator.ts",
+    },
+    "HtmlElement": {
+        "Python": BASE / "tina4-python/tina4_python/HtmlElement.py",
+        "PHP":    BASE / "tina4-php/Tina4/HtmlElement.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/html_element.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/htmlElement.ts",
+    },
+    "Testing": {
+        "Python": BASE / "tina4-python/tina4_python/Testing.py",
+        "PHP":    BASE / "tina4-php/Tina4/Testing.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/testing.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/testing.ts",
+    },
+    "Messenger": {
+        "Python": BASE / "tina4-python/tina4_python/messenger/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/Messenger.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/messenger.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/messenger.ts",
+    },
+    "Logger": {
+        "Python": BASE / "tina4-python/tina4_python/debug/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/Log.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/log.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/logger.ts",
+    },
+    "AI": {
+        "Python": BASE / "tina4-python/tina4_python/ai/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/AI.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/ai.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/ai.ts",
+    },
+    "Request": {
+        "Python": BASE / "tina4-python/tina4_python/core/request.py",
+        "PHP":    BASE / "tina4-php/Tina4/Request.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/request.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/request.ts",
+    },
+    "Response": {
+        "Python": BASE / "tina4-python/tina4_python/core/response.py",
+        "PHP":    BASE / "tina4-php/Tina4/Response.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/response.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/response.ts",
+    },
+    "Middleware": {
+        "Python": BASE / "tina4-python/tina4_python/core/middleware.py",
+        "PHP":    [
+            BASE / "tina4-php/Tina4/Middleware.php",
+            BASE / "tina4-php/Tina4/Middleware/CorsMiddleware.php",
+            BASE / "tina4-php/Tina4/Middleware/CsrfMiddleware.php",
+            BASE / "tina4-php/Tina4/Middleware/RateLimiter.php",
+            BASE / "tina4-php/Tina4/Middleware/RequestLogger.php",
+            BASE / "tina4-php/Tina4/Middleware/SecurityHeaders.php",
+        ],
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/middleware.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/middleware.ts",
+    },
+    "AutoCrud": {
+        "Python": BASE / "tina4-python/tina4_python/crud/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/AutoCrud.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/auto_crud.rb",
+        "Node":   BASE / "tina4-nodejs/packages/orm/src/autoCrud.ts",
+    },
+    "SqlTranslation": {
+        "Python": [
+            BASE / "tina4-python/tina4_python/database/adapter.py",
+            BASE / "tina4-python/tina4_python/core/cache.py",
+        ],
+        "PHP":    [
+            BASE / "tina4-php/Tina4/SqlTranslation.php",
+            BASE / "tina4-php/Tina4/QueryCache.php",
+        ],
+        "Ruby":   [
+            BASE / "tina4-ruby/lib/tina4/sql_translation.rb",
+            BASE / "tina4-ruby/lib/tina4/cache.rb",
+        ],
+        "Node":   BASE / "tina4-nodejs/packages/orm/src/sqlTranslation.ts",
+    },
+    "Metrics": {
+        "Python": BASE / "tina4-python/tina4_python/core/server.py",
+        "PHP":    BASE / "tina4-php/Tina4/Metrics.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/metrics.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/metrics.ts",
     },
 }
 
@@ -594,8 +1075,12 @@ def normalise_type(t):
     t = re.sub(r'\bModel\b', 'Self', t)
     t = re.sub(r'\bORM\b', 'Self', t)
 
-    # Queue job references (cross-language: QueueJob → dict)
+    # Queue job references (cross-language: QueueJob/Job → dict)
     t = re.sub(r'\bQueueJob\b', 'dict', t)
+    t = re.sub(r'\bJob\b', 'dict', t)
+
+    # PHP list[list] == list[dict] (PHP uses arrays for both indexed and associative)
+    t = re.sub(r'\blist\[list\]', 'list[dict]', t)
 
     # TypeScript generic T/R used for model return type → Self
     # (T/R extends BaseModel is TypeScript's equivalent of Python/Ruby Self)
@@ -607,8 +1092,88 @@ def normalise_type(t):
     t = re.sub(r'\s+', ' ', t)
     return t.strip()
 
+def clean_params(params):
+    """Strip TS factory 'this' generic params, Ruby block params, and other noise."""
+    cleaned = []
+    for p in params:
+        if p.startswith("**"):
+            continue  # **kwargs not counted
+        # Ruby block params (&block) are the idiomatic equivalent of a callback/handler
+        # argument — normalise to "handler" so it compares against Python/Node's handler param.
+        if p.startswith("&"):
+            cleaned.append("handler")
+            continue
+        # Skip TypeScript generic class factory param — looks like:
+        #   "new (...args: unknown[]) => T"  or  "unknown>) => T"
+        # These appear in static methods on generic classes (e.g. BaseModel.find<T>)
+        # They are NOT real user-facing parameters.
+        stripped = p.strip()
+        if re.search(r'\bnew\b.*=>', stripped) or re.match(r'unknown.*\)\s*=>', stripped):
+            continue
+        # Ruby named keyword args with literal defaults are often framework-internal options
+        # (middleware: [], swagger_meta: {}, template: nil, include: nil, etc.) that don't
+        # correspond to positional params in other frameworks. Suppress them UNLESS they are
+        # known cross-framework API params (Queue, Auth, Database specifics).
+        _RUBY_REAL_KWARGS = {
+            # Queue real params present in all frameworks
+            "max_retries", "delay_seconds", "batch_size", "iterations", "poll_interval",
+            "priority", "id", "topic", "max_jobs",
+            # Auth real params
+            "secret", "algorithm", "expires_in",
+            # Database real params
+            "pk_column", "generator_name", "pool",
+            # Api/HTTP real params — keyword args on get/post/put/patch/delete/send_request
+            "params", "body", "content_type", "headers", "method",
+        }
+        kw_match = re.match(r'^(\w+):\s*', stripped)
+        if kw_match:
+            kw_name = kw_match.group(1)
+            if kw_name not in _RUBY_REAL_KWARGS:
+                # Suppress: Ruby framework option kwarg with literal default
+                if re.search(r':\s*(\[\]|\{\}|nil\b|true\b|false\b|\d+|["\'])', stripped):
+                    continue
+        cleaned.append(p)
+    return cleaned
+
+def is_optional_param(p: str) -> bool:
+    """Return True if param is optional (has a default value or TS ? suffix)."""
+    s = p.strip()
+    # TypeScript optional: foo? or foo?: Type
+    if re.match(r'\w+\?', s):
+        return True
+    # Has an explicit default: foo = None, foo = [], foo = null, foo = 0, etc.
+    # The `= ` part comes after the name (and optional type annotation)
+    if ' = ' in s or s.endswith('=None') or s.endswith('= None'):
+        return True
+    # Ruby keyword arg with default: "foo: nil", "foo: 0", "foo: 1.0", "foo: true", etc.
+    if re.match(r'\w+:\s*(nil\b|true\b|false\b|\d|["\'])', s):
+        return True
+    return False
+
 def param_count(method):
-    return len([p for p in method["params"] if not p.startswith("**")])
+    """Count required params only (exclude optional/defaulted ones)."""
+    params = clean_params(method["params"])
+    return len([p for p in params if not is_optional_param(p)])
+
+def param_range(method):
+    """Return (required_count, total_count) — the acceptable arity range for this method."""
+    params = clean_params(method["params"])
+    required = len([p for p in params if not is_optional_param(p)])
+    total = len(params)
+    return (required, total)
+
+def param_ranges_compatible(methods):
+    """
+    Two methods are compatible if their (required, total) ranges overlap.
+    E.g. Python (sql, style='?') -> (1, 2)  overlaps PHP (sql, style) -> (2, 2)
+    at arity 2, so they're considered a match.
+    """
+    ranges = [param_range(m) for m in methods]
+    if not ranges:
+        return True
+    lo = max(r[0] for r in ranges)
+    hi = min(r[1] for r in ranges)
+    return lo <= hi
 
 def compare_returns(methods_by_lang):
     """Return (canonical_return, {lang: normalised_return}, has_mismatch)"""
@@ -618,8 +1183,10 @@ def compare_returns(methods_by_lang):
         return "", returns, False
     # Only flag a mismatch when at least 2 frameworks have explicit (non-empty) return
     # type annotations that disagree. Untyped (empty) is compatible with anything.
-    unique = set(non_empty)
-    has_mismatch = len(non_empty) >= 2 and len(unique) > 1
+    # Also treat "untyped" as compatible (Ruby/Python often lack explicit return types).
+    typed = [v for v in non_empty if v not in ("untyped", "")]
+    unique = set(typed)
+    has_mismatch = len(typed) >= 2 and len(unique) > 1
     canonical = max(non_empty, key=len)  # pick most informative
     return canonical, returns, has_mismatch
 
@@ -651,7 +1218,7 @@ def render_method_table(area, method_groups):
                 ret = normalise_type(m["returns"])
                 params_short = ", ".join(
                     re.sub(r':.*', '', p).split('=')[0].strip()
-                    for p in m["params"]
+                    for p in clean_params(m["params"])
                 )
                 sig = f"`{params_short}`" if params_short else "`()`"
                 cells.append(sig)
@@ -660,19 +1227,18 @@ def render_method_table(area, method_groups):
         present_methods = {l: m for l, m in present.items() if m}
         _, ret_by_lang, ret_mismatch = compare_returns(present_methods)
 
-        # Param count mismatch
-        counts = [param_count(m) for m in present_methods.values()]
-        param_mismatch = len(set(counts)) > 1
+        # Param count mismatch — ranges must overlap (defaults count as optional)
+        param_mismatch = not param_ranges_compatible(list(present_methods.values()))
 
         # Missing frameworks
         missing = [l for l in LANGS if present.get(l) is None]
 
         if missing:
             status = f"⚠️ missing: {', '.join(missing)}"
-        elif ret_mismatch:
-            status = "⚠️ return type differs"
         elif param_mismatch:
             status = "⚠️ param count differs"
+        elif ret_mismatch:
+            status = "ℹ️ return type differs"
         else:
             status = "✅"
 
@@ -687,7 +1253,7 @@ def render_method_table(area, method_groups):
         missing = [l for l in LANGS if by_lang.get(l) is None]
         _, ret_by_lang, ret_mismatch = compare_returns(present_methods)
         counts = {l: param_count(m) for l, m in present_methods.items()}
-        param_mismatch = len(set(counts.values())) > 1
+        param_mismatch = not param_ranges_compatible(list(present_methods.values()))
 
         if missing or ret_mismatch or param_mismatch:
             mismatches.append((canon, by_lang, missing, ret_by_lang, ret_mismatch, counts, param_mismatch))
@@ -779,18 +1345,29 @@ def main():
             if isinstance(spec, tuple):
                 path, class_name = spec
                 lang_filter[lang] = class_name
-            else:
-                path, class_name = spec, None
+                paths = [path]
+            elif isinstance(spec, list):
+                paths = spec
+                class_name = None
                 lang_filter[lang] = None
-            if not path.exists():
-                print(f"  {lang}: FILE NOT FOUND — {path}")
-                lang_data[lang] = {}
-                continue
+            else:
+                paths = [spec]
+                class_name = None
+                lang_filter[lang] = None
             extractor = EXTRACTORS[lang]
-            data = extractor(str(path))
-            lang_data[lang] = data
-            total = sum(len(methods) for methods in data.values())
-            print(f"  {lang}: {len(data)} classes, {total} methods")
+            merged_data: dict = {}
+            for path in paths:
+                if not path.exists():
+                    print(f"  {lang}: FILE NOT FOUND — {path}")
+                    continue
+                data = extractor(str(path))
+                for cls, methods in data.items():
+                    if cls not in merged_data:
+                        merged_data[cls] = {}
+                    merged_data[cls].update(methods)
+            lang_data[lang] = merged_data
+            total = sum(len(methods) for methods in merged_data.values())
+            print(f"  {lang}: {len(merged_data)} classes, {total} methods")
 
         # Flatten: if a class_name filter is set, use only that class.
         # Otherwise merge all public classes (first-wins on name collision).
@@ -813,8 +1390,23 @@ def main():
                 )
                 flat[lang] = matched or {}
             else:
+                # Merge all classes, but prefer the primary class (named after the area)
+                # over internal handler/adapter classes. Iterate primary-class-first so
+                # that first-wins preserves the public API signature.
+                area_lower = area.lower()
+                # Sort so the class whose name best matches the area comes first
+                def cls_priority(cls_name):
+                    n = cls_name.lower()
+                    if n == area_lower:
+                        return 0
+                    if n.startswith(area_lower) and not any(x in n for x in ('handler', 'adapter', 'backend', 'driver')):
+                        return 1
+                    if any(x in n for x in ('handler', 'adapter', 'backend', 'driver')):
+                        return 3
+                    return 2
+                sorted_classes = sorted(classes.items(), key=lambda kv: cls_priority(kv[0]))
                 merged = {}
-                for methods in classes.values():
+                for _, methods in sorted_classes:
                     for name, sig in methods.items():
                         if name not in merged:
                             merged[name] = sig
@@ -829,8 +1421,13 @@ def main():
             for name, sig in methods.items():
                 if any(name.startswith(p) for p in MAGIC_PREFIXES):
                     continue
-                canon = to_snake(name)
-                all_methods[canon][lang] = sig
+                # Strip Ruby/Python class-method prefix (self.create -> create)
+                stripped_name = re.sub(r'^(?:self|cls)\.', '', name)
+                canon = to_snake(stripped_name)
+                # First-wins: don't override if this canonical name already has an entry
+                # for this lang (e.g., Router.match wins over Route.match?)
+                if lang not in all_methods[canon]:
+                    all_methods[canon][lang] = sig
 
         # Fill missing
         for canon in all_methods:
@@ -858,9 +1455,12 @@ def main():
             else:
                 _, _, ret_mismatch = compare_returns(present)
                 counts = [param_count(m) for m in present.values()]
-                if ret_mismatch or len(set(counts)) > 1:
+                param_mismatch = len(set(counts)) > 1
+                if param_mismatch:
+                    # Real mismatch: param count/names differ
                     mismatch_count += 1
                 else:
+                    # OK even if only return-type annotation differs
                     ok_count += 1
 
         summary_rows.append((area, total_methods, ok_count, mismatch_count, missing_count))
