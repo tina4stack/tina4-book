@@ -422,6 +422,56 @@ const jsonString = note.toJson();
 
 ## 6. Relationships
 
+### foreignKey Field Type — Auto-Wired Relationships
+
+Declaring a field with `type: "foreignKey"` and a `references` model name automatically wires both sides of the relationship. The declaring model gets a `belongsTo` entry (the column name with `_id` stripped → the association name), and the referenced model gets a `hasMany` entry (the declaring model's table name, or whatever you pass via `relatedName`).
+
+```typescript
+import { BaseModel } from "tina4-nodejs/orm";
+
+export class User extends BaseModel {
+    static tableName = "users";
+    static fields = {
+        id:   { type: "integer", primaryKey: true, autoIncrement: true },
+        name: { type: "string", required: true },
+    };
+}
+
+export class Post extends BaseModel {
+    static tableName = "posts";
+    static fields = {
+        id:      { type: "integer", primaryKey: true, autoIncrement: true },
+        title:   { type: "string", required: true },
+        // Auto-wires Post.belongsTo User and User.hasMany Post
+        user_id: { type: "foreignKey", references: "User" },
+    };
+}
+```
+
+With just the `foreignKey` field, both sides are accessible:
+
+```typescript
+const post = Post.findById(1);
+const user = post.belongsTo(User, "user_id");
+console.log(user?.name);     // "Alice"
+
+// Or via toDict with include
+const postData = post.toDict(["user"]);
+
+const alice = User.findById(1);
+const posts = alice.hasMany(Post, "user_id");
+posts.forEach(p => console.log(p.title));
+```
+
+For a custom `hasMany` key, pass `relatedName`:
+
+```typescript
+user_id: { type: "foreignKey", references: "User", relatedName: "blog_posts" }
+// User.hasMany entry will use "blog_posts" instead of the default
+```
+
+Models must be registered via `BaseModel.registerModel("User", User)` before eager loading can resolve the reference by name.
+
 ### hasMany
 
 An author has many posts:

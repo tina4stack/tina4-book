@@ -378,6 +378,48 @@ json_string = note.to_json
 
 Tina4 Ruby supports two styles of relationships: declarative (class-level DSL) and imperative (instance-level method calls). Both produce the same queries. Declarative relationships enable eager loading; imperative relationships are ad-hoc.
 
+### foreign_key_field — Auto-Wired Relationships
+
+Declaring a column with `foreign_key_field :user_id, references: User` automatically wires both sides of the relationship. The declaring class gets a `belongs_to` accessor (the column name with `_id` stripped), and the referenced class gets a `has_many` accessor (the declaring class name lowercased with `s` appended, or whatever you pass via `related_name:`).
+
+```ruby
+class User < Tina4::ORM
+  table_name "users"
+  integer_field :id, primary_key: true
+  string_field :name
+end
+
+class Post < Tina4::ORM
+  table_name "posts"
+  integer_field :id, primary_key: true
+  string_field :title
+
+  # Auto-wires post.user (belongs_to) and user.posts (has_many)
+  foreign_key_field :user_id, references: User
+end
+```
+
+With just the `foreign_key_field` declaration, both sides are accessible:
+
+```ruby
+post = Post.find_by_id(1)
+puts post.user.name        # "Alice"
+
+user = User.find_by_id(1)
+user.posts.each do |p|
+  puts p.title
+end
+```
+
+For a custom `has_many` name, pass `related_name:`:
+
+```ruby
+foreign_key_field :user_id, references: User, related_name: :blog_posts
+# user.blog_posts instead of user.posts
+```
+
+If the referenced class is defined later, the framework handles deferred wiring — as soon as the referenced class applies its own field definitions, the `has_many` is injected.
+
 ### Declarative Relationships
 
 Define relationships at the class level. The ORM creates accessor methods on each instance.

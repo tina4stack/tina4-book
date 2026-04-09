@@ -48,6 +48,7 @@ A complete model. Here is what each piece does:
 | `DateTimeField` | `str` | `DATETIME` | Date and time |
 | `TextField` | `str` | `TEXT` | Long text |
 | `BlobField` | `bytes` | `BLOB` | Binary data |
+| `ForeignKeyField` | `int` | `INTEGER` | Foreign key — auto-wires `belongs_to` and `has_many` (see [Relationships](#6-relationships)) |
 
 Verbose names (`IntegerField`, `StringField`, `BooleanField`) are the standard. Short aliases (`IntField`, `StrField`, `BoolField`) also work.
 
@@ -401,6 +402,41 @@ Tina4 ORM supports three relationship types: `has_many`, `has_one`, and `belongs
 - **Declarative**: define the relationship as a class attribute using descriptor functions — accessed as a simple attribute, lazy-loaded on first access
 
 Both styles support eager loading via `include=["relationship_name"]`.
+
+### ForeignKeyField — Auto-Wired Relationships
+
+Declaring a column with `ForeignKeyField(to=OtherModel)` automatically wires both sides of the relationship. The declaring model gets a `belongs_to` accessor (the column name with `_id` stripped), and the referenced model gets a `has_many` accessor (the declaring class name lowercased with `s` appended, or whatever you pass via `related_name=`).
+
+```python
+from tina4_python.orm import ORM, IntegerField, StringField, ForeignKeyField
+
+class Author(ORM):
+    table_name = "authors"
+    id = IntegerField(primary_key=True, auto_increment=True)
+    name = StringField(required=True)
+
+class BlogPost(ORM):
+    table_name = "posts"
+    id = IntegerField(primary_key=True, auto_increment=True)
+    title = StringField(required=True)
+    author_id = ForeignKeyField(to=Author, related_name="posts")
+```
+
+With that single `ForeignKeyField` declaration, two accessors are auto-wired:
+
+- `post.author` — returns the `Author` instance (belongs_to)
+- `author.posts` — returns a list of `BlogPost` instances (has_many)
+
+No manual `has_many` or `belongs_to` calls required.
+
+```python
+post = BlogPost.find_by_id(1)
+print(post.author.name)         # "Alice"
+
+author = Author.find_by_id(1)
+for p in author.posts:
+    print(p.title)
+```
 
 ### has_many
 

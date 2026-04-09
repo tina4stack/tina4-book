@@ -135,6 +135,20 @@
 - **PARITY: OK** (Ruby naming aside)
 - **Documented?** All CLAUDE.md: yes
 
+#### Auto-wired Foreign Keys — `ForeignKeyField` / `$foreignKeys` / `foreign_key_field` / `type: "foreignKey"`
+
+A single foreign key declaration automatically wires both `belongs_to` (on the declaring model) and `has_many` (on the referenced model). The declaring-side association name is the column name with `_id` stripped; the has-many-side name defaults to the declaring class name lowercased + `s`, overridable.
+
+| Framework | Declaration | Auto-wires |
+|-----------|-------------|-----------|
+| Python | `author_id = ForeignKeyField(to=Author, related_name="posts")` | `post.author` + `author.posts` |
+| PHP | `public array $foreignKeys = ['user_id' => 'User'];` | `$post->user` + `$user->posts` |
+| Ruby | `foreign_key_field :user_id, references: User` | `post.user` + `user.posts` |
+| Node.js | `user_id: { type: "foreignKey", references: "User" }` | `post.belongsTo(User)` + `user.hasMany(Post)` |
+
+- **PARITY: OK** — all four frameworks implement FK auto-wiring with equivalent semantics
+- **Documented?** Book Ch06 (ORM Relationships): yes in all four frameworks
+
 ### 1.4 Class/Static Methods — Finders
 
 #### `find(pk_value, include?)` / `findById()`

@@ -389,6 +389,55 @@ echo $arr["name"];          // access as array key
 
 ## 6. Relationships
 
+### $foreignKeys — Auto-Wired Relationships
+
+Declaring `public array $foreignKeys = ['user_id' => 'User']` on a model automatically wires both sides of the relationship. The declaring model gets a `belongsTo` accessor (the column name with `_id` stripped), and the referenced model gets a `hasMany` accessor (the declaring class name lowercased with `s` appended).
+
+```php
+<?php
+use Tina4\ORM;
+
+class User extends ORM
+{
+    public string $tableName = "users";
+    public string $primaryKey = "id";
+}
+
+class Post extends ORM
+{
+    public string $tableName = "posts";
+    public string $primaryKey = "id";
+
+    // Auto-wires $post->user (belongs_to) and $user->posts (has_many)
+    public array $foreignKeys = [
+        'user_id' => 'User',
+    ];
+}
+```
+
+With just the `$foreignKeys` array, both sides are accessible:
+
+```php
+$post = new Post($db);
+$post->load('id = 1');
+echo $post->user->name;              // "Alice"
+
+$user = new User($db);
+$user->load('id = 1');
+foreach ($user->posts as $post) {
+    echo $post->title . "\n";
+}
+```
+
+For a custom `has_many` key, use the extended form:
+
+```php
+public array $foreignKeys = [
+    'user_id' => ['model' => 'User', 'related_name' => 'blog_posts'],
+];
+// $user->blog_posts instead of $user->posts
+```
+
 ### hasMany
 
 An author has many posts:
