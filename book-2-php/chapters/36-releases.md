@@ -1,5 +1,11 @@
 # Chapter 35: Release Notes
 
+## v3.10.89 (2026-04-09)
+
+- **feat:** `{{ dump(value) }}` global function form added to Frond alongside the existing `{{ value|dump }}` filter. Both call a single `Frond::renderDump()` helper and produce identical output (`<pre>var_dump()</pre>`).
+- **security:** Dump is now **gated on `TINA4_DEBUG=true`**. In production (env var unset or `false`) both the filter and function silently return an empty string. This prevents accidental leaks of internal state, object shapes, and sensitive values into rendered HTML when a developer leaves a `{{ dump($x) }}` call in a template.
+- **test:** 4 new tests in `FrondTest.php` covering debug-mode output, production silencing, function/filter parity, and function-form production silencing.
+
 ## v3.10.87 (2026-04-09)
 
 - **fix:** Dev toolbar no longer vanishes after a hot-reload. `Server::onFilesChanged()` used to call `Router::clear()` and then loop `include_once` over every `.php` file in `src/routes/`. Because `include_once` is a no-op for already-included files, routes were never re-registered after a template/CSS/JS edit — subsequent requests fell through to the 404 handler and the dev toolbar injection was lost. The router is now left intact on template/asset edits (Frond re-reads templates in dev mode, static files are served from disk per request, so nothing else needs to move). PHP file edits log a warning that a full server restart is required (classes cannot be redeclared in-process).

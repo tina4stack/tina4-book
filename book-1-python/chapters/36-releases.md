@@ -1,5 +1,12 @@
 # Chapter 35: Release Notes
 
+## v3.10.89 (2026-04-09)
+
+- **feat:** `{{ dump(value) }}` global function form added to Frond alongside the existing `{{ value|dump }}` filter. Both call a single `_render_dump()` helper and produce identical output.
+- **security:** Dump is now **gated on `TINA4_DEBUG=true`**. In production (env var unset or `false`) both the filter and function silently return an empty string. This prevents accidental leaks of internal state, object shapes, and sensitive values into rendered HTML when a developer leaves a `{{ dump(x) }}` call in a template.
+- **refactor:** Dump output is wrapped in `<pre>` and HTML-escaped via a single shared code path.
+- **test:** 6 new tests in `test_frond.py` (`TestDump`) covering debug-mode output, production silencing, unset-env default-to-production, function/filter parity, and circular references.
+
 ## v3.10.86 (2026-04-09)
 
 - **feat:** `ForeignKeyField` is now a proper `Field` subclass that auto-wires both sides of the relationship. Declaring `author_id = ForeignKeyField(to=Author)` injects `belongs_to` on the declaring model and `has_many` on the referenced model via `ORMMeta` — no manual descriptor calls required. Override the has-many name with `related_name=`.

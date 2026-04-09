@@ -1,5 +1,11 @@
 # Chapter 35: Release Notes
 
+## v3.10.89 (2026-04-09)
+
+- **feat:** `{{ dump(value) }}` global function form added to Frond alongside the existing `{{ value|dump }}` filter. Both call a single `Tina4::Frond.render_dump` helper and produce identical output (`<pre>value.inspect</pre>` HTML-escaped).
+- **security:** Dump is now **gated on `TINA4_DEBUG=true`**. In production (env var unset or `false`) both the filter and function silently return an empty `SafeString`. This prevents accidental leaks of internal state, object shapes, and sensitive values into rendered HTML when a developer leaves a `{{ dump(x) }}` call in a template.
+- **test:** 3 new `spec/frond_spec.rb` examples covering debug-mode output, production silencing, function/filter parity, and function-form production silencing.
+
 ## v3.10.86 (2026-04-09)
 
 - **feat:** `foreign_key_field` DSL auto-wires both sides of a foreign key relationship. Declaring `foreign_key_field :user_id, references: User` registers the integer column, calls `belongs_to :user` on the declaring class, and calls `has_many :posts` on the referenced class. Supports `related_name:` for custom has-many names and deferred wiring via a module-level registry so the referenced class can be defined either before or after the declaring one.
