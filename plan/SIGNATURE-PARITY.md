@@ -10,20 +10,20 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Feature | Methods | ✅ Match | ⚠️ Mismatch | ⚠️ Missing |
 |---------|--------:|--------:|------------:|----------:|
 | ORM | 37 | 37 | 0 | 0 |
-| Queue | 15 | 14 | 1 | 0 |
-| Job | 7 | 6 | 1 | 0 |
-| Auth | 8 | 6 | 2 | 0 |
+| Queue | 15 | 15 | 0 | 0 |
+| Job | 7 | 7 | 0 | 0 |
+| Auth | 8 | 8 | 0 | 0 |
 | Database | 28 | 28 | 0 | 0 |
 | Router | 19 | 19 | 0 | 0 |
 | Session | 17 | 17 | 0 | 0 |
-| Migration | 13 | 11 | 2 | 0 |
-| MCP | 13 | 10 | 3 | 0 |
+| Migration | 13 | 13 | 0 | 0 |
+| MCP | 13 | 12 | 1 | 0 |
 | Frond | 10 | 10 | 0 | 0 |
-| GraphQL | 13 | 9 | 4 | 0 |
-| Api | 9 | 3 | 6 | 0 |
+| GraphQL | 13 | 12 | 1 | 0 |
+| Api | 9 | 9 | 0 | 0 |
 | Cache | 7 | 7 | 0 | 0 |
 | Container | 5 | 5 | 0 | 0 |
-| Events | 8 | 6 | 2 | 0 |
+| Events | 8 | 8 | 0 | 0 |
 | WebSocket | 14 | 8 | 4 | 2 |
 | WSDL | 5 | 0 | 0 | 5 |
 | Swagger | 1 | 0 | 0 | 1 |
@@ -37,10 +37,10 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Logger | 7 | 5 | 0 | 2 |
 | AI | 5 | 4 | 0 | 1 |
 | Request | 4 | 0 | 0 | 4 |
-| Response | 18 | 10 | 2 | 6 |
+| Response | 18 | 12 | 0 | 6 |
 | Middleware | 13 | 11 | 0 | 2 |
 | AutoCrud | 5 | 0 | 0 | 5 |
-| SqlTranslation | 17 | 16 | 1 | 0 |
+| SqlTranslation | 17 | 17 | 0 | 0 |
 | Metrics | 3 | 0 | 0 | 3 |
 
 ## ORM
@@ -57,7 +57,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `create` | `data` | `data` | `attributes` | `data` | ✅ |
 | `create_table` | `()` | `()` | `()` | `()` | ✅ |
 | `delete` | `()` | `()` | `()` | `()` | ✅ |
-| `eager_load` | `instances, include_list` | `instances, include, db` | `instances, include_list` | `instances, includeList` | ℹ️ return type differs |
+| `eager_load` | `instances, include_list` | `instances, include, db` | `instances, include_list` | `instances, includeList` | ✅ |
 | `exists` | `pk_value` | `pkValue` | `pk_value` | `pkValue` | ✅ |
 | `find` | `filter, limit, offset, order_by, include` | `filter, limit, offset, orderBy, include` | `filter` | `filter?, limit, offset, orderBy?, include?` | ✅ |
 | `find_by_id` | `pk_value, include` | `id, include` | `id` | `id, include?` | ✅ |
@@ -96,15 +96,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Ruby | `name, class_name: nil, foreign_key: nil` | `None` |
 | Node | `relatedClass: typeof BaseModel & (new (data?: Record<string, unknown>) => R), foreignKey: string` | `Self|None` |
 
-#### `eager_load`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `instances: list, include_list: list[str]` | `None` |
-| PHP | `instances: array &$instances, include: array, db: ?DatabaseAdapter null = null` | `None` |
-| Ruby | `instances, include_list` | `untyped` |
-| Node | `instances: BaseModel[], includeList: string[]` | `Promise<None>` |
-
 #### `get_db`
 
 | Framework | Signature | Return Type |
@@ -127,10 +118,10 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `related_class, foreign_key: str = None, limit: int = 100, offset: int = 0` | `list[Self]` |
-| PHP | `relatedClass: string, foreignKey: ?string null = null, limit: int 100 = 100, offset: int 0 = 0` | `list[Self]` |
+| Python | `related_class, foreign_key: str = None, limit: int = 100, offset: int = 0` | `list` |
+| PHP | `relatedClass: string, foreignKey: ?string null = null, limit: int 100 = 100, offset: int 0 = 0` | `list` |
 | Ruby | `name, class_name: nil, foreign_key: nil` | `None` |
-| Node | `relatedClass: typeof BaseModel & (new (data?: Record<string, unknown>) => R), foreignKey: string, limit: number = 100, offset: number = 0` | `list[Self]` |
+| Node | `relatedClass: typeof BaseModel & (new (data?: Record<string, unknown>) => R), foreignKey: string, limit: number = 100, offset: number = 0` | `list` |
 
 #### `has_one`
 
@@ -146,13 +137,13 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
 | `clear` | `()` | `()` | `()` | `()` | ✅ |
-| `consume` | `topic, id, poll_interval, iterations, batch_size` | `topic, id, pollInterval, batchSize` | `topic, id, poll_interval, iterations, batch_size, handler` | `topicOrOptions?, id?, pollInterval, iterations, batchSize` | ℹ️ return type differs |
+| `consume` | `topic, id, poll_interval, iterations, batch_size` | `topic, id, pollInterval, iterations, batchSize` | `topic, id, poll_interval, iterations, batch_size, handler` | `topicOrOptions?, id?, pollInterval, iterations, batchSize` | ℹ️ return type differs |
 | `dead_letters` | `max_retries` | `maxRetries` | `max_retries` | `maxRetries?` | ✅ |
 | `failed` | `()` | `()` | `()` | `()` | ✅ |
 | `get_topic` | `()` | `()` | `()` | `()` | ✅ |
-| `pop` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
-| `pop_batch` | `count` | `count` | `count` | `count` | ℹ️ return type differs |
-| `pop_by_id` | `id` | `id` | `id` | `id` | ℹ️ return type differs |
+| `pop` | `()` | `()` | `()` | `()` | ✅ |
+| `pop_batch` | `count` | `count` | `count` | `count` | ✅ |
+| `pop_by_id` | `id` | `id` | `id` | `id` | ✅ |
 | `process` | `handler, topic, max_jobs, batch_size` | `handlerOrQueue, queueOrHandlerOrOptions, options` | `topic, max_jobs, batch_size, handler` | `handler, options?` | ✅ |
 | `produce` | `topic, data, priority, delay_seconds` | `topic, payload, priority, delaySeconds` | `topic, payload, priority, delay_seconds` | `topic, payload, priority, delay` | ✅ |
 | `purge` | `status, max_retries` | `status, maxRetries` | `status, max_retries` | `status, maxRetries?` | ✅ |
@@ -168,36 +159,9 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
 | Python | `topic: str = None, id: str = None, poll_interval: float = 1.0, iterations: int = 0, batch_size: int = 1` | `untyped` |
-| PHP | `topic: string '' = '', id: ?string null = null, pollInterval: float 1.0 = 1.0, batchSize: int 1 = 1` | `\Generator` |
+| PHP | `topic: string '' = '', id: ?string null = null, pollInterval: float 1.0 = 1.0, iterations: int 0 = 0, batchSize: int 1 = 1` | `\Generator` |
 | Ruby | `topic = nil, id: nil, poll_interval: 1.0, iterations: 0, batch_size: 1, &block` | `untyped` |
-| Node | `topicOrOptions?: string | ConsumeOptions, id?: string, pollInterval: number = 1000, iterations: number = 0, batchSize: number = 1` | `AsyncGenerator<dict|list[dict]>` |
-
-#### `pop`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `dict|None` |
-| PHP | `` | `list|None` |
-| Ruby | `` | `dict|None` |
-| Node | `` | `dict|None` |
-
-#### `pop_batch`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `count: int` | `list` |
-| PHP | `count: int` | `list[dict]` |
-| Ruby | `count` | `untyped` |
-| Node | `count: number` | `list[dict]` |
-
-#### `pop_by_id`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `id: str` | `dict|None` |
-| PHP | `id: string` | `list|None` |
-| Ruby | `id` | `untyped` |
-| Node | `id: string` | `dict|None` |
+| Node | `topicOrOptions?: string | ConsumeOptions, id?: string, pollInterval: number = 1000, iterations: number = 0, batchSize: number = 1` | `AsyncGenerator<dict|list>` |
 
 ## Job
 
@@ -208,28 +172,8 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `reject` | `reason` | `reason` | `reason` | `reason?` | ✅ |
 | `retry` | `delay_seconds` | `delaySeconds` | `delay_seconds` | `delaySeconds?` | ✅ |
 | `to_array` | `()` | `()` | `()` | `()` | ✅ |
-| `to_hash` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
-| `to_json` | `()` | `()` | `*_args` | `()` | ⚠️ param count differs |
-
-### Mismatch Details
-
-#### `to_hash`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `dict` |
-| PHP | `` | `list` |
-| Ruby | `` | `untyped` |
-| Node | `` | `dict` |
-
-#### `to_json`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `str` |
-| PHP | `` | `str` |
-| Ruby | `*_args` | `untyped` |
-| Node | `` | `str` |
+| `to_hash` | `()` | `()` | `()` | `()` | ✅ |
+| `to_json` | `()` | `()` | `()` | `()` | ✅ |
 
 ## Auth
 
@@ -250,7 +194,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 |--------|--------|-----|------|------|:------------:|
 | `active_count` | `()` | `()` | `()` | `()` | ✅ |
 | `cache_clear` | `()` | `()` | `()` | `()` | ✅ |
-| `cache_stats` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `cache_stats` | `()` | `()` | `()` | `()` | ✅ |
 | `checkin` | `adapter` | `adapter` | `_driver` | `_adapter` | ✅ |
 | `checkout` | `()` | `()` | `()` | `()` | ✅ |
 | `close` | `()` | `()` | `()` | `()` | ✅ |
@@ -279,15 +223,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 ### Mismatch Details
 
-#### `cache_stats`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `dict` |
-| PHP | `` | `list` |
-| Ruby | `` | `untyped` |
-| Node | `` | `untyped` |
-
 #### `create`
 
 | Framework | Signature | Return Type |
@@ -295,7 +230,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `url: str, username: str = '', password: str = '', pool: int = 0` | `Database` |
 | PHP | `url: string, autoCommit: ?bool null = null, username: string '' = '', password: string '' = '', pool: int 0 = 0` | `Self` |
 | Ruby | `url, username: "", password: "", pool: 0` | `untyped` |
-| Node | `url: string, username?: string, password?: string, pool: number = 0` | `Promise<Database>` |
+| Node | `url: string, username?: string, password?: string, pool: number = 0` | `Database` |
 
 #### `delete`
 
@@ -320,7 +255,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
 | Python | `sql: str, params_list: list[list] = None` | `DatabaseResult` |
-| PHP | `sql: string, paramsList: array [] = []` | `list[bool]` |
+| PHP | `sql: string, paramsList: array [] = []` | `list` |
 | Ruby | `sql, params_list = []` | `untyped` |
 | Node | `sql: string, paramSets: unknown[][] = []` | `list` |
 
@@ -340,7 +275,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `env_key: str = 'DATABASE_URL', pool: int = 0` | `Database|None` |
 | PHP | `envKey: string 'DATABASE_URL' = 'DATABASE_URL', autoCommit: ?bool null = null, pool: int 0 = 0` | `Self|None` |
 | Ruby | `env_key: "DATABASE_URL", pool: 0` | `untyped` |
-| Node | `envKey = "DATABASE_URL", pool: number = 0` | `Promise<Database>` |
+| Node | `envKey = "DATABASE_URL", pool: number = 0` | `Database` |
 
 #### `get_last_id`
 
@@ -388,10 +323,10 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `clear` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
 | `delete` | `path, handler, middleware, swagger_meta, template` | `path, handler, middleware, swaggerMeta, template` | `path, handler` | `path, handler, middleware?, swaggerMeta?, template?` | ℹ️ return type differs |
 | `get` | `path, handler, middleware, swagger_meta, template` | `path, handler, middleware, swaggerMeta, template` | `path, handler` | `path, handler, middleware?, swaggerMeta?, template?` | ℹ️ return type differs |
-| `get_routes` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
-| `get_web_socket_routes` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `get_routes` | `()` | `()` | `()` | `()` | ✅ |
+| `get_web_socket_routes` | `()` | `()` | `()` | `()` | ✅ |
 | `group` | `prefix, callback, middleware` | `prefix, callback, middleware` | `prefix, handler` | `prefix, callback, middlewares?` | ✅ |
-| `list_routes` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `list_routes` | `()` | `()` | `()` | `()` | ✅ |
 | `match` | `method, path` | `method, path` | `method, path` | `method, path` | ℹ️ return type differs |
 | `middleware` | `*middleware_classes` | `middleware` | `*middleware_classes` | `...middlewareClasses` | ✅ |
 | `no_auth` | `()` | `()` | `()` | `()` | ✅ |
@@ -427,7 +362,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
 | Python | `` | `untyped` |
-| PHP | `` | `list[dict]` |
+| PHP | `` | `list` |
 | Ruby | `` | `untyped` |
 | Node | `` | `None` |
 
@@ -448,33 +383,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | PHP | `path: string, handler: callable, middleware: array [] = [], swaggerMeta: array [] = [], template: ?string null = null` | `Self` |
 | Ruby | `path, middleware: [], swagger_meta: {}, template: nil, &block` | `untyped` |
 | Node | `path: string, handler: RouteHandler, middleware?: Middleware[], swaggerMeta?: RouteMeta, template?: string` | `RouteRef` |
-
-#### `get_routes`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `list[dict]` |
-| PHP | `` | `list[dict]` |
-| Ruby | `` | `untyped` |
-| Node | `` | `list[RouteDefinition]` |
-
-#### `get_web_socket_routes`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `list[dict]` |
-| PHP | `` | `list[dict]` |
-| Ruby | `` | `untyped` |
-| Node | `` | `list[WebSocketRouteDefinition]` |
-
-#### `list_routes`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `list[dict]` |
-| PHP | `` | `list` |
-| Ruby | `` | `untyped` |
-| Node | `` | `list[RouteInfo]` |
 
 #### `match`
 
@@ -516,15 +424,15 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
-| `all` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `all` | `()` | `()` | `()` | `()` | ✅ |
 | `clear` | `()` | `()` | `()` | `()` | ✅ |
 | `cookie_header` | `cookie_name` | `cookieName` | `cookie_name` | `cookieName` | ✅ |
 | `delete` | `key` | `key` | `key` | `key` | ✅ |
 | `destroy` | `()` | `()` | `()` | `()` | ✅ |
-| `flash` | `key, value` | `key, value` | `key, value` | `key, value?` | ℹ️ return type differs |
+| `flash` | `key, value` | `key, value` | `key, value` | `key, value?` | ✅ |
 | `gc` | `()` | `maxLifetime` | `max_lifetime` | `()` | ✅ |
-| `get` | `key, default` | `key, default` | `key, default` | `key, defaultValue?` | ℹ️ return type differs |
-| `get_flash` | `key, default` | `key, default` | `key, default` | `key, defaultValue?` | ℹ️ return type differs |
+| `get` | `key, default` | `key, default` | `key, default` | `key, defaultValue?` | ✅ |
+| `get_flash` | `key, default` | `key, default` | `key, default` | `key, defaultValue?` | ✅ |
 | `get_session_id` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
 | `has` | `key` | `key` | `key` | `key` | ✅ |
 | `read` | `session_id` | `sessionId` | `session_id` | `sessionId` | ℹ️ return type differs |
@@ -535,42 +443,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `write` | `session_id, data, ttl` | `sessionId, data, ttl` | `session_id, data, ttl` | `sessionId, data, ttl?` | ✅ |
 
 ### Mismatch Details
-
-#### `all`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `dict` |
-| PHP | `` | `list` |
-| Ruby | `` | `untyped` |
-| Node | `` | `dict` |
-
-#### `flash`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `key: str, value = None` | `untyped` |
-| PHP | `key: string, value: mixed null = null` | `mixed` |
-| Ruby | `key, value = nil` | `untyped` |
-| Node | `key: string, value?: unknown` | `unknown` |
-
-#### `get`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `key: str, default = None` | `untyped` |
-| PHP | `key: string, default: mixed null = null` | `mixed` |
-| Ruby | `key, default = nil` | `untyped` |
-| Node | `key: string, defaultValue?: unknown` | `unknown` |
-
-#### `get_flash`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `key: str, default = None` | `untyped` |
-| PHP | `key: string, default: mixed null = null` | `mixed` |
-| Ruby | `key, default = nil` | `untyped` |
-| Node | `key: string, defaultValue?: unknown` | `unknown` |
 
 #### `get_session_id`
 
@@ -596,17 +468,17 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 |--------|--------|-----|------|------|:------------:|
 | `create` | `description, kind` | `description, kind` | `description, kind` | `description` | ℹ️ return type differs |
 | `create_migration` | `description, migration_folder, kind` | `description, migrationsDir, kind` | `description` | `description, options?` | ℹ️ return type differs |
-| `down` | `db` | `()` | `db` | `()` | ⚠️ param count differs |
-| `get_applied` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `down` | `db` | `()` | `db` | `()` | ✅ |
+| `get_applied` | `()` | `()` | `()` | `()` | ✅ |
 | `get_applied_migrations` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
-| `get_files` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
-| `get_pending` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `get_files` | `()` | `()` | `()` | `()` | ✅ |
+| `get_pending` | `()` | `()` | `()` | `()` | ✅ |
 | `migrate` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
 | `record_migration` | `name, batch, passed` | `name, batch, passed` | `name, batch` | `name, batch` | ✅ |
 | `remove_migration_record` | `name` | `name` | `name` | `migration.name` | ✅ |
-| `rollback` | `steps` | `steps` | `steps` | `steps` | ℹ️ return type differs |
+| `rollback` | `steps` | `steps` | `steps` | `steps` | ✅ |
 | `status` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
-| `up` | `db` | `()` | `db` | `()` | ⚠️ param count differs |
+| `up` | `db` | `()` | `db` | `()` | ✅ |
 
 ### Mismatch Details
 
@@ -616,7 +488,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 |-----------|-----------|-------------|
 | Python | `description: str, kind: str = 'sql'` | `str` |
 | PHP | `description: string, kind: string 'sql' = 'sql'` | `str` |
-| Ruby | `description, kind = "ruby"` | `untyped` |
+| Ruby | `description, kind = "sql"` | `untyped` |
 | Node | `description: string, kind: "sql" | "class" = "sql"` | `Promise<str|` |
 
 #### `create_migration`
@@ -628,68 +500,23 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Ruby | `description, migrations_dir: "migrations", kind: "sql"` | `untyped` |
 | Node | `description: string, options?: { migrationsDir?: string }` | `Promise<` |
 
-#### `down`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `db` | `None` |
-| PHP | `` | `None\n` |
-| Ruby | `db` | `untyped` |
-| Node | `` | `untyped` |
-
-#### `get_applied`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `list[dict]` |
-| PHP | `` | `list[dict]` |
-| Ruby | `` | `untyped` |
-| Node | `` | `Promise<list[str]>` |
-
 #### `get_applied_migrations`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `` | `list[dict]` |
-| PHP | `` | `list[dict]` |
+| Python | `` | `list` |
+| PHP | `` | `list` |
 | Ruby | `` | `untyped` |
 | Node | `` | `list<` |
-
-#### `get_files`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `list[str]` |
-| PHP | `` | `list` |
-| Ruby | `` | `untyped` |
-| Node | `` | `list[str]` |
-
-#### `get_pending`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `list[dict]` |
-| PHP | `` | `list` |
-| Ruby | `` | `untyped` |
-| Node | `` | `Promise<list[str]>` |
 
 #### `migrate`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `` | `list[str]` |
+| Python | `` | `list` |
 | PHP | `` | `list` |
 | Ruby | `` | `untyped` |
-| Node | `` | `Promise<MigrationResult>` |
-
-#### `rollback`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `steps: int = 1` | `list[str]` |
-| PHP | `steps: int 1 = 1` | `list` |
-| Ruby | `steps = 1` | `untyped` |
-| Node | `steps = 1` | `Promise<list[str]>` |
+| Node | `` | `MigrationResult` |
 
 #### `status`
 
@@ -698,16 +525,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `` | `dict` |
 | PHP | `` | `list` |
 | Ruby | `` | `untyped` |
-| Node | `` | `Promise<MigrationStatus>` |
-
-#### `up`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `db` | `None` |
-| PHP | `` | `None\n` |
-| Ruby | `db` | `untyped` |
-| Node | `` | `untyped` |
+| Node | `` | `MigrationStatus` |
 
 ## MCP
 
@@ -802,12 +620,12 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `execute` | `query, variables, context` | `query, variables` | `query` | `query, variables?` | ℹ️ return type differs |
 | `expect` | `type, value` | `type, value` | `type, value` | `type, value?` | ℹ️ return type differs |
 | `from_orm` | `orm_class` | `ormInstance` | `klass` | `modelClass, adapter?` | ℹ️ return type differs |
-| `introspect` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `introspect` | `()` | `()` | `()` | `()` | ✅ |
 | `match` | `type, value` | `type, value` | `type, value` | `type, value?` | ℹ️ return type differs |
 | `parse` | `()` | `()` | `type_str` | `()` | ⚠️ param count differs |
 | `peek` | `()` | `offset` | `offset` | `()` | ℹ️ return type differs |
 | `schema_sdl` | `()` | `()` | `()` | `()` | ✅ |
-| `tokenize` | `source` | `source` | `src` | `source` | ℹ️ return type differs |
+| `tokenize` | `source` | `source` | `src` | `source` | ✅ |
 
 ### Mismatch Details
 
@@ -874,15 +692,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Ruby | `klass` | `untyped` |
 | Node | `modelClass: {       tableName: string;       fields: Record<string, { type: string; primaryKey?: boolean }>;       name?: string;     }, adapter?: {       query: <T = Record<string, unknown>>(sql: string, params?: unknown[]) => T[];       execute: (sql: string, params?: unknown[]) => unknown;     }` | `GraphQL` |
 
-#### `introspect`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `dict` |
-| PHP | `` | `list` |
-| Ruby | `` | `untyped` |
-| Node | `` | `dict` |
-
 #### `match`
 
 | Framework | Signature | Return Type |
@@ -910,15 +719,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Ruby | `offset = 0` | `untyped` |
 | Node | `` | `Token|None` |
 
-#### `tokenize`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `source: str` | `list[Token]` |
-| PHP | `source: string` | `list` |
-| Ruby | `src` | `untyped` |
-| Node | `source: string` | `list[Token]` |
-
 ## Api
 
 | Method | Python | PHP | Ruby | Node | Return Match |
@@ -942,7 +742,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `path: str = '', body = None` | `dict` |
 | PHP | `path: string '' = '', body: mixed null = null` | `list` |
 | Ruby | `path, body: nil` | `untyped` |
-| Node | `path: string, body?: unknown` | `Promise<ApiResult>` |
+| Node | `path: string, body?: unknown` | `ApiResult` |
 
 #### `get`
 
@@ -951,7 +751,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `path: str = '', params: dict = None` | `dict` |
 | PHP | `path: string '' = '', params: array [] = []` | `list` |
 | Ruby | `path, params: {}` | `untyped` |
-| Node | `path: string, params?: Record<string, string>` | `Promise<ApiResult>` |
+| Node | `path: string, params?: Record<string, string>` | `ApiResult` |
 
 #### `patch`
 
@@ -960,7 +760,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `path: str = '', body = None, content_type: str = 'application/json'` | `dict` |
 | PHP | `path: string '' = '', body: mixed null = null, contentType: string 'application/json' = 'application/json'` | `list` |
 | Ruby | `path, body: nil, content_type: "application/json"` | `untyped` |
-| Node | `path: string, body?: unknown, contentType: string = "application/json"` | `Promise<ApiResult>` |
+| Node | `path: string, body?: unknown, contentType: string = "application/json"` | `ApiResult` |
 
 #### `post`
 
@@ -969,7 +769,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `path: str = '', body = None, content_type: str = 'application/json'` | `dict` |
 | PHP | `path: string '' = '', body: mixed null = null, contentType: string 'application/json' = 'application/json'` | `list` |
 | Ruby | `path, body: nil, content_type: "application/json"` | `untyped` |
-| Node | `path: string, body?: unknown, contentType: string = "application/json"` | `Promise<ApiResult>` |
+| Node | `path: string, body?: unknown, contentType: string = "application/json"` | `ApiResult` |
 
 #### `put`
 
@@ -978,7 +778,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `path: str = '', body = None, content_type: str = 'application/json'` | `dict` |
 | PHP | `path: string '' = '', body: mixed null = null, contentType: string 'application/json' = 'application/json'` | `list` |
 | Ruby | `path, body: nil, content_type: "application/json"` | `untyped` |
-| Node | `path: string, body?: unknown, contentType: string = "application/json"` | `Promise<ApiResult>` |
+| Node | `path: string, body?: unknown, contentType: string = "application/json"` | `ApiResult` |
 
 #### `send_request`
 
@@ -987,7 +787,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `method: str, path: str = '', body = None, content_type: str = 'application/json'` | `dict` |
 | PHP | `method: string 'GET' = 'GET', path: string '' = '', body: mixed null = null, contentType: string 'application/json' = 'application/json'` | `list` |
 | Ruby | `method = "GET", path = "", body: nil, content_type: "application/json"` | `untyped` |
-| Node | `method: string, path: string, body?: unknown, contentType: string = "application/json"` | `Promise<ApiResult>` |
+| Node | `method: string, path: string, body?: unknown, contentType: string = "application/json"` | `ApiResult` |
 
 ## Cache
 
@@ -995,52 +795,23 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 |--------|--------|-----|------|------|:------------:|
 | `cache_clear` | `()` | `()` | `()` | `()` | ✅ |
 | `cache_delete` | `key` | `key` | `key` | `key` | ✅ |
-| `cache_get` | `key` | `key` | `key` | `key` | ℹ️ return type differs |
+| `cache_get` | `key` | `key` | `key` | `key` | ✅ |
 | `cache_set` | `key, value, ttl` | `key, value, ttl` | `key, value` | `key, value, ttl?` | ✅ |
-| `cache_stats` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `cache_stats` | `()` | `()` | `()` | `()` | ✅ |
 | `clear_cache` | `()` | `()` | `()` | `()` | ✅ |
 | `sweep` | `()` | `()` | `()` | `()` | ✅ |
-
-### Mismatch Details
-
-#### `cache_get`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `key: str` | `untyped` |
-| PHP | `key: string` | `mixed` |
-| Ruby | `key` | `untyped` |
-| Node | `key: string` | `unknown|undefined` |
-
-#### `cache_stats`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `dict` |
-| PHP | `` | `list` |
-| Ruby | `` | `untyped` |
-| Node | `` | `untyped` |
 
 ## Container
 
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
-| `get` | `name` | `name` | `name` | `name` | ℹ️ return type differs |
+| `get` | `name` | `name` | `name` | `name` | ✅ |
 | `has` | `name` | `name` | `name` | `name` | ✅ |
 | `register` | `name, factory` | `name, factory` | `name, instance, handler` | `name, factory` | ✅ |
 | `reset` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
 | `singleton` | `name, factory` | `name, factory` | `name, handler` | `name, factory` | ✅ |
 
 ### Mismatch Details
-
-#### `get`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `name: str` | `untyped` |
-| PHP | `name: string` | `mixed` |
-| Ruby | `name` | `untyped` |
-| Node | `name: string` | `Self` |
 
 #### `reset`
 
@@ -1056,9 +827,9 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
 | `clear` | `()` | `()` | `()` | `()` | ✅ |
-| `emit` | `event, *args` | `event, args` | `event, *args` | `event, ...args` | ✅ |
-| `emit_async` | `event, *args` | `event, args` | `event, *args` | `event, ...args` | ℹ️ return type differs |
-| `events` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `emit` | `event` | `event` | `event` | `event` | ✅ |
+| `emit_async` | `event` | `event` | `event` | `event` | ✅ |
+| `events` | `()` | `()` | `()` | `()` | ✅ |
 | `listeners` | `event` | `event` | `event` | `event` | ℹ️ return type differs |
 | `off` | `event, listener` | `event, callback` | `event, callback` | `event, callback?` | ✅ |
 | `on` | `event, listener, priority` | `event, callback, priority` | `event, priority, handler` | `event, callback, priority` | ✅ |
@@ -1066,29 +837,11 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 ### Mismatch Details
 
-#### `emit_async`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `event: str, *args, **kwargs` | `list` |
-| PHP | `event: string, args: mixed` | `None` |
-| Ruby | `event, *args` | `untyped` |
-| Node | `event: string, ...args: unknown[]` | `Promise<list>` |
-
-#### `events`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `list[str]` |
-| PHP | `` | `list` |
-| Ruby | `` | `untyped` |
-| Node | `` | `list[str]` |
-
 #### `listeners`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `event: str` | `list[callable]` |
+| Python | `event: str` | `list` |
 | PHP | `event: string` | `list` |
 | Ruby | `event` | `untyped` |
 | Node | `event: string` | `list None>` |
@@ -1103,13 +856,13 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `close` | `code, reason` | `clientId, code, reason` | `()` | `clientId, code, reason` | ⚠️ param count differs |
 | `compute_accept_key` | — | `key` | — | `key` | ⚠️ missing: Python, Ruby |
 | `get_clients` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
-| `get_room_connections` | `room_name` | `roomName` | `room_name` | `roomName` | ℹ️ return type differs |
+| `get_room_connections` | `room_name` | `roomName` | `room_name` | `roomName` | ✅ |
 | `join_room` | `room_name` | `clientId, roomName` | `room_name` | `clientId, roomName` | ⚠️ param count differs |
 | `leave_room` | `room_name` | `clientId, roomName` | `room_name` | `clientId, roomName` | ⚠️ param count differs |
 | `on` | `event, handler` | `event, handler` | `event, handler` | `event, handler` | ℹ️ return type differs |
 | `room_count` | `room_name` | `roomName` | `room_name` | `roomName` | ✅ |
 | `send` | `message` | `clientId, message` | `message` | `clientId, message` | ⚠️ param count differs |
-| `start` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `start` | `()` | `()` | `()` | `()` | ✅ |
 | `stop` | `()` | `()` | `()` | `()` | ✅ |
 
 ### Mismatch Details
@@ -1150,15 +903,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Ruby | `` | `untyped` |
 | Node | `` | `Map<str, WebSocketClient>` |
 
-#### `get_room_connections`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `room_name: str` | `list['WebSocketConnection']` |
-| PHP | `roomName: string` | `list[str]` |
-| Ruby | `room_name` | `untyped` |
-| Node | `roomName: string` | `list[str]` |
-
 #### `join_room`
 
 | Framework | Signature | Return Type |
@@ -1194,15 +938,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | PHP | `clientId: string, message: string` | `None` |
 | Ruby | `message` | `untyped` |
 | Node | `clientId: string, message: string` | `None` |
-
-#### `start`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `untyped` |
-| PHP | `` | `None` |
-| Ruby | `host: "0.0.0.0", port: 7147` | `untyped` |
-| Node | `` | `Promise<None>` |
 
 ## WSDL
 
@@ -1296,7 +1031,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 |--------|--------|-----|------|------|:------------:|
 | `address` | `()` | `()` | `()` | `()` | ✅ |
 | `boolean` | `()` | `()` | `()` | `()` | ✅ |
-| `choice` | `items` | `items` | `items` | `items` | ℹ️ return type differs |
+| `choice` | `items` | `items` | `items` | `items` | ✅ |
 | `city` | `()` | `()` | `()` | `()` | ✅ |
 | `color_hex` | `()` | `()` | `()` | `()` | ✅ |
 | `company` | `()` | `()` | `()` | `()` | ✅ |
@@ -1307,7 +1042,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `datetime` | `start_year, end_year` | `startYear, endYear` | `()` | `startYear, endYear` | ℹ️ return type differs |
 | `email` | `()` | `()` | `()` | `()` | ✅ |
 | `first_name` | `()` | `()` | `()` | `()` | ✅ |
-| `for_field` | `field_def, column_name` | `fieldDef, columnName` | `field_def, column_name` | `fieldDef, columnName?` | ℹ️ return type differs |
+| `for_field` | `field_def, column_name` | `fieldDef, columnName` | `field_def, column_name` | `fieldDef, columnName?` | ✅ |
 | `integer` | `min_val, max_val` | `min, max` | `()` | `min, max` | ✅ |
 | `ip_address` | `()` | `()` | `()` | `()` | ✅ |
 | `job_title` | `()` | `()` | `()` | `()` | ✅ |
@@ -1316,11 +1051,11 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `numeric` | `min_val, max_val, decimals` | `min, max, decimals` | `()` | `min, max, decimals` | ℹ️ return type differs |
 | `paragraph` | `sentences` | `sentences` | `()` | `sentences` | ✅ |
 | `phone` | `()` | `()` | `()` | `()` | ✅ |
-| `run` | `fn, count` | `seeder, count` | `count, handler` | `fn, count` | ℹ️ return type differs |
+| `run` | `fn, count` | `seeder, count` | `count, handler` | `fn, count` | ✅ |
 | `seed` | `seed` | `seed` | `seed` | `seed` | ℹ️ return type differs |
-| `seed_dir` | `seed_folder` | `seedDir` | `()` | `seedDir?` | ℹ️ return type differs |
-| `seed_orm` | `orm_class, count, overrides, clear, seed` | `ormClass, count, overrides, clear, seed` | `orm_class` | `ormClass, count, overrides?, seed?` | ℹ️ return type differs |
-| `seed_table` | `db, table, count, field_map, overrides` | `db, tableName, count, fieldMap, overrides` | `table_name, columns` | `db, tableName, count, fieldMap?, overrides?` | ℹ️ return type differs |
+| `seed_dir` | `seed_folder` | `seedDir` | `()` | `seedDir?` | ✅ |
+| `seed_orm` | `orm_class, count, overrides, clear, seed` | `ormClass, count, overrides, clear, seed` | `orm_class` | `ormClass, count, overrides?, seed?` | ✅ |
+| `seed_table` | `db, table, count, field_map, overrides` | `db, tableName, count, fieldMap, overrides` | `table_name, columns` | `db, tableName, count, fieldMap?, overrides?` | ✅ |
 | `sentence` | `words` | `words` | `()` | `words` | ✅ |
 | `text` | `paragraphs` | `paragraphs` | `()` | `paragraphs` | ✅ |
 | `url` | `()` | `()` | `()` | `()` | ✅ |
@@ -1329,15 +1064,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `zip_code` | `()` | `()` | `()` | `()` | ✅ |
 
 ### Mismatch Details
-
-#### `choice`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `items: list` | `untyped` |
-| PHP | `items: array` | `mixed` |
-| Ruby | `items` | `untyped` |
-| Node | `items: T[]` | `Self` |
 
 #### `datetime`
 
@@ -1348,15 +1074,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Ruby | `start_year: 2020, end_year: 2026` | `untyped` |
 | Node | `startYear = 2020, endYear = 2025` | `Date` |
 
-#### `for_field`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `field_def: dict, column_name: str = None` | `untyped` |
-| PHP | `fieldDef: array, columnName: string '' = ''` | `mixed` |
-| Ruby | `field_def, column_name = nil` | `untyped` |
-| Node | `fieldDef: FieldDefinition, columnName?: string` | `unknown` |
-
 #### `numeric`
 
 | Framework | Signature | Return Type |
@@ -1365,15 +1082,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | PHP | `min: float 0.0 = 0.0, max: float 1000.0 = 1000.0, decimals: int 2 = 2` | `float` |
 | Ruby | `min: 0.0, max: 1000.0, decimals: 2` | `untyped` |
 | Node | `min = 0, max = 1000, decimals = 2` | `int` |
-
-#### `run`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `fn, count: int = 1` | `list` |
-| PHP | `seeder: callable, count: int 10 = 10` | `list` |
-| Ruby | `count = 1, &block` | `untyped` |
-| Node | `fn: () => Record<string, unknown>, count = 1` | `list[dict]` |
 
 #### `seed`
 
@@ -1384,33 +1092,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Ruby | `seed` | `untyped` |
 | Node | `seed: number` | `FakeData` |
 
-#### `seed_dir`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `seed_folder: str = 'seeds'` | `list` |
-| PHP | `seedDir: string 'src/seeds' = 'src/seeds'` | `list` |
-| Ruby | `seed_folder: "seeds", clear: false` | `untyped` |
-| Node | `seedDir?: string` | `Promise<list[str]>` |
-
-#### `seed_orm`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `orm_class, count: int = 10, overrides: dict = None, clear: bool = False, seed: int = None` | `int` |
-| PHP | `ormClass: string, count: int 10 = 10, overrides: array [] = [], clear: bool false = false, seed: ?int null = null` | `int` |
-| Ruby | `orm_class, count: 10, overrides: {}, clear: false, seed: nil` | `untyped` |
-| Node | `ormClass: {     tableName: string;     fields: Record<string, FieldDefinition>;     _db?: string;     getDb?: () => DatabaseAdapter;   }, count = 10, overrides?: Record<string, unknown>, seed?: number` | `Promise<int>` |
-
-#### `seed_table`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `db, table: str, count: int = 10, field_map: dict[str, callable] = None, overrides: dict = None` | `int` |
-| PHP | `db: mixed, tableName: string, count: int 10 = 10, fieldMap: array [] = [], overrides: array [] = []` | `int` |
-| Ruby | `table_name, columns, count: 10, overrides: {}, clear: false, seed: nil` | `untyped` |
-| Node | `db: DatabaseAdapter, tableName: string, count = 10, fieldMap?: Record<string, (() => unknown) | unknown>, overrides?: Record<string, unknown>` | `Promise<int>` |
-
 ## QueryBuilder
 
 | Method | Python | PHP | Ruby | Node | Return Match |
@@ -1419,7 +1100,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `exists` | `()` | `()` | `()` | `()` | ✅ |
 | `first` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
 | `from` | — | `table, db` | `table_name` | `tableName, db?` | ⚠️ missing: Python |
-| `get` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `get` | `()` | `()` | `()` | `()` | ✅ |
 | `group_by` | `column` | `column` | `column` | `column` | ℹ️ return type differs |
 | `having` | `expression, params` | `expression, params` | `expression, params` | `expression, params` | ℹ️ return type differs |
 | `join` | `table, on_clause` | `table, on` | `table, on_clause` | `table, onClause` | ℹ️ return type differs |
@@ -1427,8 +1108,8 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `limit` | `count, offset` | `count, offset` | `count, offset` | `count, offset?` | ℹ️ return type differs |
 | `or_where` | `condition, params` | `condition, params` | `condition, params` | `condition, params` | ℹ️ return type differs |
 | `order_by` | `expression` | `expression` | `expression` | `expression` | ℹ️ return type differs |
-| `select` | `*columns` | `columns` | `*columns` | `...cols` | ℹ️ return type differs |
-| `to_mongo` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `select` | `*columns` | `*columns` | `*columns` | `...cols` | ℹ️ return type differs |
+| `to_mongo` | `()` | `()` | `()` | `()` | ✅ |
 | `to_sql` | `()` | `()` | `()` | `()` | ✅ |
 | `where` | `condition, params` | `condition, params` | `condition, params` | `condition, params` | ℹ️ return type differs |
 
@@ -1451,15 +1132,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | PHP | `table: string, db: ?DatabaseAdapter null = null` | `Self` |
 | Ruby | `table_name, db: nil` | `untyped` |
 | Node | `tableName: string, db?: DatabaseAdapter` | `QueryBuilder` |
-
-#### `get`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `untyped` |
-| PHP | `` | `mixed` |
-| Ruby | `` | `untyped` |
-| Node | `` | `list[Self]` |
 
 #### `group_by`
 
@@ -1529,18 +1201,9 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
 | Python | `*columns` | `QueryBuilder` |
-| PHP | `columns: string` | `Self` |
+| PHP | `*columns: string` | `Self` |
 | Ruby | `*columns` | `untyped` |
 | Node | `...cols: string[]` | `QueryBuilder` |
-
-#### `to_mongo`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `dict` |
-| PHP | `` | `list` |
-| Ruby | `` | `untyped` |
-| Node | `` | `untyped` |
 
 #### `where`
 
@@ -1565,7 +1228,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `min` | `field, minimum` | `field, minimum` | `field, minimum` | `field, minimum` | ℹ️ return type differs |
 | `min_length` | `field, length` | `field, length` | `field, length` | `field, length` | ℹ️ return type differs |
 | `regex` | `field, pattern` | `field, pattern` | `field, pattern` | `field, pattern` | ℹ️ return type differs |
-| `required` | `*fields` | `fields` | `*fields` | `...fields` | ℹ️ return type differs |
+| `required` | `*fields` | `*fields` | `*fields` | `...fields` | ℹ️ return type differs |
 
 ### Mismatch Details
 
@@ -1582,10 +1245,10 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `` | `list[dict[str, str]]` |
-| PHP | `` | `list[dict]` |
+| Python | `` | `list]` |
+| PHP | `` | `list` |
 | Ruby | `` | `untyped` |
-| Node | `` | `list[ValidationError]` |
+| Node | `` | `list` |
 
 #### `in_list`
 
@@ -1610,7 +1273,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
 | Python | `` | `bool` |
-| PHP | `` | `list[dict]` |
+| PHP | `` | `list` |
 | Ruby | `` | `untyped` |
 | Node | `` | `bool` |
 
@@ -1664,7 +1327,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
 | Python | `*fields` | `Validator` |
-| PHP | `fields: string` | `Self` |
+| PHP | `*fields: string` | `Self` |
 | Ruby | `*fields` | `untyped` |
 | Node | `...fields: string[]` | `Self` |
 
@@ -1778,14 +1441,14 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 |--------|--------|-----|------|------|:------------:|
 | `create_messenger` | `()` | — | `()` | — | ⚠️ missing: PHP, Node |
 | `folders` | `()` | `()` | `()` | — | ⚠️ missing: Node |
-| `inbox` | `folder, limit, offset` | `folder, limit, offset` | `()` | `limit, offset, folder` | ℹ️ return type differs |
+| `inbox` | `folder, limit, offset` | `folder, limit, offset` | `()` | `limit, offset, folder` | ✅ |
 | `mark_read` | `uid, folder` | — | — | `uid, folder` | ⚠️ missing: PHP, Ruby |
 | `read` | `uid, folder, mark_read` | `uid, folder, markRead` | `uid` | `uid, folder` | ℹ️ return type differs |
 | `search` | `folder, subject, sender, since, before, unseen_only, limit` | `folder, subject, sender, since, before, unseenOnly, limit` | `()` | `query, folder` | ⚠️ param count differs |
 | `send` | `to, subject, body, html, text, cc, bcc, reply_to, attachments, headers` | `to, subject, body, html, text, cc, bcc, replyTo, attachments, headers` | `to, subject, body, headers` | `options` | ⚠️ param count differs |
 | `test_connection` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
 | `test_imap_connection` | `()` | — | — | `()` | ⚠️ missing: PHP, Ruby |
-| `unread` | `folder` | `folder` | `()` | `folder` | ℹ️ return type differs |
+| `unread` | `folder` | `folder` | `()` | `folder` | ✅ |
 
 ### Mismatch Details
 
@@ -1802,19 +1465,10 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `` | `list[str]` |
+| Python | `` | `list` |
 | PHP | `` | `list` |
 | Ruby | `` | `untyped` |
 | Node | — not implemented — | — |
-
-#### `inbox`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `folder: str = 'INBOX', limit: int = 20, offset: int = 0` | `list[dict]` |
-| PHP | `folder: string 'INBOX' = 'INBOX', limit: int 20 = 20, offset: int 0 = 0` | `list` |
-| Ruby | `folder: "INBOX", limit: 20, offset: 0` | `untyped` |
-| Node | `limit: number = 20, offset: number = 0, folder: string = "INBOX"` | `Promise<list[ImapMessage]>` |
 
 #### `mark_read`
 
@@ -1823,7 +1477,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `uid: str | bytes, folder: str = 'INBOX'` | `untyped` |
 | PHP | — not implemented — | — |
 | Ruby | — not implemented — | — |
-| Node | `uid: string, folder: string = "INBOX"` | `Promise<None>` |
+| Node | `uid: string, folder: string = "INBOX"` | `None` |
 
 #### `read`
 
@@ -1832,16 +1486,16 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `uid: str | bytes, folder: str = 'INBOX', mark_read: bool = True` | `dict` |
 | PHP | `uid: int, folder: string 'INBOX' = 'INBOX', markRead: bool true = true` | `list|None` |
 | Ruby | `uid, folder: "INBOX", mark_read: true` | `untyped` |
-| Node | `uid: string, folder: string = "INBOX"` | `Promise<ImapFullMessage>` |
+| Node | `uid: string, folder: string = "INBOX"` | `ImapFullMessage` |
 
 #### `search`
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `folder: str = 'INBOX', subject: str = None, sender: str = None, since: str = None, before: str = None, unseen_only: bool = False, limit: int = 50` | `list[dict]` |
+| Python | `folder: str = 'INBOX', subject: str = None, sender: str = None, since: str = None, before: str = None, unseen_only: bool = False, limit: int = 50` | `list` |
 | PHP | `folder: string 'INBOX' = 'INBOX', subject: ?string null = null, sender: ?string null = null, since: ?string null = null, before: ?string null = null, unseenOnly: bool false = false, limit: int 20 = 20` | `list` |
 | Ruby | `folder: "INBOX", subject: nil, sender: nil, since: nil, before: nil, unseen_only: false, limit: 20` | `untyped` |
-| Node | `query: string, folder: string = "INBOX"` | `Promise<list[ImapMessage]>` |
+| Node | `query: string, folder: string = "INBOX"` | `list` |
 
 #### `send`
 
@@ -1850,7 +1504,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `to: str | list[str], subject: str, body: str, html: bool = False, text: str = None, cc: str | list[str] = None, bcc: str | list[str] = None, reply_to: str = None, attachments: list = None, headers: dict = None` | `dict` |
 | PHP | `to: string|array, subject: string, body: string, html: bool false = false, text: ?string null = null, cc: array|string [] = [], bcc: array|string [] = [], replyTo: ?string null = null, attachments: array [] = [], headers: array [] = []` | `list` |
 | Ruby | `to:, subject:, body:, html: false, text: nil, cc: [], bcc: [], reply_to: nil, attachments: [], headers: {}` | `untyped` |
-| Node | `options: SendOptions` | `Promise<SendResult>` |
+| Node | `options: SendOptions` | `SendResult` |
 
 #### `test_connection`
 
@@ -1869,15 +1523,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | PHP | — not implemented — | — |
 | Ruby | — not implemented — | — |
 | Node | `` | `Promise<` |
-
-#### `unread`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `folder: str = 'INBOX'` | `int` |
-| PHP | `folder: string 'INBOX' = 'INBOX'` | `int` |
-| Ruby | `folder: "INBOX"` | `untyped` |
-| Node | `folder: string = "INBOX"` | `Promise<int>` |
 
 ## Logger
 
@@ -1916,21 +1561,12 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
 | `generate_context` | `tool_name` | `toolName` | `tool_name` | `toolName` | ✅ |
-| `install_all` | `root` | `root` | `root` | `root` | ℹ️ return type differs |
+| `install_all` | `root` | `root` | `root` | `root` | ✅ |
 | `install_selected` | `root, selection` | `root, selection` | `root, selection` | `root, selection` | ✅ |
 | `is_installed` | `root, tool` | `root, tool` | — | `root, tool` | ⚠️ missing: Ruby |
-| `show_menu` | `root` | `root` | `root` | `root` | ℹ️ return type differs |
+| `show_menu` | `root` | `root` | `root` | `root` | ✅ |
 
 ### Mismatch Details
-
-#### `install_all`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `root: str = '.'` | `list[str]` |
-| PHP | `root: string "." = "."` | `list` |
-| Ruby | `root = "."` | `untyped` |
-| Node | `root: string = "."` | `list[str]` |
 
 #### `is_installed`
 
@@ -1940,15 +1576,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | PHP | `root: string, tool: array` | `bool` |
 | Ruby | — not implemented — | — |
 | Node | `root: string, tool: AiTool` | `bool` |
-
-#### `show_menu`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `root: str = '.'` | `str` |
-| PHP | `root: string "." = "."` | `str` |
-| Ruby | `root = "."` | `untyped` |
-| Node | `root: string = "."` | `Promise<str>` |
 
 ## Request
 
@@ -1995,7 +1622,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | — not implemented — | — |
 | PHP | — not implemented — | — |
 | Ruby | `` | `untyped` |
-| Node | `req: Tina4Request` | `Promise<None>` |
+| Node | `req: Tina4Request` | `None` |
 
 ## Response
 
@@ -2119,7 +1746,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `template: str, data: dict = None` | `Response` |
 | PHP | `templateName: string, data: array [] = [], status: int 200 = 200, templateDir: string 'src/templates' = 'src/templates'` | `Self` |
 | Ruby | `template_path, data = {}, status: 200, template_dir: nil` | `untyped` |
-| Node | `templateName: string, data?: Record<string, unknown>, status?: number, templateDir?: string` | `Promise<Tina4Response>` |
+| Node | `templateName: string, data?: Record<string, unknown>, status?: number, templateDir?: string` | `Tina4Response` |
 
 #### `send`
 
@@ -2155,7 +1782,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `source, content_type: str = 'text/event-stream'` | `Response` |
 | PHP | `source: callable, contentType: string 'text/event-stream' = 'text/event-stream'` | `Self` |
 | Ruby | `content_type: "text/event-stream", &block` | `untyped` |
-| Node | `source: AsyncIterable<string | Buffer>, contentType: string = "text/event-stream"` | `Promise<Tina4Response>` |
+| Node | `source: AsyncIterable<string | Buffer>, contentType: string = "text/event-stream"` | `Tina4Response` |
 
 #### `template`
 
@@ -2164,7 +1791,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Python | `template: str, data: dict = None` | `Response` |
 | PHP | `templateName: string, data: array [] = [], status: int 200 = 200, templateDir: string 'src/templates' = 'src/templates'` | `Self` |
 | Ruby | — not implemented — | — |
-| Node | `name: string, data?: Record<string, unknown>, status?: number, templateDir?: string` | `Promise<Tina4Response>` |
+| Node | `name: string, data?: Record<string, unknown>, status?: number, templateDir?: string` | `Tina4Response` |
 
 #### `text`
 
@@ -2195,7 +1822,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `before_rate_limit` | `request, response` | `request, response` | `request, response` | `req, res` | ℹ️ return type differs |
 | `before_security` | `request, response` | `request, response` | `request, response` | `req, res` | ℹ️ return type differs |
 | `check` | `ip` | `ip` | — | — | ⚠️ missing: Ruby, Node |
-| `get_global` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
+| `get_global` | `()` | `()` | `()` | `()` | ✅ |
 | `is_preflight` | `request` | `method` | — | — | ⚠️ missing: Ruby, Node |
 | `reset` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
 | `run_after` | `middleware_classes, request, response` | `middlewareClasses, request, response` | `middleware_classes, request, response` | `classes, req, res` | ℹ️ return type differs |
@@ -2266,15 +1893,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | PHP | `ip: string` | `list` |
 | Ruby | — not implemented — | — |
 | Node | — not implemented — | — |
-
-#### `get_global`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `` | `list` |
-| PHP | `` | `list` |
-| Ruby | `` | `untyped` |
-| Node | `` | `list[any]` |
 
 #### `is_preflight`
 
@@ -2347,7 +1965,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
 | Python | — not implemented — | — |
-| PHP | `` | `list[dict]` |
+| PHP | `` | `list` |
 | Ruby | `prefix: "/api"` | `untyped` |
 | Node | — not implemented — | — |
 
@@ -2355,7 +1973,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `` | `dict[str, type]` |
+| Python | `` | `dict` |
 | PHP | — not implemented — | — |
 | Ruby | `` | `untyped` |
 | Node | — not implemented — | — |
@@ -2379,37 +1997,17 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `clear_tag` | `tag` | `tag` | `tag` | `tag` | ✅ |
 | `concat_pipes_to_func` | `sql` | `sql` | `sql` | `sql` | ✅ |
 | `delete` | `key` | `key` | `key` | `key` | ✅ |
-| `get` | `key, default` | `key` | `key, default` | `key` | ℹ️ return type differs |
+| `get` | `key, default` | `key` | `key, default` | `key` | ✅ |
 | `has` | `key` | `key` | `key` | `key` | ✅ |
 | `ilike_to_like` | `sql` | `sql` | `sql` | `sql` | ✅ |
 | `limit_to_rows` | `sql` | `sql` | `sql` | `sql` | ✅ |
 | `limit_to_top` | `sql` | `sql` | `sql` | `sql` | ✅ |
 | `placeholder_style` | `sql, style` | `sql, style` | `sql, style` | `sql, style` | ✅ |
 | `query_key` | `sql, params` | `sql, params` | `sql, params` | `sql, params?` | ✅ |
-| `remember` | `key, ttl, factory` | `key, ttl, factory` | `key, ttl, handler` | `key, ttl, factory` | ℹ️ return type differs |
+| `remember` | `key, ttl, factory` | `key, ttl, factory` | `key, ttl, handler` | `key, ttl, factory` | ✅ |
 | `set` | `key, value, ttl, tags` | `key, value, ttl, tags` | `key, value` | `key, value, ttl?, tags` | ✅ |
 | `size` | `()` | `()` | `()` | `()` | ✅ |
 | `sweep` | `()` | `()` | `()` | `()` | ✅ |
-
-### Mismatch Details
-
-#### `get`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `key: str, default = None` | `untyped` |
-| PHP | `key: string` | `mixed` |
-| Ruby | `key, default = nil` | `untyped` |
-| Node | `key: string` | `Self|undefined` |
-
-#### `remember`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `key: str, ttl: int, factory: callable` | `untyped` |
-| PHP | `key: string, ttl: int, factory: callable` | `mixed` |
-| Ruby | `key, ttl, &block` | `untyped` |
-| Node | `key: string, ttl: number, factory: () => T` | `Self` |
 
 ## Metrics
 

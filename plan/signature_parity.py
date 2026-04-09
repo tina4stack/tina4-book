@@ -203,6 +203,7 @@ def extract_php_signatures(filepath):
             var_part = next((x for x in reversed(parts) if x.startswith("$") or x.startswith("&$") or x.startswith("...$")), None)
             if not var_part:
                 continue
+            is_variadic = var_part.startswith("...$") or "...$" in var_part
             var_part = var_part.lstrip("&").lstrip("...")
             type_parts = [x for x in parts if not x.startswith("$") and not x.startswith("...") and "=" not in x]
             type_hint = " ".join(type_parts) if type_parts else ""
@@ -210,7 +211,8 @@ def extract_php_signatures(filepath):
             default = " = " + default_match.group(1).strip() if default_match else ""
             name_clean = var_part.lstrip("$")
             ann = f": {type_hint}" if type_hint else ""
-            params.append(f"{name_clean}{ann}{default}")
+            prefix = "*" if is_variadic else ""
+            params.append(f"{prefix}{name_clean}{ann}{default}")
         classes[owner][name] = {"params": params, "returns": ret, "async": False}
     for cls, methods in classes.items():
         if methods:
@@ -1087,6 +1089,17 @@ def normalise_type(t):
     t = re.sub(r'\bT\b', 'Self', t)
     t = re.sub(r'\bR\b', 'Self', t)
 
+    # TypeScript Promise<X> → X (async wrapper is semantically equivalent to X)
+    # Handle nested generics (up to one level of < >)
+    t = re.sub(r'\bPromise<([^<>]*(?:<[^<>]*>[^<>]*)*)>', r'\1', t)
+    # Drop parameterisation from list[T] → list (cross-framework element types diverge
+    # — PHP has no generics, Ruby untyped, Python/TS disagree on element type noise)
+    t = re.sub(r'\blist\[[^\]]*\]', 'list', t)
+    # dict[K, V] → dict
+    t = re.sub(r'\bdict\[[^\]]*\]', 'dict', t)
+    # Strip stray trailing `\n` artifacts from docblock extraction
+    t = t.replace('\\n', '').strip()
+
     # Normalise whitespace and union spacing: "Self | false" == "Self|false"
     t = re.sub(r'\s*\|\s*', '|', t)
     t = re.sub(r'\s+', ' ', t)
@@ -1098,6 +1111,13 @@ def clean_params(params):
     for p in params:
         if p.startswith("**"):
             continue  # **kwargs not counted
+        # Ruby/Python splat — only discard the conventional *args / *_args / *kwargs forms
+        # (NOT *fields, *items, etc. which are semantically meaningful params).
+        if re.match(r'^\*_?(args|kwargs)\b', p):
+            continue
+        # TypeScript/PHP variadic spread `...args: ...` — discard similarly
+        if re.match(r'^\.\.\._?args\b', p.lstrip()):
+            continue
         # Ruby block params (&block) are the idiomatic equivalent of a callback/handler
         # argument — normalise to "handler" so it compares against Python/Node's handler param.
         if p.startswith("&"):
@@ -1184,8 +1204,17 @@ def compare_returns(methods_by_lang):
     # Only flag a mismatch when at least 2 frameworks have explicit (non-empty) return
     # type annotations that disagree. Untyped (empty) is compatible with anything.
     # Also treat "untyped" as compatible (Ruby/Python often lack explicit return types).
-    typed = [v for v in non_empty if v not in ("untyped", "")]
-    unique = set(typed)
+    # Wildcards: untyped (no annotation), mixed (PHP "any"), bare list (PHP array ambiguity)
+    _WILDCARDS = {"untyped", "mixed", ""}
+    typed = [v for v in non_empty if v not in _WILDCARDS]
+    # Normalise PHP ambiguity: bare `list` (PHP `array`) is indistinguishable from `dict`
+    # since PHP arrays serve both roles. Treat them as equivalent for parity.
+    def _canon(v):
+        # PHP arrays serve as both indexed lists and associative dicts — treat them
+        # as equivalent at the type-comparison level. Applies to bare `list`,
+        # `list|None`, etc., anywhere in the string.
+        return re.sub(r'\blist\b', 'dict', v)
+    unique = {_canon(v) for v in typed}
     has_mismatch = len(typed) >= 2 and len(unique) > 1
     canonical = max(non_empty, key=len)  # pick most informative
     return canonical, returns, has_mismatch
@@ -1321,7 +1350,8 @@ def _extract_module_functions(lang, path):
             name = m.group(1)
             if name.startswith("_"):
                 continue
-            params = [p.strip() for p in m.group(2).split(",") if p.strip()]
+            params = split_params(m.group(2))
+            params = [p for p in params if not p.startswith('this:')]
             ret = (m.group(3) or "").strip()
             is_async = bool(re.search(rf'\bexport\s+async\s+function\s+{name}\b', src))
             methods[name] = {"params": params, "returns": ret, "async": is_async}
@@ -1454,8 +1484,9 @@ def main():
                 missing_count += 1
             else:
                 _, _, ret_mismatch = compare_returns(present)
-                counts = [param_count(m) for m in present.values()]
-                param_mismatch = len(set(counts)) > 1
+                # Use range-compatible check (honors optional/defaulted params)
+                # so the summary matches the per-method ✅ / ⚠️ status column.
+                param_mismatch = not param_ranges_compatible(list(present.values()))
                 if param_mismatch:
                     # Real mismatch: param count/names differ
                     mismatch_count += 1
