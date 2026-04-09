@@ -1,5 +1,11 @@
 # Chapter 35: Release Notes
 
+## v3.10.86 (2026-04-09)
+
+- **feat:** `foreign_key_field` DSL auto-wires both sides of a foreign key relationship. Declaring `foreign_key_field :user_id, references: User` registers the integer column, calls `belongs_to :user` on the declaring class, and calls `has_many :posts` on the referenced class. Supports `related_name:` for custom has-many names and deferred wiring via a module-level registry so the referenced class can be defined either before or after the declaring one.
+- **feat:** Cross-framework parity — same FK auto-wiring semantics now available in Python (`ForeignKeyField`), PHP (`$foreignKeys`), and Node.js (`type: "foreignKey"`)
+- **docs:** Chapter 6 (ORM) updated with a new "foreign_key_field — Auto-Wired Relationships" section
+
 ## v3.10.85 (2026-04-09)
 
 - Version bump for parity with Python and PHP releases

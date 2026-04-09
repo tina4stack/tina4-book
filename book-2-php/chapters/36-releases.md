@@ -1,5 +1,11 @@
 # Chapter 35: Release Notes
 
+## v3.10.86 (2026-04-09)
+
+- **feat:** `$foreignKeys` property on `ORM` auto-wires both sides of a foreign key relationship. Declaring `public array $foreignKeys = ['user_id' => 'User']` injects a `belongsTo` accessor (`$post->user`) on the declaring model and a `hasMany` accessor (`$user->posts`) on the referenced model via a cross-model FK registry. Extended form supports a custom has-many key: `['user_id' => ['model' => 'User', 'related_name' => 'blog_posts']]`.
+- **feat:** Cross-framework parity — same FK auto-wiring semantics now available in Python (`ForeignKeyField`), Ruby (`foreign_key_field`), and Node.js (`type: "foreignKey"`)
+- **docs:** Chapter 6 (ORM) updated with a new "$foreignKeys — Auto-Wired Relationships" section
+
 ## v3.10.85 (2026-04-09)
 
 - **fix:** Removed duplicate `Job` class from `Queue.php` — canonical definition is `Job.php` only
