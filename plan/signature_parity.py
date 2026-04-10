@@ -50,7 +50,7 @@ def to_snake(name):
     """Convert camelCase / PascalCase to snake_case for comparison."""
     s = re.sub(r'([A-Z]+)([A-Z][a-z])', r'\1_\2', name)
     s = re.sub(r'([a-z\d])([A-Z])', r'\1_\2', s)
-    return s.lower().strip('?!')
+    return s.lower().strip('?!_')
 
 # ── Python extraction (AST, full type info) ───────────────────────────────────
 
@@ -1440,6 +1440,12 @@ def main():
                     for name, sig in methods.items():
                         if name not in merged:
                             merged[name] = sig
+                        else:
+                            # Most-params-wins within a language's classes
+                            old_count = len(merged[name].get("params", []))
+                            new_count = len(sig.get("params", []))
+                            if new_count > old_count:
+                                merged[name] = sig
                 flat[lang] = merged
 
         # Build canonical method groups
@@ -1454,10 +1460,17 @@ def main():
                 # Strip Ruby/Python class-method prefix (self.create -> create)
                 stripped_name = re.sub(r'^(?:self|cls)\.', '', name)
                 canon = to_snake(stripped_name)
-                # First-wins: don't override if this canonical name already has an entry
-                # for this lang (e.g., Router.match wins over Route.match?)
-                if lang not in all_methods[canon]:
+                # Most-params-wins: prefer the richer signature when multiple
+                # classes define the same method name (e.g., GraphQLType.parse
+                # over GraphQLParser.parse).
+                existing = all_methods[canon].get(lang)
+                if existing is None:
                     all_methods[canon][lang] = sig
+                else:
+                    old_count = len(existing.get("params", []))
+                    new_count = len(sig.get("params", []))
+                    if new_count > old_count:
+                        all_methods[canon][lang] = sig
 
         # Fill missing
         for canon in all_methods:
