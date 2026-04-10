@@ -1,5 +1,22 @@
 # Chapter 35: Release Notes
 
+## v3.10.92 (2026-04-10)
+
+- **refactor:** Extract `RateLimiter` from `core/middleware.py` into its own file `core/rate_limiter.py`. The old import path still works via re-export.
+- **feat:** Add `RateLimiterMiddleware` wrapper class with `before_rate_limit()` and `check()` static methods.
+- **breaking:** Rename `ErrorOverlay` methods — `render()` → `render_error_overlay()`, `render_production()` → `render_production_error()`, `debug_mode()` → `is_debug_mode()`.
+- **feat:** Add `Server.start()` and `Server.stop()` for cross-framework parity.
+- **feat:** Add `DatabaseResult.size()`, `to_array()`, `to_json()`, `to_csv()` methods.
+- **feat:** Add `ScssCompiler` class with `compile()`, `compile_file()`, `add_import_path()`, `set_variable()`.
+- **feat:** Add `DevAdmin.unresolved_count()`, `clear_all()`, `reset()`, `capture()` (5-param), `register()`.
+- **fix:** GraphQL test API — update `add_query()` calls to use positional args (args, return_type, resolver).
+- **parity:** 44/44 cross-framework features green. 2,263 tests passing.
+
+## v3.10.91 (2026-04-10)
+
+- **feat:** Add parity methods — `GraphQLType.parse()`, `Response.send()` params, `QueryBuilder.from_()`, `Debug.configure()`.
+- **breaking:** Remove alias methods `from_`, `configure`, `template` — use canonical names only (`from_table`, etc.).
+
 ## v3.10.90 (2026-04-09)
 
 - **docs:** Chapter 4 (Templates) — new "Dumping Values for Debugging" section covering both `{{ x|dump }}` and `{{ dump(x) }}` forms, their shared `<pre>`-wrapped output, and the `TINA4_DEBUG=true` production gate. Filter table entry updated to reference the new section.

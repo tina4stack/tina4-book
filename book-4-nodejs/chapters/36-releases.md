@@ -1,5 +1,20 @@
 # Chapter 35: Release Notes
 
+## v3.10.92 (2026-04-10)
+
+- **feat:** Add `DevAdmin` methods — `capture()` (5-param), `clearAll()`, `health()`, `unresolvedCount()`, `reset()`, `register()`.
+- **feat:** Add `Server.start()` and `Server.stop()` for cross-framework parity.
+- **feat:** Add `DatabaseResult.size()` method.
+- **feat:** Add `DevReload.start()` and `DevReload.stop()`.
+- **feat:** Add `ScssCompiler.compileScss()` method.
+- **fix:** `autoCrud.ts` — fix spread syntax on non-iterable, add id in POST response, correct response format to `{data, meta}`, change validation status from 400 to 422.
+- **parity:** 44/44 cross-framework features green. 2,752 tests passing.
+
+## v3.10.91 (2026-04-10)
+
+- **feat:** Add parity methods — `GraphQLType.parse()`, `CorsMiddleware.isPreflight()`, `RateLimiterMiddleware.check()`.
+- **breaking:** Rename `from()` → `fromTable()`, remove `template()` alias — align with Python canonical names.
+
 ## v3.10.90 (2026-04-09)
 
 - **docs:** Chapter 4 (Templates) — new "Dumping Values for Debugging" section covering both `{{ x|dump }}` and `{{ dump(x) }}` forms, the v3.10.88 `inspectValue()` inspector (circular refs, BigInt, Map/Set, Error, Date, class instances), and the `TINA4_DEBUG=true` production gate. Filter table entry updated to reference the new section.

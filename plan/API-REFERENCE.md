@@ -1,6 +1,6 @@
 # Tina4 API Reference
 
-> Auto-generated on 2026-04-09
+> Auto-generated on 2026-04-10
 
 This document lists all public classes and methods extracted from the 4 Tina4 framework implementations.
 
@@ -28,9 +28,9 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `with_trashed(filter_sql: str='1=1', params: list=None, limit: int=20, offset: int=0)` |
 | `count(conditions: str=None, params: list=None)` |
 | `create_table()` |
-| `cached(sql: str, params: list=None, ttl: int=60, limit: int=20, offset: int=0)` |
+| `cached(sql: str, params: list=None, ttl: int=60, limit: int=20, offset: int=0, include: list=None)` |
 | `clear_cache()` |
-| `clear_rel_cache(instances: list=None)` |
+| `clear_rel_cache()` |
 | `get_db()` |
 | `get_db_column(prop: str)` |
 | `eager_load(instances: list, include_list: list[str])` |
@@ -53,6 +53,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `setGlobalDb($db)` |
 | `query()` |
 | `create($data = [])` |
+| `snakeToCamel($name)` |
+| `camelToSnake($name)` |
 | `__set($name, $value)` |
 | `__get($name)` |
 | `__isset($name)` |
@@ -73,7 +75,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `toArray()` |
 | `toList()` |
 | `toJson($include = null)` |
-| `exists()` |
+| `exists($pkValue)` |
 | `getPrimaryKeyValue()` |
 | `getDbColumn($property)` |
 | `select($sql, $params = [], $limit = 20, $offset = 0, $include = null)` |
@@ -94,7 +96,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `clearCache()` |
 | `getData()` |
 | `markAsExisting()` |
-| `eagerLoad(array &$instances, $include, $db)` |
+| `eagerLoad(array &$instances, $include, $db = null)` |
 | `setRelCache($name, $value)` |
 | `clearRelCache()` |
 
@@ -122,9 +124,9 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `load_has_one(name)` |
 | `load_has_many(name)` |
 | `load_belongs_to(name)` |
-| `query_has_one(related_class, foreign_key: nil)` |
-| `query_has_many(related_class, foreign_key: nil, limit: 100, offset: 0)` |
-| `query_belongs_to(related_class, foreign_key: nil)` |
+| `has_one(related_class, foreign_key: nil)` |
+| `has_many(related_class, foreign_key: nil, limit: 100, offset: 0)` |
+| `belongs_to(related_class, foreign_key: nil)` |
 
 ### Node — `BaseModel` (`orm/src/baseModel.ts`)
 
@@ -155,7 +157,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `validate()` |
 | `createTable()` |
 | `findOrFail(T extends BaseModel>(this: new (data?: Record<string, unk...)` |
-| `exists(id: unknown)` |
+| `exists(pkValue: unknown)` |
 | `cached(T extends BaseModel>(
     this: new (data?: Record<string...)` |
 | `clearCache()` |
@@ -192,7 +194,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 |--------|
 | `secure()` |
 | `no_auth()` |
-| `cache(max_age: int | None=None)` |
+| `cache()` |
+| `middleware(*middleware_classes)` |
 
 ### Python — `RouteGroup` (`core/router.py`)
 
@@ -216,13 +219,13 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `all_ws()` |
 | `get_web_socket_routes()` |
 | `use(middleware_class)` |
-| `get(path: str, handler, **options)` |
-| `post(path: str, handler, **options)` |
-| `put(path: str, handler, **options)` |
-| `patch(path: str, handler, **options)` |
-| `delete(path: str, handler, **options)` |
-| `any(path: str, handler, **options)` |
-| `add(method: str, path: str, handler, **options)` |
+| `get(path: str, handler, middleware: list=None, swagger_meta: dict=None, template: str=None, **options)` |
+| `post(path: str, handler, middleware: list=None, swagger_meta: dict=None, template: str=None, **options)` |
+| `put(path: str, handler, middleware: list=None, swagger_meta: dict=None, template: str=None, **options)` |
+| `patch(path: str, handler, middleware: list=None, swagger_meta: dict=None, template: str=None, **options)` |
+| `delete(path: str, handler, middleware: list=None, swagger_meta: dict=None, template: str=None, **options)` |
+| `any(path: str, handler, middleware: list=None, swagger_meta: dict=None, template: str=None, **options)` |
+| `add(method: str, path: str, handler, middleware: list=None, swagger_meta: dict=None, template: str=None, **options)` |
 | `match(method: str, path: str)` |
 | `get_routes()` |
 | `list_routes()` |
@@ -240,12 +243,13 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | Method | 
 |--------|
 | `use($class)` |
-| `get($path, $callback)` |
-| `post($path, $callback)` |
-| `put($path, $callback)` |
-| `patch($path, $callback)` |
-| `delete($path, $callback)` |
-| `any($path, $callback)` |
+| `add($method, $path, $handler, $middleware = [], $swaggerMeta = [], $template = null)` |
+| `get($path, $handler, $middleware = [], $swaggerMeta = [], $template = null)` |
+| `post($path, $handler, $middleware = [], $swaggerMeta = [], $template = null)` |
+| `put($path, $handler, $middleware = [], $swaggerMeta = [], $template = null)` |
+| `patch($path, $handler, $middleware = [], $swaggerMeta = [], $template = null)` |
+| `delete($path, $handler, $middleware = [], $swaggerMeta = [], $template = null)` |
+| `any($path, $handler, $middleware = [], $swaggerMeta = [], $template = null)` |
 | `group($prefix, $callback, $middleware = [])` |
 | `middleware($middleware)` |
 | `cache()` |
@@ -282,8 +286,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
       self
     end
 
-    # Returns params hash if matched, false otherwise
-    def match?(request_path, request_method = nil)` |
+    # Dual-mode: getter (no args)` |
+| `middleware(*middleware_classes)` |
 | `match_path(request_path)` |
 | `run_middleware(request, response)` |
 | `normalize_path(path)` |
@@ -297,6 +301,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `secure()` |
 | `noAuth()` |
 | `cache()` |
+| `middleware(...middlewareClasses: Middleware[])` |
 | `use(middlewareClass: any)` |
 | `getClassMiddlewares()` |
 | `clearClassMiddlewares()` |
@@ -309,7 +314,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `any(path: string, handler: RouteHandler, middlewares?: Middle...)` |
 | `group(prefix: string, callback: (group: RouteGroup)` |
 | `callback(group)` |
-| `match(method: string, pathname: string)` |
+| `match(method: string, path: string)` |
 | `getRoutes()` |
 | `allRoutes()` |
 | `listRoutes()` |
@@ -317,6 +322,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `getWebSocketRoutes()` |
 | `matchWebSocket(pathname: string)` |
 | `clear()` |
+| `add(method: string, path: string, handler: RouteHandler, midd...)` |
 
 ## Database
 
@@ -402,9 +408,10 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | Method | 
 |--------|
 | `create($url, $autoCommit = null, $username = '', $password = '', $pool = 0)` |
-| `fromEnv($envKey = 'DATABASE_URL', $autoCommit = null)` |
+| `fromEnv($envKey = 'DATABASE_URL', $autoCommit = null, $pool = 0)` |
 | `getAdapter()` |
 | `poolSize()` |
+| `size()` |
 | `activeCount()` |
 | `checkout()` |
 | `checkin($adapter)` |
@@ -452,6 +459,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `rewind()` |
 | `valid()` |
 | `count()` |
+| `size()` |
 | `offsetExists($offset)` |
 | `offsetGet($offset)` |
 | `offsetSet($offset, $value)` |
@@ -524,6 +532,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `read($sessionId)` |
 | `write($sessionId, $data)` |
 | `delete($sessionId)` |
+| `destroy($sessionId)` |
 | `gc($ttl)` |
 | `close()` |
 
@@ -619,8 +628,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
     def fetch(sql, params = [], limit: 100, offset: nil)` |
 | `fetch_one(sql, params = [])` |
 | `insert(table, data)` |
-| `update(table, data, filter = {})` |
-| `delete(table, filter = {})` |
+| `update(table, data, filter = {}, params = nil)` |
+| `delete(table, filter = {}, params = nil)` |
 | `get_error(@last_error
     end
 
@@ -876,6 +885,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `fromEnv(envKey = "DATABASE_URL", pool: number = 0)` |
 | `getAdapter()` |
 | `poolSize()` |
+| `size()` |
 | `activeCount()` |
 | `checkout()` |
 | `checkin(_adapter: DatabaseAdapter)` |
@@ -885,7 +895,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `execute(sql: string, params?: unknown[])` |
 | `insert(table: string, data: Record<string, unknown>)` |
 | `update(table: string, data: Record<string, unknown>, filter?: Re...)` |
-| `delete(table: string, filter?: Record<string, unknown>)` |
+| `delete(table: string, filter?: Record<string, unknown>, params?:...)` |
 | `close()` |
 | `startTransaction()` |
 | `commit()` |
@@ -893,7 +903,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `tableExists(name: string)` |
 | `getTables()` |
 | `getColumns(tableName: string)` |
-| `executeMany(sql: string, paramSets: unknown[][])` |
+| `executeMany(sql: string, paramSets: unknown[][] = [])` |
 | `getError()` |
 | `cacheStats()` |
 | `cacheClear()` |
@@ -908,6 +918,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `toCsv()` |
 | `toArray()` |
 | `toPaginate(page = 1, perPage = 10)` |
+| `size()` |
 | `at(index: number)` |
 | `toJSON()` |
 | `columnInfo()` |
@@ -918,7 +929,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 | Method | 
 |--------|
-| `get_token(payload: dict, expires_in: int=None)` |
+| `get_token(payload: dict, expires_in: int=None, secret: str=None)` |
 | `valid_token(token: str)` |
 | `get_payload(token: str)` |
 | `refresh_token(token: str, expires_in: int=None)` |
@@ -930,7 +941,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `hash_password(password: str, salt: str=None, iterations: int=260000)` |
 | `check_password(password: str, hashed: str)` |
 | `validate_api_key(provided: str, expected: str=None)` |
-| `authenticate_request(headers: dict)` |
+| `authenticate_request(headers: dict, secret: str=None, algorithm: str='HS256')` |
 
 ### Python — `AuthMiddleware` (`auth/__init__.py`)
 
@@ -942,14 +953,14 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 | Method | 
 |--------|
-| `getToken($payload, $expiresIn = 3600)` |
-| `validToken($token)` |
+| `getToken($payload, $secret = null, $expiresIn = 3600)` |
+| `validToken($token, $secret = null)` |
 | `getPayload($token)` |
 | `hashPassword($password, $salt = null, $iterations = 260000)` |
 | `checkPassword($password, $hash)` |
 | `middleware()` |
 | `refreshToken($token, $expiresIn = 3600)` |
-| `authenticateRequest($headers)` |
+| `authenticateRequest($headers, $secret = null, $algorithm = 'HS256')` |
 | `validateApiKey($provided, $expected = null)` |
 
 ### Node — `Auth` (`core/src/auth.ts`)
@@ -970,21 +981,21 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `get_topic()` |
 | `process(handler, topic: str=None, max_jobs, batch_size)` |
 | `size(status: str='pending')` |
-| `purge(status: str='completed')` |
+| `purge(status: str, max_retries: int=None)` |
 | `retry_failed(max_retries: int=None)` |
 | `failed()` |
 | `dead_letters(max_retries: int=None)` |
-| `retry(job_id: str, delay_seconds: int=0)` |
+| `retry(job_id: str=None, delay_seconds: int=0)` |
 | `clear()` |
 | `produce(topic: str, data: dict, priority: int=0, delay_seconds: int=0)` |
-| `consume(topic: str=None, job_id: str=None, poll_interval: float=1.0, iterations: int=0, batch_size: int=1)` |
-| `pop_by_id(job_id: str)` |
+| `consume(topic: str=None, id: str=None, poll_interval: float=1.0, iterations: int=0, batch_size: int=1)` |
+| `pop_by_id(id: str)` |
 
 ### PHP — `Queue` (`Queue.php`)
 
 | Method | 
 |--------|
-| `push($payload, $delay = 0, $priority = 0)` |
+| `push($payload, $priority = 0, $delay = 0)` |
 | `pop()` |
 | `popBatch($count)` |
 | `process($handlerOrQueue, $queueOrHandlerOrOptions = '', $options = [])` |
@@ -992,12 +1003,12 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `clear()` |
 | `writeFailed($topic, $jobData)` |
 | `failed()` |
-| `retry($jobId, $delaySeconds = 0)` |
+| `retry($jobId = null, $delaySeconds = 0)` |
 | `deadLetters($maxRetries = null)` |
-| `purge($status)` |
+| `purge($status, $maxRetries = null)` |
 | `retryFailed($maxRetries = null)` |
 | `produce($topic, $payload, $priority = 0, $delaySeconds = 0)` |
-| `consume($topic = '', $id = null, $pollInterval = 1.0, $batchSize = 1)` |
+| `consume($topic = '', $id = null, $pollInterval = 1.0, $iterations = 0, $batchSize = 1)` |
 | `popById($id)` |
 | `getTopic()` |
 
@@ -1009,7 +1020,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `pop_batch(count)` |
 | `retry(job_id = nil, delay_seconds: 0)` |
 | `dead_letters(max_retries: nil)` |
-| `purge(status)` |
+| `purge(status, max_retries: nil)` |
 | `retry_failed(max_retries: nil)` |
 | `produce(topic, payload, priority: 0, delay_seconds: 0)` |
 | `consume(topic = nil, id: nil, poll_interval: 1.0, iterations: 0, batch_size: 1, &block)` |
@@ -1069,27 +1080,27 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | Method | 
 |--------|
 | `read(session_id: str)` |
-| `write(session_id: str, data: dict, ttl: int)` |
+| `write(session_id: str, data: dict, ttl: int=0)` |
 | `destroy(session_id: str)` |
-| `gc(max_lifetime: int)` |
+| `gc(max_lifetime: int=0)` |
 
 ### Python — `FileSessionHandler` (`session/__init__.py`)
 
 | Method | 
 |--------|
 | `read(session_id: str)` |
-| `write(session_id: str, data: dict, ttl: int)` |
+| `write(session_id: str, data: dict, ttl: int=0)` |
 | `destroy(session_id: str)` |
-| `gc(max_lifetime: int)` |
+| `gc(max_lifetime: int=0)` |
 
 ### Python — `DatabaseSessionHandler` (`session/__init__.py`)
 
 | Method | 
 |--------|
 | `read(session_id: str)` |
-| `write(session_id: str, data: dict, ttl: int)` |
+| `write(session_id: str, data: dict, ttl: int=0)` |
 | `destroy(session_id: str)` |
-| `gc(max_lifetime: int)` |
+| `gc(max_lifetime: int=0)` |
 
 ### Python — `Session` (`session/__init__.py`)
 
@@ -1118,7 +1129,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 |--------|
 | `read($sessionId)` |
 | `write($sessionId, $data)` |
-| `delete($sessionId)` |
+| `destroy($sessionId)` |
 | `close()` |
 
 ### PHP — `RedisSessionHandler` (`Session/RedisSessionHandler.php`)
@@ -1127,7 +1138,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 |--------|
 | `read($sessionId)` |
 | `write($sessionId, $data)` |
-| `delete($sessionId)` |
+| `destroy($sessionId)` |
 | `exists($sessionId)` |
 | `touch($sessionId)` |
 | `close()` |
@@ -1138,7 +1149,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 |--------|
 | `read($sessionId)` |
 | `write($sessionId, $data)` |
-| `delete($sessionId)` |
+| `destroy($sessionId)` |
 | `exists($sessionId)` |
 | `touch($sessionId)` |
 | `close()` |
@@ -1164,7 +1175,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `read($sessionId)` |
 | `write($sessionId, $data, $ttl = 0)` |
 | `save()` |
-| `gc()` |
+| `gc($maxLifetime = 0)` |
 
 ### Ruby — `Tina4` (`session.rb`)
 
@@ -1202,7 +1213,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
     # Returns the data hash or nil.
     def read(session_id)` |
 | `write(session_id, data, ttl = nil)` |
-| `gc(max_age = nil)` |
+| `gc(max_lifetime = nil)` |
 | `cookie_header(cookie_name = nil)` |
 | `extract_session_id(env)` |
 | `load_session(existing = @handler.read(@id)` |
@@ -1223,10 +1234,10 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | Method | 
 |--------|
 | `read(sessionId: string)` |
-| `write(sessionId: string, data: SessionData, ttl: number)` |
+| `write(sessionId: string, data: SessionData, ttl?: number)` |
 | `destroy(sessionId: string)` |
 | `writeFileSync(this.filePath(sessionId)` |
-| `gc(_maxLifetime: number)` |
+| `gc(maxLifetime: number = 0)` |
 | `setHandler(handler: SessionHandler)` |
 | `start(sessionId?: string)` |
 | `get(key: string, defaultValue?: unknown)` |
@@ -1260,8 +1271,9 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `create($description, $kind = 'sql')` |
 | `up(\$db)` |
 | `down(\$db)` |
-| `recordMigration($fileName, $batch, $passed = 1)` |
-| `removeMigrationRecord($fileName)` |
+| `createMigration($description, $migrationsDir = 'migrations', $kind = 'sql')` |
+| `recordMigration($name, $batch, $passed = 1)` |
+| `removeMigrationRecord($name)` |
 
 ### PHP — `for` (`MigrationBase.php`)
 
@@ -1283,17 +1295,24 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `status({
         completed: completed_migrations,
         pending: pending_migrations.map { |f| File.basename(f)` |
-| `create(description, kind = "ruby")` |
+| `create(description, kind = "sql")` |
 | `record_migration(name, batch, passed: 1)` |
 | `remove_migration_record(name)` |
+| `self.create_migration(description, migrations_dir: "migrations", kind: "sql")` |
 | `get_applied(completed_migrations
+    end
+
+    # Alias for get_applied — parity with PHP/Node
+    def get_applied_migrations
+      get_applied
     end
 
     # Get list of pending migration filenames (public alias for pending_migrations)` |
 | `get_pending(pending_migrations.map { |f| File.basename(f)` |
 | `get_files(migration_files = Dir.glob(File.join(@migrations_dir, "*.sql")` |
 | `resolve_migrations_dir(src_dir = File.join(Dir.pwd, "src", "migrations")` |
-| `ensure_tracking_table(unless @db.table_exists?(TRACKING_TABLE)` |
+| `ensure_tracking_table(return unless @db
+      unless @db.table_exists?(TRACKING_TABLE)` |
 | `completed_migrations(result = @db.fetch("SELECT migration_name FROM #{TRACKING_TABLE} WHERE passed = 1 ORDER BY id")` |
 | `completed_migrations_with_batch(result = @db.fetch("SELECT id, migration_name, batch FROM #{TRACKING_TABLE} WHERE passed = 1 ORDER BY id")` |
 | `next_batch_number(result = @db.fetch_one("SELECT MAX(batch)` |
@@ -1307,8 +1326,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `should_skip_for_firebird(stmt)` |
 | `classify(name)` |
 | `extract_class_name(content)` |
-| `up(db)` |
-| `down(db)` |
+| `up(db = nil)` |
+| `down(db = nil)` |
 
 ### Node — `Migration` (`orm/src/migration.ts`)
 
@@ -1341,13 +1360,19 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `match(type: str, value: str=None)` |
 | `parse()` |
 
+### Python — `GraphQLType` (`graphql/__init__.py`)
+
+| Method | 
+|--------|
+| `parse(type_str: str)` |
+
 ### Python — `Schema` (`graphql/__init__.py`)
 
 | Method | 
 |--------|
 | `add_type(name: str, fields: dict[str, str])` |
-| `add_query(name: str, config: dict)` |
-| `add_mutation(name: str, config: dict)` |
+| `add_query(name: str, args: dict, return_type: str, resolver: callable)` |
+| `add_mutation(name: str, args: dict, return_type: str, resolver: callable)` |
 | `from_orm(orm_class)` |
 
 ### Python — `GraphQL` (`graphql/__init__.py`)
@@ -1372,12 +1397,14 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `getTypes()` |
 | `getQueries()` |
 | `getMutations()` |
+| `tokenize($source)` |
 | `fromOrm($ormInstance)` |
 | `parse()` |
 | `peek($offset = 0)` |
 | `advance()` |
 | `expect($type, $value = null)` |
 | `match($type, $value = null)` |
+| `parse($typeStr)` |
 
 ### Ruby — `Tina4` (`graphql.rb`)
 
@@ -1388,9 +1415,10 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
     # Parse a type string like "String", "String!", "[String]", "[Int!]!"
     def self.parse(type_str)` |
+| `add_type(name_or_type, fields = nil)` |
 | `get_type(name)` |
-| `add_query(name, type:, args: {}, description: nil, &resolve)` |
-| `add_mutation(name, type:, args: {}, description: nil, &resolve)` |
+| `add_query(name, args = {}, return_type = nil, resolver = nil, &block)` |
+| `add_mutation(name, args = {}, return_type = nil, resolver = nil, &block)` |
 | `from_orm(klass)` |
 | `register_scalars(GraphQLType::SCALARS.each do |s|
         @types[s] = GraphQLType.new(s, :scalar)` |
@@ -1518,13 +1546,14 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `decodeRequest($data)` |
 | `fromCallable($callable)` |
 | `fromReflection($ref)` |
+| `getDefaultServer()` |
 | `getPath()` |
 | `getName()` |
 | `registerTool($name, $handler, $description = '', $schema = null)` |
 | `registerResource($uri, $handler, $description = '', $mimeType = 'application/json')` |
 | `registerFromAttributes($object)` |
 | `handleMessage($rawData)` |
-| `registerRoutes()` |
+| `registerRoutes($router = null)` |
 | `writeClaudeConfig($port = 7146)` |
 | `isLocalhost()` |
 | `getInstances()` |
@@ -1543,11 +1572,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `register_tool(name, handler, description = "", schema = nil)` |
 | `register_resource(uri, handler, description = "", mime_type = "application/json")` |
 | `handle_message(raw_data)` |
-| `register_routes(server   = self
-      msg_path = "#{@path}/message"
-      sse_path = "#{@path}/sse"
-
-      Tina4::Router.post(msg_path)` |
+| `register_routes(router = nil)` |
 | `write_claude_config(port = 7145)` |
 | `tools(@tools
     end
@@ -1586,6 +1611,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 | Method | 
 |--------|
+| `setFormTokenSessionId($sessionId)` |
 | `render($template, $data = [])` |
 | `renderString($source, $data = [], $templateName = null)` |
 | `clearCache()` |
@@ -1688,6 +1714,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `before_cache(request, response)` |
 | `after_cache(request, response)` |
 | `cache_stats()` |
+| `sweep()` |
 | `clear_cache()` |
 
 ### Python — `Cache` (`core/cache.py`)
@@ -1705,6 +1732,18 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `query_key(sql: str, params: list=None)` |
 | `remember(key: str, ttl: int, factory: callable)` |
 
+### PHP — `Cache` (`Cache.php`)
+
+| Method | 
+|--------|
+| `cacheGet($key)` |
+| `cacheSet($key, $value, $ttl = null)` |
+| `cacheDelete($key)` |
+| `cacheClear()` |
+| `clearCache()` |
+| `cacheStats()` |
+| `sweep()` |
+
 ### PHP — `ResponseCache` (`Middleware/ResponseCache.php`)
 
 | Method | 
@@ -1718,6 +1757,52 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `clearCache()` |
 | `sweep()` |
 | `getBackend()` |
+
+### PHP — `QueryCache` (`QueryCache.php`)
+
+| Method | 
+|--------|
+| `queryKey($sql, $params = [])` |
+| `get($key)` |
+| `set($key, $value, $ttl = 0, $tags = [])` |
+| `clearTag($tag)` |
+| `has($key)` |
+| `delete($key)` |
+| `sweep()` |
+| `clear()` |
+| `size()` |
+| `remember($key, $ttl, $factory)` |
+
+### Ruby — `Tina4` (`cache.rb`)
+
+| Method | 
+|--------|
+| `set(key, value, ttl: nil, tags: [])` |
+| `get(key, default = nil)` |
+| `delete(key)` |
+| `clear(@mutex.synchronize { @store.clear }
+    end
+
+    # Clear all entries with a given tag.
+    #
+    # @param tag [String]
+    # @return [Integer] number of entries removed
+    def clear_tag(tag)` |
+| `sweep(@mutex.synchronize do
+        now = Time.now.to_f
+        keys_to_remove = @store.select { |_k, v| now > v.expires_at }.keys
+        keys_to_remove.each { |k| @store.delete(k)` |
+| `remember(key, ttl, &block)` |
+| `size(@mutex.synchronize { @store.size }
+    end
+
+    # Generate a stable cache key from a SQL query and params.
+    # Mirrors SQLTranslator.query_key for direct use on QueryCache.
+    #
+    # @param sql [String]
+    # @param params [Array, nil]
+    # @return [String]
+    def self.query_key(sql, params = nil)` |
 
 ### Ruby — `Tina4` (`response_cache.rb`)
 
@@ -1820,8 +1905,10 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `get_by_path(path: str)` |
 | `count()` |
 | `count_by_path(path: str)` |
-| `async broadcast(path: str, message: str | bytes, exclude: str=None)` |
+| `async broadcast(message: str | bytes, exclude: str=None, path: str=None)` |
 | `async broadcast_all(message: str | bytes)` |
+| `async send_to(client_id: str, message: str | bytes)` |
+| `async close(client_id: str, code: int=1000, reason: str='')` |
 | `async disconnect(ws_id: str)` |
 | `async disconnect_all(path: str=None)` |
 | `room_count(room_name: str)` |
@@ -1838,14 +1925,14 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `async handle_connection(reader: asyncio.StreamReader, writer: asyncio.StreamWriter)` |
 | `async start()` |
 | `async stop()` |
-| `handle_upgrade(reader: asyncio.StreamReader, writer: asyncio.StreamWriter)` |
+| `get_clients()` |
 
 ### Python — `WSDL` (`wsdl/__init__.py`)
 
 | Method | 
 |--------|
 | `handle()` |
-| `generate_wsdl()` |
+| `generate_wsdl(endpoint_url: str='')` |
 | `on_request(request)` |
 | `on_result(result)` |
 
@@ -1854,7 +1941,11 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | Method | 
 |--------|
 | `Add($a, $b)` |
+| `wsdlOperation($returnTypes = [])` |
 | `handle()` |
+| `generateWSDL($endpointUrl = '')` |
+| `onRequest($request)` |
+| `onResult($result)` |
 
 ### PHP — `WebSocket` (`WebSocket.php`)
 
@@ -1862,7 +1953,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 |--------|
 | `on($event, $handler)` |
 | `broadcast($message, $excludeIds = null, $path = null)` |
-| `send($clientId, $message)` |
+| `sendTo($clientId, $message)` |
 | `joinRoom($clientId, $roomName)` |
 | `leaveRoom($clientId, $roomName)` |
 | `getRoomConnections($roomName)` |
@@ -1872,10 +1963,11 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `getClients()` |
 | `stop()` |
 | `getPort()` |
+| `close($clientId, $code = 1000, $reason = '')` |
 | `computeAcceptKey($key)` |
 | `buildHandshakeResponse($key)` |
 | `parseHttpHeaders($data)` |
-| `encodeFrame($message, $opcode = self::OP_TEXT)` |
+| `buildFrame($message, $opcode = self::OP_TEXT)` |
 | `decodeFrame($data)` |
 
 ### PHP — `at` (`WebSocketBackplane.php`)
@@ -1894,7 +1986,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `subscribe($channel, $callback)` |
 | `unsubscribe($channel)` |
 | `close()` |
-| `create($url = null)` |
+| `create_backplane($url = null)` |
 
 ### PHP — `WebSocketConnection` (`WebSocketConnection.php`)
 
@@ -1902,6 +1994,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 |--------|
 | `send($message)` |
 | `broadcast($message, $includeSelf = false)` |
+| `joinRoom($roomName)` |
+| `leaveRoom($roomName)` |
 | `close($code = WebSocket::CLOSE_NORMAL, $reason = '')` |
 | `getSocket()` |
 
@@ -1909,20 +2003,30 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 | Method | 
 |--------|
-| `handle_upgrade(env, socket)` |
+| `self.compute_accept_key(key)` |
+| `self.build_frame(opcode, data, fin: true)` |
+| `get_clients(@connections
+    end
+
+    def start(host: "0.0.0.0", port: 7147)` |
+| `stop(@running = false
+      @server_socket&.close rescue nil
+      @server_thread&.join(1)` |
 | `broadcast(message, exclude: nil, path: nil)` |
+| `send_to(conn_id, message)` |
+| `close(conn_id, code: 1000, reason: "")` |
 | `join_room_for(conn_id, room_name)` |
 | `leave_room_for(conn_id, room_name)` |
 | `room_count(room_name)` |
 | `get_room_connections(room_name)` |
 | `broadcast_to_room(room_name, message, exclude: nil)` |
+| `handle_upgrade(env, socket)` |
 | `emit(event, *args)` |
 | `remove_from_all_rooms(conn_id)` |
 | `join_room(room_name)` |
 | `leave_room(room_name)` |
 | `send(message)` |
 | `send_pong(data)` |
-| `close(code: 1000, reason: "")` |
 | `read_frame(first_byte = @socket.getbyte
       return nil unless first_byte
 
@@ -1948,7 +2052,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
     #
     # This keeps backplane usage entirely optional — callers simply check
     # +if backplane+ before publishing.
-    def self.create(url: nil)` |
+    def self.create_backplane(url: nil)` |
 
 ### Ruby — `Tina4` (`wsdl.rb`)
 
@@ -1959,7 +2063,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
       method = if @request.respond_to?(:method)` |
 | `on_request(request)` |
 | `on_result(result)` |
-| `generate_wsdl(service_name = self.class.name ? self.class.name.split("::")` |
+| `generate_wsdl(endpoint_url = "")` |
 | `discover_operations(self.class.wsdl_operations.dup
     end
 
@@ -1980,10 +2084,11 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 |--------|
 | `on(event: string, handler: Function)` |
 | `broadcast(message: string, excludeIds?: string[], path?: string)` |
-| `send(clientId: string, message: string)` |
+| `sendTo(clientId: string, message: string)` |
 | `start()` |
 | `stop()` |
 | `getClients()` |
+| `close(clientId: string, code: number = 1000, reason: string = "")` |
 | `joinRoom(clientId: string, roomName: string)` |
 | `leaveRoom(clientId: string, roomName: string)` |
 | `getRoomConnections(roomName: string)` |
@@ -2006,7 +2111,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | Method | 
 |--------|
 | `generateWSDL(endpointUrl?: string)` |
-| `handleRequest(soapXml: string)` |
+| `handle(soapXml: string = "")` |
 | `register(router: {
     addRoute?: (method: string, path: string, h...)` |
 
@@ -2052,7 +2157,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `put(path: str='', body=None, content_type: str='application/json')` |
 | `patch(path: str='', body=None, content_type: str='application/json')` |
 | `delete(path: str='', body=None)` |
-| `send(method: str, path: str='', body=None, content_type: str='application/json')` |
+| `send_request(method: str, path: str='', body=None, content_type: str='application/json')` |
 
 ### Python — `Container` (`container/__init__.py`)
 
@@ -2064,20 +2169,31 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `has(name: str)` |
 | `reset()` |
 
+### Python — `Middleware` (`core/middleware.py`)
+
+| Method | 
+|--------|
+| `use(middleware_class)` |
+| `get_global()` |
+| `reset()` |
+| `run_before(middleware_classes, request, response)` |
+| `run_after(middleware_classes, request, response)` |
+
 ### Python — `CorsMiddleware` (`core/middleware.py`)
 
 | Method | 
 |--------|
+| `before_cors(request, response)` |
 | `allowed_origin(request_origin: str)` |
 | `apply(request, response)` |
 | `is_preflight(request)` |
 
-### Python — `RateLimiter` (`core/middleware.py`)
+### Python — `RateLimiterMiddleware` (`core/middleware.py`)
 
 | Method | 
 |--------|
+| `before_rate_limit(request, response)` |
 | `check(ip: str)` |
-| `apply_headers(response, info: dict)` |
 
 ### Python — `SecurityHeadersMiddleware` (`core/middleware.py`)
 
@@ -2091,6 +2207,23 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 |--------|
 | `before_csrf(request, response)` |
 
+### Python — `RequestLoggerMiddleware` (`core/middleware.py`)
+
+| Method | 
+|--------|
+| `before_log(request, response)` |
+| `after_log(request, response)` |
+
+### Python — `RateLimiter` (`core/rate_limiter.py`)
+
+| Method | 
+|--------|
+| `before_rate_limit(request, response)` |
+| `check(ip: str)` |
+| `apply(request, response)` |
+| `reset()` |
+| `apply_headers(response, info: dict)` |
+
 ### Python — `Request` (`core/request.py`)
 
 | Method | 
@@ -2098,6 +2231,9 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `from_scope(scope: dict, body: bytes=b'')` |
 | `merge_route_params()` |
 | `param(key: str, default=None)` |
+| `header(name: str)` |
+| `bearer_token()` |
+| `parse_body()` |
 
 ### Python — `Response` (`core/response.py`)
 
@@ -2115,7 +2251,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `redirect(url: str, status_code: int=302)` |
 | `file(file_path: str, download_name: str=None)` |
 | `render(template: str, data: dict=None)` |
-| `template(template: str, data: dict=None)` |
+| `send(data=None, status_code: int=None, content_type: str=None)` |
 | `build_headers(accept_encoding: str='')` |
 
 ### Python — `AutoCrud` (`crud/__init__.py`)
@@ -2125,13 +2261,18 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `register(model_class, prefix: str='/api')` |
 | `discover(models_dir: str='src/orm', prefix: str='/api')` |
 | `models()` |
+| `generate_routes()` |
 | `clear()` |
 
 ### Python — `DatabaseResult` (`database/adapter.py`)
 
 | Method | 
 |--------|
+| `size()` |
 | `to_list()` |
+| `to_array()` |
+| `to_json()` |
+| `to_csv()` |
 | `to_paginate(page: int=1, per_page: int=20)` |
 | `column_info()` |
 
@@ -2324,7 +2465,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 | Method | 
 |--------|
-| `init(log_dir: str='logs', level: str='info', production: bool=False)` |
+| `configure(log_dir: str='logs', level: str='info', production: bool=False)` |
 | `debug(message: str, **kwargs)` |
 | `info(message: str, **kwargs)` |
 | `warning(message: str, **kwargs)` |
@@ -2342,6 +2483,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `render(template: str, data: dict=None)` |
 | `render_string(source: str, data: dict=None)` |
 | `clear_cache()` |
+| `render_dump(v)` |
 
 ### Python — `I18n` (`i18n/__init__.py`)
 
@@ -2350,6 +2492,11 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `locale()` |
 | `locale(value: str)` |
 | `t(key: str, **kwargs)` |
+| `set_locale(locale: str)` |
+| `get_locale()` |
+| `translate(key: str, params: dict=None, locale: str=None)` |
+| `load_translations(locale: str)` |
+| `add_translation(locale: str, key: str, value: str)` |
 | `available_locales()` |
 
 ### Python — `Messenger` (`messenger/__init__.py`)
@@ -2387,8 +2534,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 | Method | 
 |--------|
-| `up(db)` |
-| `down(db)` |
+| `up(db=None)` |
+| `down(db=None)` |
 
 ### Python — `Migration` (`migration/runner.py`)
 
@@ -2399,6 +2546,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `status()` |
 | `create(description: str, kind: str='sql')` |
 | `get_applied()` |
+| `get_applied_migrations()` |
 | `get_pending()` |
 | `get_files()` |
 | `record_migration(name: str, batch: int, passed: int=1)` |
@@ -2555,11 +2703,23 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `dead_letter(topic: str, message: dict)` |
 | `close()` |
 
+### Python — `ScssCompiler` (`scss/__init__.py`)
+
+| Method | 
+|--------|
+| `compile(source: str)` |
+| `compile_file(path: str)` |
+| `compile_scss(scss_dir: str='src/scss', output: str='public/css/default.css', minify: bool=False)` |
+| `add_import_path(path: str)` |
+| `set_variable(name: str, value: str)` |
+
 ### Python — `FakeData` (`seeder/__init__.py`)
 
 | Method | 
 |--------|
 | `seed(seed: int)` |
+| `run(fn, count: int=1)` |
+| `seed_dir(seed_folder: str='seeds')` |
 | `name()` |
 | `first_name()` |
 | `last_name()` |
@@ -2577,7 +2737,18 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `uuid()` |
 | `url()` |
 | `address()` |
+| `company()` |
+| `city()` |
+| `country()` |
+| `zip_code()` |
+| `numeric(min_val: float=0.0, max_val: float=1000.0, decimals: int=2)` |
+| `datetime(start_year: int=2020, end_year: int=2025)` |
+| `for_field(field_def: dict, column_name: str=None)` |
 | `color_hex()` |
+| `job_title()` |
+| `currency()` |
+| `ip_address()` |
+| `credit_card()` |
 | `choice(items: list)` |
 | `sample(items: list, k: int)` |
 | `alphanumeric(length: int=10)` |
@@ -2590,6 +2761,10 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `start()` |
 | `stop()` |
 | `status()` |
+| `list()` |
+| `is_running(name: str)` |
+| `clear()` |
+| `match_cron(pattern: str, now: datetime=None)` |
 | `discover(service_dir: str='')` |
 
 ### Python — `RedisSessionHandler` (`session_handlers/redis_handler.py`)
@@ -2693,15 +2868,15 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 | Method | 
 |--------|
-| `addCustomHeaders($headers)` |
+| `addHeaders($headers)` |
 | `setBearerToken($token)` |
 | `setBasicAuth($username, $password)` |
 | `get($path = '', $params = [])` |
-| `post($path = '', $body = null)` |
-| `put($path = '', $body = null)` |
-| `patch($path = '', $body = null)` |
-| `delete($path = '')` |
-| `sendRequest($path = '', $method = 'GET', $body = null, $contentType = 'application/json')` |
+| `post($path = '', $body = null, $contentType = 'application/json')` |
+| `put($path = '', $body = null, $contentType = 'application/json')` |
+| `patch($path = '', $body = null, $contentType = 'application/json')` |
+| `delete($path = '', $body = null)` |
+| `sendRequest($method = 'GET', $path = '', $body = null, $contentType = 'application/json')` |
 
 ### PHP — `App` (`App.php`)
 
@@ -2737,7 +2912,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `register($modelClass)` |
 | `discover($modelsDir)` |
 | `generateRoutes()` |
-| `getModels()` |
+| `models()` |
+| `clear()` |
 
 ### PHP — `Container` (`Container.php`)
 
@@ -2899,6 +3075,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `resolve($id)` |
 | `clearResolved()` |
 | `clearAll()` |
+| `health()` |
 | `register()` |
 | `reset()` |
 
@@ -2932,8 +3109,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 | Method | 
 |--------|
-| `render($e, $request = null)` |
-| `renderProduction($statusCode = 500, $message = 'Internal Server Error', $path = '')` |
+| `renderErrorOverlay($e, $request = null)` |
+| `renderProductionError($statusCode = 500, $message = 'Internal Server Error', $path = '')` |
 | `isDebugMode()` |
 
 ### PHP — `FakeData` (`FakeData.php`)
@@ -2943,7 +3120,6 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `seed($seed)` |
 | `firstName()` |
 | `lastName()` |
-| `fullName()` |
 | `email()` |
 | `phone()` |
 | `address()` |
@@ -2956,17 +3132,23 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `sentence($words = 8)` |
 | `word()` |
 | `integer($min = 0, $max = 1000)` |
-| `float($min = 0, $max = 1000, $decimals = 2)` |
 | `boolean()` |
 | `date($start = '2020-01-01', $end = '2025-12-31')` |
 | `uuid()` |
 | `url()` |
 | `ipAddress()` |
-| `color()` |
-| `hexColor()` |
+| `colorHex()` |
 | `creditCard()` |
 | `currency()` |
+| `name()` |
+| `text($paragraphs = 3)` |
+| `choice($items)` |
+| `numeric($min = 0.0, $max = 1000.0, $decimals = 2)` |
+| `seedTable($db, $tableName, $count = 10, $fieldMap = [], $overrides = [])` |
 | `seedDir($seedDir = 'src/seeds')` |
+| `datetime($startYear = 2020, $endYear = 2025)` |
+| `forField($fieldDef, $columnName = '')` |
+| `seedOrm($ormClass, $count = 10, $overrides = [], $clear = false, $seed = null)` |
 | `run($seeder, $count = 10)` |
 
 ### PHP — `HtmlElement` (`HtmlElement.php`)
@@ -2976,6 +3158,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `__invoke(mixed ...$children)` |
 | `__toString()` |
 | `helpers()` |
+| `addHtmlHelpers(array|object &$namespace)` |
 
 ### PHP — `I18n` (`I18n.php`)
 
@@ -2987,7 +3170,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `t($key, $params = [], $locale = null)` |
 | `loadTranslations($locale)` |
 | `addTranslation($locale, $key, $value)` |
-| `getAvailableLocales()` |
+| `availableLocales()` |
 
 ### PHP — `Job` (`Job.php`)
 
@@ -3025,6 +3208,9 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `unread($folder = 'INBOX')` |
 | `search($folder = 'INBOX', $subject = null, $sender = null, $since = null, $before = null, $unseenOnly = false, $limit = 20)` |
 | `folders()` |
+| `markRead($uid, $folder = 'INBOX')` |
+| `testImapConnection()` |
+| `createMessenger()` |
 
 ### PHP — `MessengerFactory` (`MessengerFactory.php`)
 
@@ -3068,8 +3254,17 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `getRequestCount($ip)` |
 | `reset()` |
 | `cleanup()` |
+| `apply($request, $response)` |
 | `beforeRateLimit($request, $response)` |
 | `resetStatic()` |
+
+### PHP — `RateLimiterMiddleware` (`Middleware/RateLimiterMiddleware.php`)
+
+| Method | 
+|--------|
+| `beforeRateLimit($request, $response)` |
+| `check($ip)` |
+| `reset()` |
 
 ### PHP — `RequestLogger` (`Middleware/RequestLogger.php`)
 
@@ -3099,7 +3294,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 | Method | 
 |--------|
-| `from($table, $db = null)` |
+| `fromTable($table, $db = null)` |
 | `select(string ...$columns)` |
 | `where($condition, $params = [])` |
 | `orWhere($condition, $params = [])` |
@@ -3190,7 +3385,9 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `header($name)` |
 | `queryParam($key, $default = null)` |
 | `input($key, $default = null)` |
+| `param($key, $default = null)` |
 | `bearerToken()` |
+| `parseBody()` |
 
 ### PHP — `Response` (`Response.php`)
 
@@ -3209,9 +3406,9 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `xml($content, $status = 200)` |
 | `redirect($url, $status = 302)` |
 | `cookie($name, $value, $options = [])` |
+| `errorResponse($code, $message, $status = 400)` |
 | `error($code, $message, $status = 400)` |
-| `sendError($code, $message, $status = 400)` |
-| `send()` |
+| `send($data = null, $statusCode = null, $contentType = null)` |
 | `stream($source, $contentType = 'text/event-stream')` |
 | `file($path, $contentType = null, $download = false)` |
 | `getStatusCode()` |
@@ -3224,7 +3421,6 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `setBody($body)` |
 | `__toString()` |
 | `getJsonBody()` |
-| `template($templateName, $data = [], $status = 200, $templateDir = 'src/templates')` |
 | `render($templateName, $data = [], $status = 200, $templateDir = 'src/templates')` |
 
 ### PHP — `ScssCompiler` (`ScssCompiler.php`)
@@ -3235,6 +3431,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `compileFile($path)` |
 | `addImportPath($path)` |
 | `setVariable($name, $value)` |
+| `compileScss($scssDir = 'src/scss', $output = 'public/css/default.css', $minify = false)` |
 
 ### PHP — `Server` (`Server.php`)
 
@@ -3242,6 +3439,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 |--------|
 | `start()` |
 | `stop()` |
+| `handle($request)` |
 | `broadcastWebSocket($message, $path = null, $excludeId = null)` |
 | `removeWebSocketClient($connectionId)` |
 | `removeClient($socket)` |
@@ -3262,6 +3460,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `start($name = null)` |
 | `stop($name = null)` |
 | `list()` |
+| `clear()` |
 | `isRunning($name)` |
 | `matchCron($pattern, $now = null)` |
 | `createContext($name, $lastRun = 0)` |
@@ -3313,7 +3512,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 | Method | 
 |--------|
-| `generateSpec($title = 'Tina4 API', $version = '1.0.0')` |
+| `generate($routes = [])` |
 | `register()` |
 
 ### PHP — `TestClient` (`TestClient.php`)
@@ -3340,6 +3539,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `tests($assertions, $fn, $name = 'anonymous')` |
 | `runAll($quiet = false, $failfast = false)` |
 | `reset()` |
+| `discover($path)` |
+| `name($pattern = '/\/\*\*(.*?)` |
 
 ### PHP — `Validator` (`Validator.php`)
 
@@ -3361,12 +3562,16 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 | Method | 
 |--------|
-| `get(path, params: {}, headers: {})` |
-| `post(path, body: nil, headers: {})` |
-| `put(path, body: nil, headers: {})` |
-| `patch(path, body: nil, headers: {})` |
-| `delete(path, headers: {})` |
+| `get(path, params: {})` |
+| `post(path, body: nil, content_type: "application/json")` |
+| `put(path, body: nil, content_type: "application/json")` |
+| `patch(path, body: nil, content_type: "application/json")` |
+| `delete(path, body: nil)` |
 | `upload(path, file_path, field_name: "file", extra_fields: {}, headers: {})` |
+| `set_basic_auth(username, password)` |
+| `set_bearer_token(token)` |
+| `add_headers(headers)` |
+| `send_request(method = "GET", path = "", body: nil, content_type: "application/json")` |
 | `build_uri(path, params = {})` |
 | `apply_headers(request, extra_headers)` |
 | `execute(uri, request)` |
@@ -3478,7 +3683,16 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
       end
     end
 
-    # Reset (for testing)` |
+    # Register Ruby error handlers to feed the tracker.
+    # Installs an at_exit hook that captures unhandled exceptions.
+    # Safe to call multiple times — only registers once.
+    def register
+      return if @registered
+
+      @registered = true
+      tracker = self
+      at_exit do
+        if (exc = $!)` |
 | `load_unlocked(return if @errors
 
       if File.exist?(@store_path)` |
@@ -3509,6 +3723,12 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `normalize_recipients(value)` |
 | `store_attachments(msg_id, attachments)` |
 
+### Ruby — `Tina4` (`env.rb`)
+
+| Method | 
+|--------|
+| `self.is_truthy(val)` |
+
 ### Ruby — `Tina4` (`field_types.rb`)
 
 | Method | 
@@ -3531,13 +3751,17 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
         else
           escaped = value.to_s
             .gsub("&", "&amp;")` |
-| `self.html_helpers` |
+| `self.html_helpers(HtmlHelpers
+  end
+
+  # Inject _div()` |
+| `self.add_html_helpers(namespace)` |
 
 ### Ruby — `Tina4` (`job.rb`)
 
 | Method | 
 |--------|
-| `retry(delay_seconds: 0, queue: nil)` |
+| `retry(delay_seconds: 0)` |
 | `to_array([@id, @topic, @payload, @priority, @attempts]
     end
 
@@ -3577,7 +3801,21 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
                before: nil, unseen_only: false, limit: 20)` |
 | `folders(imap_connect do |imap|
         boxes = imap.list("", "*")` |
-| `auth_method(return :plain if @username && @password
+| `mark_read(uid, folder: "INBOX")` |
+| `test_imap_connection(imap_connect do |_imap|
+        # Connection succeeded
+      end
+      { success: true, message: "Connected to #{@imap_host}:#{@imap_port}" }
+    rescue => e
+      { success: false, message: "IMAP connection failed: #{e.message}" }
+    end
+
+    private
+
+    # ── SMTP helpers ─────────────────────────────────────────────────────
+
+    def auth_method
+      return :plain if @username && @password
 
       nil
     end
@@ -3627,7 +3865,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 | Method | 
 |--------|
-| `self.from(table_name, db: nil)` |
+| `self.from_table(table_name, db: nil)` |
 | `select(*columns)` |
 | `where(condition, params = [])` |
 | `or_where(condition, params = [])` |
@@ -3712,6 +3950,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 |--------|
 | `check(ip)` |
 | `apply(ip, response)` |
+| `before_rate_limit(request, response)` |
+| `reset(ip = nil)` |
 | `entry_count(@mutex.synchronize { @store.length }
     end
 
@@ -3766,7 +4006,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
     end
 
     # Look up a param by symbol or string key (indifferent access shortcut)` |
-| `param(key)` |
+| `param(key, default = nil)` |
 | `header(name)` |
 | `json_body(@json_body ||= begin
         JSON.parse(body)` |
@@ -3801,6 +4041,9 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 | Method | 
 |--------|
+| `self.get_frond(@_global_frond ||= Tina4::Frond.new(template_dir: "src/templates")` |
+| `self.get_framework_frond(framework_dir = ::File.join(::File.dirname(__FILE__)` |
+| `self.set_frond(engine)` |
 | `call(data = nil, status_code = 200, content_type = nil)` |
 | `json(data, status_or_opts = nil, status: nil)` |
 | `html(content, status_or_opts = nil, status: nil)` |
@@ -3811,7 +4054,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `file(path, content_type: nil, download: false)` |
 | `render(template_path, data = {}, status: 200, template_dir: nil)` |
 | `error(code, message, status_code = 400)` |
-| `self.error_envelope(code, message, status = 400)` |
+| `self.error_response(code, message, status = 400)` |
 | `header(name, value = nil)` |
 | `cookie(name, value, opts = {})` |
 | `set_cookie(name, value, opts = {})` |
@@ -3820,11 +4063,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `add_cors_headers(origin: "*", methods: "GET, POST, PUT, PATCH, DELETE, OPTIONS",
                          headers_list: "Content-Type, Authorization, Accept", credentials: false)` |
 | `stream(content_type: "text/event-stream", &block)` |
-| `send(to_rack
-    end
-
-    def to_rack
-      final_headers = @headers.dup
+| `send(data = nil, status_code: nil, content_type: nil)` |
+| `to_rack(final_headers = @headers.dup
       final_headers["set-cookie"] = @cookies.join("\n")` |
 | `self.auto_detect(result, response)` |
 
@@ -3860,36 +4100,20 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `address("#{@rng.rand(1..9999)` |
 | `zip_code(@rng.rand(10_000..99_999)` |
 | `company(w1 = COMPANY_WORDS[@rng.rand(COMPANY_WORDS.length)` |
+| `job_title(JOB_TITLES[@rng.rand(JOB_TITLES.length)` |
+| `currency(CURRENCIES[@rng.rand(CURRENCIES.length)` |
+| `ip_address("#{@rng.rand(1..255)` |
+| `credit_card(prefix = CREDIT_CARD_PREFIXES[@rng.rand(CREDIT_CARD_PREFIXES.length)` |
 | `color_hex("#%06x" % @rng.rand(0..0xFFFFFF)` |
 | `uuid(h = Array.new(32)` |
 | `password(length: 16)` |
+| `run(count = 1, &block)` |
 | `for_field(field_def, column_name = nil)` |
 | `generate_string_for(col, max_len)` |
 | `self.seed_orm(orm_class, count: 10, overrides: {}, clear: false, seed: nil)` |
 | `self.seed_table(table_name, columns, count: 10, overrides: {}, clear: false, seed: nil)` |
 | `self.seed_batch(tasks, clear: false)` |
-
-### Ruby — `Tina4` (`sql_translation.rb`)
-
-| Method | 
-|--------|
-| `set(key, value, ttl: nil, tags: [])` |
-| `get(key, default = nil)` |
-| `delete(key)` |
-| `clear(@mutex.synchronize { @store.clear }
-    end
-
-    # Clear all entries with a given tag.
-    #
-    # @param tag [String]
-    # @return [Integer] number of entries removed
-    def clear_tag(tag)` |
-| `sweep(@mutex.synchronize do
-        now = Time.now.to_f
-        keys_to_remove = @store.select { |_k, v| now > v.expires_at }.keys
-        keys_to_remove.each { |k| @store.delete(k)` |
-| `remember(key, ttl, &block)` |
-| `size` |
+| `self.seed_dir(seed_folder: "seeds", clear: false)` |
 
 ### Ruby — `Tina4` (`test_client.rb`)
 
@@ -3951,12 +4175,13 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
         test = TCPServer.new("0.0.0.0", @port)` |
 | `stop(@ai_server&.shutdown
       @ai_thread&.join(5)` |
+| `handle(env)` |
 
 ### Node — `Api` (`core/src/api.ts`)
 
 | Method | 
 |--------|
-| `addCustomHeaders(headers: Record<string, string>)` |
+| `addHeaders(headers: Record<string, string>)` |
 | `setBearerToken(token: string)` |
 | `setBasicAuth(username: string, password: string)` |
 | `setIgnoreSsl(ignore: boolean)` |
@@ -3965,8 +4190,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `put(path: string, body?: unknown, contentType: string = "appl...)` |
 | `patch(path: string, body?: unknown, contentType: string = "appl...)` |
 | `delete(path: string, body?: unknown)` |
-| `sendRequest(path: string,
-        method: string,
+| `sendRequest(method: string,
+        path: string,
         body?: unkn...)` |
 
 ### Node — `Container` (`core/src/container.ts`)
@@ -3992,6 +4217,11 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `track(message: string, stack?: string)` |
 | `resolve(id: string)` |
 | `clearResolved()` |
+| `clearAll()` |
+| `health()` |
+| `unresolvedCount()` |
+| `reset()` |
+| `register()` |
 | `inbox(folder: string = "inbox", limit: number = 50, offset: num...)` |
 | `read(id: string)` |
 | `seed(count = 5)` |
@@ -4003,7 +4233,6 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `remove(id: string)` |
 | `list()` |
 | `isEnabled()` |
-| `register(router: Router)` |
 | `renderToolbarHtml(ctx: {
     version: string;
     method: string;
@@ -4022,9 +4251,9 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | Method | 
 |--------|
 | `mkdirSync(dir, { recursive: true })` |
-| `capture(options: {
-    to: string | string[];
-    subject: string...)` |
+| `capture(to: string | string[],
+    subject: string,
+    body: str...)` |
 | `writeFileSync(join(outboxDir, `${id}.json`)` |
 | `inbox(limit: number = 50, offset: number = 0, folder: string = ...)` |
 | `read(msgId: string)` |
@@ -4041,7 +4270,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `seed(seed: number)` |
 | `firstName()` |
 | `lastName()` |
-| `fullName()` |
+| `name()` |
 | `email()` |
 | `phone()` |
 | `address()` |
@@ -4054,17 +4283,18 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `sentence(words = 8)` |
 | `word()` |
 | `integer(min = 0, max = 10000)` |
-| `float(min = 0, max = 1000, decimals = 2)` |
+| `numeric(min = 0, max = 1000, decimals = 2)` |
 | `boolean()` |
 | `date(start?: string, end?: string)` |
 | `uuid()` |
 | `url()` |
 | `ipAddress()` |
-| `color()` |
-| `hexColor()` |
+| `colorHex()` |
 | `creditCard()` |
 | `currency()` |
-| `runSeeds(seedDir?: string)` |
+| `text(paragraphs = 3)` |
+| `choice(T>(items: T[])` |
+| `seedDir(seedDir?: string)` |
 | `run(fn: ()` |
 
 ### Node — `HtmlElement` (`core/src/htmlElement.ts`)
@@ -4083,7 +4313,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `translate(key: string, params?: Record<string, string>, locale?: st...)` |
 | `loadTranslations(locale: string)` |
 | `addTranslation(locale: string, key: string, value: string)` |
-| `getAvailableLocales()` |
+| `availableLocales()` |
 
 ### Node — `Log` (`core/src/logger.ts`)
 
@@ -4101,14 +4331,19 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 | Method | 
 |--------|
-| `send(options: SendOptions)` |
+| `send(to: string | string[],
+    subject: string,
+    body: str...)` |
 | `testConnection()` |
 | `inbox(limit: number = 20, offset: number = 0, folder: string = ...)` |
 | `read(uid: string, folder: string = "INBOX")` |
-| `search(query: string, folder: string = "INBOX")` |
+| `search(folder: string = "INBOX",
+    subject?: string,
+    sende...)` |
 | `deleteMessage(uid: string, folder: string = "INBOX")` |
 | `markRead(uid: string, folder: string = "INBOX")` |
 | `unread(folder: string = "INBOX")` |
+| `folders()` |
 | `testImapConnection()` |
 
 ### Node — `MiddlewareChain` (`core/src/middleware.ts`)
@@ -4117,6 +4352,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 |--------|
 | `use(fn: Middleware)` |
 | `run(req: Tina4Request, res: Tina4Response)` |
+| `getGlobal()` |
+| `reset()` |
 | `runBefore(classes: any[],
     req: Tina4Request,
     res: Tina4Resp...)` |
@@ -4125,7 +4362,9 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
     res: Tina4Resp...)` |
 | `next()` |
 | `beforeCors(req: Tina4Request, res: Tina4Response)` |
+| `isPreflight(method: string)` |
 | `beforeRateLimit(req: Tina4Request, res: Tina4Response)` |
+| `check(ip: string)` |
 | `beforeLog(req: Tina4Request, res: Tina4Response)` |
 | `afterLog(req: Tina4Request, res: Tina4Response)` |
 | `beforeSecurity(req: Tina4Request, res: Tina4Response)` |
@@ -4180,6 +4419,16 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `writeShortString(keyBuf, 0, key)` |
 | `writeLongString(valBuf, 1, value)` |
 
+### Node — `RateLimiter` (`core/src/rateLimiter.ts`)
+
+| Method | 
+|--------|
+| `next()` |
+| `check(ip: string)` |
+| `reset()` |
+| `apply(request: Tina4Request, response: Tina4Response)` |
+| `beforeRateLimit(request: Tina4Request, response: Tina4Response)` |
+
 ### Node — `PayloadTooLargeError` (`core/src/request.ts`)
 
 | Method | 
@@ -4194,6 +4443,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `compileFile(filePath: string)` |
 | `addImportPath(path: string)` |
 | `setVariable(name: string, value: string)` |
+| `compileScss(scssDir: string = "src/scss", output: string = "public/cs...)` |
+| `writeFileSync(absOutput, css, "utf-8")` |
 | `flattenBlock(scss, [], output)` |
 
 ### Node — `ServiceRunner` (`core/src/service.ts`)
@@ -4212,6 +4463,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `isRunning(name: string)` |
 | `remove(name: string)` |
 | `clear()` |
+| `matchCron(pattern: string, now?: Date)` |
 | `watch(serviceDir?: string)` |
 | `unwatch()` |
 
@@ -4282,6 +4534,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `render(template: string, data?: Record<string, unknown>)` |
 | `renderString(source: string, data?: Record<string, unknown>)` |
 | `clearCache()` |
+| `renderDump(value: unknown)` |
 
 ### Node — `FirebirdAdapter` (`orm/src/adapters/firebird.ts`)
 
@@ -4303,7 +4556,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `insertAsync(table: string, data: Record<string, unknown>)` |
 | `update(table: string, data: Record<string, unknown>, filter: Rec...)` |
 | `updateAsync(table: string, data: Record<string, unknown>, filter: Rec...)` |
-| `delete(table: string, filter: Record<string, unknown>)` |
+| `delete(table: string, filter: Record<string, unknown>, params?: ...)` |
 | `deleteAsync(table: string, filter: Record<string, unknown>)` |
 | `startTransaction()` |
 | `startTransactionAsync()` |
@@ -4342,7 +4595,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `insertAsync(table: string, data: Record<string, unknown>)` |
 | `update(table: string, data: Record<string, unknown>, filter: Rec...)` |
 | `updateAsync(table: string, data: Record<string, unknown>, filter: Rec...)` |
-| `delete(table: string, filter: Record<string, unknown>)` |
+| `delete(table: string, filter: Record<string, unknown>, params?: ...)` |
 | `deleteAsync(table: string, filter: Record<string, unknown>)` |
 | `startTransaction()` |
 | `startTransactionAsync()` |
@@ -4381,7 +4634,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `insertAsync(table: string, data: Record<string, unknown>)` |
 | `update(table: string, data: Record<string, unknown>, filter: Rec...)` |
 | `updateAsync(table: string, data: Record<string, unknown>, filter: Rec...)` |
-| `delete(table: string, filter: Record<string, unknown>)` |
+| `delete(table: string, filter: Record<string, unknown>, params?: ...)` |
 | `deleteAsync(table: string, filter: Record<string, unknown>)` |
 | `startTransaction()` |
 | `startTransactionAsync()` |
@@ -4419,7 +4672,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `insertAsync(table: string, data: Record<string, unknown>)` |
 | `update(table: string, data: Record<string, unknown>, filter: Rec...)` |
 | `updateAsync(table: string, data: Record<string, unknown>, filter: Rec...)` |
-| `delete(table: string, filter: Record<string, unknown>)` |
+| `delete(table: string, filter: Record<string, unknown>, params?: ...)` |
 | `deleteAsync(table: string, filter: Record<string, unknown>)` |
 | `startTransaction()` |
 | `startTransactionAsync()` |
@@ -4463,13 +4716,21 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `getTableColumns(name: string)` |
 | `addColumn(table: string, colName: string, def: FieldDefinition)` |
 
+### Node — `AutoCrud` (`orm/src/autoCrud.ts`)
+
+| Method | 
+|--------|
+| `register(model: DiscoveredModel, prefix: string = "/api")` |
+| `discover(discoveredModels: DiscoveredModel[], prefix: string = "/api")` |
+| `models()` |
+| `clear()` |
+| `generateRoutes()` |
+
 ### Node — `FakeData` (`orm/src/fakeData.ts`)
 
 | Method | 
 |--------|
 | `super(seed)` |
-| `name()` |
-| `numeric(min = 0, max = 1000, decimals = 2)` |
 | `datetime(startYear = 2020, endYear = 2025)` |
 | `forField(fieldDef: FieldDefinition, columnName?: string)` |
 
@@ -4477,7 +4738,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 | Method | 
 |--------|
-| `from(tableName: string, db?: DatabaseAdapter)` |
+| `fromTable(tableName: string, db?: DatabaseAdapter)` |
 | `select(...cols: string[])` |
 | `where(condition: string, params: unknown[] = [])` |
 | `orWhere(condition: string, params: unknown[] = [])` |
@@ -4508,7 +4769,8 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `parseReturning(sql: string)` |
 | `queryKey(sql: string, params?: unknown[])` |
 | `get(T>(key: string)` |
-| `set(T>(key: string, value: T, ttl?: number)` |
+| `set(T>(key: string, value: T, ttl?: number, tags: string[] = [])` |
+| `clearTag(tag: string)` |
 | `has(key: string)` |
 | `delete(key: string)` |
 | `sweep()` |

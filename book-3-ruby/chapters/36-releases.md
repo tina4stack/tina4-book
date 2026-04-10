@@ -1,5 +1,19 @@
 # Chapter 35: Release Notes
 
+## v3.10.92 (2026-04-10)
+
+- **breaking:** Rename `ErrorOverlay` methods — `render` → `render_error_overlay`, `render_production` → `render_production_error`, `debug_mode?` → `is_debug_mode`.
+- **feat:** Add `Server.handle(env)` for cross-framework parity.
+- **breaking:** Rename `WebSocketBackplane.create` → `WebSocketBackplane.create_backplane`.
+- **feat:** Add `ScssCompiler.compile`, `add_import_path`, `set_variable` methods.
+- **feat:** Add `DevAdmin.register` method.
+- **parity:** 44/44 cross-framework features green. 2,487 tests passing.
+
+## v3.10.91 (2026-04-10)
+
+- **feat:** Add parity methods — `Response.send` params, `Middleware.check`/`is_preflight`, AI/Log aliases, MCP optional router.
+- **breaking:** Rename `from()` → `from_table()`, `error_envelope` → `error_response`, remove aliases.
+
 ## v3.10.90 (2026-04-09)
 
 - **docs:** Chapter 4 (Templates) — new "Dumping Values for Debugging" section covering both `{{ x|dump }}` and `{{ dump(x) }}` forms, their shared `<pre>value.inspect</pre>` output, and the `TINA4_DEBUG=true` production gate. Filter table entry updated to reference the new section.

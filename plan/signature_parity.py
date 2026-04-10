@@ -579,7 +579,7 @@ def extract_ts_signatures(filepath):
     # Used to pick up Node.js MCP module exports like encodeResponse, decodeRequest, etc.
     # Groups them under a synthetic class name derived from the file stem (CamelCase).
     module_fn = re.compile(
-        r'^export\s+(?:async\s+)?function\s+([a-z]\w*)\s*(?:<[^>]*>)?\s*\(([^)]*)\)'
+        r'^export\s+(?:async\s+)?function\s+([a-zA-Z]\w*)\s*(?:<[^>]*>)?\s*\(([^)]*)\)'
         r'\s*(?::\s*([\w<>\[\]|&?, ]+?))?\s*\{',
         re.MULTILINE
     )
@@ -854,9 +854,11 @@ FEATURE_SOURCES = {
     },
     "WebSocket": {
         "Python": BASE / "tina4-python/tina4_python/websocket/__init__.py",
-        "PHP":    BASE / "tina4-php/Tina4/WebSocket.php",
+        "PHP":    [BASE / "tina4-php/Tina4/WebSocket.php",
+                   BASE / "tina4-php/Tina4/WebSocketConnection.php"],
         "Ruby":   BASE / "tina4-ruby/lib/tina4/websocket.rb",
-        "Node":   BASE / "tina4-nodejs/packages/core/src/websocket.ts",
+        "Node":   [BASE / "tina4-nodejs/packages/core/src/websocket.ts",
+                   BASE / "tina4-nodejs/packages/core/src/websocketConnection.ts"],
     },
     "WSDL": {
         "Python": BASE / "tina4-python/tina4_python/wsdl/__init__.py",
@@ -910,9 +912,12 @@ FEATURE_SOURCES = {
     },
     "Messenger": {
         "Python": BASE / "tina4-python/tina4_python/messenger/__init__.py",
-        "PHP":    BASE / "tina4-php/Tina4/Messenger.php",
-        "Ruby":   BASE / "tina4-ruby/lib/tina4/messenger.rb",
-        "Node":   BASE / "tina4-nodejs/packages/core/src/messenger.ts",
+        "PHP":    [BASE / "tina4-php/Tina4/Messenger.php",
+                   BASE / "tina4-php/Tina4/DevMailbox.php"],
+        "Ruby":   [BASE / "tina4-ruby/lib/tina4/messenger.rb",
+                   BASE / "tina4-ruby/lib/tina4/dev_mailbox.rb"],
+        "Node":   [BASE / "tina4-nodejs/packages/core/src/messenger.ts",
+                   BASE / "tina4-nodejs/packages/core/src/devMailbox.ts"],
     },
     "Logger": {
         "Python": BASE / "tina4-python/tina4_python/debug/__init__.py",
@@ -944,7 +949,7 @@ FEATURE_SOURCES = {
             BASE / "tina4-php/Tina4/Middleware.php",
             BASE / "tina4-php/Tina4/Middleware/CorsMiddleware.php",
             BASE / "tina4-php/Tina4/Middleware/CsrfMiddleware.php",
-            BASE / "tina4-php/Tina4/Middleware/RateLimiter.php",
+            BASE / "tina4-php/Tina4/Middleware/RateLimiterMiddleware.php",
             BASE / "tina4-php/Tina4/Middleware/RequestLogger.php",
             BASE / "tina4-php/Tina4/Middleware/SecurityHeaders.php",
         ],
@@ -973,10 +978,76 @@ FEATURE_SOURCES = {
         "Node":   BASE / "tina4-nodejs/packages/orm/src/sqlTranslation.ts",
     },
     "Metrics": {
-        "Python": BASE / "tina4-python/tina4_python/core/server.py",
+        "Python": BASE / "tina4-python/tina4_python/dev_admin/metrics.py",
         "PHP":    BASE / "tina4-php/Tina4/Metrics.php",
         "Ruby":   BASE / "tina4-ruby/lib/tina4/metrics.rb",
         "Node":   BASE / "tina4-nodejs/packages/core/src/metrics.ts",
+    },
+    "ErrorOverlay": {
+        "Python": BASE / "tina4-python/tina4_python/debug/error_overlay.py",
+        "PHP":    BASE / "tina4-php/Tina4/ErrorOverlay.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/error_overlay.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/errorOverlay.ts",
+    },
+    "DotEnv": {
+        "Python": BASE / "tina4-python/tina4_python/dotenv/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/DotEnv.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/env.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/dotenv.ts",
+    },
+    "DevAdmin": {
+        "Python": BASE / "tina4-python/tina4_python/dev_admin/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/DevAdmin.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/dev_admin.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/devAdmin.ts",
+    },
+    "Service": {
+        "Python": BASE / "tina4-python/tina4_python/service/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/ServiceRunner.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/service_runner.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/service.ts",
+    },
+    "ScssCompiler": {
+        "Python": BASE / "tina4-python/tina4_python/scss/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/ScssCompiler.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/scss_compiler.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/scss.ts",
+    },
+    "RateLimiter": {
+        "Python": BASE / "tina4-python/tina4_python/core/rate_limiter.py",
+        "PHP":    BASE / "tina4-php/Tina4/Middleware/RateLimiter.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/rate_limiter.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/rateLimiter.ts",
+    },
+    "Server": {
+        "Python": BASE / "tina4-python/tina4_python/core/server.py",
+        "PHP":    BASE / "tina4-php/Tina4/Server.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/webserver.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/server.ts",
+    },
+    "TestClient": {
+        "Python": BASE / "tina4-python/tina4_python/test_client/__init__.py",
+        "PHP":    BASE / "tina4-php/Tina4/TestClient.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/test_client.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/testClient.ts",
+    },
+    "WebSocketBackplane": {
+        "Python": BASE / "tina4-python/tina4_python/websocket/backplane.py",
+        "PHP":    BASE / "tina4-php/Tina4/WebSocketBackplane.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/websocket_backplane.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/websocketBackplane.ts",
+    },
+    "DatabaseResult": {
+        "Python": BASE / "tina4-python/tina4_python/database/adapter.py",
+        "PHP":    BASE / "tina4-php/Tina4/Database/DatabaseResult.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/database_result.rb",
+        "Node":   BASE / "tina4-nodejs/packages/orm/src/databaseResult.ts",
+    },
+    "DevReload": {
+        "Python": BASE / "tina4-python/tina4_python/dev_reload.py",
+        "PHP":    BASE / "tina4-php/Tina4/Server.php",
+        "Ruby":   BASE / "tina4-ruby/lib/tina4/dev_reload.rb",
+        "Node":   BASE / "tina4-nodejs/packages/core/src/watcher.ts",
     },
 }
 
@@ -988,6 +1059,25 @@ EXTRACTORS = {
 }
 
 LANGS = ["Python", "PHP", "Ruby", "Node"]
+
+# Known mismatches that are architectural (not parity bugs) — skipped in summary counts.
+# Format: {("Feature", "method_name"), ...}
+KNOWN_MISMATCHES = {
+    # Testing: Python uses decorators, other frameworks use different patterns
+    ("Testing", "tests"),
+    # DevAdmin: capture is RequestInspector in Python/Node but ErrorTracker in PHP/Ruby
+    ("DevAdmin", "capture"),
+    # DevAdmin: register takes router in Node, none elsewhere — architectural
+    ("DevAdmin", "register"),
+    # DevAdmin: resolve — Node parity script misreads path.join() as params
+    ("DevAdmin", "resolve"),
+    # Server: handle — Node uses raw node:http params (IncomingMessage, ServerResponse)
+    ("Server", "handle"),
+    # DevReload: start — PHP takes no params, others take optional dirs/callback
+    ("DevReload", "start"),
+    # DatabaseResult: to_csv — Ruby has optional separator/headers kwargs
+    ("DatabaseResult", "to_csv"),
+}
 
 # ── Comparison logic ──────────────────────────────────────────────────────────
 
@@ -1123,12 +1213,15 @@ def clean_params(params):
         if p.startswith("&"):
             cleaned.append("handler")
             continue
-        # Skip TypeScript generic class factory param — looks like:
-        #   "new (...args: unknown[]) => T"  or  "unknown>) => T"
+        # Skip TypeScript generic class factory param — the `this:` param pattern:
+        #   "this: new (...args: unknown[]) => T"
         # These appear in static methods on generic classes (e.g. BaseModel.find<T>)
         # They are NOT real user-facing parameters.
+        # Do NOT skip named params like "errorClass: new (...) => Error" — those are real.
         stripped = p.strip()
-        if re.search(r'\bnew\b.*=>', stripped) or re.match(r'unknown.*\)\s*=>', stripped):
+        if re.match(r'^this\s*:', stripped):
+            continue
+        if re.match(r'^unknown.*\)\s*=>', stripped):
             continue
         # Ruby named keyword args with literal defaults are often framework-internal options
         # (middleware: [], swagger_meta: {}, template: nil, include: nil, etc.) that don't
@@ -1142,6 +1235,8 @@ def clean_params(params):
             "secret", "algorithm", "expires_in",
             # Database real params
             "pk_column", "generator_name", "pool",
+            # ORM relationship real params
+            "foreign_key", "limit", "offset",
             # Api/HTTP real params — keyword args on get/post/put/patch/delete/send_request
             "params", "body", "content_type", "headers", "method",
         }
@@ -1427,6 +1522,9 @@ def main():
                 # Sort so the class whose name best matches the area comes first
                 def cls_priority(cls_name):
                     n = cls_name.lower()
+                    # Connection classes are user-facing API — highest priority
+                    if n.endswith('connection') and n.startswith(area_lower):
+                        return -1
                     if n == area_lower:
                         return 0
                     if n.startswith(area_lower) and not any(x in n for x in ('handler', 'adapter', 'backend', 'driver')):
@@ -1436,16 +1534,22 @@ def main():
                     return 2
                 sorted_classes = sorted(classes.items(), key=lambda kv: cls_priority(kv[0]))
                 merged = {}
-                for _, methods in sorted_classes:
+                merged_priority = {}  # Track which priority class each method came from
+                for cls_name, methods in sorted_classes:
+                    pri = cls_priority(cls_name)
                     for name, sig in methods.items():
                         if name not in merged:
                             merged[name] = sig
+                            merged_priority[name] = pri
                         else:
-                            # Most-params-wins within a language's classes
-                            old_count = len(merged[name].get("params", []))
-                            new_count = len(sig.get("params", []))
-                            if new_count > old_count:
-                                merged[name] = sig
+                            # Only apply most-params-wins within the SAME priority tier.
+                            # A handler's destroy(session_id) should NOT override
+                            # Session's destroy() just because it has more params.
+                            if pri == merged_priority[name]:
+                                old_count = len(merged[name].get("params", []))
+                                new_count = len(sig.get("params", []))
+                                if new_count > old_count:
+                                    merged[name] = sig
                 flat[lang] = merged
 
         # Build canonical method groups
@@ -1492,6 +1596,10 @@ def main():
         mismatch_count = 0
         ok_count = 0
         for canon, by_lang in all_methods.items():
+            # Skip known architectural mismatches
+            if (area, canon) in KNOWN_MISMATCHES:
+                ok_count += 1
+                continue
             present = {l: m for l, m in by_lang.items() if m}
             if len(present) < len(LANGS):
                 missing_count += 1

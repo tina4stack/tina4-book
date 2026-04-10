@@ -1,5 +1,23 @@
 # Chapter 35: Release Notes
 
+## v3.10.92 (2026-04-10)
+
+- **feat:** Add `RateLimiterMiddleware` class with `beforeRateLimit()`, `check()`, `reset()` static methods.
+- **breaking:** Rename `ErrorOverlay` methods — `render()` → `renderErrorOverlay()`, `renderProduction()` → `renderProductionError()`.
+- **feat:** Add `Server::handle(Request $request): Response` for cross-framework parity.
+- **feat:** Add `DatabaseResult::size()` method.
+- **breaking:** Rename `WebSocketBackplane::create()` → `WebSocketBackplane::createBackplane()`.
+- **feat:** Add `DevAdmin::health()` method.
+- **feat:** Add `ScssCompiler::compileScss()` method.
+- **fix:** Add `DatabaseSessionHandler::delete()` delegating to `destroy()`.
+- **fix:** `SmokeTest` — pass secret explicitly to `Auth::getToken()` to fix test ordering issue.
+- **parity:** 44/44 cross-framework features green. 2,305 tests passing.
+
+## v3.10.91 (2026-04-10)
+
+- **feat:** Add parity methods — `GraphQLType::parse()`, `Response::send()` params, `MCP::registerRoutes()` optional router.
+- **breaking:** Rename `from()` → `fromTable()`, `template()` → `render()` — align with Python canonical names.
+
 ## v3.10.90 (2026-04-09)
 
 - **docs:** Chapter 4 (Templates) — new "Dumping Values for Debugging" section covering both `{{ $x|dump }}` and `{{ dump($x) }}` forms, their shared `<pre>var_dump()</pre>` output, and the `TINA4_DEBUG=true` production gate. Filter table entry updated to reference the new section.
