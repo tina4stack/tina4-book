@@ -8,7 +8,7 @@ You install a framework. It pulls 200 packages. It creates a dozen configuration
 
 tina4-js takes a different path. 1.5KB core gzipped. Under 6KB for the full framework. Zero dependencies. No virtual DOM. No build step required.
 
-Signals for state. Tagged templates for DOM. Web Components for encapsulation. A router for navigation. An HTTP client for APIs. WebSocket for real-time. PWA for installability. Seven modules. One import. That is the entire framework.
+Signals for state. Tagged templates for DOM. Web Components for encapsulation. A router for navigation. An HTTP client for APIs. WebSocket for real-time. PWA for installability. Eight modules. One import. That is the entire framework.
 
 This book teaches you all of it.
 
@@ -39,6 +39,7 @@ Each project works. Each project ships. Each project fits in a single file if yo
 5. **Routing** -- Navigation without the router library
 6. **API** -- Talking to your backend
 7. **WebSocket** -- Real-time without the headache
+7b. **SSE / NDJSON Streaming** -- Server push without WebSocket
 8. **PWA** -- Make it installable
 9. **Debug Overlay** -- See everything
 10. **tina4-css** -- Optional styling
