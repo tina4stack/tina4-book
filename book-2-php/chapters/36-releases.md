@@ -1,5 +1,11 @@
 # Chapter 35: Release Notes
 
+## v3.10.97 (2026-04-11)
+
+- **fix:** frond.form.submit redirect handling — XHR follows 3xx redirects transparently; fixed by detecting `xhr.responseURL` mismatch and navigating instead.
+- **dep:** Updated frond.min.js to v2.1.2.
+- **parity:** All 4 frameworks bumped to 3.10.97.
+
 ## v3.10.93 (2026-04-11)
 
 - **fix:** Frond bracket depth tracking in `findOutsideQuotes()` and `splitOutsideQuotes()` — expressions like `$arr[$i % 2]` no longer treated as top-level arithmetic.

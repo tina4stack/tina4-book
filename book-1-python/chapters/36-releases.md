@@ -1,5 +1,26 @@
 # Chapter 35: Release Notes
 
+## v3.10.97 (2026-04-11)
+
+- **fix:** frond.form.submit redirect handling — XHR transparently follows 3xx redirects, so the callback received redirected HTML instead of navigating. Fixed by comparing `xhr.responseURL` with the original URL and calling `window.location.href` when a redirect is detected.
+- **fix:** Currency placeholder — locale files now default to `$` for the currency symbol.
+- **fix:** Admin sidebar alignment — widened sidebar to 220px with `min-width` to prevent label truncation.
+- **fix:** Admin table overflow — added `min-width: 0` and `overflow-x: auto` on `.admin-main` to prevent content clipping.
+- **fix:** Order detail template — corrected variable names (`items` instead of `order.items`, `item.name` instead of `item.product_name`) and used `.records` from `DatabaseResult`.
+- **fix:** Status badges — dashboard recent orders and order list now show colored badge pills with translated status labels (pending, processing, shipped, delivered, cancelled).
+- **fix:** Date formatting — admin order/dashboard dates trimmed to `YYYY-MM-DD HH:MM:SS` instead of raw ISO with microseconds.
+- **feat:** Cart quantity spinner — reactive qty controls using tina4-js signals, computed values, and effects.
+- **feat:** Multi-currency pricing — forex conversion via Api client (frankfurter.app), `|currency` template filter, currency selector in navbar.
+- **feat:** MCP server tools — `check_stock`, `low_stock_report`, `search_products` tools and `store://categories`, `store://inventory-summary` resources for AI assistant integration.
+- **feat:** Contact form — built with `HtmlElement` and `add_html_helpers()` to demonstrate programmatic HTML generation.
+- **feat:** ORM named scopes — `Product.scope("active")`, `Product.scope("low_stock")`, `Product.scope("expensive")`.
+- **feat:** Database connection pooling — `Database("sqlite:data/store.db", pool=4)`.
+- **feat:** Inline tests — `@tests` decorators on `cart_service.py` and `forex_service.py`.
+- **feat:** Language toggle — flag button (🇫🇷/🇬🇧) in navbar to switch locale.
+- **feat:** Helpdesk chat persistence — chat messages stored in DB, history API (`GET /api/chat/history`).
+- **dep:** Updated frond.min.js to v2.1.2 across all 4 frameworks (Python, PHP, Ruby, Node.js).
+- **parity:** All 4 frameworks bumped to 3.10.97.
+
 ## v3.10.93 (2026-04-11)
 
 - **fix:** Frond array/dict literal support — `{% set items = ["a", "b"] %}` and `{% set obj = {"k": "v"} %}` now parse correctly.
