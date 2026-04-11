@@ -1,5 +1,13 @@
 # Chapter 35: Release Notes
 
+## v3.10.93 (2026-04-11)
+
+- **fix:** Frond bracket depth tracking in `findOutsideQuotes()` and `splitOutsideQuotes()` — expressions like `$arr[$i % 2]` no longer treated as top-level arithmetic.
+- **fix:** Frond subscript expression evaluation — bracket content uses `evaluateExpression()` instead of `resolveVariable()`, enabling `arr[loop.index0 % 2]`.
+- **fix:** Frond slice with variable bounds — `items[start:end]` evaluates bounds through `evaluateExpression()`.
+- **docs:** Developer skills updated — Metrics Dashboard guidance, Frond Template Parity rules, `@noauth` security warnings.
+- **parity:** All Frond fixes applied identically across Python, PHP, Ruby, Node.js. 2,339 tests passing (263 Frond).
+
 ## v3.10.92 (2026-04-10)
 
 - **feat:** Add `RateLimiterMiddleware` class with `beforeRateLimit()`, `check()`, `reset()` static methods.

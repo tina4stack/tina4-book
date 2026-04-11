@@ -1,5 +1,13 @@
 # Chapter 35: Release Notes
 
+## v3.10.93 (2026-04-11)
+
+- **fix:** Frond bracket depth tracking in `find_outside_quotes` — expressions like `arr[i % 2]` no longer treated as top-level arithmetic.
+- **fix:** Frond subscript expression evaluation — bracket content uses `eval_expr()` instead of simple variable lookup, enabling `arr[loop.index0 % 2]`.
+- **fix:** Frond slice with variable bounds — `items[start:end]` evaluates bounds through `eval_expr()`.
+- **docs:** Developer skills updated — Metrics Dashboard guidance, Frond Template Parity rules, `@noauth` security warnings.
+- **parity:** All Frond fixes applied identically across Python, PHP, Ruby, Node.js. 2,513 tests passing.
+
 ## v3.10.92 (2026-04-10)
 
 - **breaking:** Rename `ErrorOverlay` methods — `render` → `render_error_overlay`, `render_production` → `render_production_error`, `debug_mode?` → `is_debug_mode`.
