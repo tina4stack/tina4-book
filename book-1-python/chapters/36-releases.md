@@ -1,5 +1,18 @@
 # Chapter 35: Release Notes
 
+## v3.10.99 (2026-04-12)
+
+- **breaking:** `auto_map` now defaults to `True` — ORM models automatically map between camelCase properties and snake_case DB columns. Set `auto_map = False` on your model to restore the old behaviour.
+- **feat:** `to_dict(case=)` parameter — pass `case='camel'` to get camelCase keys (for JSON APIs) or `case='snake'` (default) for snake_case keys matching DB columns.
+- **feat:** Frond `replace` filter now accepts dict args — `{{ v|replace({"T": " ", "-": "/"}) }}` for multiple substitutions in one call.
+- **feat:** `background(callback, interval)` — register periodic tasks that run cooperatively in the asyncio event loop. Replaces `threading.Thread` for background work.
+- **feat:** Background task protection — sync callbacks run in a `ThreadPoolExecutor` via `run_in_executor()` with `asyncio.wait_for()` timeout, preventing blocking functions from freezing the server.
+- **feat:** Docker image now bundles the example store demo — `docker run tina4stack/tina4-python:v3` starts a working app out of the box.
+- **fix:** Cart nav badge now updates reactively on quantity change and item removal (tina4-js `signal`/`computed`/`effect`).
+- **fix:** Non-blocking queue consumer — `process_orders()` uses `queue.pop()` (single job per tick) instead of blocking `queue.consume()`.
+- **tests:** 6 new parity tests covering `to_dict(case=)`, `auto_map` default, `replace` filter (dict + positional), and `background()` registration.
+- **parity:** All features shipped identically across Python, PHP, Ruby, Node.js. 2,304 tests passing.
+
 ## v3.10.97 (2026-04-11)
 
 - **fix:** frond.form.submit redirect handling — XHR transparently follows 3xx redirects, so the callback received redirected HTML instead of navigating. Fixed by comparing `xhr.responseURL` with the original URL and calling `window.location.href` when a redirect is detected.

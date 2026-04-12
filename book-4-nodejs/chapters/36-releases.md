@@ -1,5 +1,13 @@
 # Chapter 35: Release Notes
 
+## v3.10.99 (2026-04-12)
+
+- **breaking:** `autoMap` now defaults to `true` — ORM models automatically map between camelCase properties and snake_case DB columns. Set `static autoMap = false;` on your model to restore the old behaviour.
+- **feat:** `toDict(include, case)` parameter — pass `'snake'` as second arg to get snake_case keys matching DB columns, or `'camel'` (default) for camelCase.
+- **feat:** Frond `replace` filter now accepts object args — `{{ v|replace({"T": " ", "-": "/"}) }}` for multiple substitutions in one call.
+- **tests:** 13 new parity tests covering `toDict(case)`, `autoMap` default, `replace` filter (object + positional), and `ServiceRunner` registration. 268 tests passing.
+- **parity:** All features shipped identically across Python, PHP, Ruby, Node.js.
+
 ## v3.10.97 (2026-04-11)
 
 - **fix:** frond.form.submit redirect handling — XHR follows 3xx redirects transparently; fixed by detecting `xhr.responseURL` mismatch and navigating instead.

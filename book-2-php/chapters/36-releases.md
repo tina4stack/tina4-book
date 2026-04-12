@@ -1,5 +1,21 @@
 # Chapter 35: Release Notes
 
+## v3.10.99 (2026-04-12)
+
+- **breaking:** `autoMap` now defaults to `true` — ORM models automatically map between camelCase properties and snake_case DB columns. Set `public bool $autoMap = false;` on your model to restore the old behaviour.
+- **breaking:** `all()` now returns a flat array of model instances instead of `['data' => [...], 'total' => N, ...]`. Use `count()` separately if you need the total.
+- **feat:** `toDict(include, case)` parameter — pass `case: 'snake'` to get snake_case keys matching DB columns, or `case: 'camel'` (default) for camelCase.
+- **feat:** Frond `replace` filter now accepts dict args — `{{ v|replace({"T": " ", "-": "/"}) }}` for multiple substitutions in one call.
+- **feat:** `$app->background(callback, interval)` — register periodic tasks that run cooperatively in the `stream_select` event loop. No threads, no separate processes.
+- **feat:** Background timing guard — warns when callbacks exceed their interval, helping developers identify blocking operations.
+- **feat:** WebSocket room management moved to `Server` class — `joinRoom()`, `leaveRoom()`, `broadcastToRoom()` now work reliably via `WebSocketConnection->server`.
+- **feat:** Docker image now bundles the example store demo — `docker run tina4stack/tina4-php:v3` starts a working app out of the box.
+- **fix:** AutoCrud updated for new `all()` return format.
+- **fix:** Cart nav badge now updates reactively on quantity change and item removal.
+- **fix:** Non-blocking queue consumer — `processOrders()` uses `$queue->pop()` instead of blocking `$queue->consume()`.
+- **tests:** 6 new parity tests covering `toDict(case:)`, `autoMap` default, `replace` filter (dict + positional), and `background()` registration. 2,345 tests passing.
+- **parity:** All features shipped identically across Python, PHP, Ruby, Node.js.
+
 ## v3.10.97 (2026-04-11)
 
 - **fix:** frond.form.submit redirect handling — XHR follows 3xx redirects transparently; fixed by detecting `xhr.responseURL` mismatch and navigating instead.
