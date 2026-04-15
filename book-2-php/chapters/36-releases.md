@@ -1,5 +1,26 @@
 # Chapter 35: Release Notes
 
+
+## v3.11.9 (2026-04-15)
+
+Catch-up release covering v3.11.0 → v3.11.9 across all 4 frameworks.
+
+- **feat (websocket):** Full WebSocket parity across Python/PHP/Node/Ruby — `get_client_rooms()` / `getClientRooms()`, `route()` usable as decorator or direct handler registration, matching room/broadcast semantics, plus new parity tests on all 4.
+- **feat (graphql):** Input validation and field-level `@auth` directives with context threading.
+- **feat (graphql):** Auto-discovery of schemas; removed legacy DevAdmin HTML/JS in favour of the new UI.
+- **feat (devadmin — Python):** Queue tab with topic selector, dead-letter listing and replay endpoints, inline payload expand/copy, version display.
+- **feat (cli):** Rust CLI now owns file watching — frameworks receive `POST /__dev/api/reload` and internal watchers are disabled when launched by the Rust CLI (`--managed`).
+- **fix (cli):** `parseFlags` / `parse_flags` / `parseCliArgs` no longer swallow `host:port` or positional args after boolean flags.
+- **fix (scss):** SCSS recompilation loop fixed; output path corrected to `src/public/css/` to match CLI and static serving.
+- **fix (frond — Python):** Numeric dotted index for lists (`items.0.name`) now resolves correctly.
+- **fix (router — Ruby):** Bare `/*` wildcard capture exposed under `"*"` key for parity.
+- **fix (orm — PHP):** Three data-sync bugs fixed: `load()` double-fill, `getPrimaryKeyValue`, `save()` ID sync.
+- **fix (graphql):** `from_orm` / `fromOrm` list resolver used `select(skip=)` instead of `all(offset=)`.
+- **fix (metrics):** Windows backslash paths normalised to forward slashes.
+- **fix (app — PHP):** No longer crashes on notices/deprecations in loaded files; `run()` now prints the banner when starting the server directly.
+- **chore:** Example demo store ships with the repo; Windows-friendly setup; `.env.example` and setup scripts added.
+- **parity:** All 4 frameworks bumped to 3.11.9. PHP aligned to the 3.x tag scheme on `v3`.
+
 ## v3.10.99 (2026-04-12)
 
 - **breaking:** `autoMap` now defaults to `true` — ORM models automatically map between camelCase properties and snake_case DB columns. Set `public bool $autoMap = false;` on your model to restore the old behaviour.
