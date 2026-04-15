@@ -1,6 +1,6 @@
 # Tina4 Signature Parity Report
 
-> Auto-generated on 2026-04-10
+> Auto-generated on 2026-04-15
 
 Compares public method signatures (params + return types) across Python, PHP, Ruby, and Node.js.
 Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = mismatch or missing.
@@ -24,7 +24,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Cache | 7 | 7 | 0 | 0 |
 | Container | 5 | 5 | 0 | 0 |
 | Events | 8 | 8 | 0 | 0 |
-| WebSocket | 15 | 15 | 0 | 0 |
+| WebSocket | 20 | 20 | 0 | 0 |
 | WSDL | 5 | 5 | 0 | 0 |
 | Swagger | 1 | 1 | 0 | 0 |
 | I18n | 7 | 7 | 0 | 0 |
@@ -37,14 +37,14 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Logger | 7 | 7 | 0 | 0 |
 | AI | 5 | 5 | 0 | 0 |
 | Request | 4 | 4 | 0 | 0 |
-| Response | 17 | 17 | 0 | 0 |
+| Response | 18 | 18 | 0 | 0 |
 | Middleware | 13 | 13 | 0 | 0 |
 | AutoCrud | 5 | 5 | 0 | 0 |
 | SqlTranslation | 17 | 17 | 0 | 0 |
 | Metrics | 3 | 3 | 0 | 0 |
 | ErrorOverlay | 3 | 3 | 0 | 0 |
 | DotEnv | 7 | 7 | 0 | 0 |
-| DevAdmin | 14 | 14 | 0 | 0 |
+| DevAdmin | 13 | 13 | 0 | 0 |
 | Service | 8 | 8 | 0 | 0 |
 | ScssCompiler | 5 | 5 | 0 | 0 |
 | RateLimiter | 4 | 4 | 0 | 0 |
@@ -52,7 +52,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | TestClient | 7 | 7 | 0 | 0 |
 | WebSocketBackplane | 5 | 5 | 0 | 0 |
 | DatabaseResult | 6 | 6 | 0 | 0 |
-| DevReload | 2 | 2 | 0 | 0 |
+| DevReload | 0 | 0 | 0 | 0 |
 
 ## ORM
 
@@ -87,11 +87,11 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `select_one` | `sql, params, include` | `sql, params, include` | `sql, params` | `sql, params?, include?` | ✅ |
 | `snake_to_camel` | `name` | `name` | `name` | `name` | ✅ |
 | `to_array` | `()` | `()` | `()` | `()` | ✅ |
-| `to_assoc` | `include` | `include` | `()` | `include?` | ✅ |
-| `to_dict` | `include` | `include` | `()` | `include?` | ✅ |
+| `to_assoc` | `include, case` | `include` | `()` | `include?` | ✅ |
+| `to_dict` | `include, case` | `include, case` | `()` | `include?` | ✅ |
 | `to_json` | `include` | `include` | `()` | `include?` | ✅ |
 | `to_list` | `()` | `()` | `()` | `()` | ✅ |
-| `to_object` | `()` | `()` | `()` | `()` | ✅ |
+| `to_object` | `case` | `()` | `()` | `()` | ✅ |
 | `validate` | `()` | `()` | `()` | `()` | ✅ |
 | `where` | `filter_sql, params, limit, offset, include` | `filterSql, params, limit, offset, include` | `conditions, params, limit, offset` | `conditions, params?, limit, offset, include?` | ✅ |
 | `with_trashed` | `filter_sql, params, limit, offset` | `filterSql, params, limit, offset` | `conditions, params, limit, offset` | `conditions?, params?, limit?, offset?` | ✅ |
@@ -592,7 +592,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `add_query` | `name, args, return_type, resolver` | `name, args, returnType, resolver` | `name, args, return_type, resolver, handler` | `name, args, returnType, resolver` | ℹ️ return type differs |
 | `add_type` | `name, fields` | `name, fields` | `name_or_type, fields` | `name, fields` | ℹ️ return type differs |
 | `advance` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
-| `execute` | `query, variables, context` | `query, variables` | `query` | `query, variables?` | ℹ️ return type differs |
+| `execute` | `query, variables, context` | `query, variables, context` | `query` | `query, variables?, context?` | ℹ️ return type differs |
 | `expect` | `type, value` | `type, value` | `type, value` | `type, value?` | ℹ️ return type differs |
 | `from_orm` | `orm_class` | `ormInstance` | `klass` | `modelClass, adapter?` | ℹ️ return type differs |
 | `introspect` | `()` | `()` | `()` | `()` | ✅ |
@@ -645,9 +645,9 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
 | Python | `query: str, variables: dict = None, context: dict = None` | `dict` |
-| PHP | `query: string, variables: ?array null = null` | `list` |
+| PHP | `query: string, variables: ?array null = null, context: array [] = []` | `list` |
 | Ruby | `query, variables: {}, context: {}, operation_name: nil` | `untyped` |
-| Node | `query: string, variables?: Record<string, unknown>` | `GraphQLResult` |
+| Node | `query: string, variables?: Record<string, unknown>, context?: Record<string, unknown>` | `GraphQLResult` |
 
 #### `expect`
 
@@ -826,17 +826,22 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
 | `broadcast` | `message, exclude_self` | `message, includeSelf` | `message` | `message` | ✅ |
-| `broadcast_to_room` | `room_name, message, exclude_self` | `roomName, message, excludeIds` | `room_name, message` | `roomName, message, excludeIds?` | ✅ |
+| `broadcast_to_room` | `room_name, message, exclude_self` | `roomName, message, excludeSelf` | `room_name, message` | `roomName, message, excludeIds?` | ✅ |
 | `build_frame` | `opcode, payload, fin` | `message, opcode` | `opcode, data` | `opcode, payload, fin` | ℹ️ return type differs |
 | `close` | `code, reason` | `code, reason` | `()` | `()` | ✅ |
 | `compute_accept_key` | `key` | `key` | `key` | `key` | ✅ |
+| `get_client_rooms` | `client_id` | `clientId` | `client_id` | `clientId` | ✅ |
 | `get_clients` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
 | `get_room_connections` | `room_name` | `roomName` | `room_name` | `roomName` | ✅ |
 | `join_room` | `room_name` | `roomName` | `room_name` | `roomName` | ✅ |
 | `leave_room` | `room_name` | `roomName` | `room_name` | `roomName` | ✅ |
 | `on` | `event, handler` | `event, handler` | `event, handler` | `event, handler` | ℹ️ return type differs |
+| `on_close` | `handler` | `handler` | `handler` | `handler` | ✅ |
+| `on_message` | `handler` | `handler` | `handler` | `handler` | ✅ |
 | `room_count` | `room_name` | `roomName` | `room_name` | `roomName` | ✅ |
+| `route` | `path, handler` | `path, handler` | `path, handler` | `path, handler` | ℹ️ return type differs |
 | `send` | `message` | `message` | `message` | `message` | ✅ |
+| `send_json` | `data` | `data` | `data` | `data` | ✅ |
 | `send_to` | `client_id, message` | `clientId, message` | `conn_id, message` | `clientId, message` | ✅ |
 | `start` | `()` | `()` | `()` | `()` | ✅ |
 | `stop` | `()` | `()` | `()` | `()` | ✅ |
@@ -869,6 +874,15 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | PHP | `event: string, handler: callable` | `Self` |
 | Ruby | `event, &block` | `untyped` |
 | Node | `event: string, handler: Function` | `WebSocketServer` |
+
+#### `route`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `path: str, handler: Callable | None = None` | `untyped` |
+| PHP | `path: string, handler: ?callable null = null` | `callable|Self` |
+| Ruby | `path, &block` | `untyped` |
+| Node | `path: string, handler: (conn: WebSocketConnection) => void | Promise<void>` | `None` |
 
 ## WSDL
 
@@ -1452,6 +1466,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
+| `add_header` | `name, value` | `name, value` | `key, value` | `name, value` | ℹ️ return type differs |
 | `cookie` | `name, value, path, max_age, http_only, secure, same_site` | `name, value, options` | `name, value, opts` | `name, value, options?` | ℹ️ return type differs |
 | `error` | `code, message, status_code` | `code, message, status` | `code, message, status_code` | `code, message, status?` | ℹ️ return type differs |
 | `error_response` | `code, message, status` | `code, message, status` | `code, message, status` | `code, message, status` | ✅ |
@@ -1471,6 +1486,15 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `xml` | `content, status_code` | `content, status` | `content` | `content, status?` | ℹ️ return type differs |
 
 ### Mismatch Details
+
+#### `add_header`
+
+| Framework | Signature | Return Type |
+|-----------|-----------|-------------|
+| Python | `name: str, value: str` | `Response` |
+| PHP | `name: string, value: string` | `Self` |
+| Ruby | `key, value` | `untyped` |
+| Node | `name: string, value: string` | `None` |
 
 #### `cookie`
 
@@ -1848,7 +1872,6 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | `health` | `()` | `()` | `()` | `()` | ✅ |
 | `log` | `category, message, data, level` | `category, level, message` | `category, level, message` | `category, level, message, data?` | ✅ |
 | `register` | `()` | `()` | `()` | `router` | ⚠️ param count differs |
-| `render_dashboard` | `()` | `()` | `()` | `()` | ✅ |
 | `reset` | `()` | `()` | `()` | `()` | ✅ |
 | `resolve` | `error_id` | `id` | `id` | `process.cwd(), "node_modules", "tina4-nodejs", "packages", "core", "public", "js", "tina4-dev-admin.min.js"` | ⚠️ param count differs |
 | `stats` | `()` | `()` | `()` | `()` | ℹ️ return type differs |
@@ -2080,16 +2103,3 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|
-| `start` | `directories, interval` | `()` | `root_dir, handler` | `dirs, onChange` | ⚠️ param count differs |
-| `stop` | `()` | `()` | `()` | `()` | ✅ |
-
-### Mismatch Details
-
-#### `start`
-
-| Framework | Signature | Return Type |
-|-----------|-----------|-------------|
-| Python | `directories: list[str] | None = None, interval: float | None = None` | `untyped` |
-| PHP | `` | `None` |
-| Ruby | `root_dir: Dir.pwd, &on_change` | `untyped` |
-| Node | `dirs: string[] = ["src", "public"], onChange: (info: { code: boolean }) => void = () => {}` | `None` |

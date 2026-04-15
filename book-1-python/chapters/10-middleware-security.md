@@ -296,20 +296,17 @@ Apply middleware to all routes in a group:
 ```python
 from tina4_python.core.router import Router, get, post, middleware
 
-def api_v1():
+def api_v1(group):
 
-    @middleware(TimingMiddleware, SecurityHeaders)
-    @get("/users")
+    @group.get("/users")
     async def list_users(request, response):
         return response.json({"users": []})
 
-    @middleware(TimingMiddleware, SecurityHeaders)
-    @post("/users")
+    @group.post("/users")
     async def create_user(request, response):
         return response.json({"created": True}, 201)
 
-    @middleware(TimingMiddleware, SecurityHeaders)
-    @get("/products")
+    @group.get("/products")
     async def list_products(request, response):
         return response.json({"products": []})
 
@@ -319,15 +316,15 @@ Router.group("/api/v1", api_v1, middleware=[TimingMiddleware, SecurityHeaders])
 Every route inside the group now has `TimingMiddleware` and `SecurityHeaders` applied. You can still add route-specific middleware on top:
 
 ```python
-def api_v1():
+def api_v1(group):
 
-    @get("/public")
+    @group.get("/public")
     async def public_endpoint(request, response):
         # Only group middleware runs
         return response.json({"public": True})
 
     @middleware(AuthMiddleware)
-    @post("/admin")
+    @group.post("/admin")
     async def admin_endpoint(request, response):
         # Group middleware + AuthMiddleware both run
         return response.json({"admin": True})
@@ -1068,7 +1065,7 @@ Authentication, sessions, tokens, and security converge in the login flow. Here 
 
 ```python
 from tina4_python.core.router import post, noauth
-from tina4_python.auth import Auth
+from tina4_python.auth import Auth, get_token
 
 @noauth()
 @post("/api/login")
@@ -1093,7 +1090,7 @@ async def login(request, response):
         return response({"error": "Invalid credentials"}, 401)
 
     # Generate token with user claims
-    token = Auth.get_token(
+    token = get_token(
         {"sub": user["id"], "email": user["email"], "role": user["role"]}
     )
 

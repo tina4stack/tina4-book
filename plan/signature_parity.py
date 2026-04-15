@@ -75,7 +75,10 @@ def extract_python_signatures(filepath):
     src = Path(filepath).read_text(encoding="utf-8")
     try:
         tree = ast.parse(src)
-    except SyntaxError:
+    except SyntaxError as e:
+        import sys
+        print(f"  WARNING: Python SyntaxError in {filepath}: {e}. "
+              f"Re-run with a newer python3 (e.g. python3.12).", file=sys.stderr)
         return {}
     result = {}
 
@@ -538,8 +541,15 @@ def extract_ts_signatures(filepath):
     # Handles factory-function patterns where methods live in an interface
     # rather than a class (e.g. JobLifecycle in job.ts).
     iface_decl = re.compile(r'export\s+interface\s+(\w+)\s*\{', re.MULTILINE)
+    # Primary pattern (no nested parens in params)
     iface_method = re.compile(
         r'^\s{1,4}([a-z]\w*)\s*\(([^)]*)\)\s*:\s*([\w<>\[\]|&?, ]+?)\s*;',
+        re.MULTILINE
+    )
+    # Fallback pattern: method name followed by '(' — used when params contain nested parens
+    # (e.g. `onMessage(handler: (data: string) => void): void;`)
+    iface_method_open = re.compile(
+        r'^\s{1,4}([a-z]\w*)\s*\(',
         re.MULTILINE
     )
     for im in iface_decl.finditer(src):
@@ -557,6 +567,7 @@ def extract_ts_signatures(filepath):
                     break
             j += 1
         iface_body = src[brace_start:j]
+        captured_names = set()
         for mm in iface_method.finditer(iface_body):
             mname = mm.group(1)
             if mname in skip or mname.startswith("_"):
@@ -564,7 +575,47 @@ def extract_ts_signatures(filepath):
             params_raw = mm.group(2).strip()
             params = split_params(params_raw)
             ret = mm.group(3).strip()
+            captured_names.add(mname)
             # Merge into an existing class whose name appears in the interface name
+            target = iface_name
+            for cname in list(result.keys()):
+                if cname in iface_name or iface_name.endswith(cname):
+                    target = cname
+                    break
+            if target not in result:
+                result[target] = {}
+            if mname not in result[target]:
+                result[target][mname] = {"params": params, "returns": ret, "async": False}
+
+        # Fallback pass for interface methods with nested parens in params
+        # (e.g. callback-typed handlers). Uses paren-depth tracking.
+        for mm in iface_method_open.finditer(iface_body):
+            mname = mm.group(1)
+            if mname in skip or mname.startswith("_") or mname in captured_names:
+                continue
+            # Find matching ')' with depth tracking
+            paren_start = iface_body.index('(', mm.start())
+            d = 0
+            k = paren_start
+            while k < len(iface_body):
+                if iface_body[k] == '(':
+                    d += 1
+                elif iface_body[k] == ')':
+                    d -= 1
+                    if d == 0:
+                        break
+                k += 1
+            if k >= len(iface_body):
+                continue
+            params_raw = iface_body[paren_start+1:k].replace('\n', ' ')
+            params = split_params(params_raw)
+            # Return type follows: `: Type;`
+            after = iface_body[k+1:k+120].lstrip()
+            ret = ""
+            ret_m = re.match(r':\s*([\w<>\[\]|&?, ]+?)\s*;', after)
+            if ret_m:
+                ret = ret_m.group(1).strip()
+            captured_names.add(mname)
             target = iface_name
             for cname in list(result.keys()):
                 if cname in iface_name or iface_name.endswith(cname):
