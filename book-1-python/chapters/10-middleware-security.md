@@ -1390,8 +1390,8 @@ Build a public contact form that:
 # src/routes/contact.py
 from tina4_python.core.router import post, get, noauth, template
 
-@template("contact.twig")
 @get("/contact")
+@template("contact.twig")
 async def contact_page(request, response):
     return {"title": "Contact Us"}
 
