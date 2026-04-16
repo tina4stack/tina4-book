@@ -1,6 +1,28 @@
 # Chapter 35: Release Notes
 
 
+## v3.11.13 (2026-04-16)
+
+Issue-driven release. Everything reported in the open tina4-book issues either was fixed in this version or is already fixed in 3.11.12; this release consolidates the remaining bits and corrects documentation drift.
+
+- **feat (router / all 4):** Explicit typed-parameter system shared across Python, PHP, Ruby, Node. Adds `alpha`, `alnum`, `slug`, `uuid`, and explicit `string` types in addition to the existing `int`/`integer`, `float`/`number`, `path`/`.*`. **Unknown type names now throw at registration** — `{name:str}`, `{id:inetger}`, etc. raise with a clear message listing the valid types instead of silently falling through to the default matcher. Fixes tina4-book#125. +45 new tests across the four suites.
+- **fix (gallery / python+php+ruby):** Gallery Try-It / View buttons now open the deployed example in a new tab (`window.open(url, '_blank')`) instead of navigating away from the gallery home. Fixes tina4-book#115.
+- **fix (ruby gemspec):** `sqlite3` promoted from `add_development_dependency` to `add_dependency`. Matches the "zero-config SQLite on first run" promise. Fixes tina4-book#100.
+- **docs (tina4-book):** PHP Chapter 2 updated — correct port (7145), `->noAuth()` on write-method examples, and an explicit callout explaining the secure-by-default policy for POST/PUT/PATCH/DELETE. Addresses tina4-book#87, #94, #123.
+- **docs (tina4-book):** Python `@template` decorator ordering corrected (must sit BELOW the route decorator) in book chapters 04 and 10; Python `request->query` vs `request->params` distinction in PHP chapter 1.
+- **tests (python):** Session-handler tests updated to reflect the real default TTL of 3600s (were stale at 1800s).
+- **verified already fixed in earlier 3.11.x releases** — closed comments posted on all of these:
+  - #79 dotted numeric index (`{{ items.0.name }}`)
+  - #80 `truncate` filter
+  - #82 `{{ parent() }}` / `{{ super() }}` across all 4 frameworks
+  - #83 Ruby dashboard — WEBrick is runtime dep
+  - #89 `load_dotenv` rename, `DatabaseResult` methods, SQLite WAL locking
+  - #91 Ruby `request.params` symbol + string keys via `IndifferentHash`
+  - #93 Ruby `/docs/*` and bare `/*` wildcard routes
+  - #97 Frond ternary operator
+- **parity:** All 4 frameworks bumped to 3.11.13.
+
+
 ## v3.11.12 (2026-04-16)
 
 **Breaking:** `sqlite:///X` URLs are now relative to the project root (cwd), matching the documented convention. For absolute paths use four slashes (`sqlite:////abs/path.db`) or a Windows drive letter (`sqlite:///C:/Users/app.db`).
