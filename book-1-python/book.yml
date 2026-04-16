@@ -1,0 +1,6 @@
+title: "Tina4 for Python Developers"
+subtitle: "Zero Dependencies, 55 Features, Built for AI"
+accent: "#306998"
+version: "v3.11.13"
+chapters_dir: "book-1-python/chapters"
+output: "book-1-python/Tina4-for-Python-Developers.pdf"

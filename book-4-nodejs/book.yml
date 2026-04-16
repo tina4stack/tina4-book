@@ -1,0 +1,6 @@
+title: "Tina4 for Node.js Developers"
+subtitle: "Zero Dependencies, 55 Features, Built for AI"
+accent: "#339933"
+version: "v3.11.13"
+chapters_dir: "book-4-nodejs/chapters"
+output: "book-4-nodejs/Tina4-for-Nodejs-Developers.pdf"

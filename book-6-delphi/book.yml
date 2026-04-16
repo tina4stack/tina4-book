@@ -1,0 +1,6 @@
+title: "Tina4Delphi Developer"
+subtitle: "FireMonkey, FireDAC, and cross-platform native apps"
+accent: "#c62828"
+version: "v3.11.13"
+chapters_dir: "book-6-delphi/chapters"
+output: "book-6-delphi/Tina4-Delphi-Developer.pdf"
