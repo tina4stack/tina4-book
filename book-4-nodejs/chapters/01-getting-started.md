@@ -585,7 +585,7 @@ Restart the server (`Ctrl+C`, then `tina4 serve`). It now runs on port 8080.
 
 The CLI reads your `.env` file and checks for `TINA4_PORT` (and falls back to `PORT`). The resolved port is passed to the Node.js server. All three methods work -- use whichever fits your workflow.
 
-For the complete `.env` reference with all 68 variables, see [Book 0, Chapter 4: Environment Variables](../../book-0-understanding/chapters/04-environment-variables.md).
+For the complete `.env` reference with all 68 variables, see [Environment Variables](./33-environment-variables.md).
 
 ---
 
@@ -651,7 +651,7 @@ tina4 serve
   Server running at http://0.0.0.0:7148
 ```
 
-The CLI adds live reload and other development features. For direct Node.js execution (advanced usage), see [Chapter 30: CLI](30-cli.md).
+The CLI adds live reload and other development features. For direct Node.js execution (advanced usage), see [Chapter 31: CLI](31-cli.md).
 
 ---
 

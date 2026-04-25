@@ -559,7 +559,7 @@ Restart the server. It now runs on port 8080.
 
 The CLI reads your `.env` file and checks for `TINA4_PORT` (and falls back to `PORT`). The resolved port is passed to the Python server. All three methods work -- use whichever fits your workflow.
 
-For the complete `.env` reference with all 68 variables, see [Book 0, Chapter 4: Environment Variables](../../book-0-understanding/chapters/04-environment-variables.md).
+For the complete `.env` reference with all 68 variables, see [Environment Variables](./33-environment-variables.md).
 
 ---
 
