@@ -118,7 +118,7 @@ Creating Tina4 project in ./my-store ...
   Created .gitignore
   Created src/routes/
   Created src/orm/
-  Created src/migrations/
+  Created migrations/
   Created src/seeds/
   Created src/templates/
   Created src/templates/errors/
@@ -211,10 +211,10 @@ my-store/
 ├── tsconfig.json           # TypeScript configuration
 ├── app.ts                  # Application entry point
 ├── node_modules/           # npm packages (gitignored)
+├── migrations/             # SQL migration files (project root)
 ├── src/
 │   ├── routes/             # Your route handlers go here
 │   ├── orm/                # Your ORM model classes go here
-│   ├── migrations/         # SQL migration files
 │   ├── seeds/              # Database seed files
 │   ├── templates/          # Frond/Twig templates
 │   │   └── errors/         # Custom 404.html, 500.html
@@ -581,7 +581,7 @@ Restart the server (`Ctrl+C`, then `tina4 serve`). It now runs on port 8080.
 1. **CLI flag** (highest priority): `tina4 serve --port 8080`
 2. **`.env` file**: `TINA4_PORT=8080`
 3. **Environment variable**: `PORT=8080`
-4. **Framework default** (Python: 7145, PHP: 7146, Ruby: 7144, Node.js: 7143)
+4. **Framework default** (PHP: 7145, Python: 7146, Ruby: 7147, Node.js: 7148)
 
 The CLI reads your `.env` file and checks for `TINA4_PORT` (and falls back to `PORT`). The resolved port is passed to the Node.js server. All three methods work -- use whichever fits your workflow.
 
@@ -673,7 +673,7 @@ This is the entry point. Create a file called `app.ts` in your project root:
 ```typescript
 import { startServer } from "@tina4/core";
 
-const port = parseInt(process.env.PORT || "7149", 10);
+const port = parseInt(process.env.PORT || "7148", 10);
 const host = process.env.HOST || "0.0.0.0";
 startServer({ port, host });
 ```
@@ -727,10 +727,12 @@ TINA4_DEBUG=true
 ### Step 6: Run It
 
 ```bash
-npx tsx app.ts
+tina4 serve
 ```
 
-The server starts on `http://localhost:7149`. You should see the Tina4 welcome page. From here, add route files in `src/routes/` and templates in `src/templates/` — the same way as a CLI-scaffolded project.
+The server starts on `http://localhost:7148`. You should see the Tina4 welcome page. From here, add route files in `src/routes/` and templates in `src/templates/` — the same way as a CLI-scaffolded project.
+
+> **Note:** Tina4 Node.js refuses to start without the Rust CLI. To bypass it (for example inside a Docker image that already wraps the framework) set `TINA4_OVERRIDE_CLIENT=true` in `.env` and run `npx tsx app.ts` directly.
 
 ---
 

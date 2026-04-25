@@ -125,7 +125,7 @@ async def contact_form(request, response):
 ```
 
 ```bash
-curl -X POST http://localhost:7145/api/contact \
+curl -X POST http://localhost:7146/api/contact \
   -H "Content-Type: application/json" \
   -d '{"name": "Alice", "email": "alice@example.com", "message": "I love your products!"}'
 ```
@@ -367,7 +367,7 @@ async def get_inbox(request, response):
 ```
 
 ```bash
-curl http://localhost:7145/api/inbox
+curl http://localhost:7146/api/inbox
 ```
 
 ```json
@@ -587,7 +587,7 @@ async def register_user(request, response):
         "email": body["email"],
         "user_id": user_id,
         "signed_up_at": datetime.now().strftime("%B %d, %Y"),
-        "base_url": os.getenv("APP_URL", "http://localhost:7145"),
+        "base_url": os.getenv("APP_URL", "http://localhost:7146"),
         "app_name": "My Store",
         "promo_code": "WELCOME10",
         "unsubscribe_token": secrets.token_hex(16)
@@ -615,7 +615,7 @@ async def register_user(request, response):
 ```
 
 ```bash
-curl -X POST http://localhost:7145/api/register \
+curl -X POST http://localhost:7146/api/register \
   -H "Content-Type: application/json" \
   -d '{"name": "Alice", "email": "alice@example.com", "password": "securePass123"}'
 ```
@@ -657,7 +657,7 @@ async def register_user(request, response):
             "email": body["email"],
             "user_id": user_id,
             "signed_up_at": "March 22, 2026",
-            "base_url": "http://localhost:7145",
+            "base_url": "http://localhost:7146",
             "app_name": "My Store",
             "promo_code": "WELCOME10"
         }
@@ -714,15 +714,15 @@ Build a contact form that sends an email notification when submitted.
 
 ```bash
 # View the form
-curl http://localhost:7145/contact
+curl http://localhost:7146/contact
 
 # Submit the form
-curl -X POST http://localhost:7145/contact \
+curl -X POST http://localhost:7146/contact \
   -H "Content-Type: application/json" \
   -d '{"name": "Bob", "email": "bob@example.com", "subject": "Product inquiry", "message": "Do you ship internationally?"}'
 
 # Check the dev dashboard for the intercepted email
-# Navigate to http://localhost:7145/__dev
+# Navigate to http://localhost:7146/__dev
 ```
 
 ---
@@ -898,16 +898,16 @@ async def contact_submit(request, response):
 
 **Testing:**
 
-1. Open `http://localhost:7145/contact` in your browser
+1. Open `http://localhost:7146/contact` in your browser
 2. Fill in the form and submit
 3. You should see a green "Thank you" flash message
-4. Open `http://localhost:7145/__dev` to see the intercepted email
+4. Open `http://localhost:7146/__dev` to see the intercepted email
 5. The email shows the sender details, subject, message, and formatted HTML
 
 **API test:**
 
 ```bash
-curl -X POST http://localhost:7145/contact \
+curl -X POST http://localhost:7146/contact \
   -H "Content-Type: application/json" \
   -d '{"name": "Bob", "email": "bob@example.com", "subject": "Product inquiry", "message": "Do you ship internationally?"}' \
   -c cookies.txt -b cookies.txt
@@ -916,7 +916,7 @@ curl -X POST http://localhost:7145/contact \
 The response is a `302` redirect to `/contact`. Follow the redirect to see the flash message:
 
 ```bash
-curl http://localhost:7145/contact -b cookies.txt
+curl http://localhost:7146/contact -b cookies.txt
 ```
 
 The HTML response includes the success flash message.

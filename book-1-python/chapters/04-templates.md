@@ -42,7 +42,7 @@ Create `src/templates/about.html`:
 </html>
 ```
 
-Visit `http://localhost:7145/about` and the rendered page appears.
+Visit `http://localhost:7146/about` and the rendered page appears.
 
 The `@template` decorator stacks above `@get` (or `@post`, etc.). When the handler returns a dictionary, the decorator passes that dict to `response.render()` with the named template. If the handler returns something other than a dict -- an already-built Response, for instance -- the decorator passes it through unchanged. You can also call `response.render()` directly in any route handler. The decorator is shorthand.
 
@@ -961,7 +961,7 @@ async def product_detail(id, request, response):
     return response.render("errors/404.html", {}, 404)
 ```
 
-**Open `http://localhost:7145/catalog` in your browser.** You should see:
+**Open `http://localhost:7146/catalog` in your browser.** You should see:
 
 - A heading "Product Catalog"
 - Category filter links: All, Electronics, Fitness, Kitchen, Office

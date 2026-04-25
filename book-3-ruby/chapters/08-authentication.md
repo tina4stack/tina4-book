@@ -565,7 +565,7 @@ curl http://localhost:7147/api/profile
 
 ### Migration
 
-Create `src/migrations/20260322160000_create_auth_users_table.sql`:
+Create `migrations/20260322160000_create_auth_users_table.sql`:
 
 ```sql
 -- UP

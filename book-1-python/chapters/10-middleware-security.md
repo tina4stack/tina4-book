@@ -16,7 +16,7 @@ Tina4 Python ships with two built-in middleware classes in `tina4_python.core.mi
 
 ### CorsMiddleware
 
-CORS (Cross-Origin Resource Sharing) controls which websites can call your API from a browser. When React at `http://localhost:3000` calls your Tina4 API at `http://localhost:7145`, the browser sends a preflight `OPTIONS` request first. Wrong headers and the browser blocks everything.
+CORS (Cross-Origin Resource Sharing) controls which websites can call your API from a browser. When React at `http://localhost:3000` calls your Tina4 API at `http://localhost:7146`, the browser sends a preflight `OPTIONS` request first. Wrong headers and the browser blocks everything.
 
 Configure via `.env`:
 
@@ -427,7 +427,7 @@ async def require_api_key(request, response, next_handler):
 
 ```bash
 # No key -- 401
-curl http://localhost:7145/api/data
+curl http://localhost:7146/api/data
 ```
 
 ```json
@@ -436,7 +436,7 @@ curl http://localhost:7145/api/data
 
 ```bash
 # Invalid key -- 403
-curl http://localhost:7145/api/data -H "X-API-Key: wrong-key"
+curl http://localhost:7146/api/data -H "X-API-Key: wrong-key"
 ```
 
 ```json
@@ -445,7 +445,7 @@ curl http://localhost:7145/api/data -H "X-API-Key: wrong-key"
 
 ```bash
 # Valid key -- 200
-curl http://localhost:7145/api/data -H "X-API-Key: key-abc-123"
+curl http://localhost:7146/api/data -H "X-API-Key: key-abc-123"
 ```
 
 ```json
@@ -606,17 +606,17 @@ Build a complete API key system with key management and usage tracking.
 
 ```bash
 # Create an API key (requires auth token from Chapter 8)
-curl -X POST http://localhost:7145/admin/api-keys \
+curl -X POST http://localhost:7146/admin/api-keys \
   -H "Authorization: Bearer YOUR_AUTH_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"name": "Mobile App"}'
 
 # Use the API key
-curl http://localhost:7145/api/data \
+curl http://localhost:7146/api/data \
   -H "X-API-Key: THE_GENERATED_KEY"
 
 # List keys with stats
-curl http://localhost:7145/admin/api-keys \
+curl http://localhost:7146/admin/api-keys \
   -H "Authorization: Bearer YOUR_AUTH_TOKEN"
 ```
 
@@ -626,7 +626,7 @@ curl http://localhost:7145/admin/api-keys \
 
 ### Migration
 
-Create `src/migrations/20260322170000_create_api_keys_table.sql`:
+Create `migrations/20260322170000_create_api_keys_table.sql`:
 
 ```sql
 -- UP
@@ -846,7 +846,7 @@ async def create_order(request, response):
 Test it without a token:
 
 ```bash
-curl -X POST http://localhost:7145/api/orders \
+curl -X POST http://localhost:7146/api/orders \
   -H "Content-Type: application/json" \
   -d '{"product": "widget"}'
 # 401 Unauthorized
@@ -855,7 +855,7 @@ curl -X POST http://localhost:7145/api/orders \
 Test it with a valid token:
 
 ```bash
-curl -X POST http://localhost:7145/api/orders \
+curl -X POST http://localhost:7146/api/orders \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..." \
   -d '{"product": "widget"}'

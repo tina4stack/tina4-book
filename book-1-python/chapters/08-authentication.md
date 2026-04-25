@@ -164,7 +164,7 @@ async def register(request, response):
 ```
 
 ```bash
-curl -X POST http://localhost:7145/api/register \
+curl -X POST http://localhost:7146/api/register \
   -H "Content-Type: application/json" \
   -d '{"name": "Alice", "email": "alice@example.com", "password": "securePass123"}'
 ```
@@ -231,7 +231,7 @@ async def login(request, response):
 Notice `@noauth`. The login endpoint must be public. You cannot require a token to get a token.
 
 ```bash
-curl -X POST http://localhost:7145/api/login \
+curl -X POST http://localhost:7146/api/login \
   -H "Content-Type: application/json" \
   -d '{"email": "alice@example.com", "password": "securePass123"}'
 ```
@@ -257,7 +257,7 @@ The client stores this token (in localStorage, a cookie, or memory) and sends it
 The client sends the token in the `Authorization` header with the `Bearer` prefix:
 
 ```bash
-curl http://localhost:7145/api/profile \
+curl http://localhost:7146/api/profile \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
@@ -306,7 +306,7 @@ async def profile(request, response):
 
 ```bash
 # Without token -- 401
-curl http://localhost:7145/api/profile
+curl http://localhost:7146/api/profile
 ```
 
 ```json
@@ -315,7 +315,7 @@ curl http://localhost:7145/api/profile
 
 ```bash
 # With valid token -- 200
-curl http://localhost:7145/api/profile \
+curl http://localhost:7146/api/profile \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
@@ -590,35 +590,35 @@ Build a complete authentication system with registration, login, profile viewing
 
 ```bash
 # Register
-curl -X POST http://localhost:7145/api/register \
+curl -X POST http://localhost:7146/api/register \
   -H "Content-Type: application/json" \
   -d '{"name": "Alice", "email": "alice@example.com", "password": "securePass123"}'
 
 # Login
-curl -X POST http://localhost:7145/api/login \
+curl -X POST http://localhost:7146/api/login \
   -H "Content-Type: application/json" \
   -d '{"email": "alice@example.com", "password": "securePass123"}'
 
 # Save the token from login response, then:
 
 # Get profile
-curl http://localhost:7145/api/profile \
+curl http://localhost:7146/api/profile \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 
 # Update profile
-curl -X PUT http://localhost:7145/api/profile \
+curl -X PUT http://localhost:7146/api/profile \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -H "Content-Type: application/json" \
   -d '{"name": "Alice Smith"}'
 
 # Change password
-curl -X PUT http://localhost:7145/api/profile/password \
+curl -X PUT http://localhost:7146/api/profile/password \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -H "Content-Type: application/json" \
   -d '{"current_password": "securePass123", "new_password": "evenMoreSecure456"}'
 
 # Try with no token (should fail)
-curl http://localhost:7145/api/profile
+curl http://localhost:7146/api/profile
 ```
 
 ---
@@ -627,7 +627,7 @@ curl http://localhost:7145/api/profile
 
 ### Migration
 
-Create `src/migrations/20260322160000_create_users_table.sql`:
+Create `migrations/20260322160000_create_users_table.sql`:
 
 ```sql
 -- UP

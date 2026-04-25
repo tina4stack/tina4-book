@@ -866,7 +866,7 @@ curl http://localhost:7148/admin/api-keys \
 
 ### Migration
 
-Create `src/migrations/20260322170000_create_api_keys_table.sql`:
+Create `migrations/20260322170000_create_api_keys_table.sql`:
 
 ```sql
 -- UP

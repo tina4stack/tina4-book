@@ -158,7 +158,7 @@ Router.get("/api/greeting", async (req, res) => {
 ```
 
 ```bash
-curl "http://localhost:7145/api/greeting?name=Alice&lang=de"
+curl "http://localhost:7148/api/greeting?name=Alice&lang=de"
 ```
 
 ```json
@@ -169,7 +169,7 @@ curl "http://localhost:7145/api/greeting?name=Alice&lang=de"
 ```
 
 ```bash
-curl "http://localhost:7145/api/greeting?name=Alice&lang=en"
+curl "http://localhost:7148/api/greeting?name=Alice&lang=en"
 ```
 
 ```json
@@ -255,12 +255,12 @@ Build an API that returns validation error messages in the user's language.
 
 ```bash
 # English errors
-curl -X POST "http://localhost:7145/api/contact?lang=en" \
+curl -X POST "http://localhost:7148/api/contact?lang=en" \
   -H "Content-Type: application/json" \
   -d '{"name": "A", "email": "not-an-email"}'
 
 # German errors
-curl -X POST "http://localhost:7145/api/contact?lang=de" \
+curl -X POST "http://localhost:7148/api/contact?lang=de" \
   -H "Content-Type: application/json" \
   -d '{"name": "A", "email": "not-an-email"}'
 ```
