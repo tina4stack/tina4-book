@@ -29,7 +29,7 @@
 7. ~~Auth: Node hash delimiter~~ — $ with backward compat
 8. ~~Auth: expires_in units~~ — all minutes
 9. ~~Auth: API key fallback~~ — all frameworks
-10. ~~Auth: env SECRET fallback~~ — all frameworks
+10. ~~Auth: env TINA4_SECRET fallback~~ — all frameworks
 11. ~~Session: Node duplicate clear~~ — removed
 12. ~~Session: flash dual-mode~~ — all frameworks
 13. ~~Session: cookieHeader~~ — all frameworks

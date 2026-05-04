@@ -76,9 +76,9 @@ TINA4_LOG_LEVEL=ALL                 # Log level: ALL, DEBUG, INFO, WARNING, ERRO
 # TINA4_NO_AI_PORT=false            # Disable test port (port+1000)
 
 # Database
-DATABASE_URL=sqlite:///data/app.db  # Connection string
-# DATABASE_USERNAME=                # Username (if not in URL)
-# DATABASE_PASSWORD=                # Password (if not in URL)
+TINA4_DATABASE_URL=sqlite:///data/app.db  # Connection string
+# TINA4_DATABASE_USERNAME=                # Username (if not in URL)
+# TINA4_DATABASE_PASSWORD=                # Password (if not in URL)
 # TINA4_AUTOCOMMIT=false            # Auto-commit transactions
 # TINA4_DB_CACHE=false              # Enable query caching
 

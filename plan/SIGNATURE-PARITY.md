@@ -256,10 +256,10 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 
 | Framework | Signature | Return Type |
 |-----------|-----------|-------------|
-| Python | `env_key: str = 'DATABASE_URL', pool: int = 0` | `Database|None` |
-| PHP | `envKey: string 'DATABASE_URL' = 'DATABASE_URL', autoCommit: ?bool null = null, pool: int 0 = 0` | `Self|None` |
-| Ruby | `env_key: "DATABASE_URL", pool: 0` | `untyped` |
-| Node | `envKey = "DATABASE_URL", pool: number = 0` | `Database` |
+| Python | `env_key: str = 'TINA4_DATABASE_URL', pool: int = 0` | `Database|None` |
+| PHP | `envKey: string 'TINA4_DATABASE_URL' = 'TINA4_DATABASE_URL', autoCommit: ?bool null = null, pool: int 0 = 0` | `Self|None` |
+| Ruby | `env_key: "TINA4_DATABASE_URL", pool: 0` | `untyped` |
+| Node | `envKey = "TINA4_DATABASE_URL", pool: number = 0` | `Database` |
 
 #### `get_last_id`
 

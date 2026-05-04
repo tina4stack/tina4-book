@@ -50,7 +50,7 @@ Last updated: 2026-04-02 | Version: 3.10.55 (pending release)
 | Transactions (commit safe without txn) | Yes | Yes | Yes | Yes |
 | Connection pooling | Yes | Yes | Yes | Yes |
 | fetch() default limit = 100 | Yes | Yes | Yes | Yes |
-| DATABASE_URL auto-discovery (ORM) | Yes | Yes | Yes | Yes |
+| TINA4_DATABASE_URL auto-discovery (ORM) | Yes | Yes | Yes | Yes |
 | Firebird path parsing (absolute safe) | Yes | Yes | Yes | Yes |
 | **ORM** | | | | |
 | Active Record (save/load/delete) | Yes | Yes | Yes | Yes |
@@ -165,7 +165,7 @@ Last updated: 2026-04-02 | Version: 3.10.55 (pending release)
 | Version | Date | Changes |
 |---------|------|---------|
 | 3.10.55 | 2026-04-02 | MongoDB adapter (all 4), ODBC adapter (PHP/Ruby/Node), pagination standardized, Python RouteGroup class, Ruby imperative relationships, metrics dep lines fix |
-| 3.10.54 | 2026-04-02 | Auto AI dual-port, TINA4_NO_RELOAD, bug fixes (#101-#105), CORS fix, DATABASE_URL discovery, ORM query() docs, metrics dep lines fix |
+| 3.10.54 | 2026-04-02 | Auto AI dual-port, TINA4_NO_RELOAD, bug fixes (#101-#105), CORS fix, TINA4_DATABASE_URL discovery, ORM query() docs, metrics dep lines fix |
 | 3.10.50 | 2026-04-02 | Issue #106 fixes, session TTL/GC, dev admin auth bypass, test expansion to ~9,100 |
 | 3.10.48 | 2026-04-02 | TINA4_NO_BROWSER, --production flag, gallery fixes |
 | 3.10.42 | 2026-04-01 | Database tab redesign, star wiggle, copy/paste, fetch limit=100 |

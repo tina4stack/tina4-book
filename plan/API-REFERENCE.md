@@ -408,7 +408,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | Method | 
 |--------|
 | `create($url, $autoCommit = null, $username = '', $password = '', $pool = 0)` |
-| `fromEnv($envKey = 'DATABASE_URL', $autoCommit = null, $pool = 0)` |
+| `fromEnv($envKey = 'TINA4_DATABASE_URL', $autoCommit = null, $pool = 0)` |
 | `getAdapter()` |
 | `poolSize()` |
 | `size()` |
@@ -438,7 +438,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `getNextId($table, $pkColumn = 'id', $generatorName = null)` |
 | `executeMany($sql, $paramsList = [])` |
 | `error()` |
-| `getConnection($envKey = 'DATABASE_URL')` |
+| `getConnection($envKey = 'TINA4_DATABASE_URL')` |
 | `supportedSchemes()` |
 | `isSupported($scheme)` |
 | `cacheStats()` |
@@ -520,7 +520,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
 | Method | 
 |--------|
-| `fromEnv($envKey = 'DATABASE_URL')` |
+| `fromEnv($envKey = 'TINA4_DATABASE_URL')` |
 | `getDriverClass()` |
 | `getDsn()` |
 | `toSafeString()` |
@@ -585,7 +585,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 
     # Static factory — cross-framework consistency: Database.create(url)` |
 | `self.create(url, username: "", password: "", pool: 0)` |
-| `self.from_env(env_key: "DATABASE_URL", pool: 0)` |
+| `self.from_env(env_key: "TINA4_DATABASE_URL", pool: 0)` |
 | `connect(@driver.connect(@connection_string, username: @username, password: @password)` |
 | `close(if @pool
         @pool.close_all
@@ -882,7 +882,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 |--------|
 | `create(url: string, username?: string, password?: string, pool: ...)` |
 | `setAdapter(adapter)` |
-| `fromEnv(envKey = "DATABASE_URL", pool: number = 0)` |
+| `fromEnv(envKey = "TINA4_DATABASE_URL", pool: number = 0)` |
 | `getAdapter()` |
 | `poolSize()` |
 | `size()` |
@@ -2351,7 +2351,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `adapter()` |
 | `pool()` |
 | `create(url: str, username: str='', password: str='', pool: int=0)` |
-| `from_env(env_key: str='DATABASE_URL', pool: int=0)` |
+| `from_env(env_key: str='TINA4_DATABASE_URL', pool: int=0)` |
 | `get_adapter()` |
 | `pool_size()` |
 | `active_count()` |

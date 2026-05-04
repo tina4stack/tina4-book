@@ -12,7 +12,7 @@ Connection strings, query methods, transactions, pooling, ID generation, and sch
 
 | Framework | Signature | Notes |
 |-----------|-----------|-------|
-| Python | `Database(url, username=None, password=None, pool=0)` | Reads DATABASE_URL env if not given |
+| Python | `Database(url, username=None, password=None, pool=0)` | Reads TINA4_DATABASE_URL env if not given |
 | PHP | `Database::create()` or `Database(url, autoCommit, username, password, pool)` | Static factory preferred |
 | Ruby | `Database.new(connection_string, username=nil, password=nil, driver_name=nil, pool=0)` | Auto-detects driver |
 | Node.js | `await Database.create(url, username?, password?, pool?)` | Async factory required |
@@ -131,9 +131,9 @@ odbc:///DSN=MyDSN
 
 | Var | Default |
 |-----|---------|
-| `DATABASE_URL` | varies |
-| `DATABASE_USERNAME` | empty |
-| `DATABASE_PASSWORD` | empty |
+| `TINA4_DATABASE_URL` | varies |
+| `TINA4_DATABASE_USERNAME` | empty |
+| `TINA4_DATABASE_PASSWORD` | empty |
 | `TINA4_AUTOCOMMIT` | false |
 | `TINA4_DB_CACHE` | false |
 | `TINA4_DB_CACHE_TTL` | 30 |

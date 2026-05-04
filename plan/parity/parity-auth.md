@@ -12,9 +12,9 @@
 
 | Framework | Signature | expires_in unit | secret source |
 |-----------|-----------|----------------|---------------|
-| Python | `get_token(payload, expires_in=None)` | **MINUTES** | Instance or env `SECRET` |
+| Python | `get_token(payload, expires_in=None)` | **MINUTES** | Instance or env `TINA4_SECRET` |
 | PHP | `getToken(payload, secret, expiresIn=3600)` | seconds | Required param |
-| Ruby | `get_token(payload, expires_in: 3600)` | seconds | env `SECRET` |
+| Ruby | `get_token(payload, expires_in: 3600)` | seconds | env `TINA4_SECRET` |
 | Node.js | `getToken(payload, secret, expiresIn=3600)` | seconds | Required param |
 
 - [ ] **CRITICAL ISSUE:** Python uses **minutes**, others use **seconds**
@@ -127,7 +127,7 @@
 | 2 | ~~Node.js delimiter `:` not `$`~~ | CRITICAL | FIXED — `$` delimiter, backward compat on read |
 | 3 | ~~expires_in units differ~~ | CRITICAL | FIXED — all use MINUTES (default 60) |
 | 4 | ~~Ruby API key not timing-safe~~ | HIGH | FIXED — uses OpenSSL.fixed_length_secure_compare |
-| 5 | ~~PHP/Node require explicit secret~~ | MEDIUM | FIXED — all read SECRET from env with warning |
+| 5 | ~~PHP/Node require explicit secret~~ | MEDIUM | FIXED — all read TINA4_SECRET from env with warning |
 | 6 | ~~Iterations differ~~ | MEDIUM | FIXED — all default to 260000 |
 | 7 | Python doesn't support RS256 | MEDIUM | PARKED — install `cryptography` module for RS256 |
 | 8 | ~~PHP/Node missing API key fallback~~ | LOW | FIXED — authenticateRequest falls back to API key |
