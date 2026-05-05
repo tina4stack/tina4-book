@@ -51,6 +51,7 @@ This chapter lists every variable the Ruby framework reads, grouped by subsystem
 | `TINA4_DATABASE_URL` | _(required for non-SQLite)_ | Connection URL. Scheme selects the driver: `sqlite`, `postgres`, `mysql`, `firebird`. |
 | `TINA4_DATABASE_USERNAME` | _(empty)_ | Overrides the username embedded in `TINA4_DATABASE_URL`. |
 | `TINA4_DATABASE_PASSWORD` | _(empty)_ | Overrides the password embedded in `TINA4_DATABASE_URL`. |
+| `TINA4_DATABASE_FIREBIRD_PATH` | _(empty)_ | Overrides the database path/alias parsed from `TINA4_DATABASE_URL` for Firebird. Useful for Windows backslash paths and split-config setups. |
 | `TINA4_DATABASE_URL` | _(empty)_ | Legacy alias for `TINA4_DATABASE_URL`. |
 | `TINA4_AUTOCOMMIT` | `false` | Auto-commit after every write. Default is off — call `commit` explicitly. |
 | `TINA4_DB_CACHE` | `false` | Enables in-memory query-result caching for read queries. |
