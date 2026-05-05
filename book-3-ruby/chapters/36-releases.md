@@ -1,6 +1,44 @@
 # Chapter 35: Release Notes
 
 
+## v3.12.2 (2026-05-05)
+
+Quality-of-life patch. Two related portability fixes — no breaking changes from 3.12.1.
+
+### Firebird URL auto-detect
+
+Firebird is the awkward one in the stack. Every other engine has a server-side database name (`postgres://host:port/dbname`), but Firebird wants either an absolute file path on the server, a Windows drive-letter path, or an alias. The classic URI form needs a double slash to keep the leading `/` of an absolute path through the URL parser — unintuitive to anyone used to the way postgres / mysql / mssql encode the database name.
+
+The framework now accepts five equivalent forms and normalises all of them transparently:
+
+| URL path you write | Resolved Firebird identifier |
+|---|---|
+| `//abs/path/db.fdb`   (classic double-slash) | `/abs/path/db.fdb` |
+| `/abs/path/db.fdb`    (single-slash, intuitive) | `/abs/path/db.fdb` |
+| `/C:/Data/db.fdb`     (Windows drive letter) | `C:/Data/db.fdb` |
+| `/C%3A/Data/db.fdb`   (URL-encoded colon) | `C:/Data/db.fdb` |
+| `/employee`           (Firebird alias) | `employee` |
+
+For ops setups that keep server URL and DB location in separate config layers — or for Windows backslash paths that fight URL encoding — set `TINA4_DATABASE_FIREBIRD_PATH`. The env override wins over whatever path is in the URL.
+
+```bash
+TINA4_DATABASE_FIREBIRD_PATH=C:\firebird\data\app.fdb
+TINA4_DATABASE_URL=firebird://SYSDBA:masterkey@localhost:3050/ignored
+```
+
+Shipped to all 4 frameworks. 11 regression tests per framework (8 unit + 3 live).
+
+### Bug fix specific to PHP — `mysqli` localhost+port quirk
+
+PHP's `mysqli` has a long-standing quirk where `host == "localhost"` triggers a Unix socket lookup and IGNORES the port argument entirely. Connecting to `mysql://...:53306` against a Docker container fails with "No such file or directory" — `mysqli` is hunting for `/tmp/mysql.sock` instead of opening a TCP connection. `MySQLAdapter::rewriteHostForTcp()` now rewrites `localhost` to `127.0.0.1` when a non-zero port is specified, forcing the TCP code path. Bare `mysql:///db` (no port) is preserved so existing socket-based setups keep working.
+
+### Other fixes
+
+- **chore(python):** `pyproject.toml` had drifted to `3.10.41` while `__init__.py` read `3.12.1`. Synced both to 3.12.2 so `uv build` and runtime introspection now agree.
+- **chore(claude.md, all 4):** stale framework version banners in `CLAUDE.md` headers updated.
+
+No `.env` changes from 3.12.1, no migration needed. Existing 3.12.1 installs upgrade by changing one version number.
+
 ## v3.12.1 (2026-05-04)
 
 CI-only patch — no framework code changes from 3.12.0.
