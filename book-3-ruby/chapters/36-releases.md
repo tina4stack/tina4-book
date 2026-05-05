@@ -371,7 +371,7 @@ Catch-up release covering v3.11.0 → v3.11.9 across all 4 frameworks.
 - Full parity across Python, PHP, Ruby, Node.js
 
 
-Tina4 Ruby follows semantic versioning. The major version (3) marks the ground-up rewrite from v2. Minor versions (3.1, 3.2, etc.) introduce features and non-breaking API additions. Patch versions carry bug fixes and small improvements.
+Tina4 Ruby follows semantic versioning. The major version (3) marks the initial Ruby launch — Tina4 Ruby is new in the v3 line, alongside Tina4 for Node.js. Minor versions (3.1, 3.2, etc.) introduce features and non-breaking API additions. Patch versions carry bug fixes and small improvements.
 
 This chapter covers every v3 release from the initial launch through the current stable line. Each section groups releases by minor version, highlights the changes that affect your code, and shows migration steps for anything that breaks.
 
@@ -1398,7 +1398,7 @@ README code examples updated to match the actual v3 API. Quick start guide added
 
 ### v3.0.0 -- Initial Release (March 21)
 
-The ground-up rewrite. Zero gem dependencies. Everything the framework needs -- HTTP server, template engine, ORM, migrations, auth, queue, GraphQL, WebSocket, WSDL -- ships inside a single gem.
+The initial Ruby release. Zero gem dependencies. Everything the framework needs -- HTTP server, template engine, ORM, migrations, auth, queue, GraphQL, WebSocket, WSDL -- ships inside a single gem.
 
 **Core features:**
 

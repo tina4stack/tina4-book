@@ -386,7 +386,7 @@ Catch-up release covering v3.11.0 → v3.11.9 across all 4 frameworks.
 - Full parity across Python, PHP, Ruby, Node.js
 
 
-Tina4 Node.js follows semantic versioning. The major version (3) marks the ground-up rewrite. The minor version tracks feature additions. The patch version tracks fixes, template engine corrections, and cross-framework parity updates.
+Tina4 Node.js follows semantic versioning. The major version (3) marks the initial Node.js launch — Tina4 Node.js is new in the v3 line, alongside Tina4 Ruby. The minor version tracks feature additions. The patch version tracks fixes, template engine corrections, and cross-framework parity updates.
 
 This chapter covers every release from v3.0.0 through v3.10.x. Each section groups releases by minor version, lists features added, bugs fixed, and breaking changes with migration code where relevant.
 
@@ -1286,7 +1286,7 @@ The template engine caches compiled tokens. File rendering runs 2.8x faster than
 
 ## v3.0.0 — Initial Release (March 21, 2026)
 
-The ground-up rewrite. No Express. No Fastify. No dependencies.
+The initial Node.js release. No Express. No Fastify. No dependencies.
 
 ### Features
 
