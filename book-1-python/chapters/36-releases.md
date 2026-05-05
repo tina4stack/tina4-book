@@ -1,6 +1,64 @@
 # Chapter 35: Release Notes
 
 
+## v3.12.3 (2026-05-05)
+
+Cross-framework parity sweep. Two minor breaking changes in the Ruby and PHP public API that bring all four frameworks onto the same shape.
+
+### Breaking changes (Ruby + PHP only)
+
+**Ruby Container — predicate now uses `?` suffix.**
+
+```ruby
+# before (3.12.2 and earlier)
+Tina4::Container.has(:mailer)        # outdated
+
+# after (3.12.3)
+Tina4::Container.has?(:mailer)       # idiomatic Ruby predicate
+```
+
+This brings Ruby in line with Python (`has()`), PHP (`has()`), and Node (`has()`) while still respecting Ruby's `?`-suffix idiom for predicates returning bool. The pre-existing `resolve` → `get` rename happened earlier; only the predicate was lagging.
+
+**ResponseCache public surface — middleware-only across all four frameworks.**
+
+The cache has always been middleware. Two of the four frameworks (PHP, Ruby) historically exposed lookup/store as public methods, which let users couple to internals. The public API is now consistent across all four: use the middleware on a route, and read stats with module-level helpers.
+
+```ruby
+# Ruby — module-level helpers (parity with Python)
+Tina4.cache_stats   # → { hits:, misses:, size:, backend:, keys: }
+Tina4.clear_cache   # flush all entries
+
+# PHP — static methods on the class
+\Tina4\Middleware\ResponseCache::cacheStats();
+\Tina4\Middleware\ResponseCache::clearCache();
+```
+
+Internal methods that used to be public (`get`, `lookup`, `store`, `cache_response`) are now private. Tests that needed them retain access via `_internal*` test seams marked `@internal`.
+
+### Doc parity — CLAUDE.md and book chapter 33
+
+- **CLAUDE.md**: every framework's "Key Method Stubs" section now covers the same surface area Python documents — Queue, QueryBuilder, Frond, Api, Background Tasks, ResponseCache, etc. PHP added 4 sections; Ruby added 5; Node added 13.
+- **Book chapter 33**: env var tables are now grounded in source. Each framework's chapter 33 lists every `TINA4_*` var its source actually reads. Found and fixed several gaps — Ruby was missing `TINA4_CACHE_*`, `TINA4_QUEUE_*`, `TINA4_KAFKA_*`, `TINA4_RABBITMQ_*`, `TINA4_MONGO_*`, `TINA4_WS_BACKPLANE`, and the entire `TINA4_SESSION_VALKEY_*` block.
+
+### Other fixes
+
+- **Ruby `lib/tina4/ai.rb`** — subprocess output is now force-encoded to UTF-8 before `String#strip`, fixing `Encoding::CompatibilityError` that crashed 4 ai specs on systems with non-ASCII pip output.
+- **Node `test/serverParity.test.ts`** — sets `TINA4_OVERRIDE_CLIENT=true` so `start()` actually runs, plus emits the `N passed, M failed` summary line the runner expects. The test was effectively a no-op before; now it's recorded properly.
+
+### Genuine gaps surfaced by the parity audit (follow-up, not blocking 3.12.3)
+
+The chapter 33 audit flagged env vars Python documents that no other framework actually reads — Ruby/PHP/Node lack `TINA4_OPEN_BROWSER`, `TINA4_DEV_POLL_INTERVAL`, `TINA4_PUBLIC_DIR`, `TINA4_TOKEN_EXPIRES_IN` alias, plus a few framework-specific gaps (Ruby has no Mongo session backend; Node `TINA4_CSRF` defaults to `false` vs Python's `true`). Tracked for a future patch.
+
+### Upgrade path
+
+| Symptom | Fix |
+|---|---|
+| Ruby: `NoMethodError: undefined method 'has' for Tina4::Container` | Replace `has(:key)` with `has?(:key)` |
+| PHP: `BadMethodCallException` calling `$cache->lookup(...)` | Use the middleware: `[ResponseCache::class, 'beforeCache']` / `[..., 'afterCache']`. Or call `_internalLookup` if you really need direct access (test code only — `@internal`). |
+| Ruby: `NoMethodError: undefined method 'get' for ResponseCache instance` | Use `Tina4.cache_stats` / `Tina4.clear_cache` for stats. Lookup goes through the middleware. |
+
+No `.env` changes from 3.12.2.
+
 ## v3.12.2 (2026-05-05)
 
 Quality-of-life patch. Two related portability fixes — no breaking changes from 3.12.1.
