@@ -196,16 +196,25 @@ def build_styles(accent: HexColor) -> dict[str, ParagraphStyle]:
             "ChapterTitle", parent=base["Title"],
             fontName="Helvetica-Bold", fontSize=22, leading=28,
             textColor=accent, alignment=TA_LEFT, spaceBefore=6, spaceAfter=14,
+            # keepWithNext: attach the chapter title to whatever comes next
+            # so a chapter never strands its heading at the bottom of a page
+            # while the body lands on the next page.
+            keepWithNext=1,
         ),
         "SectionHeading": ParagraphStyle(
             "SectionHeading", parent=base["Heading2"],
             fontName="Helvetica-Bold", fontSize=15, leading=20,
             textColor=TEXT, spaceBefore=14, spaceAfter=8,
+            # H2 headings were the most common offender — orphaned heading
+            # at the bottom of a page with the body starting on the next.
+            keepWithNext=1,
         ),
         "SubsectionHeading": ParagraphStyle(
             "SubsectionHeading", parent=base["Heading3"],
             fontName="Helvetica-Bold", fontSize=12, leading=16,
             textColor=TEXT, spaceBefore=10, spaceAfter=6,
+            # Same as above for H3+ — keep heading attached to content.
+            keepWithNext=1,
         ),
         "Body": ParagraphStyle(
             "Body", parent=base["BodyText"],
@@ -521,8 +530,25 @@ class _BookDoc(BaseDocTemplate):
             ))
 
     def _cover_footer(self, canvas, doc):
-        # No footer on the cover
-        pass
+        # Slogan line anchored to the bottom of the cover. We draw on the
+        # canvas (not as a flowable) so the slogan sits at a fixed position
+        # regardless of how much vertical whitespace the title block uses.
+        canvas.saveState()
+        canvas.setFont("Helvetica-Oblique", 11)
+        canvas.setFillColor(MUTED)
+        canvas.drawCentredString(
+            WIDTH / 2,
+            0.9 * inch,
+            "The Intelligent Native Application 4ramework",
+        )
+        # A subtle accent rule above the slogan ties it to the page.
+        canvas.setStrokeColor(self._accent)
+        canvas.setLineWidth(0.6)
+        canvas.line(
+            WIDTH / 2 - 1.0 * inch, 1.15 * inch,
+            WIDTH / 2 + 1.0 * inch, 1.15 * inch,
+        )
+        canvas.restoreState()
 
     def _body_footer(self, canvas, doc):
         canvas.saveState()
