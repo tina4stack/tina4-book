@@ -1,0 +1,113 @@
+name: Build PDFs
+
+# Regenerates the seven Tina4 books whenever chapter content or the
+# build script changes. Commits the resulting PDFs back to main so they
+# stay in lockstep with source — same commit signs off both the markdown
+# update AND the PDF that came out of it.
+#
+# Skipped when the only change in a push is the auto-commit itself
+# (we tag those commits with `[skip pdf]` to avoid recursion).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'book-*/chapters/**.md'
+      - 'book-*/book.yml'
+      - 'scripts/build_pdf.py'
+      - 'scripts/build-all-pdfs.sh'
+      - 'assets/**'
+  workflow_dispatch:  # manual trigger from the Actions tab
+
+# Cancel any in-flight build when a newer push lands — the latest
+# chapter content is the only one that matters.
+concurrency:
+  group: build-pdfs-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write   # needed to commit the regenerated PDFs back to main
+
+jobs:
+  build:
+    # Skip the build if this push was the auto-commit from a previous
+    # run — the magic phrase lives in the commit message.
+    if: "!contains(github.event.head_commit.message, '[skip pdf]')"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Need write permission on this checkout so the auto-commit
+          # step at the end can push back. The default GITHUB_TOKEN is
+          # already wired thanks to permissions: contents: write above.
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install build deps (reportlab + PyYAML — both pure Python)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install reportlab PyYAML
+
+      # rsvg-convert handles the SVG→PNG cover-logo conversion. The
+      # PNG is committed to assets/, but if it ever needs regenerating
+      # we keep the tool around. Cheap to install (~5s).
+      - name: Install librsvg (for cover-logo PNG conversion if needed)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends librsvg2-bin
+
+      - name: Build all PDFs
+        run: bash scripts/build-all-pdfs.sh
+
+      - name: Show what changed
+        run: |
+          git status --short
+          echo "---"
+          ls -lh book-*/Tina4-*.pdf book-*/Understanding-Tina4.pdf 2>/dev/null || true
+
+      - name: Commit regenerated PDFs
+        run: |
+          if git diff --quiet -- 'book-*/*.pdf'; then
+            echo "No PDF changes — skipping commit."
+            exit 0
+          fi
+          git config user.name "tina4-bot"
+          git config user.email "bot@tina4.com"
+          git add book-*/Tina4-*.pdf book-*/Understanding-Tina4.pdf
+          git commit -m "chore(pdf): regenerate books from $(git rev-parse --short HEAD~1) [skip pdf]
+
+          Auto-commit by build-pdfs.yml on a push that changed chapter
+          content, book.yml, or the build script."
+          git push origin main
+
+      # Optional: when the user has set DOCS_DEPLOY_TOKEN as a repo
+      # secret (a fine-grained PAT with contents:write on
+      # tina4-documentation), also push the PDFs into the docs site so
+      # they ship without a separate manual step.
+      - name: Mirror PDFs into tina4-documentation (optional)
+        if: ${{ secrets.DOCS_DEPLOY_TOKEN != '' }}
+        env:
+          DOCS_TOKEN: ${{ secrets.DOCS_DEPLOY_TOKEN }}
+        run: |
+          set -e
+          tmp="$(mktemp -d)"
+          git clone --depth=1 \
+            "https://x-access-token:${DOCS_TOKEN}@github.com/tina4stack/tina4-documentation.git" \
+            "$tmp"
+          mkdir -p "$tmp/docs/public/pdfs"
+          cp book-*/Tina4-*.pdf book-*/Understanding-Tina4.pdf "$tmp/docs/public/pdfs/"
+          cd "$tmp"
+          if git diff --quiet -- docs/public/pdfs/; then
+            echo "No PDF changes for docs site — skipping."
+            exit 0
+          fi
+          git config user.name "tina4-bot"
+          git config user.email "bot@tina4.com"
+          git add docs/public/pdfs/
+          git commit -m "chore(pdf): sync v3.12.x book PDFs from tina4-book@${GITHUB_SHA::7}
+
+          Auto-mirrored by tina4-book/build-pdfs.yml."
+          git push origin main

@@ -64,7 +64,7 @@ This repository holds the full Tina4 documentation — one book per supported la
 
 [📥 Download PDF](book-2-php/Tina4-for-PHP-Developers.pdf)
 
-1. [---](book-2-php/chapters/01-getting-started.md)
+1. [Getting Started with Tina4 PHP](book-2-php/chapters/01-getting-started.md)
 2. [Routing](book-2-php/chapters/02-routing.md)
 3. [Request & Response](book-2-php/chapters/03-request-response.md)
 4. [Templates](book-2-php/chapters/04-templates.md)
@@ -107,7 +107,7 @@ This repository holds the full Tina4 documentation — one book per supported la
 
 [📥 Download PDF](book-3-ruby/Tina4-for-Ruby-Developers.pdf)
 
-1. [---](book-3-ruby/chapters/01-getting-started.md)
+1. [Getting Started with Tina4 Ruby](book-3-ruby/chapters/01-getting-started.md)
 2. [Routing](book-3-ruby/chapters/02-routing.md)
 3. [Request & Response](book-3-ruby/chapters/03-request-response.md)
 4. [Templates](book-3-ruby/chapters/04-templates.md)
