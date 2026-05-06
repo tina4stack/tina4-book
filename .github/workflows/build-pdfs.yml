@@ -32,7 +32,7 @@ jobs:
   build:
     # Skip the build if this push was the auto-commit from a previous
     # run — the magic phrase lives in the commit message.
-    if: "!contains(github.event.head_commit.message, '[skip pdf]')"
+    if: ${{ !contains(github.event.head_commit.message, '[skip pdf]') }}
     runs-on: ubuntu-latest
 
     steps:
@@ -86,11 +86,13 @@ jobs:
       # Optional: when the user has set DOCS_DEPLOY_TOKEN as a repo
       # secret (a fine-grained PAT with contents:write on
       # tina4-documentation), also push the PDFs into the docs site so
-      # they ship without a separate manual step.
+      # they ship without a separate manual step. The `if` test runs
+      # via env var because GitHub Actions doesn't allow `secrets.X`
+      # directly inside an `if:` expression.
       - name: Mirror PDFs into tina4-documentation (optional)
-        if: ${{ secrets.DOCS_DEPLOY_TOKEN != '' }}
         env:
           DOCS_TOKEN: ${{ secrets.DOCS_DEPLOY_TOKEN }}
+        if: ${{ env.DOCS_TOKEN != '' }}
         run: |
           set -e
           tmp="$(mktemp -d)"
