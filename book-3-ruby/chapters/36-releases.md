@@ -1,6 +1,34 @@
 # Chapter 35: Release Notes
 
 
+## v3.12.6 (2026-05-06)
+
+Python-only fix release. PHP / Ruby / Node ship the same version stamp for parity but carry no behavioural changes.
+
+### Python — psycopg2 `%` substitution no longer trips PL/pgSQL function bodies (#40)
+
+A migration containing a PL/pgSQL function with literal `%` characters in a `RAISE EXCEPTION` (or `format()`) call used to fail with the misleading:
+
+> RuntimeError: Migration failed: list index out of range
+
+The error message gave no hint that the `%` chars were the problem. The user-facing failure looked like a tina4 internal bug — actually psycopg2's argument-substitution system tripping on the literal percent signs.
+
+**Root cause.** `PostgreSQLAdapter.execute(sql, params)` always called `cursor.execute(sql, params or [])`. psycopg2 interprets `%` as parameter placeholders WHENEVER the `params` arg is supplied — even an empty list `[]`. So a function body containing `RAISE EXCEPTION 'thing % conflicts with %', a, b` (perfectly valid PL/pgSQL) blew up because psycopg2 thought `%` was a placeholder and there were no values to substitute.
+
+**Fix.** New `PostgreSQLAdapter._safe_execute(cursor, sql, params)` helper routes empty/None params through `cursor.execute(sql)` (no second arg), which makes psycopg2 skip the substitution pass entirely. Literal `%` chars flow through untouched. Applied at every `cursor.execute(...)` call site in the adapter (5 spots across `execute`, `fetch`, `fetch_one`).
+
+**Tests.** 5 new unit tests in `tests/test_postgres_percent_substitution.py` pin the helper's branching. 3 live-Postgres regression tests in `tests/test_postgres_plpgsql_percent.py` exercise a real CREATE FUNCTION + trigger flow with literal `%` in the body — skipped automatically when no Postgres is reachable. Full suite: 2453 passing (was 2448).
+
+**Cross-framework parity check.** PHP (`pg_query` vs `pg_query_params`) and Ruby (`exec` vs `exec_params`) already branch on params presence so they don't have this bug. Node uses `$1` placeholders not `%`, so the same class of bug doesn't apply.
+
+### Long-standing tina4-js #37 confirmed fixed
+
+`frond.form.submit` not following 3xx redirects — fixed in frond v2.1.2 back on April 11, 2026 (`xhr.responseURL` comparison + `window.location.href` navigation). All four framework `public/js/frond.min.js` copies carry the fix. The original issue stayed open because the reporter never confirmed against the patched build.
+
+### Upgrade
+
+Drop in. No `.env` changes, no API changes.
+
 ## v3.12.5 (2026-05-06)
 
 PHP-only bug fix release. Python / Ruby / Node ship the same version stamp for parity but carry no behavioural changes.
