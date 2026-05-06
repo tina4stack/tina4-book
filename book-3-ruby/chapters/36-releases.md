@@ -1,6 +1,27 @@
 # Chapter 35: Release Notes
 
 
+## v3.12.5 (2026-05-06)
+
+PHP-only bug fix release. Python / Ruby / Node ship the same version stamp for parity but carry no behavioural changes.
+
+### PHP — multipart bodies with file uploads now parse correctly (#135)
+
+Two stacked bugs in `Tina4\Request::__construct` made `$request->body` come through as the raw multipart bytes (~11 KB blobs starting with `------WebKitFormBoundary…`) whenever the request included a file upload:
+
+1. The constructor called `$this->parseBody()` BEFORE initialising `$this->files`. Inside parseBody's multipart branch, the line `$this->files = array_merge($this->files, $parsed['files'])` read an uninitialised typed property — fatal `Error`.
+2. After fixing the init order, that same line tried to mutate the `readonly` `$files` property — another fatal `Error`.
+
+Both errors got swallowed by the upstream error handler and the route handler received the raw multipart payload instead of the parsed associative array. Routes that worked fine for ordinary form posts broke the moment a file field came along.
+
+**Fix.** Move `$this->files` initialisation AFTER `parseBody()` runs. parseBody stashes extracted multipart files on a new private mutable `$multipartFiles`; the constructor merges them into the readonly `$files` in a single assignment that respects the readonly contract.
+
+4 new regression tests in `tests/Issue135Test.php` pin the constructor's contract. Full PHP suite: 2235 passing (was 2231).
+
+### Upgrade
+
+Drop in. No `.env` changes, no API changes, no other framework changes.
+
 ## v3.12.4 (2026-05-06)
 
 Documentation-truth release. The `audit-truth.py` CI gate (introduced post-3.12.3) flagged 39 env vars referenced in docs that no framework actually read. This release closes that gap: 25 of them now exist in code, the other 14 are deleted from docs (11 hallucinations + 6 clustering vars deferred to [tina4#2](https://github.com/tina4stack/tina4/issues/2)). Both audit gates (CLI drift + env-var drift) are now strict in CI.
