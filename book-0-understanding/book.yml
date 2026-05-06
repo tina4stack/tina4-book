@@ -1,7 +1,7 @@
 title: "Understanding Tina4"
 subtitle: "Architecture, Philosophy, and the Four-Language Promise"
 accent: "#8892bf"
-version: "v3.12.3"
+version: "v3.12.4"
 cover_logo: "assets/tina4-cover-logo.png"
 chapters_dir: "book-0-understanding/chapters"
 output: "book-0-understanding/Understanding-Tina4.pdf"

@@ -1,6 +1,11 @@
 node_modules/
 .DS_Store
+
+# Don't commit ad-hoc PDFs anywhere in the tree, but DO commit each
+# book's release PDF — it's the deliverable for that book.
 *.pdf
+!book-*/Tina4-*.pdf
+!book-*/Understanding-Tina4.pdf
 
 # Python cache
 __pycache__/

@@ -1,7 +1,7 @@
 title: "tina4-js — The 1.5KB Reactive Core"
 subtitle: "Signals, Web Components, and a frontend you can fit in your head"
 accent: "#06b6d4"
-version: "v3.12.3"
+version: "v3.12.4"
 cover_logo: "assets/tina4-cover-logo.png"
 chapters_dir: "book-5-javascript/chapters"
 output: "book-5-javascript/Tina4-Javascript-Developer.pdf"
