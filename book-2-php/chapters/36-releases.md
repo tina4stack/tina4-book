@@ -1,6 +1,68 @@
 # Chapter 35: Release Notes
 
 
+## v3.12.9 (2026-05-12)
+
+Cross-framework RFC 9110 HTTP method-conformance release. The 24now / 24stack deployment reported that `Router::get('/auth/welcome')` returned **404 on `HEAD`** probes. The audit found four sibling gaps. All fixed across every framework at the same number.
+
+### What was wrong
+
+| # | Gap | Spec | Symptom |
+|---|---|---|---|
+| 1 | `Router::get(...)` returned 404 on HEAD | RFC 9110 §9.3.2 MUST | cache validators, link checkers, monitoring probes broken |
+| 2 | HEAD responses could leak a body | RFC 9110 §9.3.2 MUST | clients overread, content-length didn't match |
+| 3 | Wrong method on existing path returned 404 | RFC 9110 §15.5.6 + §10.2.1 | link checkers couldn't tell "no route" from "wrong verb" |
+| 4 | `OPTIONS` only handled by CORS preflight middleware | RFC 9110 §9.3.7 SHOULD | introspection clients got CORS-shaped responses instead of `Allow:` headers |
+| 5 | `TRACE` / `CONNECT` silently 404 | security | should be explicit 405 (origin servers do not tunnel) |
+
+### What's in this release
+
+- **HEAD auto-fallback to GET.** `Router::match('HEAD', $path)` falls back to the GET route when no explicit HEAD handler is registered. The dispatcher strips the body unconditionally on the way out — even if a developer's explicit `Router::head()` handler returned one — and preserves `Content-Length` pointing at the byte count the equivalent GET would have sent.
+- **405 + Allow header** when the path exists but the method doesn't. The Allow header lists every registered method, plus HEAD (whenever GET is registered) and OPTIONS (always, since OPTIONS is auto-handled).
+- **Generic OPTIONS handler.** Returns `204 No Content` with the Allow header for any path the router knows about. Explicit `Router::options()` registration overrides.
+- **TRACE / CONNECT** rejected with 405 (falls out of the same code path as the wrong-method handler — origin servers do not tunnel).
+- **`Router::head()` and `Router::options()` registration methods** for apps that want to override the framework's auto-handling.
+
+### Test coverage
+
+| Framework | New tests | Full suite |
+|---|---|---|
+| tina4-php | 17 | 2648 |
+| tina4-python | 17 | 2486 |
+| tina4-ruby | 17 | 2764 |
+| tina4-nodejs | 12 (router-level) | baseline unchanged |
+
+TDD discipline — every test written before the fix landed, ran to confirm red, then implementation, then confirm green.
+
+### Bonus catch (Ruby)
+
+The previous CORS middleware short-circuited **every** `OPTIONS` request to its preflight response — even introspection probes without an `Origin` header. That shadowed the framework's own OPTIONS support and forced operators to hand-register exceptions for every monitoring client. Now the CORS path only fires when the request actually carries `Origin` or `Access-Control-Request-Method`. Plain RFC 9110 OPTIONS probes hit the router's `Allow`-header response cleanly.
+
+### Verification
+
+```bash
+# Existing GET routes now respond to HEAD
+$ curl -sI https://your-app.example.com/auth/welcome
+HTTP/2 200
+Content-Length: <byte count the GET would have sent>
+# ...same headers as the GET would have sent
+
+# Plain OPTIONS introspection
+$ curl -sI -X OPTIONS https://your-app.example.com/auth/welcome
+HTTP/2 204
+Allow: GET, HEAD, OPTIONS
+
+# Wrong method is now 405, not 404
+$ curl -sI -X PUT https://your-app.example.com/auth/welcome
+HTTP/2 405
+Allow: GET, HEAD, OPTIONS
+```
+
+### Upgrade
+
+Drop in. No `.env` changes. No API breakage — existing code keeps working; new code can opt in to `Router::head()` and `Router::options()` for custom handlers.
+
+
 ## v3.12.6 (2026-05-06)
 
 Python-only fix release. PHP / Ruby / Node ship the same version stamp for parity but carry no behavioural changes.
