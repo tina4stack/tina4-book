@@ -1,5 +1,46 @@
 # Chapter 35: Release Notes
 
+## v3.13.6 (2026-06-09)
+
+Two fixes: one Ruby-specific (spec contamination from v3.13.5), one cross-framework polish (driver install hints).
+
+### Spec contamination from Frond static-facade — fixed
+
+v3.13.5 introduced `Tina4::Frond.add_filter / add_global / add_test` as a class-level registry (matching Python / PHP / Node). One side effect: globals set in one spec leaked into specs that expected the missing-variable fallback.
+
+`spec/spec_helper.rb` now resets the registry between examples:
+
+```ruby
+config.after(:each) do
+  # ...existing cleanup...
+  Tina4::Frond.clear_registry if defined?(Tina4::Frond) && Tina4::Frond.respond_to?(:clear_registry)
+end
+```
+
+No production code change — only the test harness. Matches the autouse fixture in Python and the `clearRegistry()` call in Node's `i18n-leaf-alias.test.ts`.
+
+### Better driver install hints (#47)
+
+Driver gems (`pg`, `mysql2`, `tiny_tds`, `ruby-odbc`, `mongo`, `fb`) now raise a multi-line `LoadError` suggesting both Bundler and bare-gem install:
+
+```
+The 'pg' gem is required for PostgreSQL connections. Install one of:
+    bundle add pg     # if your project uses Bundler
+    gem install pg    # bare driver
+```
+
+Replaces the previous bare `LoadError` (or single-line `Install: gem install pg`).
+
+### #46 — PostgreSQL transaction cascade (no fix needed)
+
+The cascade behaviour that prompted Python's #46 fix is psycopg2-specific. Ruby's `pg` gem uses libpq in autocommit mode by default — each statement is its own transaction, so a failed query does not poison subsequent ones. Verified.
+
+### Tests
+
+2,928 passing, 7 pending (Postgres container).
+
+---
+
 ## v3.13.5 (2026-06-05)
 
 Frond static-facade parity across PHP, Ruby, Node.js. Closes the last documented v3 parity gap (tina4-python task #32). Python's `Frond.add_filter` / `add_global` / `add_test` have worked as classmethods since v3.13.0 — now PHP / Ruby / Node match.

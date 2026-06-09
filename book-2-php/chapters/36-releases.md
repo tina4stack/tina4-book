@@ -1,5 +1,31 @@
 # Chapter 35: Release Notes
 
+## v3.13.6 (2026-06-09)
+
+Parity-version bump alongside Python's #46 / #47 fixes. **No PHP source changes** — both issues were verified against the PHP codebase and required no action here.
+
+### #46 — PostgreSQL transaction cascade (no fix needed)
+
+The cascade behaviour that prompted Python's fix is psycopg2-specific (DB-API 2.0 mandates an implicit transaction on first statement). PHP's `pg_query` / `pg_query_params` use libpq in autocommit mode by default — each statement is its own transaction, so a failed query does not poison subsequent ones.
+
+`PostgresAdapter::query()` already populates `$this->lastError` from `pg_last_error()` on every failure, accessible via `$db->getError()`:
+
+```php
+$db = \Tina4\Database\Database::create('postgres://localhost:5432/mydb');
+$db->fetch("SELECT * FROM does_not_exist");
+$error = $db->getError();  // already populated — has been since 3.x
+```
+
+### #47 — Driver install hints (no change needed)
+
+PHP's driver-missing exceptions already include OS-level install guidance (`sudo apt-get install php-pgsql`, `brew install php`). PHP database drivers are extensions, not Composer packages, so the Python/Ruby/Node-style "extras" pattern doesn't apply.
+
+### Tests
+
+2,871 passing — no regressions.
+
+---
+
 ## v3.13.5 (2026-06-05)
 
 Frond static-facade parity across PHP, Ruby, Node.js. Closes the last documented v3 parity gap (tina4-python task #32). Python's `Frond.add_filter` / `add_global` / `add_test` have worked as classmethods since v3.13.0 — now PHP / Ruby / Node match.

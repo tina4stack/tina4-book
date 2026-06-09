@@ -1,5 +1,57 @@
 # Chapter 35: Release Notes
 
+## v3.13.6 (2026-06-09)
+
+Two small reliability fixes — both tracked across all four frameworks.
+
+### PostgreSQL transaction errors no longer cascade (#46)
+
+A failed PostgreSQL query outside an explicit transaction used to leave the connection in an aborted state. Every subsequent query then failed with `current transaction is aborted, commands ignored until end of transaction block`, masking the original cause and making the bug effectively invisible to operators.
+
+The fix wraps every PostgreSQL `cursor.execute` in error-aware machinery:
+
+```python
+# Bad query
+try:
+    db.execute("SELECT * FROM table_that_does_not_exist")
+except Exception:
+    pass
+
+# Before v3.13.6: this raised InFailedSqlTransaction
+# v3.13.6 onward: succeeds — the framework auto-rolled back
+result = db.fetch("SELECT 1 AS one")
+assert result.records[0]["one"] == 1
+
+# The original error is still visible:
+db.last_error  # → 'relation "table_that_does_not_exist" does not exist'
+```
+
+The framework now:
+1. Logs the original failure via `Log.error` with the SQL and params.
+2. Stores the message on `db.last_error` so observability tools can read it.
+3. Auto-rollbacks **only** when the caller is not inside an explicit transaction — explicit transactions are left to the user (so SAVEPOINT / retry patterns still work).
+
+Cross-framework note: this cascade behaviour is psycopg2-specific (DB-API 2.0 mandates an implicit transaction on first statement). PHP `pg_query`, Ruby `pg` gem, and Node `node-postgres` all run in libpq autocommit by default — no cascade, no fix needed.
+
+### Better driver install hints (#47)
+
+Missing-driver `ImportError` messages now suggest a `uv add` command alongside `pip install`:
+
+```
+psycopg2 is required for PostgreSQL connections. Install one of:
+    uv add tina4-python[postgres]   # extra for projects using uv
+    pip install psycopg2-binary    # bare driver
+    uv add tina4-python[all-db]    # all five database drivers
+```
+
+Applies to the PostgreSQL, MySQL, MSSQL, Firebird, ODBC, and MongoDB drivers, plus the MongoDB queue backend.
+
+### Tests
+
+2,741 passing, 44 skipped (Postgres / MySQL / MongoDB containers).
+
+---
+
 ## v3.13.5 (2026-06-05)
 
 Frond static-facade parity across PHP, Ruby, Node.js. Closes the last documented v3 parity gap (tina4-python task #32). Python's `Frond.add_filter` / `add_global` / `add_test` have worked as classmethods since v3.13.0 — now PHP / Ruby / Node match.

@@ -1,5 +1,41 @@
 # Chapter 35: Release Notes
 
+## v3.13.6 (2026-06-09)
+
+Parity bump alongside Python's #46 / #47 fixes, plus a Node-side polish on driver install hints.
+
+### Better driver install hints (#47)
+
+Missing-driver errors across all six adapters (PostgreSQL, MySQL, MSSQL, Firebird, ODBC, MongoDB) now suggest every common Node package manager instead of only `npm`:
+
+```
+PostgreSQL adapter requires the "pg" package. Install one of:
+    npm install pg
+    yarn add pg
+    pnpm add pg
+    bun add pg
+```
+
+Useful for monorepos and Bun/Yarn-first projects where the npm command is the wrong recommendation.
+
+### #46 — PostgreSQL transaction cascade (no fix needed)
+
+The cascade behaviour that prompted Python's #46 fix is psycopg2-specific (DB-API 2.0 mandates an implicit transaction on first statement). `node-postgres` runs in libpq autocommit by default — each query is its own transaction, so a failed query does not poison subsequent ones. The async PostgreSQL adapter already returns the error in its result object:
+
+```typescript
+const result = await db.executeAsync("SELECT * FROM does_not_exist");
+result.success;  // false
+result.error;    // 'relation "does_not_exist" does not exist'
+```
+
+Verified — no source change needed.
+
+### Tests
+
+3,526 passing across 91 files.
+
+---
+
 ## v3.13.5 (2026-06-05)
 
 Frond static-facade parity across PHP, Ruby, Node.js. Closes the last documented v3 parity gap (tina4-python task #32). Python's `Frond.add_filter` / `add_global` / `add_test` have worked as classmethods since v3.13.0 — now PHP / Ruby / Node match.
