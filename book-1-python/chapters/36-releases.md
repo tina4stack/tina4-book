@@ -1,5 +1,62 @@
 # Chapter 35: Release Notes
 
+## v3.13.8 (2026-06-10) — Python only
+
+Follow-on for issue [#46](https://github.com/tina4stack/tina4-python/issues/46). Schalk on the 24rent team upgraded to v3.13.7 and still hit the cascade message on the FIRST query of a function — meaning the PostgreSQL connection had been poisoned **before** the wrapper saw any failure.
+
+### The gap in v3.13.6 / v3.13.7
+
+v3.13.6 added auto-rollback **inside** `_on_query_error` — that clears the abort *on* a failure the framework's wrapper catches. But the connection can still arrive poisoned from sources the wrapper never observed:
+
+- A boot-time query that failed before request handling started (migration probe, ORM `information_schema` lookup, etc.)
+- A failure inside an explicit transaction where the user owned the rollback but never issued one
+- A direct `cursor.execute` call in another adapter method (the `SELECT lastval()` SAVEPOINT probe in `execute`) that managed to leave the txn dirty
+
+In all three cases, the *next* `db.fetch` / `db.execute` — even one routed through the wrapper — hits `InFailedSqlTransaction` immediately, and the cascade message buries whatever the original cause was. Exactly what Schalk reported:
+
+```
+[ERROR] PostgreSQL query failed: InFailedSqlTransaction: current transaction is aborted, commands ignored until end of transaction block
+{"sql": "SELECT * FROM gift_cards.gift_card WHERE created_by_email = %s AND is_deleted = 0 LIMIT %s OFFSET %s"}
+```
+
+### The fix: pre-flight heal
+
+`_exec_with_handling` and `fetch` now call `_heal_aborted_txn()` before executing. That checks the psycopg2 connection's `transaction_status` against `TRANSACTION_STATUS_INERROR` and rolls back if poisoned:
+
+```python
+def _heal_aborted_txn(self):
+    if self._in_transaction or self._conn is None:
+        return
+    import psycopg2.extensions as _ext
+    if self._conn.info.transaction_status != _ext.TRANSACTION_STATUS_INERROR:
+        return
+    self._conn.rollback()
+    Log.warning(
+        "PostgreSQL connection arrived in aborted-transaction state — "
+        "issued pre-flight ROLLBACK so the next query starts clean. "
+        "Look back in the log for the original PostgreSQL query failed entry."
+    )
+```
+
+- **Only fires outside an explicit transaction** — same rule as the failure-time auto-rollback. Callers running SAVEPOINT/retry stay in charge.
+- **Logs a warning when it triggers** so the operator can correlate against the upstream failure.
+- **Defensive**: even if a code path bypasses the wrapper entirely, the next path that does *use* the wrapper heals the connection on the way in.
+
+### Cross-framework
+
+Python only. PHP `pg_query`, Ruby `pg`, and Node `node-postgres` use libpq autocommit by default — each statement is its own transaction, so the cascade never happens there.
+
+### Tests
+
+3 new tests in `tests/test_postgres_error_visibility.py::TestPoisonedConnectionIsHealed`:
+- `test_fetch_heals_poisoned_connection` — manually poison the connection with a raw `cursor.execute`, then verify `db.fetch` succeeds
+- `test_execute_heals_poisoned_connection` — same for `db.execute`
+- `test_explicit_transaction_skips_heal` — confirms the heal defers when the user owns the txn
+
+2,764 passing, 31 skipped (skipped tests require PG container; verified against `postgres:16-alpine` on `localhost:55432`).
+
+---
+
 ## v3.13.7 (2026-06-10)
 
 Two changes from an external app-platform team (24rent, PLATFORM-2159) — one observability hook, one production-safety fix. Both ship across **all four frameworks** with identical event payload shape.
