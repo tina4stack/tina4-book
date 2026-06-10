@@ -1,5 +1,51 @@
 # Chapter 35: Release Notes
 
+## v3.13.7 (2026-06-10)
+
+Two changes from the 24rent app-platform team (PLATFORM-2159) — one observability hook, one production-safety fix. Both ship across **all four frameworks** with identical event payload shape.
+
+### NEW: `tina4.request.error` event
+
+When `handle_500` catches a route exception, it now emits `tina4.request.error` **before** rendering the 500 page. Listeners receive a hash `{ exception:, request: }` and can ship the failure to CloudWatch / Sentry / Slack — even though the framework caught it.
+
+```ruby
+Tina4::Events.on("tina4.request.error") do |payload|
+  exc = payload[:exception]
+  req = payload[:request]
+
+  Tina4::Log.error("Route error: #{exc.class}: #{exc.message}",
+                   method: req&.method, path: req&.path)
+  # ...or POST to your centralised logging pipeline
+end
+```
+
+- **Fires for caught route exceptions.** Does NOT fire for 404s — those aren't server errors.
+- **Listener errors are swallowed + warning-logged** so a broken listener can't break the 500 render.
+- **Listeners fire in priority order** (higher priority first, matching the existing `Tina4::Events.on(event, priority: N)`).
+- **Identical event name + payload across Python / PHP / Node** — only the per-language syntax differs.
+
+The framework already logged via `Tina4::Log.error` before — that line is unchanged.
+
+### FIX: Stack trace removed from production 500 body (CWE-209)
+
+Before v3.13.7, an unhandled route exception in Ruby would render `"#{error.message}\n#{error.backtrace.first(10).join("\n")}"` into the 500 response body — absolute file paths, the top 10 frames, the exception message — **regardless of `TINA4_DEBUG`**. That's [CWE-209 / OWASP A05](https://cwe.mitre.org/data/definitions/209.html): information disclosure.
+
+The framework's own `lib/tina4/templates/errors/500.twig` now guards the trace block with `{% if error_message %}`. When `TINA4_DEBUG=false`, `handle_500` passes an empty `error_message` and the trace block doesn't render. The trace stays in `Tina4::Log.error` (server-side) and reaches observability via the new event.
+
+When `TINA4_DEBUG=true`, the rich `Tina4::ErrorOverlay` page is unchanged.
+
+### Tests
+
+Six new specs in `spec/router_error_event_spec.rb`: event payload shape, dev/prod symmetry, listener priority order, no traceback markers in prod body, request_id still surfaces, listener-error safety.
+
+- 2,934 examples passing, 7 pending (PG container), no regressions.
+
+### Background
+
+Reported by DevProx on the 24rent platform — they centralise observability by scraping structured JSON lines from stderr → CloudWatch → a Slack notifier. Route-level exceptions weren't surfacing because the framework caught them silently. The event hook fixes that without forcing any team's logging convention; the trace-leak fix is independently a security concern.
+
+---
+
 ## v3.13.6 (2026-06-09)
 
 Two fixes: one Ruby-specific (spec contamination from v3.13.5), one cross-framework polish (driver install hints).

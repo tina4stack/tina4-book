@@ -1,5 +1,75 @@
 # Chapter 35: Release Notes
 
+## v3.13.7 (2026-06-10)
+
+Two changes from an external app-platform team (24rent, PLATFORM-2159) — one observability hook, one production-safety fix. Both ship across **all four frameworks** with identical event payload shape.
+
+### NEW: `tina4.request.error` event
+
+When the router catches a thrown exception, it now emits `tina4.request.error` **before** rendering the 500 page. Listeners receive `{exception, request}` and can ship the failure to CloudWatch / Sentry / Slack — even though the framework caught the throwable.
+
+```python
+from tina4_python.core.events import on
+from tina4_python.debug import Log
+
+@on("tina4.request.error")
+def report_to_observability(payload):
+    exc = payload["exception"]
+    req = payload["request"]
+    Log.error(f"Route error: {type(exc).__name__}: {exc}", path=req.path)
+    # ...or POST to your centralised logging pipeline
+```
+
+- **Fires for caught route exceptions** (and warnings escalated to exceptions). Does NOT fire for 404s — those aren't server errors.
+- **Listener errors are swallowed + logged via `Log.warning`** so a broken listener can never break the 500 render.
+- **Listeners fire in priority order** (higher priority first, matching the existing `@on(event, priority=N)` contract).
+- **Same payload shape in every framework** — only the calling syntax differs:
+
+```php
+// PHP
+Events::on('tina4.request.error', function ($payload) {
+    Log::error('Route error: ' . $payload['exception']->getMessage());
+});
+```
+
+```ruby
+# Ruby
+Tina4::Events.on("tina4.request.error") do |payload|
+  Tina4::Log.error("Route error: #{payload[:exception].message}")
+end
+```
+
+```typescript
+// Node.js
+import { Events, Log } from "@tina4/core";
+Events.on("tina4.request.error", (payload) => {
+  Log.error(`Route error: ${(payload as any).exception.message}`);
+});
+```
+
+### FIX: Stack trace removed from production 500 body (CWE-209)
+
+Before v3.13.7, an unhandled route exception would render the **full stack trace** into the HTTP 500 response body — file paths, function chain, the exception message — **regardless of `TINA4_DEBUG`**. That's [CWE-209 / OWASP A05](https://cwe.mitre.org/data/definitions/209.html): information disclosure.
+
+The framework's own `500.twig` now guards the trace block with `{% if error_message %}`. When `TINA4_DEBUG=false`, callers pass an empty `error_message` and the trace block doesn't render. The trace stays in `Log.error` (server-side) and reaches observability via the new event.
+
+When `TINA4_DEBUG=true`, the rich `ErrorOverlay` page is unchanged.
+
+### Tests
+
+Each framework added 6–14 regression tests covering: event payload shape, dev/prod symmetry, listener priority ordering, listener-error safety, and CWE-209 (no trace markers in the prod body).
+
+- Python: 2,748 passed, 44 skipped
+- PHP: 2,877 passed
+- Ruby: 2,934 passed, 7 pending (PG container)
+- Node: 3,540 passed across 92 files
+
+### Background
+
+Reported by DevProx on the 24rent platform — they centralise observability by scraping structured JSON lines from stderr → CloudWatch → a Slack notifier. Route-level exceptions weren't surfacing because the framework caught them silently. The event hook fixes that without forcing any team's logging convention; the trace-leak fix is independently a security concern.
+
+---
+
 ## v3.13.6 (2026-06-09)
 
 Two small reliability fixes — both tracked across all four frameworks.
