@@ -1,5 +1,55 @@
 # Chapter 35: Release Notes
 
+## v3.13.9 (2026-06-10)
+
+Non-destructive AI installer — `AI::installSelected()` / `AI::installAll()` no longer clobber the user's `CLAUDE.md`. They write (or refresh) a marker-bracketed Tina4 skill block and leave the rest of the file alone.
+
+### The bug
+
+Pre-v3.13.9 the installer wrote a full developer guide to `CLAUDE.md` (and to `.cursorules` / `.github/copilot-instructions.md` / `.windsurfrules` / `CONVENTIONS.md` / `.clinerules` / `AGENTS.md` / `.antigravity/context.md`) on every run, clobbering whatever the user had put there. If a user kept project-specific notes in `CLAUDE.md`, re-running the installer wiped all of it.
+
+### The fix
+
+A marker-bracketed skill block — HTML comments for `.md` files, `#`-prefixed line comments for rule files:
+
+```markdown
+<!-- tina4-skills:start -->
+## Tina4 Skills
+- **tina4-maintainer** — Read `.claude/skills/tina4-maintainer/SKILL.md` for framework-level changes.
+- **tina4-developer** — Read `.claude/skills/tina4-developer/SKILL.md` before building features.
+- **tina4-js** — Read `.claude/skills/tina4-js/SKILL.md` for frontend work.
+<!-- tina4-skills:end -->
+```
+
+Four behaviours:
+
+1. **Fresh install** → write the framework guide plus the skill block.
+2. **Marker refresh** (idempotent) → file exists with our markers → replace only the bracketed block.
+3. **One-time migration** → file starts with the pre-v3.13.9 framework header → replace the old dump with the new framework guide + skill block.
+4. **Preserve user content** → file exists with the user's own content (no markers, no old header) → append the skill block to the end, leave everything else verbatim.
+
+The actual skill content under `.claude/skills/tina4-*/SKILL.md` still gets cleanly overwritten — those are framework-owned packages, not user notes.
+
+### Same algorithm in Python / Ruby / Node
+
+Identical four-branch logic, identical marker syntax, identical canonical action verbs in the log output. Skill content stays consistent across the family.
+
+### Tests
+
+11 new tests in `tests/AIInstallerTest.php` (verified via reflection so private helpers stay private). All four branches plus marker detection, block replacement, idempotency, old-header detection, and rule-file vs markdown-file behaviour.
+
+2,888 passed — no regressions.
+
+### What you'll see when you re-install
+
+```
+[OK] Migrated (replaced old framework dump in) CLAUDE.md   ← first run after upgrade
+[OK] Refreshed skill block in CLAUDE.md                     ← every subsequent run
+[OK] Appended skill block to CLAUDE.md                      ← user-curated file
+```
+
+---
+
 ## v3.13.7 (2026-06-10)
 
 Two changes from the 24rent app-platform team (PLATFORM-2159) — one observability hook, one production-safety fix. Both ship across **all four frameworks** with identical event payload shape.

@@ -1,5 +1,77 @@
 # Chapter 35: Release Notes
 
+## v3.13.9 (2026-06-10)
+
+Non-destructive AI installer across all four frameworks.
+
+### The bug
+
+Pre-v3.13.9 the installer wrote a full developer guide to `CLAUDE.md` (and the equivalent context files for Cursor / Copilot / Windsurf / Aider / Cline / Codex / Antigravity) on every run, clobbering whatever the user had put there. If a user kept project-specific notes in `CLAUDE.md` — branch naming, deploy URLs, "don't touch this", reminders about a flaky service — re-running `install_context()` wiped all of that.
+
+### The fix
+
+The installer now uses a **marker-bracketed skill block**:
+
+```markdown
+<!-- tina4-skills:start -->
+## Tina4 Skills
+
+When working on this Tina4 project, these skills give the assistant project-aware behaviour:
+
+- **tina4-developer** — Read `.claude/skills/tina4-developer/SKILL.md` before building features.
+- **tina4-js** — Read `.claude/skills/tina4-js/SKILL.md` for frontend work.
+- **tina4-maintainer** — Read `.claude/skills/tina4-maintainer/SKILL.md` for framework-level changes.
+
+See https://tina4.com for full docs.
+<!-- tina4-skills:end -->
+```
+
+Four behaviours:
+
+1. **Fresh install** — file doesn't exist → write the framework guide plus the skill block.
+2. **Marker refresh** — file exists with our markers → replace just the bracketed block. **Idempotent**: re-running the installer keeps the skill references current as new skills are added.
+3. **One-time migration** — file starts with the pre-v3.13.9 framework header (`# Tina4 Python — Developer Guidelines`, `# Tina4 PHP`, `# Tina4 Ruby`, `# CLAUDE.md — AI Developer Guide for tina4-nodejs`) → replace the old dump with the new framework guide + skill block.
+4. **Preserve user content** — file exists with the user's own content (no markers, no old header) → append the skill block to the end. Everything else is preserved verbatim.
+
+Markdown files (`CLAUDE.md`, `.github/copilot-instructions.md`, `CONVENTIONS.md`, `AGENTS.md`, `.antigravity/context.md`) get HTML-comment markers (`<!-- ... -->`). Rule files (`.cursorules`, `.windsurfrules`, `.clinerules`) get `#`-prefixed markers so rule loaders treat them as comments.
+
+The actual skill content lives in `.claude/skills/tina4-*/SKILL.md` — those are framework-owned and still get cleanly overwritten so re-runs upgrade the skill content. `CLAUDE.md` itself becomes a thin pointer, not a re-rendered guide.
+
+### Cross-framework parity
+
+Same algorithm, same marker syntax, same four branches in Python, PHP, Ruby, and Node. Same canonical action verbs in the log output (`Installed` / `Refreshed skill block in` / `Migrated (replaced old framework dump in)` / `Appended skill block to`).
+
+### Tests
+
+99 new tests across the family covering all four branches plus marker detection, block replacement, idempotency, old-header detection, encoding edge cases, and rule-file vs markdown-file behaviour.
+
+- Python: 2,772 passed, 47 skipped (24 new)
+- PHP: 2,888 passed (11 new — verified via reflection so private helpers stay private)
+- Ruby: 2,952 passed, 7 pending (18 new)
+- Node: 3,586 passed across 93 files (46 assertions new)
+
+### What you'll see when you re-install
+
+Existing users running the installer for the first time after upgrading will hit branch 3 — they'll see this in the output:
+
+```
+✓ Migrated (replaced old framework dump in) CLAUDE.md
+```
+
+On any subsequent run, branch 2 kicks in:
+
+```
+✓ Refreshed skill block in CLAUDE.md
+```
+
+Users who curated their own `CLAUDE.md` and never ran the old installer will see branch 4:
+
+```
+✓ Appended skill block to CLAUDE.md
+```
+
+---
+
 ## v3.13.8 (2026-06-10) — Python only
 
 Follow-on for issue [#46](https://github.com/tina4stack/tina4-python/issues/46). Schalk on the 24rent team upgraded to v3.13.7 and still hit the cascade message on the FIRST query of a function — meaning the PostgreSQL connection had been poisoned **before** the wrapper saw any failure.
