@@ -1,5 +1,65 @@
 # Chapter 35: Release Notes
 
+## v3.13.13 (2026-06-11) — PHP only: large-response truncation fix
+
+**PHP-only release.** Python, Ruby, and Node stay at v3.13.12 — the bug is specific to PHP's built-in socket server, which is the only one of the four frameworks that hand-rolls a non-blocking socket write loop. Python (asyncio `StreamWriter.drain()`), Ruby (WEBrick), and Node (`node:http`) all delegate body writes to a server that handles a full send buffer correctly, so none of them can hit this.
+
+### Responses larger than the OS send buffer are no longer truncated
+
+`Tina4\Server` (the standalone HTTP server behind `tina4 serve`, including when run as an nginx upstream) wrote responses with a non-blocking `fwrite()` loop. On a non-blocking socket, `fwrite()` returns `0` when the OS send buffer is full — this is **EAGAIN ("try again")**, *not* a closed socket. The pre-v3.13.13 loop treated `0` as fatal and `break`ed mid-body:
+
+```php
+while ($written < $total) {
+    $n = @fwrite($client, substr($httpResponse, $written));
+    if ($n === false || $n === 0) {
+        break;   // BUG: 0 is "buffer full", not "socket closed"
+    }
+    $written += $n;
+    // ...only waited for drain AFTER a successful write
+}
+```
+
+Symptom: a ~4 MB attachment download returned `200` with the correct `Content-Length` but only part of the body (the cutoff varied run-to-run — we saw 2.31 MB and 1.30 MB), nginx logged `upstream prematurely closed connection while reading upstream`, and the browser showed a failed download. Anything larger than the send buffer (~200 KB–1 MB depending on platform) was affected — the dev-admin JS bundle had hit a related case.
+
+### The fix
+
+Body writes now go through `Server::writeFully()`, which:
+
+- On `fwrite() === 0`, **waits for the socket to become writable** (`stream_select` on the write set, 5 s no-progress timeout) and retries, instead of bailing.
+- Only gives up on a real error (`false`) or a client that has genuinely stopped reading for 5 s.
+- Writes in 512 KB chunks so it doesn't recopy the entire remaining tail on every iteration (O(n) instead of O(n²) for large bodies).
+
+```php
+$n = @fwrite($client, substr($data, $written, 524288)); // 512KB
+if ($n === false) break;                 // real error
+if ($n === 0) {                          // buffer full — wait, don't quit
+    $sw = [$client]; $sr = []; $se = [];
+    if (@stream_select($sr, $sw, $se, 5) === 0) break; // 5s no progress → gone
+    continue;
+}
+$written += $n;
+```
+
+The error-response path (`sendHttpError`) routes through the same helper.
+
+### Why PHP only — cross-framework verification
+
+| Framework | Built-in server | Body write | Truncation risk |
+|---|---|---|---|
+| **PHP** | raw `stream_socket_server` | non-blocking `fwrite` loop | ❌ **was buggy** → fixed |
+| Python | asyncio `start_server` | `write()` + `await drain()` | ✅ safe |
+| Ruby | WEBrick | blocking `IO#write` | ✅ safe |
+| Node | native `node:http` | atomic `res.end(buffer)` | ✅ safe |
+
+### Tests
+
+- New `tests/ServerLargeResponseTest.php`: pushes 4 MB through a deliberately stalled reader (via `pcntl_fork`) and asserts every byte arrives. Verified to **fail on the old loop** (truncated at the 8 KB socketpair buffer) and **pass on the fix** (full 4 MB).
+- PHP: 2,331 passing.
+
+> Housekeeping caught alongside this fix: the CI test invocation (`vendor/bin/phpunit`, xml-file-list mode) ran fewer tests than `composer test` (directory mode), so newly-added test files could silently skip CI. The v3.13.12 SQL-normalizer tests and this release's socket test are now registered in `phpunit.xml`; fully reconciling the two invocations is tracked separately.
+
+---
+
 ## v3.13.12 (2026-06-11) — SQL safety + implicit ORM binding + `fetchAll` correctness
 
 Three high-impact fixes that close out long-standing footguns. All three ship with full parity across all four frameworks.
