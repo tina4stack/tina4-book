@@ -1,5 +1,62 @@
 # Chapter 35: Release Notes
 
+## v3.13.12 (2026-06-11) — SQL safety + implicit ORM binding
+
+Two small but high-impact fixes that close out long-standing footguns. Both ship with full parity across all four frameworks — and Ruby gets the bigger of the two changes here.
+
+### Trailing `;` is now stripped from user SQL in `fetch` / `fetch_one`
+
+The framework appends `LIMIT n OFFSET m` to the user-supplied query (and wraps it in `SELECT COUNT(*) FROM (...) AS subq` for the count probe). When the user's query already ended with a `;`, both rewrites broke:
+
+```ruby
+db.fetch("SELECT * FROM users;")
+# pre-v3.13.12: syntax error near "LIMIT" — the appended LIMIT followed a ;
+# v3.13.12:    works — trailing ; is stripped before LIMIT is appended
+```
+
+The strip is conservative: only trailing whitespace + semicolons are removed (any number of them, including `;;`), nothing inside the statement is touched. Parameters and quoting are unchanged — the existing parameter-binding defense against injection still does all the heavy lifting.
+
+Lives as `Tina4::Database.strip_trailing_semicolons(sql)` and is called from `fetch` and `fetch_one`.
+
+### Ruby ORM now auto-discovers `TINA4_DATABASE_URL` (the binding fix)
+
+This was the Ruby outlier. When `TINA4_DATABASE_URL` was set in `.env` but `Tina4.bind!` had never been called, the model's `db` accessor returned `nil` — every `save` / `find` / `where` silently no-op'd. Python, PHP, and Node already discovered the env var on first use; Ruby had the helper (`auto_discover_db`) defined but never called.
+
+```ruby
+# .env has TINA4_DATABASE_URL=sqlite://./app.db, no explicit Tina4.bind! anywhere
+User.find(1)
+# pre-v3.13.12: nil  (db accessor returned nil, query never ran)
+# v3.13.12:     #<User id: 1, ...>  (auto-discovered on first model access)
+```
+
+The `db` accessor on `Tina4::ORM` now resolves in this order:
+
+```ruby
+def db
+  @db || Tina4.database || auto_discover_db
+end
+```
+
+Explicit `Tina4.bind!(db)` still takes precedence — use it to bind a second database or override the env-driven default. The behaviour now matches Python's `database_url_auto_discover()`, PHP's adapter auto-init, and Node's `initDatabase()` env fallback.
+
+### Cross-framework parity
+
+| Fix | Python | PHP | Ruby | Node |
+|---|---|---|---|---|
+| Strip trailing `;` from fetch SQL | ✓ shared helper on `DatabaseAdapter` | ✓ `SqlNormalizerTrait` on 5 adapters | ✓ `Tina4::Database.strip_trailing_semicolons` | ✓ exported `stripTrailingSemicolons` |
+| Implicit ORM binding from env | ✓ already worked | ✓ already worked | ✓ **fixed** (wired `auto_discover_db`) | ✓ already worked |
+
+### Tests
+
+- Python: 2,805 passed (+18 new)
+- PHP: 2,898 passed (+10 new)
+- Ruby: 2,976 passed (+14 new)
+- Node: 3,608 passed across 95 files (+12 new)
+
+**12,287 tests across the family, +54 new for v3.13.12, zero regressions.**
+
+---
+
 ## v3.13.11 (2026-06-11) — ORM correctness pass
 
 Mirrors Python's ORM correctness pass. Two Ruby-side changes plus regression-pinning tests.

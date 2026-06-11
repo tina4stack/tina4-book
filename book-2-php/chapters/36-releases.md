@@ -1,5 +1,45 @@
 # Chapter 35: Release Notes
 
+## v3.13.12 (2026-06-11) — SQL safety + implicit ORM binding
+
+Two small but high-impact fixes that close out long-standing footguns. Both ship with full parity across all four frameworks.
+
+### Trailing `;` is now stripped from user SQL in `fetch()` / `fetchOne()`
+
+The framework appends `LIMIT n OFFSET m` to the user-supplied query (and wraps it in `SELECT COUNT(*) FROM (...) AS subq` for the count probe). When the user's query already ended with a `;`, both rewrites broke:
+
+```php
+$db->fetch("SELECT * FROM users;");
+// pre-v3.13.12: syntax error near "LIMIT" — the appended LIMIT followed a ;
+// v3.13.12:    works — trailing ; is stripped before LIMIT is appended
+```
+
+The strip is conservative: only trailing whitespace + semicolons are removed (any number of them, including `;;`), nothing inside the statement is touched. Parameters and quoting are unchanged — the existing parameter-binding defense against injection still does all the heavy lifting.
+
+The shared logic lives in a new `\Tina4\Database\SqlNormalizerTrait` and is `use`d by all five adapters: PostgreSQL, MySQL, SQLite, MSSQL, Firebird.
+
+### Implicit ORM binding from `TINA4_DATABASE_URL`
+
+PHP already auto-discovered `TINA4_DATABASE_URL` on adapter init — this release simply documents and pins it as parity behaviour. When the env var is present, the first ORM model call binds the default adapter; an explicit `\Tina4\Database\Adapter` instance still takes precedence and can be used to bind a second database.
+
+### Cross-framework parity
+
+| Fix | Python | PHP | Ruby | Node |
+|---|---|---|---|---|
+| Strip trailing `;` from fetch SQL | ✓ shared helper on `DatabaseAdapter` | ✓ `SqlNormalizerTrait` on 5 adapters | ✓ `Tina4::Database.strip_trailing_semicolons` | ✓ exported `stripTrailingSemicolons` |
+| Implicit ORM binding from env | ✓ already worked | ✓ already worked | ✓ **fixed** (wired `auto_discover_db`) | ✓ already worked |
+
+### Tests
+
+- Python: 2,805 passed (+18 new)
+- PHP: 2,898 passed (+10 new)
+- Ruby: 2,976 passed (+14 new)
+- Node: 3,608 passed across 95 files (+12 new)
+
+**12,287 tests across the family, +54 new for v3.13.12, zero regressions.**
+
+---
+
 ## v3.13.11 (2026-06-11) — ORM correctness pass (parity bump)
 
 **No PHP source changes.** This release is a parity-version bump alongside Python's ORM correctness pass. Each issue in the Python report was checked against PHP and found to be either already-correct or N/A for the PHP framework.
