@@ -1,5 +1,22 @@
 # Chapter 35: Release Notes
 
+## v3.13.11 (2026-06-11) — ORM correctness pass (parity bump)
+
+**No PHP source changes.** This release is a parity-version bump alongside Python's ORM correctness pass. Each issue in the Python report was checked against PHP and found to be either already-correct or N/A for the PHP framework.
+
+### Per-issue audit
+
+- **#50.1 — Callable field defaults** → **N/A**. PHP property defaults must be constant expressions in declarations (`public string $foo = 'bar';` is allowed; `public DateTime $foo = new DateTime();` is not). The Python/Ruby callable-default pattern doesn't apply.
+- **#50.2 — `save()` correctly handles natural-key INSERTs** → **already correct**. `Tina4\ORM::save()` (line 363) already routes through `recordExists($pkValue)` for natural-key models. The Python bug was specifically about that decision branch; PHP's branch was already right.
+- **#49 — PostgreSQL error visibility follow-on** → **N/A**. The cascade behaviour is psycopg2-specific (DB-API 2.0 implicit transactions). PHP's `pg_query` uses libpq in autocommit mode; every statement is its own transaction, so the cascade never happens.
+- **BooleanField engine-aware DDL** → **N/A**. PHP's `ORM::createTable()` is a minimal stub that creates a PK-only table — full schema is migration-driven, so the user controls the bool column type explicitly in their migration SQL.
+
+### Tests
+
+2,888 passed — unchanged from v3.13.9.
+
+---
+
 ## v3.13.9 (2026-06-10)
 
 Non-destructive AI installer — `AI::installSelected()` / `AI::installAll()` no longer clobber the user's `CLAUDE.md`. They write (or refresh) a marker-bracketed Tina4 skill block and leave the rest of the file alone.

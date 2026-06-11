@@ -1,5 +1,38 @@
 # Chapter 35: Release Notes
 
+## v3.13.11 (2026-06-11) — ORM correctness pass
+
+Mirrors Python's ORM correctness pass. Two Ruby-side changes plus regression-pinning tests.
+
+### #50.1 — Callable Proc defaults are now resolved per-instance
+
+```ruby
+class GiftCard < Tina4::ORM
+  integer_field :id, primary_key: true, auto_increment: true
+  datetime_field :created_at, default: -> { Time.now }
+end
+```
+
+Pre-v3.13.11 the Proc was stored verbatim; on save it reached the driver as the Proc object. Now `initialize` invokes the Proc per instance, so each row gets a fresh value. Classes are excluded — `default: Integer` survives verbatim.
+
+### BooleanField — engine-aware DDL on PG / MySQL / MSSQL
+
+`Tina4::ORM.create_table` now picks each engine's native bool type. SQLite and Firebird stay on INTEGER (SQLite has no native bool; Firebird's driver round-trip is uneven). PostgreSQL gets `BOOLEAN`, MySQL gets `BOOLEAN` (alias for `TINYINT(1)`), MSSQL gets `BIT`.
+
+### #50.2 — natural-key INSERT (already correct, now pinned)
+
+Ruby's `save()` already routes through the `@persisted` flag — set to `false` by `initialize`, `true` by `from_hash` and after a successful save — so natural-key INSERT was working correctly all along. Pinned with a regression spec so a future refactor can't silently break it.
+
+### PG error-visibility fixes (Python only)
+
+The `tina4.request.error` event hook, the explicit-txn log gap, the COUNT-probe swallow, and the BooleanField PG cascade are all psycopg2-specific. Ruby's `pg` gem uses libpq in autocommit mode — the cascade never happens. No Ruby changes needed.
+
+### Tests
+
+2,962 examples passing, 7 pending (+10 new — `spec/orm_v3_13_11_spec.rb`). No regressions.
+
+---
+
 ## v3.13.9 (2026-06-10)
 
 Non-destructive AI installer — `Tina4::AI.install_selected` / `install_all` no longer clobber the user's `CLAUDE.md`. They write (or refresh) a marker-bracketed Tina4 skill block and leave the rest of the file alone.

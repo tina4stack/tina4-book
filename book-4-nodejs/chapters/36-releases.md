@@ -1,5 +1,51 @@
 # Chapter 35: Release Notes
 
+## v3.13.11 (2026-06-11) — ORM correctness pass
+
+Mirrors Python's ORM correctness pass. One Node-side change plus regression-pinning tests.
+
+### #50.2 — `save()` correctly INSERTs natural (non-auto-increment) PKs
+
+Pre-v3.13.11 the BaseModel `save()` decided INSERT vs UPDATE purely on `pkValue != null`. For models with a user-supplied PK (e.g. `gift_card_number = "GC-100"` set before the first save), this always picked UPDATE — matched zero rows — and silently returned success without inserting anything.
+
+v3.13.11 checks `ModelClass.exists(pkValue)` for non-auto-increment PKs:
+
+```typescript
+class GiftCard extends BaseModel {
+  static tableName = "gift_cards";
+  static fields = {
+    gift_card_number: { type: "string", primaryKey: true, maxLength: 50 },
+    owner: { type: "string", maxLength: 120 },
+  };
+}
+
+const gc = new GiftCard();
+gc.gift_card_number = "GC-100";
+gc.owner = "alice@example.com";
+gc.save();                          // → INSERT (pre-v3.13.11: silent UPDATE no-op)
+GiftCard.find({ gift_card_number: "GC-100" });  // → returns the row
+```
+
+Auto-increment PKs are unchanged: `pk == null → INSERT`, `pk != null → UPDATE`. The fix also stops the engine-assigned `lastInsertRowid` from overwriting a natural PK that the caller already set.
+
+### #50.1 — callable defaults (N/A in Node)
+
+The Python/Ruby auto-default-application pattern doesn't exist in Node's `BaseModel`. The constructor only copies provided data; field defaults are metadata used by `createTable()` for the DDL `DEFAULT` clause, not auto-applied at construction. If a user wants a callable default, they set the field manually before `save()`. Worth noting for parity but no source change needed.
+
+### BooleanField engine-aware DDL (already correct in Node)
+
+Node's per-adapter `fieldTypeTo*()` functions already mapped boolean to each engine's native type: PG → `BOOLEAN`, MySQL → `TINYINT(1)`, MSSQL → `BIT`, Firebird → `SMALLINT`, SQLite → `INTEGER`. Pinned with a regression test on SQLite.
+
+### PG error-visibility fixes (Python only)
+
+`node-postgres` uses libpq in autocommit mode — the InFailedSqlTransaction cascade that Python's psycopg2 produces never happens. No Node changes needed.
+
+### Tests
+
+3,596 passed across 94 files (+10 new — `test/ormV3_13_11.test.ts`). No regressions.
+
+---
+
 ## v3.13.9 (2026-06-10)
 
 Non-destructive AI installer — `installSelected()` / `installAll()` no longer clobber the user's `CLAUDE.md`. They write (or refresh) a marker-bracketed Tina4 skill block and leave the rest of the file alone.

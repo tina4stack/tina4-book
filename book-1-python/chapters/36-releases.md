@@ -1,5 +1,89 @@
 # Chapter 35: Release Notes
 
+## v3.13.11 (2026-06-11) — ORM correctness pass
+
+Five fixes bundled into one release. Two are Andre's own ORM bugs (#50), two close out follow-on gaps from Michael's error-visibility report (#49), and one fixes a PostgreSQL-level mismatch that BooleanField columns were creating.
+
+### #50.1 — Callable field defaults are now resolved per-instance
+
+```python
+class GiftCard(ORM):
+    created_at = DateTimeField(default=lambda: datetime.now())
+```
+
+Pre-v3.13.11 this stored the lambda object verbatim and crashed on save:
+
+```
+psycopg2.ProgrammingError: can't adapt type 'function'
+```
+
+Now the framework invokes the callable **per instance** at construction time, so every row gets a fresh value. Types are excluded (`default=int` is preserved verbatim — that's almost never intended as "call `int()`").
+
+### #50.2 — `save()` correctly INSERTs natural (non-auto-increment) PKs
+
+For models with a user-supplied PK (e.g. `gift_card_number = "GC-100"` set before the first save), pre-v3.13.11 `save()` always chose UPDATE — matched zero rows — and silently returned success without inserting anything. The framework now checks `cls.exists(pk_value)` for non-auto-increment PKs:
+
+```python
+gc = GiftCard()
+gc.gift_card_number = "GC-100"
+gc.save()                          # → INSERT (pre-v3.13.11 was a silent UPDATE no-op)
+GiftCard.find_by_id("GC-100")      # → returns the row
+```
+
+Auto-increment behaviour is unchanged: `PK is None → INSERT`, `PK set → UPDATE`. Saving an existing natural-key row still UPDATEs (and doesn't duplicate).
+
+### #49.1 — Original cause logged when failure is inside an explicit transaction
+
+When a query fails inside `db.start_transaction()`, the auto-rollback correctly defers to the user. But the visibility half no longer goes with it — the framework now emits a Log.warning marker so operators can spot the upstream cause that's about to be buried by the cascade. The `fetch()` COUNT probe also now logs original-cause failures via `Log.warning` before swallowing.
+
+### #49.2 — `Database.fetch()` populates `last_error` (mirror of `execute()`)
+
+```python
+try:
+    db.fetch("SELECT * FROM does_not_exist")
+except Exception:
+    pass
+
+db.get_error()   # pre-v3.13.11: None  (adapter had the cause, wrapper never read it)
+                 # v3.13.11:     "relation \"does_not_exist\" does not exist"
+```
+
+### BooleanField — engine-aware DDL on PG / MySQL / MSSQL
+
+Pre-v3.13.11 `BooleanField` mapped to `INTEGER` on every engine. That caused PostgreSQL to throw `operator does not exist: boolean = integer` when Python `bool` values bound via psycopg2 met the `INTEGER` column — because psycopg2 adapts `True`/`False` to PG `boolean`, not to integer.
+
+v3.13.11 makes `BooleanField → create_table()` engine-aware:
+
+| Engine | DDL type |
+|---|---|
+| PostgreSQL | `BOOLEAN` |
+| MySQL | `BOOLEAN` (alias for `TINYINT(1)`) |
+| MSSQL | `BIT` |
+| SQLite | `INTEGER` (no native bool) |
+| Firebird | `INTEGER` (driver round-trip uneven for native BOOLEAN) |
+
+**Breaking change**: callers writing literal `= 0` / `= 1` against tables created by `create_table()` on PG / MySQL / MSSQL will need to update to `= false` / `= true` (or the engine's native bool literal). Tables created via migration with explicit DDL aren't affected — the framework only sets the type when it creates the table itself.
+
+### Cross-framework parity
+
+| Fix | Python | PHP | Ruby | Node |
+|---|---|---|---|---|
+| #50.1 callable defaults | ✓ fixed | N/A (PHP property defaults are constants) | ✓ fixed (Procs) | N/A (no auto-default at construction) |
+| #50.2 natural-key INSERT | ✓ fixed | ✓ already correct (`recordExists`) | ✓ already correct (`@persisted` flag) | ✓ fixed |
+| #49.1 + #49.2 PG visibility | ✓ fixed (Python-only — libpq autocommit means cascade never happens on PHP/Ruby/Node) |  |  |  |
+| BooleanField DDL | ✓ fixed | N/A (PHP createTable is migration-driven) | ✓ fixed | ✓ already engine-aware |
+
+### Tests
+
+- Python: 2,807 passed, 31 skipped (+34 new)
+- PHP: 2,888 passed (no changes)
+- Ruby: 2,962 passed, 7 pending (+10 new)
+- Node: 3,596 passed across 94 files (+10 new)
+
+**12,253 tests across the family, +54 new for v3.13.11, zero regressions.**
+
+---
+
 ## v3.13.10 (2026-06-11) — Python only
 
 Three Python-only housekeeping items.
