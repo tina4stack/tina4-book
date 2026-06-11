@@ -1,8 +1,23 @@
 # Chapter 35: Release Notes
 
-## v3.13.12 (2026-06-11) — SQL safety + implicit ORM binding
+## v3.13.12 (2026-06-11) — SQL safety + implicit ORM binding + `fetchAll` correctness
 
-Two small but high-impact fixes that close out long-standing footguns. Both ship with full parity across all four frameworks.
+Three high-impact fixes that close out long-standing footguns. All three ship with full parity across all four frameworks.
+
+### `fetchAll` actually fetches ALL rows now (no silent 100-row truncation)
+
+Pre-v3.13.12 the Python/PHP/Ruby conveniences silently truncated at 100 rows. Node already had the correct semantics (the `limit` parameter is optional and `undefined` skips LIMIT injection at the adapter layer), but this release locks the contract in with explicit tests:
+
+```typescript
+// 150 rows in the table
+db.fetchAll("SELECT * FROM rows");           // → 150 rows (always did, now tested)
+db.fetchAll("SELECT * FROM rows", undefined, 10);   // → 10 rows (explicit cap)
+db.fetchAll("SELECT * FROM rows", undefined, 5, 20); // → 5 rows starting at offset 20
+```
+
+`db.fetch()` (the paginated sibling that returns a `DatabaseResult` with count metadata) keeps its 100-row default at the HTTP query-builder layer — pagination is its job. Only the low-level `db.fetchAll()` convenience returns everything.
+
+For very large tables, prefer `db.fetch()` (returns a `DatabaseResult` with count) or pass an explicit `limit` to `db.fetchAll()`.
 
 ### Trailing `;` is now stripped from user SQL in `fetch()` / `fetchOne()`
 
@@ -34,17 +49,18 @@ Node already auto-discovered `TINA4_DATABASE_URL` via `initDatabase()` on the en
 
 | Fix | Python | PHP | Ruby | Node |
 |---|---|---|---|---|
+| `fetch_all`/`fetchAll` returns ALL rows by default | ✓ `limit=0` default | ✓ `$limit = 0` default | ✓ `limit: nil` default | ✓ already correct (`limit?` undefined) |
 | Strip trailing `;` from fetch SQL | ✓ shared helper on `DatabaseAdapter` | ✓ `SqlNormalizerTrait` on 5 adapters | ✓ `Tina4::Database.strip_trailing_semicolons` | ✓ exported `stripTrailingSemicolons` |
 | Implicit ORM binding from env | ✓ already worked | ✓ already worked | ✓ **fixed** (wired `auto_discover_db`) | ✓ already worked |
 
 ### Tests
 
-- Python: 2,805 passed (+18 new)
-- PHP: 2,898 passed (+10 new)
-- Ruby: 2,976 passed (+14 new)
-- Node: 3,608 passed across 95 files (+12 new)
+- Python: 2,811 passed (+24 new)
+- PHP: 2,316 passed (+13 new)
+- Ruby: 2,980 passed (+18 new)
+- Node: 3,612 passed across 95 files (+16 new)
 
-**12,287 tests across the family, +54 new for v3.13.12, zero regressions.**
+**11,719 tests across the family, +71 new for v3.13.12, zero regressions.**
 
 ---
 

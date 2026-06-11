@@ -1,8 +1,30 @@
 # Chapter 35: Release Notes
 
-## v3.13.12 (2026-06-11) — SQL safety + implicit ORM binding
+## v3.13.12 (2026-06-11) — SQL safety + implicit ORM binding + `fetch_all` correctness
 
-Two small but high-impact fixes that close out long-standing footguns. Both ship with full parity across all four frameworks — and Ruby gets the bigger of the two changes here.
+Three high-impact fixes that close out long-standing footguns. All three ship with full parity across all four frameworks — Ruby gets the auto-discover wiring as the headline change.
+
+### `fetch_all` actually fetches ALL rows now (no silent 100-row truncation)
+
+Pre-v3.13.12 the convenience method defaulted to `limit: 100` and silently truncated. The name says `fetch_all` — it should fetch them all:
+
+```ruby
+# 150 rows in the table
+db.fetch_all("SELECT * FROM rows")
+# pre-v3.13.12: returns 100 rows, silently drops the other 50
+# v3.13.12:    returns all 150 rows
+```
+
+The new default is `limit: nil`, which the driver's `apply_limit` already treats as "no LIMIT injection" — your SQL runs verbatim. To opt back into a cap, pass `limit:` explicitly:
+
+```ruby
+db.fetch_all("SELECT * FROM events", limit: 500)   # capped
+db.fetch_all("SELECT * FROM users")                # all rows
+```
+
+`db.fetch` (the paginated sibling that returns a `DatabaseResult` with count metadata) keeps its 100-row default — pagination is its job. Only the `fetch_all` convenience changed.
+
+**Breaking change**: callers who relied on the silent 100-row cap now get every row. For very large tables, switch to `fetch` (which paginates with metadata) or pass an explicit `limit:`.
 
 ### Trailing `;` is now stripped from user SQL in `fetch` / `fetch_one`
 
@@ -43,17 +65,18 @@ Explicit `Tina4.bind!(db)` still takes precedence — use it to bind a second da
 
 | Fix | Python | PHP | Ruby | Node |
 |---|---|---|---|---|
+| `fetch_all`/`fetchAll` returns ALL rows by default | ✓ `limit=0` default | ✓ `$limit = 0` default | ✓ `limit: nil` default | ✓ already correct (`limit?` undefined) |
 | Strip trailing `;` from fetch SQL | ✓ shared helper on `DatabaseAdapter` | ✓ `SqlNormalizerTrait` on 5 adapters | ✓ `Tina4::Database.strip_trailing_semicolons` | ✓ exported `stripTrailingSemicolons` |
 | Implicit ORM binding from env | ✓ already worked | ✓ already worked | ✓ **fixed** (wired `auto_discover_db`) | ✓ already worked |
 
 ### Tests
 
-- Python: 2,805 passed (+18 new)
-- PHP: 2,898 passed (+10 new)
-- Ruby: 2,976 passed (+14 new)
-- Node: 3,608 passed across 95 files (+12 new)
+- Python: 2,811 passed (+24 new)
+- PHP: 2,316 passed (+13 new)
+- Ruby: 2,980 passed (+18 new)
+- Node: 3,612 passed across 95 files (+16 new)
 
-**12,287 tests across the family, +54 new for v3.13.12, zero regressions.**
+**11,719 tests across the family, +71 new for v3.13.12, zero regressions.**
 
 ---
 
