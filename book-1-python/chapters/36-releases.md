@@ -1,5 +1,44 @@
 # Chapter 35: Release Notes
 
+## v3.13.10 (2026-06-11) — Python only
+
+Three Python-only housekeeping items.
+
+### 1. Google Antigravity removed from `AI_TOOLS` — it reads `AGENTS.md`, not `.antigravity/context.md`
+
+Per Google's official Antigravity docs ([rules-workflows](https://antigravity.google/docs/rules-workflows)), as of Antigravity **v1.20.3 (March 2026)** the IDE reads `AGENTS.md` from the repo root — the same cross-tool standard Codex pioneered, Cursor adopted, and Claude Code reads as a fallback. Our pre-v3.13.10 installer wrote to `.antigravity/context.md`, **a path nothing actually reads.** Antigravity has been silently producing dead files in users' projects since the entry was added in commit `04fba18`.
+
+The fix in v3.13.10 is simply to **remove the antigravity entry from `AI_TOOLS`**. The existing `codex` entry (`AGENTS.md`) already writes the Tina4 skill block to the file Antigravity actually consumes — one file, four tools (Codex + Cursor + Claude Code + Antigravity all read it).
+
+If you want Antigravity-specific tuning beyond the shared `AGENTS.md`, write it to `.agents/rules/tina4.md` by hand — that's the documented per-workspace rules folder.
+
+### 2. `uv.lock` drift caught
+
+The lockfile had quietly fallen out of sync — it tracked `tina4-python` at `3.13.8` while `pyproject.toml` was at `3.13.9`. The mistake was on my side: I didn't re-stage `uv.lock` on the v3.13.7 / v3.13.8 / v3.13.9 commits, and `uv` only regenerates it lazily. **Cosmetic only** (the PyPI artefact was always built from `pyproject.toml`, so the published packages were correct), but the lockfile would have drifted further every release. Now refreshed to `3.13.10` and committed.
+
+### 3. `.gitignore` for runtime broken-route artefacts
+
+`Tina4::BrokenTracker` writes import-time and route-time failure dumps to `data/.broken/` and `data/broken/` at the project root. The pre-v3.13.10 `.gitignore` only covered `/broken` (older convention) and the `example/store/` paths. The newer `data/`-rooted paths weren't ignored, so test runs that intentionally threw (the `tina4.request.error` tests in v3.13.7) were leaving untracked `.broken` files lying around in the framework's own repo.
+
+Now ignored:
+```gitignore
+/data/broken/
+/data/.broken/
+```
+
+### Why Python-only
+
+All three items are Python-specific. PHP/Ruby/Node never had the Antigravity entry, don't use uv, and have their own gitignore conventions covered separately.
+
+### Tests
+
+- `tests/test_ai.py::TestAITools::test_antigravity_is_handled_via_codex_entry` — new test that asserts (a) Antigravity is NOT a separate `AI_TOOLS` entry, (b) the Codex entry's `context_file` remains `AGENTS.md`. Keeps the design intent visible so nobody reintroduces a dedicated Antigravity entry without checking the docs.
+- Existing `test_tools_count_matches_known_set` updated from 8 → 7.
+
+2,773 passed, 47 skipped — no regressions.
+
+---
+
 ## v3.13.9 (2026-06-10)
 
 Non-destructive AI installer across all four frameworks.
