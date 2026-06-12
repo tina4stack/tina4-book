@@ -1,10 +1,20 @@
 # Chapter 35: Release Notes
 
-## v3.13.14 (2026-06-12) — Logs reach stdout in containers
+## v3.13.14 (2026-06-12) — Logs reach stdout in containers + per-request logging
 
-**Cross-framework release (all four).** Deployed Docker containers were getting no application logs. Ruby actually *did* write to stdout by default (`TINA4_LOG_OUTPUT=both`), but it **never set `$stdout.sync`** — and a container's stdout is a non-TTY pipe, which Ruby block-buffers. Logs sat in the buffer until it filled or the process exited, so `docker logs` looked empty (and a crash lost the tail).
+**Cross-framework release (all four).** Deployed Docker containers were getting no application logs. Ruby actually *did* write to stdout by default (`TINA4_LOG_OUTPUT=both`), but it **never set `$stdout.sync`** — and a container's stdout is a non-TTY pipe, which Ruby block-buffers. Logs sat in the buffer until it filled or the process exited, so `docker logs` looked empty (and a crash lost the tail). A follow-on report — the dev server going silent after startup — surfaced a second gap: requests were never logged to stdout.
 
-### What changed in Ruby
+### Per-request logging — on by default in dev
+
+Every request now logs one line through `Tina4::Log` (→ stdout), on by default in dev and opt-in for production via `TINA4_LOG_REQUESTS`:
+
+```
+2026-06-12T10:15:03.221Z [INFO   ] GET /api/users -> 200 (12.3ms)
+```
+
+`rack_app` emits it after every request (the dev inspector previously only fed the `/__dev` UI). Format is identical across all four frameworks: `METHOD /path -> STATUS (Nms)`. Default: on under `TINA4_DEBUG`, off in production; `TINA4_LOG_REQUESTS=true`/`false` overrides. `RequestLoggerMiddleware` dropped its `[RequestLogger]` prefix for parity.
+
+### What changed (stdout)
 
 1. **`$stdout.sync = true`** is set in `Log.configure` (unless output is file-only). Logs now flush to the container's stdout immediately.
 2. **Default log level is `INFO`** (was `[TINA4_LOG_ALL]`). Surfaces request/startup/warn/error without debug noise.
@@ -32,8 +42,8 @@ The Rust `tina4` CLI was already correct (inherits child stdio).
 
 ### Tests
 
-- Ruby: 2,986 passed (+10 new — level resolution incl. plain names, bracket form, unknown→INFO fallback, `$stdout.sync`)
-- Family: Python 2,816 · PHP 2,335 · Ruby 2,986 · Node 3,615 — **11,752 total, zero regressions.**
+- Ruby: 2,991 passed (+15 new — level resolution + `$stdout.sync`; request-log gate + dispatch)
+- Family: Python 2,822 · PHP 2,341 · Ruby 2,991 · Node 3,620 — **11,774 total, zero regressions.**
 
 ---
 

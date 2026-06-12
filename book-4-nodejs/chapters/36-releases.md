@@ -1,10 +1,22 @@
 # Chapter 35: Release Notes
 
-## v3.13.14 (2026-06-12) — Logs reach stdout in containers
+## v3.13.14 (2026-06-12) — Logs reach stdout in containers + per-request logging
 
-**Cross-framework release (all four).** Deployed Docker containers were getting no application logs. In production Node's logger gated console output behind `!Log.isProduction()` (which is `!TINA4_DEBUG`), so a deployed app — where `TINA4_DEBUG` is off — printed nothing to stdout, writing only to `logs/tina4.log` inside the container. `docker logs` reads PID 1 stdout, so it was empty.
+**Cross-framework release (all four).** Deployed Docker containers were getting no application logs. In production Node's logger gated console output behind `!Log.isProduction()` (which is `!TINA4_DEBUG`), so a deployed app — where `TINA4_DEBUG` is off — printed nothing to stdout, writing only to `logs/tina4.log` inside the container. `docker logs` reads PID 1 stdout, so it was empty. A follow-on report — the dev server going silent after startup — surfaced a second gap in the other frameworks: requests weren't logged.
 
-### What changed in Node
+### Per-request logging — now gated, routed through Log
+
+Node already logged every request, but via a bare `console.log` with a status-first format, and **always on** (even in production). v3.13.14 aligns it with the family:
+
+```
+2026-06-12T10:15:03.221Z [INFO   ] GET /api/users -> 200 (12.3ms)
+```
+
+- Routed through the Tina4 `Log` (so prod → JSON, dev → human) instead of `console.log`.
+- Gated by `TINA4_LOG_REQUESTS`: on by default in dev (`TINA4_DEBUG`), **off by default in production** (was always-on) so prod doesn't pay the per-request cost unless you opt in with `TINA4_LOG_REQUESTS=true`.
+- Standard line format `METHOD /path -> STATUS (Nms)`, identical across all four frameworks (was `  STATUS METHOD url ms`).
+
+### What changed (stdout)
 
 1. **Console output is no longer gated on `isProduction()`.** Logs go to stdout in production too (subject to `TINA4_LOG_OUTPUT` and level).
 2. **Production emits structured JSON** to both stdout and the file (parity with Python/Ruby — Node previously wrote *text* to the file in production unless `TINA4_LOG_FORMAT=json`). Dev keeps the coloured human-readable line.
@@ -34,8 +46,8 @@ The Rust `tina4` CLI was already correct (inherits child stdio).
 
 ### Tests
 
-- Node: 3,615 passed (+3 net — production writes parseable JSON to stdout, no ANSI; the dev-mode log test now genuinely runs in dev)
-- Family: Python 2,816 · PHP 2,335 · Ruby 2,986 · Node 3,615 — **11,752 total, zero regressions.**
+- Node: 3,620 passed (+8 net — production JSON stdout; request-log gating, format, and Log routing)
+- Family: Python 2,822 · PHP 2,341 · Ruby 2,991 · Node 3,620 — **11,774 total, zero regressions.**
 
 ---
 

@@ -1,10 +1,20 @@
 # Chapter 35: Release Notes
 
-## v3.13.14 (2026-06-12) — Logs reach stdout in containers
+## v3.13.14 (2026-06-12) — Logs reach stdout in containers + per-request logging
 
-**Cross-framework release (all four).** Deployed Docker containers were getting no application logs. In production PHP set `Log::$stdout = false` (logs went only to `logs/tina4.log` inside the container), never read `TINA4_LOG_LEVEL`, and didn't flush stdout. `docker logs` reads PID 1 stdout — so it was empty.
+**Cross-framework release (all four).** Deployed Docker containers were getting no application logs. In production PHP set `Log::$stdout = false` (logs went only to `logs/tina4.log` inside the container), never read `TINA4_LOG_LEVEL`, and didn't flush stdout. `docker logs` reads PID 1 stdout — so it was empty. A follow-on report — the dev server going silent after startup — surfaced a second gap: requests were never logged.
 
-### What changed in PHP
+### Per-request logging — on by default in dev
+
+Every request now logs one line through `Tina4\Log` (→ stdout), on by default in dev and opt-in for production via `TINA4_LOG_REQUESTS`:
+
+```
+2026-06-12T10:15:03.221Z [INFO   ] GET /api/users -> 200 (12.3ms)
+```
+
+`Router::dispatch()` emits it at the end of every request. Format is identical across all four frameworks: `METHOD /path -> STATUS (Nms)`. Default: on under `TINA4_DEBUG`, off in production; `TINA4_LOG_REQUESTS=true`/`false` overrides. The `RequestLogger` middleware's line now includes the status code for parity.
+
+### What changed (stdout)
 
 1. **stdout is ON by default** (was: only when `TINA4_DEBUG=true`). The default-case in `Log::configure()` now sets `$stdout = true`. `TINA4_LOG_OUTPUT=file` still opts out.
 2. **`Log::configure()` now reads `TINA4_LOG_LEVEL`** from the environment (it previously ignored it). Default level is **INFO** (was effectively DEBUG).
@@ -33,8 +43,8 @@ The Rust `tina4` CLI was already correct (inherits child stdio).
 
 ### Tests
 
-- PHP: 2,335 passed (+4 new — stdout-on-in-prod, INFO default, `TINA4_LOG_LEVEL` override, file opt-out)
-- Family: Python 2,816 · PHP 2,335 · Ruby 2,986 · Node 3,615 — **11,752 total, zero regressions.**
+- PHP: 2,341 passed (+10 new — stdout/level/file gating; request-log format + `TINA4_LOG_REQUESTS` gate)
+- Family: Python 2,822 · PHP 2,341 · Ruby 2,991 · Node 3,620 — **11,774 total, zero regressions.**
 
 ---
 

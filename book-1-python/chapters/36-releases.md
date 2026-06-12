@@ -1,12 +1,27 @@
 # Chapter 35: Release Notes
 
-## v3.13.14 (2026-06-12) — Logs reach stdout in containers
+## v3.13.14 (2026-06-12) — Logs reach stdout in containers + per-request logging
 
-**Cross-framework release (all four).** Deployed Docker containers were getting no application logs. The cause was the same architectural decision in every framework: in production/container mode Tina4 either **suppressed stdout** or wrote logs **only to a file inside the container** — but `docker logs` (and Kubernetes) read PID 1's stdout, so operators saw nothing.
+**Cross-framework release (all four).** Deployed Docker containers were getting no application logs. The cause was the same architectural decision in every framework: in production/container mode Tina4 either **suppressed stdout** or wrote logs **only to a file inside the container** — but `docker logs` (and Kubernetes) read PID 1's stdout, so operators saw nothing. A follow-on report — "logs stop after `Development server: asyncio`" — surfaced a second gap: the dev server logged its startup banner but **never logged requests**, so it looked dead under traffic.
 
 This is a 12-factor correction: a container's stdout *is* the log sink.
 
-### What changed
+### Per-request logging — on by default in dev
+
+Every request now logs one line through the Tina4 `Log` (→ stdout), on by default in development and opt-in for production via `TINA4_LOG_REQUESTS`:
+
+```
+2026-06-12T10:15:03.221Z [INFO   ] GET /api/users -> 200 (12.3ms)
+```
+
+- Format is identical across all four frameworks: `METHOD /path -> STATUS (Nms)`.
+- **Default**: on when `TINA4_DEBUG` is truthy (dev), off in production — so prod doesn't pay the per-request cost unless you opt in.
+- `TINA4_LOG_REQUESTS=true` forces it on (production debugging); `=false` forces it off.
+- Routed through `Log`, so it's coloured human-readable in dev and structured JSON in production, like every other line.
+
+Two bugs fixed here: Python's `RequestLoggerMiddleware` emitted via an **unconfigured stdlib `logging` logger** (silently dropped — never reached stdout), and the dev server only fed request data to the `/__dev` dashboard inspector, never to a log. Both now go through `Log`.
+
+### What changed (stdout)
 
 1. **stdout is no longer suppressed in production.** Logs are written to stdout regardless of `TINA4_ENV`/`TINA4_DEBUG`. Production emits clean JSON (no ANSI colour) so aggregators can parse it; dev keeps the human-readable coloured format. `TINA4_LOG_OUTPUT=file` still opts out of stdout entirely.
 2. **stdout is flushed per line.** `print(..., flush=True)` — logs appear immediately on a non-TTY pipe (every container) instead of sitting in Python's block buffer until the process exits (or vanishing on an abrupt stop).
@@ -32,14 +47,23 @@ The bug was the *same* decision in each framework, so the fix is too:
 
 The Rust `tina4` CLI was already correct — it inherits child stdio, so child logs flow to the container.
 
+### Request logging parity
+
+| Framework | Pre-v3.13.14 | Fix |
+|---|---|---|
+| Python | no request log; `RequestLoggerMiddleware` used a dead stdlib logger | log in dispatch via `Log`; middleware routed through `Log` |
+| PHP | `RequestLogger` not default-on, line lacked status | log in `Router::dispatch` via `Log`; status added to the line |
+| Ruby | dev inspector only; `RequestLoggerMiddleware` not wired; `[RequestLogger]` prefix | log in `rack_app` via `Log`; prefix dropped for parity |
+| Node | `requestLogger` always-on via bare `console.log`, status-first format | gated (dev-default + env), routed through `Log`, standard format |
+
 ### Tests
 
-- Python: 2,816 passed (+5 new — production-stdout, JSON shape, level filter, dev colour, file-only opt-out)
-- PHP: 2,335 passed (+4 new — stdout-on-in-prod, INFO default, env override, file opt-out)
-- Ruby: 2,986 passed (+10 new — level resolution incl. plain names, `$stdout.sync`)
-- Node: 3,615 passed (+3 net — production writes parseable JSON to stdout)
+- Python: 2,822 passed (+11 new — stdout-in-prod, JSON shape, level filter, file opt-out; request-log gate + middleware)
+- PHP: 2,341 passed (+10 new — stdout/level/file gating; request-log format + gate)
+- Ruby: 2,991 passed (+15 new — level resolution + `$stdout.sync`; request-log gate + dispatch)
+- Node: 3,620 passed (+8 net — production JSON stdout; request-log gating + format)
 
-**11,752 tests across the family, zero regressions.**
+**11,774 tests across the family, zero regressions.**
 
 ---
 
