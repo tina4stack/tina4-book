@@ -1,5 +1,44 @@
 # Chapter 35: Release Notes
 
+## v3.13.14 (2026-06-12) — Logs reach stdout in containers
+
+**Cross-framework release (all four).** Deployed Docker containers were getting no application logs. In production Node's logger gated console output behind `!Log.isProduction()` (which is `!TINA4_DEBUG`), so a deployed app — where `TINA4_DEBUG` is off — printed nothing to stdout, writing only to `logs/tina4.log` inside the container. `docker logs` reads PID 1 stdout, so it was empty.
+
+### What changed in Node
+
+1. **Console output is no longer gated on `isProduction()`.** Logs go to stdout in production too (subject to `TINA4_LOG_OUTPUT` and level).
+2. **Production emits structured JSON** to both stdout and the file (parity with Python/Ruby — Node previously wrote *text* to the file in production unless `TINA4_LOG_FORMAT=json`). Dev keeps the coloured human-readable line.
+3. **Default log level is `INFO`** (was `DEBUG`).
+
+```typescript
+// In a container (TINA4_DEBUG off), default config:
+Log.info("worker started");
+// pre-v3.13.14: console suppressed in production → docker logs empty
+// v3.13.14:    {"timestamp":"...","level":"INFO","message":"worker started"} on stdout
+```
+
+> Node cluster workers (production auto-cluster) inherit the primary's stdio by default, so worker logs already propagate to the container's stdout — no change needed there.
+
+### Why it spanned all four
+
+The same logging-in-containers gap showed up in every framework:
+
+| Framework | Pre-v3.13.14 cause | Fix |
+|---|---|---|
+| Python | `not _is_production` gate suppressed stdout; default ERROR | stdout always on (flushed); default INFO |
+| PHP | `$stdout = $development` (file-only in prod); no `TINA4_LOG_LEVEL` read | stdout default on + `fflush`; reads `TINA4_LOG_LEVEL`; default INFO |
+| Ruby | stdout written but never flushed (block-buffered on non-TTY); default ALL | `$stdout.sync = true`; default INFO; accepts plain + bracket names |
+| Node | `!isProduction()` gate suppressed console; default DEBUG | console always on; production emits JSON; default INFO |
+
+The Rust `tina4` CLI was already correct (inherits child stdio).
+
+### Tests
+
+- Node: 3,615 passed (+3 net — production writes parseable JSON to stdout, no ANSI; the dev-mode log test now genuinely runs in dev)
+- Family: Python 2,816 · PHP 2,335 · Ruby 2,986 · Node 3,615 — **11,752 total, zero regressions.**
+
+---
+
 ## v3.13.12 (2026-06-11) — SQL safety + implicit ORM binding + `fetchAll` correctness
 
 Three high-impact fixes that close out long-standing footguns. All three ship with full parity across all four frameworks.

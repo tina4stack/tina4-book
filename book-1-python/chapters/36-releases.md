@@ -1,5 +1,48 @@
 # Chapter 35: Release Notes
 
+## v3.13.14 (2026-06-12) — Logs reach stdout in containers
+
+**Cross-framework release (all four).** Deployed Docker containers were getting no application logs. The cause was the same architectural decision in every framework: in production/container mode Tina4 either **suppressed stdout** or wrote logs **only to a file inside the container** — but `docker logs` (and Kubernetes) read PID 1's stdout, so operators saw nothing.
+
+This is a 12-factor correction: a container's stdout *is* the log sink.
+
+### What changed
+
+1. **stdout is no longer suppressed in production.** Logs are written to stdout regardless of `TINA4_ENV`/`TINA4_DEBUG`. Production emits clean JSON (no ANSI colour) so aggregators can parse it; dev keeps the human-readable coloured format. `TINA4_LOG_OUTPUT=file` still opts out of stdout entirely.
+2. **stdout is flushed per line.** `print(..., flush=True)` — logs appear immediately on a non-TTY pipe (every container) instead of sitting in Python's block buffer until the process exits (or vanishing on an abrupt stop).
+3. **Default log level is now `INFO`** (was `ERROR`). An app that logged at info/debug previously looked silent in production. INFO surfaces request/startup/warning/error without debug noise. Override with `TINA4_LOG_LEVEL`.
+
+```python
+# In a container (TINA4_ENV=production), with the default config:
+Log.info("worker started")
+# pre-v3.13.14: written only to logs/tina4.log inside the container → docker logs empty
+# v3.13.14:    {"timestamp":"...","level":"INFO","message":"worker started"}  → on stdout
+```
+
+### Why it spanned all four
+
+The bug was the *same* decision in each framework, so the fix is too:
+
+| Framework | Pre-v3.13.14 cause | Fix |
+|---|---|---|
+| Python | `not _is_production` gate suppressed stdout; default ERROR | stdout always on (flushed); default INFO |
+| PHP | `$stdout = $development` (file-only in prod); no `TINA4_LOG_LEVEL` read | stdout default on + `fflush`; reads `TINA4_LOG_LEVEL`; default INFO |
+| Ruby | stdout written but **never flushed** (block-buffered on non-TTY); default ALL | `$stdout.sync = true`; default INFO; accepts plain + bracket level names |
+| Node | `!isProduction()` gate suppressed console; default DEBUG | console always on; production emits JSON; default INFO |
+
+The Rust `tina4` CLI was already correct — it inherits child stdio, so child logs flow to the container.
+
+### Tests
+
+- Python: 2,816 passed (+5 new — production-stdout, JSON shape, level filter, dev colour, file-only opt-out)
+- PHP: 2,335 passed (+4 new — stdout-on-in-prod, INFO default, env override, file opt-out)
+- Ruby: 2,986 passed (+10 new — level resolution incl. plain names, `$stdout.sync`)
+- Node: 3,615 passed (+3 net — production writes parseable JSON to stdout)
+
+**11,752 tests across the family, zero regressions.**
+
+---
+
 ## v3.13.12 (2026-06-11) — SQL safety + implicit ORM binding + `fetch_all` correctness
 
 Three high-impact fixes that close out long-standing footguns. All three ship with full parity across all four frameworks.

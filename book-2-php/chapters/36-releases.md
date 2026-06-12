@@ -1,5 +1,43 @@
 # Chapter 35: Release Notes
 
+## v3.13.14 (2026-06-12) — Logs reach stdout in containers
+
+**Cross-framework release (all four).** Deployed Docker containers were getting no application logs. In production PHP set `Log::$stdout = false` (logs went only to `logs/tina4.log` inside the container), never read `TINA4_LOG_LEVEL`, and didn't flush stdout. `docker logs` reads PID 1 stdout — so it was empty.
+
+### What changed in PHP
+
+1. **stdout is ON by default** (was: only when `TINA4_DEBUG=true`). The default-case in `Log::configure()` now sets `$stdout = true`. `TINA4_LOG_OUTPUT=file` still opts out.
+2. **`Log::configure()` now reads `TINA4_LOG_LEVEL`** from the environment (it previously ignored it). Default level is **INFO** (was effectively DEBUG).
+3. **stdout is flushed** — `fflush()` after each `fwrite()` so logs appear immediately under the long-running built-in server instead of sitting in the stream buffer.
+4. **Production stdout is clean JSON** — `writeStdout()` no longer prepends ANSI colour when not in human-readable mode, so aggregators can parse the line.
+
+```php
+// In a container (TINA4_DEBUG unset), default config:
+\Tina4\Log::info("worker started");
+// pre-v3.13.14: only in logs/tina4.log inside the container → docker logs empty
+// v3.13.14:    {"timestamp":"...","level":"INFO","message":"worker started"} on stdout
+```
+
+### Why it spanned all four
+
+The bug was the same architectural decision in every framework — production logged to a file (or suppressed stdout) when a container's stdout *is* the log sink:
+
+| Framework | Pre-v3.13.14 cause | Fix |
+|---|---|---|
+| Python | `not _is_production` gate suppressed stdout; default ERROR | stdout always on (flushed); default INFO |
+| PHP | `$stdout = $development` (file-only in prod); no `TINA4_LOG_LEVEL` read | stdout default on + `fflush`; reads `TINA4_LOG_LEVEL`; default INFO |
+| Ruby | stdout written but never flushed (block-buffered on non-TTY); default ALL | `$stdout.sync = true`; default INFO; accepts plain + bracket names |
+| Node | `!isProduction()` gate suppressed console; default DEBUG | console always on; production emits JSON; default INFO |
+
+The Rust `tina4` CLI was already correct (inherits child stdio).
+
+### Tests
+
+- PHP: 2,335 passed (+4 new — stdout-on-in-prod, INFO default, `TINA4_LOG_LEVEL` override, file opt-out)
+- Family: Python 2,816 · PHP 2,335 · Ruby 2,986 · Node 3,615 — **11,752 total, zero regressions.**
+
+---
+
 ## v3.13.13 (2026-06-11) — PHP only: large-response truncation fix
 
 **PHP-only release.** Python, Ruby, and Node stay at v3.13.12 — the bug is specific to PHP's built-in socket server, which is the only one of the four frameworks that hand-rolls a non-blocking socket write loop. Python (asyncio `StreamWriter.drain()`), Ruby (WEBrick), and Node (`node:http`) all delegate body writes to a server that handles a full send buffer correctly, so none of them can hit this.

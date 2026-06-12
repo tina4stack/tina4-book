@@ -1,5 +1,42 @@
 # Chapter 35: Release Notes
 
+## v3.13.14 (2026-06-12) — Logs reach stdout in containers
+
+**Cross-framework release (all four).** Deployed Docker containers were getting no application logs. Ruby actually *did* write to stdout by default (`TINA4_LOG_OUTPUT=both`), but it **never set `$stdout.sync`** — and a container's stdout is a non-TTY pipe, which Ruby block-buffers. Logs sat in the buffer until it filled or the process exited, so `docker logs` looked empty (and a crash lost the tail).
+
+### What changed in Ruby
+
+1. **`$stdout.sync = true`** is set in `Log.configure` (unless output is file-only). Logs now flush to the container's stdout immediately.
+2. **Default log level is `INFO`** (was `[TINA4_LOG_ALL]`). Surfaces request/startup/warn/error without debug noise.
+3. **`TINA4_LOG_LEVEL` now accepts plain names** (`ERROR`, `info`) in addition to the legacy bracket form (`[TINA4_LOG_ERROR]`) — so the env value is portable with Python/PHP/Node. Unknown values fall back to INFO.
+
+```ruby
+# In a container, default config:
+Tina4::Log.info("worker started")
+# pre-v3.13.14: buffered on the non-TTY pipe → docker logs lagged / lost on crash
+# v3.13.14:    flushed immediately to stdout
+```
+
+### Why it spanned all four
+
+The same logging-in-containers gap showed up in every framework:
+
+| Framework | Pre-v3.13.14 cause | Fix |
+|---|---|---|
+| Python | `not _is_production` gate suppressed stdout; default ERROR | stdout always on (flushed); default INFO |
+| PHP | `$stdout = $development` (file-only in prod); no `TINA4_LOG_LEVEL` read | stdout default on + `fflush`; reads `TINA4_LOG_LEVEL`; default INFO |
+| Ruby | stdout written but never flushed (block-buffered on non-TTY); default ALL | `$stdout.sync = true`; default INFO; accepts plain + bracket names |
+| Node | `!isProduction()` gate suppressed console; default DEBUG | console always on; production emits JSON; default INFO |
+
+The Rust `tina4` CLI was already correct (inherits child stdio).
+
+### Tests
+
+- Ruby: 2,986 passed (+10 new — level resolution incl. plain names, bracket form, unknown→INFO fallback, `$stdout.sync`)
+- Family: Python 2,816 · PHP 2,335 · Ruby 2,986 · Node 3,615 — **11,752 total, zero regressions.**
+
+---
+
 ## v3.13.12 (2026-06-11) — SQL safety + implicit ORM binding + `fetch_all` correctness
 
 Three high-impact fixes that close out long-standing footguns. All three ship with full parity across all four frameworks — Ruby gets the auto-discover wiring as the headline change.
