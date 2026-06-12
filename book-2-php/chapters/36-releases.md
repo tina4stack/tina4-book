@@ -4,6 +4,10 @@
 
 **Cross-framework release (all four).** Deployed Docker containers were getting no application logs. In production PHP set `Log::$stdout = false` (logs went only to `logs/tina4.log` inside the container), never read `TINA4_LOG_LEVEL`, and didn't flush stdout. `docker logs` reads PID 1 stdout — so it was empty. A follow-on report — the dev server going silent after startup — surfaced a second gap: requests were never logged.
 
+### PHP also: #119 — legacy-env guard crash under the built-in server
+
+`App::checkLegacyEnvVars()` wrote its migration message with `fwrite(STDERR, ...)`. `STDERR` is only auto-defined for the `cli` SAPI — under `cli-server` (the built-in dev server) a bare `STDERR` in `namespace Tina4` resolved to the undefined `Tina4\STDERR`, so a user with a stray legacy var (e.g. `SMTP_HOST`) in `.env` got `Uncaught Error: Undefined constant "Tina4\STDERR"` instead of the actionable "rename these vars" message. Now writes to the `php://stderr` stream (available in every SAPI). The same latent pattern in `MCP.php` was fixed alongside. New `cli-server` subprocess regression test reproduces it.
+
 ### Per-request logging — on by default in dev
 
 Every request now logs one line through `Tina4\Log` (→ stdout), on by default in dev and opt-in for production via `TINA4_LOG_REQUESTS`:
@@ -43,8 +47,8 @@ The Rust `tina4` CLI was already correct (inherits child stdio).
 
 ### Tests
 
-- PHP: 2,341 passed (+10 new — stdout/level/file gating; request-log format + `TINA4_LOG_REQUESTS` gate)
-- Family: Python 2,822 · PHP 2,341 · Ruby 2,991 · Node 3,620 — **11,774 total, zero regressions.**
+- PHP: 2,378 passed (+47 new — stdout/level/file gating; request-log format + gate; #119 cli-server repro + the previously-unregistered LegacyEnvGuard suite now gated in CI)
+- Family: Python 2,822 · PHP 2,378 · Ruby 2,991 · Node 3,620 — **11,811 total, zero regressions.**
 
 ---
 

@@ -59,11 +59,13 @@ The Rust `tina4` CLI was already correct — it inherits child stdio, so child l
 ### Tests
 
 - Python: 2,822 passed (+11 new — stdout-in-prod, JSON shape, level filter, file opt-out; request-log gate + middleware)
-- PHP: 2,341 passed (+10 new — stdout/level/file gating; request-log format + gate)
+- PHP: 2,378 passed (+47 new — stdout/level/file gating; request-log format + gate; #119 cli-server crash fix + LegacyEnvGuard suite now CI-gated)
 - Ruby: 2,991 passed (+15 new — level resolution + `$stdout.sync`; request-log gate + dispatch)
 - Node: 3,620 passed (+8 net — production JSON stdout; request-log gating + format)
 
-**11,774 tests across the family, zero regressions.**
+**11,811 tests across the family, zero regressions.**
+
+> PHP also fixed #119 in this release — `App::checkLegacyEnvVars()` crashed with `Undefined constant Tina4\STDERR` under the built-in `cli-server` (bare `STDERR` is only auto-defined for the `cli` SAPI). Now uses the `php://stderr` stream. PHP-specific; the other three don't reference that constant.
 
 ---
 

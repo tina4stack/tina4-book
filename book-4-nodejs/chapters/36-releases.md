@@ -47,7 +47,7 @@ The Rust `tina4` CLI was already correct (inherits child stdio).
 ### Tests
 
 - Node: 3,620 passed (+8 net — production JSON stdout; request-log gating, format, and Log routing)
-- Family: Python 2,822 · PHP 2,341 · Ruby 2,991 · Node 3,620 — **11,774 total, zero regressions.**
+- Family: Python 2,822 · PHP 2,378 · Ruby 2,991 · Node 3,620 — **11,811 total, zero regressions.** (PHP also fixed #119, a `cli-server` boot crash.)
 
 ---
 
