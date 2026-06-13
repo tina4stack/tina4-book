@@ -1,6 +1,6 @@
 # Chapter 35: Release Notes
 
-## v3.13.14 (2026-06-12) — Logs reach stdout in containers + per-request logging
+## v3.13.14 (2026-06-13) — Logs reach stdout in containers + per-request logging + schema-qualified tables (#48)
 
 **Cross-framework release (all four).** Deployed Docker containers were getting no application logs. In production Node's logger gated console output behind `!Log.isProduction()` (which is `!TINA4_DEBUG`), so a deployed app — where `TINA4_DEBUG` is off — printed nothing to stdout, writing only to `logs/tina4.log` inside the container. `docker logs` reads PID 1 stdout, so it was empty. A follow-on report — the dev server going silent after startup — surfaced a second gap in the other frameworks: requests weren't logged.
 
@@ -44,10 +44,26 @@ The same logging-in-containers gap showed up in every framework:
 
 The Rust `tina4` CLI was already correct (inherits child stdio).
 
+### Schema-qualified tables (#48) + a PostgreSQL `fetch()` regression
+
+Issue #48 — *"Database Table Does Not Exist"* on PostgreSQL. A model whose table lives in a non-default schema (`gift_cards.gift_card`, MSSQL `dbo.widget`, MySQL `otherdb.table`, SQLite ATTACH `extra.widget`) was invisible to the framework's introspection. `tableExists`, `getTables`, and `getColumns` hardcoded the default namespace (`public`) and matched the whole dotted string as one flat name — so plain reads worked, but `createTable`, migrations, and auto-CRUD were blind to the table and reported it missing.
+
+A shared `SQLTranslator.splitSchema()` helper drives schema-awareness in every affected adapter:
+
+- **PostgreSQL** — `tableExists` uses `to_regclass()` (honours schema + `search_path`); `getColumns` filters by `table_schema`; `getTables` lists every non-system schema and returns non-`public` tables schema-qualified.
+- **MySQL** — schema = database; a qualified name checks that catalog, a bare name defaults to `DATABASE()` (`DESCRIBE` back-quotes each part).
+- **MSSQL** — honours `dbo.table`; a bare name matches in any schema.
+- **SQLite** — honours an ATTACH alias (`extra.widget`) for both `tableExists` and `getColumns`.
+- **Firebird** — N/A (no schemas).
+
+Verified against a live PostgreSQL 16 container: `tableExists('gift_cards.gift_card') → true`, `getTables → ['gift_cards.gift_card', 'gift_cards.transaction']`, `getColumns → 12 columns` — identical results across all four frameworks.
+
+> **PHP also fixed a v3.13.12 regression found while cross-checking #48.** Its `PostgresAdapter` referenced `stripTrailingSemicolons()` (added in v3.13.12) and the new `splitSchema()` but never mixed in `SqlNormalizerTrait` — so **every PostgreSQL `fetch` / `fetchOne` / `getColumns` fatalled**. It shipped silently because the PostgreSQL test suite skips without a live server. Fixed and pinned by server-free reflection guards.
+
 ### Tests
 
-- Node: 3,620 passed (+8 net — production JSON stdout; request-log gating, format, and Log routing)
-- Family: Python 2,822 · PHP 2,378 · Ruby 2,991 · Node 3,620 — **11,811 total, zero regressions.** (PHP also fixed #119, a `cli-server` boot crash.)
+- Node: 3,628 passed (+16 net — production JSON stdout; request-log gating, format, and Log routing; #48 schema split + SQLite ATTACH introspection)
+- Family: Python 2,829 · PHP 2,394 · Ruby 2,999 · Node 3,628 — **11,850 total, zero regressions.** (PHP also fixed #119, a `cli-server` boot crash, and the PG `fetch` regression above.)
 
 ---
 

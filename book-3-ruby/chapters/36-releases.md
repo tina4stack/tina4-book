@@ -1,6 +1,6 @@
 # Chapter 35: Release Notes
 
-## v3.13.14 (2026-06-12) — Logs reach stdout in containers + per-request logging
+## v3.13.14 (2026-06-13) — Logs reach stdout in containers + per-request logging + schema-qualified tables (#48)
 
 **Cross-framework release (all four).** Deployed Docker containers were getting no application logs. Ruby actually *did* write to stdout by default (`TINA4_LOG_OUTPUT=both`), but it **never set `$stdout.sync`** — and a container's stdout is a non-TTY pipe, which Ruby block-buffers. Logs sat in the buffer until it filled or the process exited, so `docker logs` looked empty (and a crash lost the tail). A follow-on report — the dev server going silent after startup — surfaced a second gap: requests were never logged to stdout.
 
@@ -40,10 +40,26 @@ The same logging-in-containers gap showed up in every framework:
 
 The Rust `tina4` CLI was already correct (inherits child stdio).
 
+### Schema-qualified tables (#48) + a PostgreSQL `fetch()` regression
+
+Issue #48 — *"Database Table Does Not Exist"* on PostgreSQL. A model whose table lives in a non-default schema (`gift_cards.gift_card`, MSSQL `dbo.widget`, MySQL `otherdb.table`, SQLite ATTACH `extra.widget`) was invisible to the framework's introspection. `table_exists?`, `tables`, and `columns` hardcoded the default namespace (`public`) and matched the whole dotted string as one flat name — so plain reads worked, but `create_table`, migrations, and auto-CRUD were blind to the table and reported it missing.
+
+Each driver now resolves a qualified name through a shared `SchemaSplit` helper, and `Database#table_exists?` delegates to the driver when it can answer:
+
+- **PostgreSQL** — `table_exists?` uses `to_regclass()` (honours schema + `search_path`); `columns` filters by `table_schema`; `tables` lists every non-system schema and returns non-`public` tables schema-qualified.
+- **MySQL** — schema = database; a qualified name checks that catalog, a bare name defaults to `DATABASE()`.
+- **MSSQL** — honours `dbo.table`; a bare name matches in any schema.
+- **SQLite** — honours an ATTACH alias (`extra.widget`) for both `table_exists?` and `columns`.
+- **Firebird** — N/A (no schemas).
+
+Verified against a live PostgreSQL 16 container: `table_exists?('gift_cards.gift_card') → true`, `tables → ['gift_cards.gift_card', 'gift_cards.transaction']`, `columns → 12 columns` — identical results across all four frameworks.
+
+> **PHP also fixed a v3.13.12 regression found while cross-checking #48.** Its `PostgresAdapter` referenced `stripTrailingSemicolons()` (added in v3.13.12) and the new `splitSchema()` but never mixed in `SqlNormalizerTrait` — so **every PostgreSQL `fetch` / `fetchOne` / `getColumns` fatalled**. It shipped silently because the PostgreSQL test suite skips without a live server. Fixed and pinned by server-free reflection guards.
+
 ### Tests
 
-- Ruby: 2,991 passed (+15 new — level resolution + `$stdout.sync`; request-log gate + dispatch)
-- Family: Python 2,822 · PHP 2,378 · Ruby 2,991 · Node 3,620 — **11,811 total, zero regressions.** (PHP also fixed #119, a `cli-server` boot crash.)
+- Ruby: 2,999 passed (+23 new — level resolution + `$stdout.sync`; request-log gate + dispatch; #48 schema split + SQLite ATTACH introspection)
+- Family: Python 2,829 · PHP 2,394 · Ruby 2,999 · Node 3,628 — **11,850 total, zero regressions.** (PHP also fixed #119, a `cli-server` boot crash, and the PG `fetch` regression above.)
 
 ---
 

@@ -1,6 +1,6 @@
 # Chapter 35: Release Notes
 
-## v3.13.14 (2026-06-12) — Logs reach stdout in containers + per-request logging
+## v3.13.14 (2026-06-13) — Logs reach stdout in containers + per-request logging + schema-qualified tables (#48)
 
 **Cross-framework release (all four).** Deployed Docker containers were getting no application logs. The cause was the same architectural decision in every framework: in production/container mode Tina4 either **suppressed stdout** or wrote logs **only to a file inside the container** — but `docker logs` (and Kubernetes) read PID 1's stdout, so operators saw nothing. A follow-on report — "logs stop after `Development server: asyncio`" — surfaced a second gap: the dev server logged its startup banner but **never logged requests**, so it looked dead under traffic.
 
@@ -56,14 +56,30 @@ The Rust `tina4` CLI was already correct — it inherits child stdio, so child l
 | Ruby | dev inspector only; `RequestLoggerMiddleware` not wired; `[RequestLogger]` prefix | log in `rack_app` via `Log`; prefix dropped for parity |
 | Node | `requestLogger` always-on via bare `console.log`, status-first format | gated (dev-default + env), routed through `Log`, standard format |
 
+### Schema-qualified tables (#48) + a PostgreSQL `fetch()` regression
+
+Issue #48 — *"Database Table Does Not Exist"* on PostgreSQL. A model whose table lives in a non-default schema (`gift_cards.gift_card`, MSSQL `dbo.widget`, MySQL `otherdb.table`, SQLite ATTACH `extra.widget`) was invisible to the framework's introspection. `table_exists`, `get_tables`, and `get_columns` hardcoded the default namespace (`public`) and matched the whole dotted string as one flat name — so plain reads worked, but `create_table`, migrations, and auto-CRUD were blind to the table and reported it missing.
+
+All introspection is now schema-aware on every affected engine:
+
+- **PostgreSQL** — `table_exists` uses `to_regclass()` (honours schema + `search_path`); `get_columns` filters by `table_schema`; `get_tables` lists every non-system schema and returns non-`public` tables schema-qualified.
+- **MySQL** — schema = database; a qualified name checks that catalog, a bare name defaults to `DATABASE()`.
+- **MSSQL** — honours `dbo.table`; a bare name matches in any schema.
+- **SQLite** — honours an ATTACH alias (`extra.widget`) for both `table_exists` and `get_columns`.
+- **Firebird** — N/A (no schemas).
+
+Verified against a live PostgreSQL 16 container: `table_exists('gift_cards.gift_card') → True`, `get_tables → ['gift_cards.gift_card', 'gift_cards.transaction']`, `get_columns → 12 columns` — identical results across all four frameworks.
+
+> **PHP also fixed a v3.13.12 regression found while cross-checking #48.** `PostgresAdapter` referenced `stripTrailingSemicolons()` (added in v3.13.12) and the new `splitSchema()` but never mixed in `SqlNormalizerTrait` — so **every PostgreSQL `fetch()` / `fetchOne()` / `getColumns()` fatalled** with *"Call to undefined method"*. It shipped silently because the PHP PostgreSQL test suite skips without a live server. Fixed with a one-line trait mix-in and pinned by server-free reflection guards that assert all five SQL adapters expose the normalizer helpers.
+
 ### Tests
 
-- Python: 2,822 passed (+11 new — stdout-in-prod, JSON shape, level filter, file opt-out; request-log gate + middleware)
-- PHP: 2,378 passed (+47 new — stdout/level/file gating; request-log format + gate; #119 cli-server crash fix + LegacyEnvGuard suite now CI-gated)
-- Ruby: 2,991 passed (+15 new — level resolution + `$stdout.sync`; request-log gate + dispatch)
-- Node: 3,620 passed (+8 net — production JSON stdout; request-log gating + format)
+- Python: 2,829 passed (+18 new — stdout-in-prod, JSON shape, level filter, file opt-out; request-log gate + middleware; #48 schema split + SQLite ATTACH introspection)
+- PHP: 2,394 passed (+63 new — stdout/level/file gating; request-log format + gate; #119 cli-server crash fix + LegacyEnvGuard suite now CI-gated; #48 schema-qualified + PG trait regression guards)
+- Ruby: 2,999 passed (+23 new — level resolution + `$stdout.sync`; request-log gate + dispatch; #48 schema split + SQLite ATTACH introspection)
+- Node: 3,628 passed (+16 net — production JSON stdout; request-log gating + format; #48 schema split + SQLite ATTACH introspection)
 
-**11,811 tests across the family, zero regressions.**
+**11,850 tests across the family, zero regressions.**
 
 > PHP also fixed #119 in this release — `App::checkLegacyEnvVars()` crashed with `Undefined constant Tina4\STDERR` under the built-in `cli-server` (bare `STDERR` is only auto-defined for the `cli` SAPI). Now uses the `php://stderr` stream. PHP-specific; the other three don't reference that constant.
 
