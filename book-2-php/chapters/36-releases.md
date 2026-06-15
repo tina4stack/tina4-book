@@ -1,5 +1,15 @@
 # Chapter 35: Release Notes
 
+## v3.13.23 (2026-06-15) — request-scoped DB query cache, on by default
+
+A new **request-scoped query cache** protects your database from rapid repeat reads. Within a single request, identical `SELECT`s and ORM reads are deduped automatically — the DB is hit once and subsequent identical reads are served from memory. The cache is **cleared at the start of every request** (so it never serves stale rows across requests) and **flushed on any write** (insert/update/delete/execute). For non-request contexts (scripts, workers) a short safety TTL applies.
+
+It is **on by default** via `TINA4_AUTO_CACHING=true` (off-switch `TINA4_AUTO_CACHING=false`); the in-request TTL is `TINA4_AUTO_CACHING_TTL` (default 5 seconds). The existing `TINA4_DB_CACHE` (default `false`) remains the separate *persistent* cross-request cache (TTL `TINA4_DB_CACHE_TTL`, default 30s) and is not cleared per request. `cacheStats()` now reports a `mode` field: `"request"` (default), `"persistent"`, or `"off"`.
+
+**Also fixed:** the `\Tina4\Middleware\cache_get/cache_set/cache_delete/cache_clear/cache_stats` helpers now autoload on a plain `require` — previously they fataled with "undefined function" until the `ResponseCache` class had been touched.
+
+Full suite: 2,992 tests passing.
+
 ## v3.13.21 (2026-06-15) — docs: `render()` corrections + version re-sync
 
 Documentation consistency pass — no behavior change. References to a `$response->template()` *method* (which never existed) are corrected to **`$response->render()`** — the real method; `template` is only the route-level binding, not a response method. Fixed across the AI guide, `llms.txt`, and the gallery page. Version re-synced to 3.13.21 with the other frameworks (this release also carries a Python-side JWT-secret security hardening).

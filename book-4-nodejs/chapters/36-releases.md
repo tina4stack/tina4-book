@@ -1,5 +1,15 @@
 # Chapter 35: Release Notes
 
+## v3.13.23 (2026-06-15) — request-scoped DB query cache, on by default (+ cache fixes)
+
+A new **request-scoped query cache** protects your database from rapid repeat reads. Within a single request, identical `SELECT`s and ORM reads are deduped automatically — the DB is hit once and subsequent identical reads are served from memory. The cache is **cleared at the start of every request** (so it never serves stale rows across requests) and **flushed on any write** (insert/update/delete/execute). For non-request contexts (scripts, workers) a short safety TTL applies.
+
+It is **on by default** via `TINA4_AUTO_CACHING=true` (off-switch `TINA4_AUTO_CACHING=false`); the in-request TTL is `TINA4_AUTO_CACHING_TTL` (default 5 seconds). The existing `TINA4_DB_CACHE` (default `false`) remains the separate *persistent* cross-request cache (TTL `TINA4_DB_CACHE_TTL`, default 30s) and is not cleared per request. `db.cacheStats()` now reports a `mode` field: `"request"` (default), `"persistent"`, or `"off"`.
+
+**Also fixed (Node):** `cacheStats()` now reflects the real KV backend (it was wrongly reading the response-cache middleware store). And the DB query cache — previously dead code, where `db.cacheStats()` hardcoded `size: 0`, `db.cacheClear()` was a no-op, and the cache wrapper was never applied — now actually caches `db.fetch()` **and** ORM reads, with real `db.cacheStats()` / `db.cacheClear()`.
+
+Full suite: 3,708 passing.
+
 ## v3.13.21 (2026-06-15) — docs: `render()` corrections + version re-sync
 
 Documentation consistency pass — no behavior change. The `res.template(...)` reference in `llms.txt` and a stale `server.ts` comment are corrected to **`res.render(...)`** — the real method; `template` is only the route-level binding (`export const template`), not a response method. Version re-synced to 3.13.21 with the other frameworks (this release also carries a Python-side JWT-secret security hardening).

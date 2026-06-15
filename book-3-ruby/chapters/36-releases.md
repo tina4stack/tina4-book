@@ -1,5 +1,15 @@
 # Chapter 35: Release Notes
 
+## v3.13.23 (2026-06-15) — request-scoped DB query cache, on by default
+
+A new **request-scoped query cache** protects your database from rapid repeat reads. Within a single request, identical `SELECT`s and ORM reads are deduped automatically — the DB is hit once and subsequent identical reads are served from memory. The cache is **cleared at the start of every request** (so it never serves stale rows across requests) and **flushed on any write** (insert/update/delete/execute). For non-request contexts (scripts, workers) a short safety TTL applies.
+
+It is **on by default** via `TINA4_AUTO_CACHING=true` (off-switch `TINA4_AUTO_CACHING=false`); the in-request TTL is `TINA4_AUTO_CACHING_TTL` (default 5 seconds). The existing `TINA4_DB_CACHE` (default `false`) remains the separate *persistent* cross-request cache (TTL `TINA4_DB_CACHE_TTL`, default 30s) and is not cleared per request. `cache_stats` now reports a `mode` field: `"request"` (default), `"persistent"`, or `"off"`.
+
+**Also fixed:** the response-cache default TTL changed `0` → `60` seconds, matching Python, PHP, and Node.
+
+Full suite: 3,049 examples passing.
+
 ## v3.13.22 (2026-06-15) — session default TTL standardised to 1 hour
 
 The default session lifetime now matches across all four frameworks: **3600 seconds (1 hour)**. Ruby previously defaulted to 86400s (24 hours). The session cookie `Max-Age` and the file-handler gc window now use 3600 by default — override via `Session.new(env, max_age: …)`. PHP and Node already used 3600 and are unchanged.
