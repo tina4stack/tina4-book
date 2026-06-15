@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.22 (2026-06-15) — session default TTL standardised to 1 hour
+
+The default session lifetime now matches across all four frameworks: **3600 seconds (1 hour)**. Python previously defaulted to 1800s (30 min). The session cookie `Max-Age` and the file-handler garbage-collection window both follow `TINA4_SESSION_TTL` (default now 3600) — override it in your `.env`. PHP and Node already used 3600 and are unchanged.
+
 ## v3.13.21 (2026-06-15) — security: never sign JWTs with a guessable default secret
 
 **Security fix.** When `TINA4_SECRET` was unset, Tina4 silently signed JWTs **and** CSRF form tokens with a hardcoded built-in default secret — so anyone who knew that default could forge valid tokens, and the developer got no warning. It affected `Auth`, the Frond `form_token()` filter, and the CSRF middleware (four copies of the same fallback).

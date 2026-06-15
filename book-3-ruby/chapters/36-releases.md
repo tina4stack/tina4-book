@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.22 (2026-06-15) — session default TTL standardised to 1 hour
+
+The default session lifetime now matches across all four frameworks: **3600 seconds (1 hour)**. Ruby previously defaulted to 86400s (24 hours). The session cookie `Max-Age` and the file-handler gc window now use 3600 by default — override via `Session.new(env, max_age: …)`. PHP and Node already used 3600 and are unchanged.
+
 ## v3.13.21 (2026-06-15) — docs: `render()` corrections + version re-sync
 
 Documentation consistency pass — no behavior change. The `response.template(...)` reference in `llms.txt` is corrected to **`response.render(...)`** — the real method; `template` is only the route-level binding, not a response method. Version re-synced to 3.13.21 with the other frameworks (this release also carries a Python-side JWT-secret security hardening).
