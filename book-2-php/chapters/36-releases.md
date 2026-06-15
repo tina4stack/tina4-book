@@ -1,5 +1,17 @@
 # Chapter 35: Release Notes
 
+## v3.13.18 (2026-06-15) — ORM relationship + QueryBuilder fixes + boolean param binding
+
+Found by the live side-by-side validation against PostgreSQL.
+
+- **QueryBuilder `first()` / `count()` returned null/0** even with matching rows — `get()` returns a `DatabaseResult` but `first()`/`count()` read `$result['data']` (raw-array shape). All three now consume the result via a shared `extractRecords()`: `first()` returns the row, `count()` the integer, and `groupBy().get()` returns every group.
+- **`belongsTo` returned null for a snake_case FK column** under autoMap — the lookup read `$this->{column}` but autoMap stores the value under the camelCase property. It now reverse-maps column → property, so the documented `$foreignKeys=['author_id'=>'Author']` form resolves the parent (lazy `$post->author`, explicit, and eager `include:['author']`).
+- **`fetch()` corrupted SQL that already ended in `LIMIT`** — it appended `LIMIT 100 OFFSET 0` unconditionally (`… LIMIT 1 LIMIT 100`), PG errored, the adapter swallowed it → empty result. It now skips the append when a trailing `LIMIT` is present.
+- **Bound PHP booleans are normalised** to the literal the column accepts — `'t'`/`'f'` on PostgreSQL's native `BOOLEAN`, `1`/`0` on the integer/BIT-backed engines (SQLite, MySQL, MSSQL, Firebird). Previously `fetch('… WHERE active = ?', [false])` bound `''` and PG rejected it.
+- Doc: `DatabaseUrl` docstring corrected to `postgres://` / `postgresql://` (not `pgsql://`).
+
+Python/Ruby/Node were already correct on the boolean binding (verified live). Full suite: 2,416 passing.
+
 ## v3.13.17 (2026-06-15) — PostgreSQL: native-type reads + `execute()` reports real failure
 
 Two fixes found by the live side-by-side validation against PostgreSQL.

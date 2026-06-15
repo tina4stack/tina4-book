@@ -1,5 +1,15 @@
 # Chapter 35: Release Notes
 
+## v3.13.18 (2026-06-15) — ORM eager-load + include + aggregate fixes
+
+Found by the live side-by-side validation against PostgreSQL. (No v3.13.17 — that was a PHP/Ruby release; Node goes 3.13.16 → 3.13.18.)
+
+- **Eager load (`include`) silently returned no relations** in standalone use — `_eagerLoad` processed foreign keys only on the parent model, but the `hasMany` registry entry is registered by the *child* model's `_processForeignKeys()`, which is never called outside server boot. It now processes all registered models' FKs, so `Model.findById(id, ["Related"])` populates relations as documented.
+- **`include` keys are now resilient** — matched case-insensitively against the model name, its singular/plural key, or the related table name; an include name that matches nothing emits a `Log.warn` instead of silently doing nothing.
+- **Aggregate columns return numbers** — `SUM()`/`AVG()` came back as strings (node-postgres returns `int8`/`numeric` as strings). The PostgreSQL adapter now registers type parsers (`int8`, `numeric` → number) so aggregates match Python/Ruby/PHP. (Values beyond `Number.MAX_SAFE_INTEGER` lose precision — documented; cast to `::text` when exactness is needed.)
+
+Full suite: 3,653 passing.
+
 ## v3.13.16 (2026-06-15) — ⚠ Async database API (BREAKING) + `createTable` on PostgreSQL + result indexing
 
 Found by the live documentation-verification pass — running the book's own samples against a real PostgreSQL database. The entire documented `Database`/`BaseModel`/`QueryBuilder` API was unusable on PostgreSQL (and MySQL/MSSQL/Firebird/MongoDB): every call threw `Use fetchAsync() for PostgreSQL.`

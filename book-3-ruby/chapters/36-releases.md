@@ -1,5 +1,15 @@
 # Chapter 35: Release Notes
 
+## v3.13.18 (2026-06-15) — ORM `Model.query` + foreign-key wiring fixes
+
+Found by the live side-by-side validation against PostgreSQL.
+
+- **`Model.query` raised `NoMethodError`** — it called `QueryBuilder.from`, but the factory is `from_table`. Fixed: `MyModel.query.where(...).get` now works.
+- **`foreign_key_field` with a string / forward reference never wired the has_many side** — the deferred registry (`apply_fk_registry!`) was never invoked (no `inherited` hook). An `inherited` hook on `Tina4::ORM` now applies it as model classes load, so `references: "Author"` (string) wires both `belongs_to` and `has_many` regardless of definition order. (A bare constant used before its class is defined is still plain-Ruby ordering — use the string form to defer.)
+- Doc: the has_many accessor is the declaring class name (lowercased) + `"s"` — the cross-framework convention — overridable with `related_name:` (the CLAUDE.md "tableName" wording was wrong).
+
+Full suite: 3,018 examples, 0 failures.
+
 ## v3.13.17 (2026-06-15) — PostgreSQL reads return native Ruby types
 
 Found by the live side-by-side validation against PostgreSQL. The `pg` gem returns every column as a String by default — `id` as `"1"`, a boolean as `"t"`, timestamps as strings — so a Tina4 app written on SQLite (native types) silently changed behaviour on PostgreSQL, diverging from Python and Node. The PostgreSQL driver now installs `PG::BasicTypeMapForResults` on the connection, so reads decode by type: integer → `Integer`, boolean → `true`/`false`, float → `Float`, numeric → `BigDecimal`, timestamp → `Time`, date → `Date`. `uuid`/`json`/`jsonb` stay strings; `bytea` stays binary.
