@@ -224,7 +224,7 @@ Here is a full working example -- a CRM system with customer, order, and product
 require "tina4"
 
 db = Tina4::Database.new("sqlite:///crm.db")
-Tina4.database = db   # models resolve Tina4.database; or set per-model with Model.db = db
+Tina4.bind_database(db)   # models resolve Tina4.database; or set per-model with Model.db = db
 
 # Create MCP server
 crm_mcp = Tina4::McpServer.new("/crm/mcp", name: "CRM Assistant", version: "1.0.0")

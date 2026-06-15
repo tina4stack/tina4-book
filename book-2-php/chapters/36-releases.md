@@ -1,5 +1,58 @@
 # Chapter 35: Release Notes
 
+## v3.13.19 (2026-06-15) — return domain objects, construct from JSON, and one database binder
+
+Three ergonomic improvements surfaced by the live side-by-side review of the book's own examples across all four frameworks.
+
+### `$response(...)` serializes domain objects
+
+Return an ORM model, an array of models, or a query result straight from a route — Tina4 serializes it to JSON. No more hand-rolled `toDict()` / `toJson()`:
+
+```php
+Router::get('/api/users', function ($request, $response) {
+    return $response((new User())->all());     // array of models -> JSON array
+});
+```
+
+A single model becomes a JSON object; an array of models or a `DatabaseResult` becomes a JSON array. Plain arrays and strings behave exactly as before — purely additive. (`Response::json()` still pretty-prints.)
+
+### Construct a model from JSON, or data-first
+
+```php
+new User('{"name": "Alice"}');     // JSON object string -> one record
+new User(['name' => 'Alice']);     // array data-first (NEW — no need for the data: arg)
+new User(data: ['name' => 'Alice']); // still works
+new User($db, ['name' => 'Alice']);  // still works ($db first)
+```
+
+The first constructor argument is now type-detected (a `DatabaseAdapter`, an array, or a JSON string). Passing a **list** to a single-record constructor throws `InvalidArgumentException`. To build many records, map over the list.
+
+### ⚠ Breaking — one database binder: `bindDatabase`
+
+The ORM-to-database binder is now **`bindDatabase`** (was `ORM::setGlobalDb`). The default is unchanged — models still auto-bind to `TINA4_DATABASE_URL` (via `Database::fromEnv()`), so apps relying on the `.env` default need **no change**.
+
+```php
+// Most apps: nothing to do — the .env default is auto-bound.
+
+\Tina4\ORM::bindDatabase(Database::create('sqlite:///app.db'));   // override the default
+
+// Register a NAMED connection and point a model at it:
+\Tina4\ORM::bindDatabase(
+    Database::create('postgres://…/analytics', username: 'u', password: 'p'),
+    name: 'analytics'
+);
+
+class Visit extends \Tina4\ORM {
+    public \Tina4\Database\DatabaseAdapter|string|null $_db = 'analytics';  // uses the analytics connection
+}
+```
+
+`bindDatabase($db, name: '…')` registers a named connection; a model selects it with `$_db = '…'`. A missing named connection throws a clear error.
+
+**Migration:** rename `\Tina4\ORM::setGlobalDb(...)` → `\Tina4\ORM::bindDatabase(...)`. That is the only change.
+
+Full suite: 2,433 tests passing. Shipped with parity across all four frameworks.
+
 ## v3.13.18 (2026-06-15) — ORM relationship + QueryBuilder fixes + boolean param binding
 
 Found by the live side-by-side validation against PostgreSQL.

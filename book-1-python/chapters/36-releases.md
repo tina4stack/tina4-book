@@ -1,5 +1,56 @@
 # Chapter 35: Release Notes
 
+## v3.13.19 (2026-06-15) — return domain objects, construct from JSON, and one database binder
+
+Three ergonomic improvements surfaced by the live side-by-side review of the book's own examples across all four frameworks.
+
+### `response(...)` serializes domain objects
+
+Return an ORM model, a list of models, or a query result straight from a route — Tina4 serializes it to JSON. No more hand-rolled `to_dict()` / `to_json()`:
+
+```python
+@get("/api/users")
+async def users(request, response):
+    return response(User.all())        # list of models -> JSON array
+```
+
+A single model becomes a JSON object; a list of models or a `DatabaseResult` becomes a JSON array. Plain dicts, lists and strings behave exactly as before — this is purely additive.
+
+### Construct a model from a JSON object string
+
+The model constructor now accepts a JSON object string, alongside a dict or keyword args:
+
+```python
+User('{"name": "Alice", "email": "alice@example.com"}')   # parsed into one record
+User({"name": "Alice"})                                    # still works
+User(name="Alice")                                         # still works
+```
+
+Passing a **list/array** to a single-record constructor now raises a clear `TypeError` instead of a cryptic `'list' object has no attribute 'items'`. To build many records, map over the list.
+
+### ⚠ Breaking — one database binder: `bind_database`
+
+The ORM-to-database binder is now **`bind_database`** across all four frameworks (was `orm_bind` in Python). The default is unchanged — models still auto-bind to `TINA4_DATABASE_URL`, so apps that rely on the `.env` default need **no change at all**.
+
+```python
+# Most apps: nothing to do — the .env default is auto-bound.
+
+# Override the default explicitly:
+bind_database(Database("sqlite:///app.db"))
+
+# Register a NAMED connection and point a model at it:
+bind_database(Database("postgres://…/analytics", "u", "p"), name="analytics")
+
+class Visit(ORM):
+    _db = "analytics"        # this model uses the analytics connection
+```
+
+A model can live on a different database from the default — `bind_database(db, name="…")` registers it and `_db = "…"` selects it. A missing named connection raises a clear error.
+
+**Migration:** rename `orm_bind(...)` → `bind_database(...)`. That is the only change; the `name=` argument, per-model `_db`, and `.env` resolution are new or unchanged.
+
+Full suite: 2,852 passing. Shipped with parity across all four frameworks.
+
 ## v3.13.16 (2026-06-15) — `create_table()` works on PostgreSQL + `DatabaseResult` index access
 
 Found by the live documentation-verification pass — running the book's own samples against a real PostgreSQL database. The documented code-first schema path, `ORM.create_table()`, was silently broken on PostgreSQL: it emitted SQLite-only DDL, PG rejected it, the error was swallowed, and the method returned `True` while creating **no table**.

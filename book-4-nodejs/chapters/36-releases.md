@@ -1,5 +1,51 @@
 # Chapter 35: Release Notes
 
+## v3.13.19 (2026-06-15) — return domain objects, construct from JSON, and one database binder
+
+Three ergonomic improvements surfaced by the live side-by-side review of the book's own examples across all four frameworks.
+
+### `response(...)` serializes domain objects
+
+Return an ORM model, an array of models, or a query result straight from a route — Tina4 serializes it to JSON. No more hand-rolled `toDict()` / `toJson()`:
+
+```typescript
+get("/api/users", async (req, res) => {
+  res.json(await User.all());        // array of models -> JSON array
+});
+```
+
+A single model becomes a JSON object; an array of models or a `DatabaseResult` becomes a JSON array. Plain objects, arrays and strings behave exactly as before — purely additive.
+
+### Construct a model from a JSON object string
+
+```typescript
+new User('{"name": "Alice"}');     // JSON object string -> one record
+new User({ name: "Alice" });       // still works
+```
+
+Passing an **array** to a single-record constructor now throws a clear `TypeError` (previously it silently produced an empty model). To build many records, map over the list.
+
+### One database binder: `bindDatabase` (+ named connections)
+
+Node gains a public **`bindDatabase(adapter, name?)`**. This is **not a breaking change** — `initDatabase()` (which auto-binds the `.env` default) and the internal `setAdapter()` are unchanged.
+
+```typescript
+// Most apps: nothing to do — initDatabase() auto-binds the .env default at boot.
+
+bindDatabase(adapter);                       // set/override the default explicitly
+
+// Register a NAMED connection and point a model at it:
+bindDatabase(await createAdapterFromUrl("postgres://u:p@…/analytics"), "analytics");
+
+class Visit extends BaseModel {
+  static _db = "analytics";          // uses the analytics connection
+}
+```
+
+`bindDatabase(adapter, "…")` registers a named connection; a model selects it with `static _db = "…"`. A mistyped/missing named connection now throws a clear error instead of silently falling back to the default.
+
+Full suite: 3,679 passing. Shipped with parity across all four frameworks (where the binder is named `bind_database` in Python/Ruby and `bindDatabase` in PHP/Node).
+
 ## v3.13.18 (2026-06-15) — ORM eager-load + include + aggregate fixes
 
 Found by the live side-by-side validation against PostgreSQL. (No v3.13.17 — that was a PHP/Ruby release; Node goes 3.13.16 → 3.13.18.)

@@ -1,5 +1,57 @@
 # Chapter 35: Release Notes
 
+## v3.13.19 (2026-06-15) — return domain objects, construct from JSON, and one database binder
+
+Three ergonomic improvements surfaced by the live side-by-side review of the book's own examples across all four frameworks.
+
+### `response` serializes domain objects
+
+Return an ORM model, an array of models, or a query result straight from a route — Tina4 serializes it to JSON. No more hand-rolled `to_h` / `to_json`:
+
+```ruby
+Tina4::Router.get("/api/users") do |request, response|
+  response.json(User.all)        # array of models -> JSON array
+end
+```
+
+A single model becomes a JSON object; an array of models or a `DatabaseResult` becomes a JSON array. Plain Hashes, Arrays and Strings behave exactly as before — purely additive.
+
+### Construct a model from a JSON object string
+
+```ruby
+Widget.new('{"name": "Alice"}')      # JSON object string -> one record
+Widget.new(name: "Alice")            # still works
+Widget.new("name" => "Alice")        # still works
+```
+
+Passing an **Array** to a single-record constructor now raises a clear `ArgumentError`. To build many records, map over the list.
+
+### ⚠ Breaking — one database binder: `bind_database`
+
+The ORM-to-database binder is now **`Tina4.bind_database`** (the `Tina4.database = db` writer is gone; `Tina4.database` remains as a reader). The default is unchanged — models still auto-bind to `TINA4_DATABASE_URL`, so apps relying on the `.env` default need **no change**.
+
+```ruby
+# Most apps: nothing to do — the .env default is auto-bound.
+
+Tina4.bind_database(Tina4::Database.new("sqlite:///app.db"))   # override the default
+
+# Register a NAMED connection and point a model at it:
+Tina4.bind_database(
+  Tina4::Database.new("postgres://…/analytics", username: "u", password: "p"),
+  name: :analytics
+)
+
+class Visit < Tina4::ORM
+  self.db = :analytics      # uses the analytics connection (symbol = named connection)
+end
+```
+
+`Tina4.bind_database(db, name: :…)` registers a named connection; a model selects it with `self.db = :…`. A missing named connection raises a clear error.
+
+**Migration:** replace `Tina4.database = db` → `Tina4.bind_database(db)`. Reading `Tina4.database` is unchanged.
+
+Full suite: 3,040 examples passing. Shipped with parity across all four frameworks.
+
 ## v3.13.18 (2026-06-15) — ORM `Model.query` + foreign-key wiring fixes
 
 Found by the live side-by-side validation against PostgreSQL.

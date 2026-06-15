@@ -97,7 +97,7 @@ on_worker_boot do
   # Re-establish the database connection after fork: close the inherited
   # connection and rebind a fresh one from TINA4_DATABASE_URL.
   Tina4.database&.close
-  Tina4.database = Tina4::Database.from_env
+  Tina4.bind_database(Tina4::Database.from_env)
 end
 ```
 
@@ -857,7 +857,7 @@ proxy_read_timeout 86400;
 ```ruby
 on_worker_boot do
   Tina4.database&.close
-  Tina4.database = Tina4::Database.from_env
+  Tina4.bind_database(Tina4::Database.from_env)
 end
 ```
 
