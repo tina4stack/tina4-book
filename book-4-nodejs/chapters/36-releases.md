@@ -1,5 +1,17 @@
 # Chapter 35: Release Notes
 
+## v3.13.24 (2026-06-15) — unified cache backends across response, KV, and persistent DB cache
+
+The response/KV cache now supports **seven backends**, selected by `TINA4_CACHE_BACKEND`: `memory` (default), `file`, `redis`, `valkey`, `memcached`, `mongodb`, and `database`. `TINA4_CACHE_URL` carries the connection string for `redis`/`valkey`/`memcached`/`mongodb`, or a SQL URL for the `database` backend (which falls back to `TINA4_DATABASE_URL`). Credentials can be embedded in the URL (`redis://user:pass@host`, `redis://:pass@host`, `mongodb://user:pass@host`) or supplied via `TINA4_CACHE_USERNAME` / `TINA4_CACHE_PASSWORD` (mirroring `TINA4_DATABASE_USERNAME`/`_PASSWORD`); memcached is unauthenticated. The usual `TINA4_CACHE_TTL` (60), `TINA4_CACHE_MAX_ENTRIES` (1000), and `TINA4_CACHE_DIR` (`data/cache`) still apply.
+
+**Graceful fallback:** if a configured backend's driver is missing or the service/credentials are unreachable or wrong, the cache logs a warning and falls back to the **file** backend — a real persistent cache, never a silent no-op.
+
+The **persistent DB query cache** (`TINA4_DB_CACHE=true`) now routes through the same backend set via `TINA4_DB_CACHE_BACKEND` + `TINA4_DB_CACHE_URL`. `db.cacheStats()` reports `mode`, and the KV `cacheStats()` reports a `backend` field.
+
+**Node characteristic (by design):** Node's KV API is **async** — `await cacheGet(...)`, `await cacheSet(...)`, etc. — matching Node's async-everywhere idiom, and all seven backends use native async clients (no child processes). Because Node's middleware runner and `db.fetch()` are synchronous, the **`responseCache` middleware and the persistent DB query cache run in-process (per-instance) in Node**; for distributed, cross-instance caching in Node, use the async KV API (`await cacheGet`/`cacheSet`). The other three frameworks route those auto-paths through the configured backend (distributed). A full async middleware/DB pipeline is a future-major item.
+
+Full suite: 3,787 passing.
+
 ## v3.13.23 (2026-06-15) — request-scoped DB query cache, on by default (+ cache fixes)
 
 A new **request-scoped query cache** protects your database from rapid repeat reads. Within a single request, identical `SELECT`s and ORM reads are deduped automatically — the DB is hit once and subsequent identical reads are served from memory. The cache is **cleared at the start of every request** (so it never serves stale rows across requests) and **flushed on any write** (insert/update/delete/execute). For non-request contexts (scripts, workers) a short safety TTL applies.
