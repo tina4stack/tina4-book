@@ -786,7 +786,7 @@ Router.get("/api/dashboard/stats", async (req, res) => {
  * @tags Dashboard
  */
 Router.get("/admin", async (req, res) => {
-    return res.html("dashboard.html", {});
+    return res.render("dashboard.html", {});
 });
 ```
 

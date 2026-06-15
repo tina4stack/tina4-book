@@ -197,7 +197,7 @@ This returns `201 Created` with the JSON body.
 Render a Frond template with data ([Chapter 4: Templates](04-templates.md) goes deep):
 
 ```typescript
-return res.html("products.html", {
+return res.render("products.html", {
     products,
     title: "Our Products"
 });
@@ -538,7 +538,7 @@ Router.get("/api/products/{id:int}", async (req, res) => {
     const accept = req.headers["accept"] ?? "application/json";
 
     if (accept.includes("text/html")) {
-        return res.html("product-detail.html", { product });
+        return res.render("product-detail.html", { product });
     }
 
     if (accept.includes("application/xml")) {
