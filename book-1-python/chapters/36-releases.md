@@ -1,5 +1,15 @@
 # Chapter 35: Release Notes
 
+## v3.13.21 (2026-06-15) — security: never sign JWTs with a guessable default secret
+
+**Security fix.** When `TINA4_SECRET` was unset, Tina4 silently signed JWTs **and** CSRF form tokens with a hardcoded built-in default secret — so anyone who knew that default could forge valid tokens, and the developer got no warning. It affected `Auth`, the Frond `form_token()` filter, and the CSRF middleware (four copies of the same fallback).
+
+Token signing now reads `TINA4_SECRET` and, when it is unset, **warns loudly and uses a blank secret** — matching what the PHP and Node frameworks already did. There is no longer a guessable built-in secret. **Always set `TINA4_SECRET` in production.**
+
+Also corrected stale docs: the JWT secret env var is **`TINA4_SECRET`** (some docs still said `SECRET`), and `$response->template()` references are fixed to `response.render()`.
+
+Full suite: 2,857 passing.
+
 ## v3.13.19 (2026-06-15) — return domain objects, construct from JSON, and one database binder
 
 Three ergonomic improvements surfaced by the live side-by-side review of the book's own examples across all four frameworks.

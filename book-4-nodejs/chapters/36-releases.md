@@ -1,5 +1,11 @@
 # Chapter 35: Release Notes
 
+## v3.13.21 (2026-06-15) — docs: `render()` corrections + version re-sync
+
+Documentation consistency pass — no behavior change. The `res.template(...)` reference in `llms.txt` and a stale `server.ts` comment are corrected to **`res.render(...)`** — the real method; `template` is only the route-level binding (`export const template`), not a response method. Version re-synced to 3.13.21 with the other frameworks (this release also carries a Python-side JWT-secret security hardening).
+
+Full suite: 3,684 passing.
+
 ## v3.13.20 (2026-06-15) — Node.js: global class middleware (`Router.use`) now runs
 
 **Node.js only.** Class-based middleware registered globally with `Router.use(SomeMiddleware)` was never executed — only per-route `.middleware(fn)` and the built-in CORS / logger / rate-limiter chain ran. The documented pattern (register a `beforeX`/`afterX` class once and have it apply to every route) silently did nothing.

@@ -1,5 +1,11 @@
 # Chapter 35: Release Notes
 
+## v3.13.21 (2026-06-15) — docs: `render()` corrections + version re-sync
+
+Documentation consistency pass — no behavior change. References to a `$response->template()` *method* (which never existed) are corrected to **`$response->render()`** — the real method; `template` is only the route-level binding, not a response method. Fixed across the AI guide, `llms.txt`, and the gallery page. Version re-synced to 3.13.21 with the other frameworks (this release also carries a Python-side JWT-secret security hardening).
+
+Full suite: 2,433 tests passing.
+
 ## v3.13.19 (2026-06-15) — return domain objects, construct from JSON, and one database binder
 
 Three ergonomic improvements surfaced by the live side-by-side review of the book's own examples across all four frameworks.
