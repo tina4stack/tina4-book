@@ -1,5 +1,19 @@
 # Chapter 35: Release Notes
 
+## v3.13.17 (2026-06-15) — PostgreSQL: native-type reads + `execute()` reports real failure
+
+Two fixes found by the live side-by-side validation against PostgreSQL.
+
+### Reads return native PHP types (not strings)
+
+`ext-pgsql` returns every column as a string — `id` as `"1"`, a boolean as `"t"`, floats as `"12.50"`. A Tina4 app written on SQLite (native-ish types) silently changed behaviour when moved to PostgreSQL, and diverged from Python/Node which return native types. `PostgresAdapter` now coerces each column from its PG type: `int2`/`int4`/`int8` → `int`, `bool` → `bool`, `float4`/`float8`/`numeric` → `float` (nulls preserved; `bytea` unchanged). So `$result[0]` is now `{"id":1,"active":true,...}` instead of all-strings. (`timestamp`/`date`/`json`/`uuid` stay strings — a minor diff vs Python's datetime objects.)
+
+### `execute()` propagates failure
+
+`Database::execute()` returned `true` unconditionally for a plain write/DDL, discarding the adapter's boolean result — so a failed INSERT/UPDATE/DELETE/DDL reported success. (Python/Ruby/Node were already correct: their adapters *raise* and the facade catches; PHP adapters *return false*, which the facade ignored.) It now returns `false` and populates `getError()` from the adapter when the statement fails. A write affecting 0 rows is still a success.
+
+Full suite: 2,405 passing. Python/Node already had both behaviours (Ruby ships the native-reads half), so this is primarily a PHP release.
+
 ## v3.13.16 (2026-06-15) — `createTable()` works on PostgreSQL + `DatabaseResult` index access
 
 Found by the live documentation-verification pass — running the book's own samples against a real PostgreSQL database. The documented code-first schema path, `ORM::createTable()`, was silently broken on PostgreSQL: it ignored the model entirely, emitted a hardcoded SQLite `INTEGER PRIMARY KEY AUTOINCREMENT`, PG rejected it, and it returned `true` while creating **no table**.

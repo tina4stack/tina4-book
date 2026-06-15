@@ -1,5 +1,13 @@
 # Chapter 35: Release Notes
 
+## v3.13.17 (2026-06-15) — PostgreSQL reads return native Ruby types
+
+Found by the live side-by-side validation against PostgreSQL. The `pg` gem returns every column as a String by default — `id` as `"1"`, a boolean as `"t"`, timestamps as strings — so a Tina4 app written on SQLite (native types) silently changed behaviour on PostgreSQL, diverging from Python and Node. The PostgreSQL driver now installs `PG::BasicTypeMapForResults` on the connection, so reads decode by type: integer → `Integer`, boolean → `true`/`false`, float → `Float`, numeric → `BigDecimal`, timestamp → `Time`, date → `Date`. `uuid`/`json`/`jsonb` stay strings; `bytea` stays binary.
+
+So `db.fetch(...)[0]` is now `{id: 1, active: true, created: <Time>}` instead of all-strings — matching SQLite, Python, and Node.
+
+Full suite: 3,011 examples, 0 failures.
+
 ## v3.13.16 (2026-06-15) — `create_table` works on PostgreSQL + `DatabaseResult` index access
 
 Found by the live documentation-verification pass — running the book's own samples against a real PostgreSQL database. The documented code-first schema path, `create_table`, was silently broken on PostgreSQL: it emitted SQLite-only DDL (`AUTOINCREMENT`/`DATETIME`), PG rejected it, the error was swallowed, and it returned `true` while creating **no table**.
