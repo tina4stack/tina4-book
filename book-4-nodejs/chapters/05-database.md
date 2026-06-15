@@ -511,11 +511,11 @@ fake.uuid();       // "a1b2c3d4-e5f6-..."
 import { Database } from "tina4-nodejs/orm";
 import { FakeData } from "tina4-nodejs";
 
-const db = Database.getConnection();
+const db = await Database.getConnection();
 const fake = new FakeData();
 
 for (let i = 0; i < 50; i++) {
-    db.execute(
+    await db.execute(
         "INSERT INTO users (name, email, company) VALUES (:name, :email, :company)",
         {
             name: fake.name(),
