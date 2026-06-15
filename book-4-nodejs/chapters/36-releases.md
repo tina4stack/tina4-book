@@ -1,5 +1,23 @@
 # Chapter 35: Release Notes
 
+## v3.13.20 (2026-06-15) — Node.js: global class middleware (`Router.use`) now runs
+
+**Node.js only.** Class-based middleware registered globally with `Router.use(SomeMiddleware)` was never executed — only per-route `.middleware(fn)` and the built-in CORS / logger / rate-limiter chain ran. The documented pattern (register a `beforeX`/`afterX` class once and have it apply to every route) silently did nothing.
+
+`startServer` now runs every globally-registered class middleware around each route handler: `beforeX` hooks run **before** the handler (they can set response headers, mutate the request, or short-circuit by setting a status ≥ 400), and `afterX` hooks run **after** it. This brings Node to parity with Python, PHP, and Ruby, whose `Router.use` class middleware already ran.
+
+```typescript
+class PoweredBy {
+  static beforePoweredBy(req, res) {
+    res.header("X-Powered-By", "Tina4");
+    return [req, res];
+  }
+}
+Router.use(PoweredBy);   // now applies to every response
+```
+
+Note: in Node the response is flushed by the handler, so set response headers in `beforeX` (they persist through the handler's write); `afterX` is for logging / post-processing (header changes after the body is sent are no-ops). Full suite: 3,684 passing.
+
 ## v3.13.19 (2026-06-15) — return domain objects, construct from JSON, and one database binder
 
 Three ergonomic improvements surfaced by the live side-by-side review of the book's own examples across all four frameworks.
