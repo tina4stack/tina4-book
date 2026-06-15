@@ -2432,7 +2432,7 @@ require "tina4"
 
 Tina4::Router.get("/") { |request, response| response.html("<h1>Hello Tina4!</h1>") }
 
-Tina4::App.new.run
+Tina4.run!
 ```
 
 ```bash

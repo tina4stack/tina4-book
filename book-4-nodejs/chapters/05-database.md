@@ -573,23 +573,22 @@ await db.insert("products", {
     in_stock: 1
 });
 
-// Insert multiple rows
-await db.insert("products", [
-    { name: "USB Cable", price: 9.99, in_stock: 1 },
-    { name: "HDMI Cable", price: 14.99, in_stock: 1 }
-]);
+// Insert multiple rows — call insert() once per row
+await db.insert("products", { name: "USB Cable", price: 9.99, in_stock: 1 });
+await db.insert("products", { name: "HDMI Cable", price: 14.99, in_stock: 1 });
 ```
 
 ### update()
 
 ```typescript
-await db.update("products", { price: 39.99, in_stock: 1 }, "id = :id", { id: 7 });
+// Filter is a column→value equality map (4th arg is optional positional params for raw filters)
+await db.update("products", { price: 39.99, in_stock: 1 }, { id: 7 });
 ```
 
 ### delete()
 
 ```typescript
-await db.delete("products", "id = :id", { id: 7 });
+await db.delete("products", { id: 7 });
 ```
 
 ---
@@ -707,11 +706,11 @@ TINA4_DB_CACHE=true
 Identical queries with identical parameters return cached results. The cache invalidates itself when you call `execute()`, `insert()`, `update()`, or `delete()` on the same table.
 
 ```typescript
-// Force a fresh query (bypass cache)
-const products = await db.fetch("SELECT * FROM products", [], { noCache: true });
+// fetch() takes (sql, params?, limit?, offset?) — there is no per-call cache bypass.
+const products = await db.fetch("SELECT * FROM products", [], 10, 0);
 
 // Clear the entire cache
-await db.clearCache();
+db.cacheClear();
 ```
 
 ---

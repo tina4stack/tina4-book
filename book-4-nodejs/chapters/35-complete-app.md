@@ -1072,7 +1072,7 @@ The server returns the rendered HTML. Open `http://localhost:7148/admin` in your
 Create `tests/TaskFlowTest.ts`:
 
 ```typescript
-import { tests, assertEqual, assertTrue, assertNotNull, runAllTests, Auth } from "tina4-nodejs";
+import { tests, assertEqual, assertTrue, runAll, Auth } from "tina4-nodejs";
 import { TestClient } from "tina4-nodejs/test";
 
 const client = new TestClient();
@@ -1213,7 +1213,7 @@ const testPasswordHash = tests(
     return Auth.checkPassword(password, hash);
 });
 
-runAllTests();
+runAll();
 ```
 
 Run the tests:

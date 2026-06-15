@@ -1922,7 +1922,7 @@ $admins = User::query()
     ->get();
 
 // Standalone
-$results = QueryBuilder::from("orders")
+$results = QueryBuilder::fromTable("orders")
     ->where("total > ?", [100])
     ->join("customers", "customers.id = orders.customer_id")
     ->orderBy("total DESC")
@@ -2200,11 +2200,11 @@ Router::get("/search", function (\Tina4\Request $request) {
 });
 ```
 
-The authentication API consolidated. `createToken` and `validateToken` became the primary methods. `getToken` and `validToken` remain as aliases.
+The authentication API consolidated. `getToken` and `validToken` are the only token methods — there are no `createToken`/`validateToken` aliases.
 
 ```php
-$token = \Tina4\Auth::createToken(["userId" => 42, "role" => "admin"]);
-$valid = \Tina4\Auth::validateToken($token);
+$token = \Tina4\Auth::getToken(["userId" => 42, "role" => "admin"]);
+$valid = \Tina4\Auth::validToken($token);
 ```
 
 Other changes: inline `Router::` calls now work in route discovery. The error overlay passes full request details. Windows path separators are normalized after gallery deploy.
