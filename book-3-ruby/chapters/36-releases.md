@@ -1,5 +1,24 @@
 # Chapter 35: Release Notes
 
+## v3.13.16 (2026-06-15) — `create_table` works on PostgreSQL + `DatabaseResult` index access
+
+Found by the live documentation-verification pass — running the book's own samples against a real PostgreSQL database. The documented code-first schema path, `create_table`, was silently broken on PostgreSQL: it emitted SQLite-only DDL (`AUTOINCREMENT`/`DATETIME`), PG rejected it, the error was swallowed, and it returned `true` while creating **no table**.
+
+### Root cause: `get_database_type` didn't exist
+
+`create_table` called `db.get_database_type` to pick engine-appropriate types — but that method was never defined on `Database`, so the engine was always blank and every column fell back to SQLite DDL. (This also means the v3.13.11 engine-aware `BooleanField` work had **never actually fired on Ruby** until now.) `get_database_type` is now implemented, and `create_table` is engine-aware:
+
+- **datetime → `TIMESTAMP`** on PostgreSQL/Firebird; `DATETIME` on SQLite/MySQL/MSSQL.
+- **boolean → native `BOOLEAN`** (PostgreSQL/MySQL), `BIT` (MSSQL), `INTEGER` (SQLite/Firebird); boolean `DEFAULT`s engine-aware (`TRUE`/`FALSE` vs `1`/`0`).
+- Auto-increment translated per engine (`SERIAL` on PostgreSQL) via `SQLTranslator`.
+- **A failed `CREATE` now returns `false`** (and logs) instead of reporting success.
+
+### `DatabaseResult` index + slice access
+
+`result[0]` already worked; widened `[]` to ranges/slices (`result[1, 2]`, `result[1..3]`) and added `to_ary` for destructuring — full parity with the documented behaviour.
+
+Verified against PostgreSQL 16: a model with `id` (auto-increment) + string + boolean + datetime creates, inserts, and round-trips (`SERIAL`, `boolean DEFAULT true`, `timestamp`; `WHERE active = TRUE` matches). New `postgres_create_table_spec` (PG-gated). Full suite: 3,010 examples, 0 failures. Shipped with parity across all four frameworks.
+
 ## v3.13.14 (2026-06-13) — Logs reach stdout in containers + per-request logging + schema-qualified tables (#48)
 
 **Cross-framework release (all four).** Deployed Docker containers were getting no application logs. Ruby actually *did* write to stdout by default (`TINA4_LOG_OUTPUT=both`), but it **never set `$stdout.sync`** — and a container's stdout is a non-TTY pipe, which Ruby block-buffers. Logs sat in the buffer until it filled or the process exited, so `docker logs` looked empty (and a crash lost the tail). A follow-on report — the dev server going silent after startup — surfaced a second gap: requests were never logged to stdout.

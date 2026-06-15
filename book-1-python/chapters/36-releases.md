@@ -1,5 +1,22 @@
 # Chapter 35: Release Notes
 
+## v3.13.16 (2026-06-15) — `create_table()` works on PostgreSQL + `DatabaseResult` index access
+
+Found by the live documentation-verification pass — running the book's own samples against a real PostgreSQL database. The documented code-first schema path, `ORM.create_table()`, was silently broken on PostgreSQL: it emitted SQLite-only DDL, PG rejected it, the error was swallowed, and the method returned `True` while creating **no table**.
+
+### `create_table()` is now engine-aware
+
+- **`DateTimeField` → `TIMESTAMP`** on PostgreSQL (and Firebird) — they have no `DATETIME` type (`type "datetime" does not exist`); `DATETIME` stays on SQLite/MySQL/MSSQL.
+- **`BooleanField` → native `BOOLEAN`** on PostgreSQL/MySQL, `BIT` on MSSQL, `INTEGER` on SQLite/Firebird. The engine check previously compared against `"postgres"` but `get_database_type()` returns `"postgresql"`, so bool columns silently got `INTEGER` on PG — fixed. Boolean column `DEFAULT`s are engine-aware too (`TRUE`/`FALSE` vs `1`/`0`).
+- **A failed `CREATE` now returns `False` (and logs)** instead of masquerading as success.
+- The PostgreSQL adapter no longer rewrites `TRUE`/`FALSE` → `1`/`0` (`boolean_to_int`) — PG has a native boolean, and that rewrite had broken `DEFAULT FALSE` and `WHERE active = TRUE` on `BOOLEAN` columns.
+
+### `DatabaseResult` is subscriptable
+
+`result[0]` (documented in chapter 5, "Index Access") raised `TypeError: 'DatabaseResult' object is not subscriptable`. Added `__getitem__` — index and slice access now delegate to `.records`. The bundled guide's wrong "no `len()` support" note is corrected too.
+
+Verified against PostgreSQL 16: a model with `id` (auto-increment) + `StringField` + `BooleanField` + `DateTimeField` creates, inserts, and round-trips natively (real `bool`, `TIMESTAMP`). New PG-backed test suite (skip-if-no-PG) + always-run subscript suite. Full suite: 2,840 passing. Shipped with parity across all four frameworks.
+
 ## v3.13.15 (2026-06-15) — Python only: PostgreSQL idle-in-transaction leak (#51)
 
 **Python only.** psycopg2 follows the DB-API contract — a connection starts with `autocommit = False`, so even a bare `SELECT` opens a transaction. Tina4's `fetch()` / `fetch_one()` never closed it, so every read left the connection `idle in transaction` for its lifetime, pinning a pool slot and any locks it touched. PHP (`pg_query`), Ruby (`pg`), and Node (`node-postgres`) run on libpq autocommit — each statement is its own transaction — so the leak can't happen there. They stay at v3.13.14.

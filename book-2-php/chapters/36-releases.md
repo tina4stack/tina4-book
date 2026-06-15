@@ -1,5 +1,22 @@
 # Chapter 35: Release Notes
 
+## v3.13.16 (2026-06-15) — `createTable()` works on PostgreSQL + `DatabaseResult` index access
+
+Found by the live documentation-verification pass — running the book's own samples against a real PostgreSQL database. The documented code-first schema path, `ORM::createTable()`, was silently broken on PostgreSQL: it ignored the model entirely, emitted a hardcoded SQLite `INTEGER PRIMARY KEY AUTOINCREMENT`, PG rejected it, and it returned `true` while creating **no table**.
+
+### `createTable()` is now engine-aware
+
+It now derives the DDL from the model's typed properties:
+
+- **datetime → `TIMESTAMP`** on PostgreSQL/Firebird (no `DATETIME` there); `DATETIME` on SQLite/MySQL/MSSQL.
+- **bool → native `BOOLEAN`** (PostgreSQL/MySQL), `BIT` (MSSQL), `INTEGER` (SQLite/Firebird); boolean `DEFAULT`s engine-aware (`TRUE`/`FALSE` vs `1`/`0`).
+- Auto-increment translated per engine (`SERIAL` on PostgreSQL) via `SqlTranslation`.
+- **A failed `CREATE` now returns `false`** (with a post-create `tableExists` re-check + `Log::error`) instead of reporting success.
+
+`DatabaseResult` already implements `ArrayAccess`, so `$result[0]` works (no change needed there).
+
+Verified against PostgreSQL 16: a model with `id` (auto-increment) + string + bool + datetime creates, inserts, and round-trips natively (`SERIAL`, `boolean`, `timestamp`; `WHERE active = TRUE` matches). New `CreateTablePostgresTest` (PG-gated). Full suite: 2,400 passing. Shipped with parity across all four frameworks.
+
 ## v3.13.14 (2026-06-13) — Logs reach stdout in containers + per-request logging + schema-qualified tables (#48)
 
 **Cross-framework release (all four).** Deployed Docker containers were getting no application logs. In production PHP set `Log::$stdout = false` (logs went only to `logs/tina4.log` inside the container), never read `TINA4_LOG_LEVEL`, and didn't flush stdout. `docker logs` reads PID 1 stdout — so it was empty. A follow-on report — the dev server going silent after startup — surfaced a second gap: requests were never logged.

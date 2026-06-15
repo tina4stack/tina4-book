@@ -1,5 +1,37 @@
 # Chapter 35: Release Notes
 
+## v3.13.16 (2026-06-15) — ⚠ Async database API (BREAKING) + `createTable` on PostgreSQL + result indexing
+
+Found by the live documentation-verification pass — running the book's own samples against a real PostgreSQL database. The entire documented `Database`/`BaseModel`/`QueryBuilder` API was unusable on PostgreSQL (and MySQL/MSSQL/Firebird/MongoDB): every call threw `Use fetchAsync() for PostgreSQL.`
+
+### ⚠ Breaking: the database / ORM / QueryBuilder API is now uniformly async
+
+The Node DB layer was sync-first (built around synchronous `node:sqlite`). The async adapters implemented only `*Async` methods and made the sync methods throw — so the documented API worked **only on SQLite**. The public API is now uniformly **async** (returns Promises) and works identically across every engine — the cross-engine parity the docs always promised.
+
+```ts
+// before (worked only on SQLite):
+const rows = db.fetch("SELECT * FROM users");
+const user = User.find(1);
+const list = QueryBuilder.fromTable("users").get();
+
+// now (all engines, incl. PostgreSQL):
+const rows = await db.fetch("SELECT * FROM users");
+const user = await User.find(1);
+const list = await QueryBuilder.fromTable("users").get();
+```
+
+**Migration — add `await`** to: `db.fetch / fetchOne / fetchAll / execute / executeMany / insert / update / delete / startTransaction / commit / rollback / tableExists / getTables / getColumns / getNextId`; all `BaseModel` operations (`save / find / findById / all / where / count / createTable / delete / ...`); and `QueryBuilder.get / first / count / exists`. Pure builders and serializers stay synchronous (`toSql`, `toMongo`, `toDict`, `toJson`) — so relationships must be eager-loaded (via `include`) before a synchronous `toDict`/`toJson`.
+
+### `createTable` engine-aware on PostgreSQL
+
+Now emits `TIMESTAMP` for datetime, native `BOOLEAN` for boolean, and `SERIAL` for auto-increment on PostgreSQL; a failed `CREATE` no longer reports success.
+
+### `result[0]` index access
+
+The book documents `const firstUser = result[0]`; `DatabaseResult` now supports integer index access (alongside iteration, `length`, and `.at()`).
+
+Verified against PostgreSQL 16: `db.fetch/fetchOne/execute`, `BaseModel.createTable + save + findById + all + count`, and `QueryBuilder.get/count/exists` all work. New PG-backed test; 10 SQLite test files updated to `await` (the intended breaking change). Full suite: 3,644 passing across 97 files.
+
 ## v3.13.14 (2026-06-13) — Logs reach stdout in containers + per-request logging + schema-qualified tables (#48)
 
 **Cross-framework release (all four).** Deployed Docker containers were getting no application logs. In production Node's logger gated console output behind `!Log.isProduction()` (which is `!TINA4_DEBUG`), so a deployed app — where `TINA4_DEBUG` is off — printed nothing to stdout, writing only to `logs/tina4.log` inside the container. `docker logs` reads PID 1 stdout, so it was empty. A follow-on report — the dev server going silent after startup — surfaced a second gap in the other frameworks: requests weren't logged.
