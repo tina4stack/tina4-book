@@ -1,5 +1,29 @@
 # Chapter 35: Release Notes
 
+## v3.13.15 (2026-06-15) — Python only: PostgreSQL idle-in-transaction leak (#51)
+
+**Python only.** psycopg2 follows the DB-API contract — a connection starts with `autocommit = False`, so even a bare `SELECT` opens a transaction. Tina4's `fetch()` / `fetch_one()` never closed it, so every read left the connection `idle in transaction` for its lifetime, pinning a pool slot and any locks it touched. PHP (`pg_query`), Ruby (`pg`), and Node (`node-postgres`) run on libpq autocommit — each statement is its own transaction — so the leak can't happen there. They stay at v3.13.14.
+
+### The slow-motion outage
+
+The migration runner's batch lookup runs at boot:
+
+```python
+row = db.fetch_one("SELECT MAX(batch) as max_batch FROM tina4_migration")
+```
+
+That read opened a transaction and left it open. Each short-lived pod/process leaked one `idle in transaction` connection holding locks on `tina4_migration`. Over enough restarts the pool filled — `FATAL: remaining connection slots are reserved for roles with the SUPERUSER attribute` — and then module autodiscovery failed mid-boot, so `/health-check` still passed (pod marked Ready) while every real route 404'd. A silent "ready but broken" state; #51 reported sessions sitting idle for 2+ days.
+
+### The fix
+
+After a successful read **outside** an explicit transaction, the PostgreSQL adapter now rolls back the implicit transaction — a `SELECT` has nothing to persist, so a rollback is the clean close that returns the connection to plain `idle`. Inside `start_transaction()` the caller owns the transaction, so it's left alone. `execute()` (writes) is deliberately untouched: with autocommit off a write must still be committed explicitly, and auto-closing it would silently drop data.
+
+This is distinct from the v3.13.8 fix, which healed *aborted* transactions — a clean idle read-transaction never hit that path.
+
+### Tests
+
+- Python: 2,836 passed (+7 — `_end_read_txn` unit, `fetch`/`fetch_one` wiring, in-transaction deferral). No live PostgreSQL required: a fake connection records the rollback, and psycopg2 is stubbed when the optional driver is absent (so the guard runs in CI).
+
 ## v3.13.14 (2026-06-13) — Logs reach stdout in containers + per-request logging + schema-qualified tables (#48)
 
 **Cross-framework release (all four).** Deployed Docker containers were getting no application logs. The cause was the same architectural decision in every framework: in production/container mode Tina4 either **suppressed stdout** or wrote logs **only to a file inside the container** — but `docker logs` (and Kubernetes) read PID 1's stdout, so operators saw nothing. A follow-on report — "logs stop after `Development server: asyncio`" — surfaced a second gap: the dev server logged its startup banner but **never logged requests**, so it looked dead under traffic.
