@@ -1,5 +1,13 @@
 # Chapter 35: Release Notes
 
+## v3.13.26 (2026-06-16) — pooling fix: standalone writes auto-commit; explicit transactions stay atomic
+
+**Behavioural default change.** A standalone write — `execute`/`insert`/`update`/`delete` made **outside** an explicit transaction — now **auto-commits on its own connection before returning** (`autoCommit` default flipped to *on*). Previously autocommit was off by default, which broke connection pooling: a standalone write stayed uncommitted on one pooled connection while the next read round-robined to a different connection and saw nothing.
+
+Explicit transactions stay atomic. The per-statement commit branches now also check whether a transaction adapter is pinned to the current async context (`AsyncLocalStorage`) and suppress the commit inside `startTransaction()` … `commit()`/`rollback()`, so a `rollback()` still discards everything. Set `TINA4_AUTOCOMMIT=false` for strict manual-commit mode.
+
+Verified live on PostgreSQL: standalone write visible from a separate connection, explicit rollback discards, explicit commit persists, and pooled standalone writes visible across every round-robin connection. Full suite: 3,748 passing.
+
 ## v3.13.25 (2026-06-16) — Node.js: distributed responseCache + persistent DB cache (async completion)
 
 **Node.js only.** Completes the async cache work so Node reaches full parity with Python, PHP, and Ruby on the *automatic* cache paths. Previously (v3.13.24) Node's `responseCache` middleware and persistent DB query cache ran in-process (per-instance) because the middleware runner and `db.fetch()` were synchronous; distributed caching needed the explicit KV API.

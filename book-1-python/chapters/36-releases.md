@@ -1,5 +1,15 @@
 # Chapter 35: Release Notes
 
+## v3.13.26 (2026-06-16) — pooling fix: standalone writes auto-commit; explicit transactions stay atomic
+
+**Behavioural default change.** A standalone write — `execute`/`insert`/`update`/`delete` made **outside** an explicit transaction — now **auto-commits on its own connection before returning**. Previously the default was autocommit *off*, which broke connection pooling: a standalone `INSERT` landed uncommitted on one pooled connection, then the next read round-robined to a different connection and saw nothing. Standalone writes are now durable and visible across the pool.
+
+Explicit transactions are unchanged and stay atomic — inside `start_transaction()` … `commit()`/`rollback()` the per-statement commit is suppressed (the commit branches are gated on `not self._in_transaction`), so a `rollback()` still discards everything. The psycopg2 connection still runs with `connection.autocommit = False`, so the framework owns commit boundaries and the v3.13.15 idle-in-transaction read-rollback still applies.
+
+Set `TINA4_AUTOCOMMIT=false` in `.env` for strict manual-commit mode (every write needs an explicit `commit()`).
+
+Verified live on PostgreSQL: standalone write visible from a separate connection, explicit rollback discards, explicit commit persists, and pooled standalone writes visible across every round-robin connection. Full suite: 2,894 passing.
+
 ## v3.13.24 (2026-06-15) — unified cache backends across response, KV, and persistent DB cache
 
 The response/KV cache now supports **seven backends**, selected by `TINA4_CACHE_BACKEND`: `memory` (default), `file`, `redis`, `valkey`, `memcached`, `mongodb`, and `database`. `TINA4_CACHE_URL` carries the connection string for `redis`/`valkey`/`memcached`/`mongodb`, or a SQL URL for the `database` backend (which falls back to `TINA4_DATABASE_URL`). Credentials can be embedded in the URL (`redis://user:pass@host`, `redis://:pass@host`, `mongodb://user:pass@host`) or supplied via `TINA4_CACHE_USERNAME` / `TINA4_CACHE_PASSWORD` (mirroring `TINA4_DATABASE_USERNAME`/`_PASSWORD`); memcached is unauthenticated. The usual `TINA4_CACHE_TTL` (60), `TINA4_CACHE_MAX_ENTRIES` (1000), and `TINA4_CACHE_DIR` (`data/cache`) still apply.
