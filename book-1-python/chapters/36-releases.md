@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.30 (2026-06-16) — Typed route params now arrive coerced (⚠ behavioural change)
+
+**Behavioural change.** A typed path param now arrives **coerced to its type** instead of as a raw string: `{id:int}` / `{id:integer}` → `int`, `{price:float}` / `{x:number}` → `float`. Every other type (`string`, `alpha`, `alnum`, `slug`, `uuid`, `path`) and an untyped `{id}` stay strings; URL matching is unchanged (`{id:int}` still 404s on non-digits). Previously `{id:int}` matched only digits but still handed the handler the string `"42"` — code that did string operations on a typed param must adjust. This brings Python in line with Ruby (which already coerced) and the documented “auto-converted” behaviour, now matched by PHP and Node too. Also fixed a reversed `check_password` argument-order line in the dev guide. Full suite: 2,914 passing.
+
 ## v3.13.29 (2026-06-16) — Live API search (`api_search`/`api_class`/`api_method`) now finds what you ask for
 
 The live reflection index behind the `api_*` MCP tools — what AI assistants query for real method signatures instead of guessing — had three gaps, now fixed:

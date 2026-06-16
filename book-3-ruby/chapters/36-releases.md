@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.30 (2026-06-16) — Cross-framework parity release (no functional change in Ruby)
+
+Version alignment with Python/PHP/Node, which gained typed-route-param coercion this release. Ruby already coerced `{id:int}` → `Integer` and `{price:float}` → `Float` (it was the reference for the cross-framework fix), so there is no behavioural change here. Verified green against the routing and auth suites. Full suite: 3,079 passing.
+
 ## v3.13.29 (2026-06-16) — Live API search ranks qualified queries + resolves natural names
 
 Parity with the Python master fix for the `api_*` live-reflection tools. (Ruby's `Frond.add_filter`/`add_global`/`add_test` are plain methods, already indexed — the metaprogramming gap that hit Python/PHP doesn't apply here.)

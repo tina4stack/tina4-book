@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.30 (2026-06-16) — Typed route params coerce + JWT expiry now in minutes (⚠ two breaking changes)
+
+**Two behavioural changes.** (1) Typed path params now arrive coerced: `{id:int}` → `number`, `{price:float}` → `number` (other types and untyped params stay strings; matching unchanged) — previously the value was the string `"42"`. (2) `getToken` / `refreshToken` `expiresIn` is now in **minutes** (default 60), not seconds — matching Python/PHP/Ruby and Node's own docs; callers passing a seconds value (e.g. `3600`) must divide by 60. Both bring Node into cross-framework parity. Also fixed a stale `hashPassword` iteration-count docstring and a `refreshToken` signature drift in the guide. Full suite: 3,775 passing.
+
 ## v3.13.29 (2026-06-16) — Live API search ranks qualified queries + resolves the public import path
 
 Parity with the Python master fix for the `api_*` live-reflection tools. (Node's `Frond.addFilter`/`addGlobal`/`addTest` are normal class methods the reflector already sees — the metaprogramming gap that hit Python/PHP doesn't apply.)
