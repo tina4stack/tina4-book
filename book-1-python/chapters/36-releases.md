@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.28 (2026-06-16) — Frond: custom `add_test` now honoured by `is`
+
+**Python only.** A test registered with `Frond.add_test("positive", fn)` was ignored by `{% if x is positive %}` — the `is` evaluator checked a hardcoded built-in table (`even`, `odd`, `defined`, …) and never consulted the instance's custom-test registry, so every custom test silently returned false. It now merges the registered tests (reachable via the bound evaluator) over the built-ins, so custom registrations work and can override built-ins — matching PHP, Ruby, and Node. Built-in tests are unchanged. Surfaced by a cross-engine host-API check (`add_filter`/`add_global`/`add_test`/`form_token`) while building the verified cheatsheet. Full suite: 2,901 passing.
+
 ## v3.13.27 (2026-06-16) — Frond template-engine parity fixes
 
 A 50-case cross-engine audit (every Frond tag, filter, and test rendered through all four frameworks with identical templates) surfaced six places where Python's output diverged from the Twig/Jinja standard. All are now fixed to match:
