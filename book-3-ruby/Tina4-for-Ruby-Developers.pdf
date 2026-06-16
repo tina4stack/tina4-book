@@ -915,12 +915,12 @@ endobj
 endobj
 175 0 obj
 <<
-/Border [ 0 0 0 ] /Contents () /Dest [ 3266 0 R /XYZ 70.8 462.4898 0 ] /Rect [ 513.3556 660.4898 524.4756 674.4898 ] /Subtype /Link /Type /Annot
+/Border [ 0 0 0 ] /Contents () /Dest [ 3186 0 R /XYZ 70.8 740.9898 0 ] /Rect [ 513.3556 660.4898 524.4756 674.4898 ] /Subtype /Link /Type /Annot
 >>
 endobj
 176 0 obj
 <<
-/Border [ 0 0 0 ] /Contents () /Dest [ 3266 0 R /XYZ 70.8 462.4898 0 ] /Rect [ 88.8 658.4898 141.61 670.4898 ] /Subtype /Link /Type /Annot
+/Border [ 0 0 0 ] /Contents () /Dest [ 3186 0 R /XYZ 70.8 740.9898 0 ] /Rect [ 88.8 658.4898 141.61 670.4898 ] /Subtype /Link /Type /Annot
 >>
 endobj
 177 0 obj
@@ -4800,12 +4800,12 @@ endobj
 endobj
 926 0 obj
 <<
-/Border [ 0 0 0 ] /Contents () /Dest [ 3349 0 R /XYZ 70.8 764.4898 0 ] /Rect [ 509.4636 165.4898 524.4756 178.4898 ] /Subtype /Link /Type /Annot
+/Border [ 0 0 0 ] /Contents () /Dest [ 3309 0 R /XYZ 70.8 364.9898 0 ] /Rect [ 509.4636 165.4898 524.4756 178.4898 ] /Subtype /Link /Type /Annot
 >>
 endobj
 927 0 obj
 <<
-/Border [ 0 0 0 ] /Contents () /Dest [ 3349 0 R /XYZ 70.8 764.4898 0 ] /Rect [ 106.8 163.6898 145.311 174.4898 ] /Subtype /Link /Type /Annot
+/Border [ 0 0 0 ] /Contents () /Dest [ 3309 0 R /XYZ 70.8 364.9898 0 ] /Rect [ 106.8 163.6898 145.311 174.4898 ] /Subtype /Link /Type /Annot
 >>
 endobj
 928 0 obj
@@ -21634,7 +21634,7 @@ endobj
 endobj
 3683 0 obj
 <<
-/Author (Tina4 Stack) /CreationDate (D:20260615215614+00'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20260615215614+00'00') /Producer (ReportLab PDF Library - \(opensource\)) 
+/Author (Tina4 Stack) /CreationDate (D:20260616072039+00'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20260616072039+00'00') /Producer (ReportLab PDF Library - \(opensource\)) 
   /Subject (\(unspecified\)) /Title (Tina4 for Ruby Developers) /Trapped /False
 >>
 endobj
@@ -22074,7 +22074,7 @@ endobj
 endobj
 3767 0 obj
 <<
-/Dest [ 3266 0 R /XYZ 70.8 462.4898 0 ] /Next 3768 0 R /Parent 3736 0 R /Prev 3765 0 R /Title (13. Solution)
+/Dest [ 3186 0 R /XYZ 70.8 740.9898 0 ] /Next 3768 0 R /Parent 3736 0 R /Prev 3765 0 R /Title (13. Solution)
 >>
 endobj
 3768 0 obj
@@ -23993,7 +23993,7 @@ endobj
 endobj
 4136 0 obj
 <<
-/Dest [ 3349 0 R /XYZ 70.8 764.4898 0 ] /Parent 4133 0 R /Prev 4135 0 R /Title (Test with:)
+/Dest [ 3309 0 R /XYZ 70.8 364.9898 0 ] /Parent 4133 0 R /Prev 4135 0 R /Title (Test with:)
 >>
 endobj
 4137 0 obj
@@ -39604,7 +39604,7 @@ xref
 trailer
 <<
 /ID 
-[<4d69c2b5efd9d2c736d0776875c65aa4><4d69c2b5efd9d2c736d0776875c65aa4>]
+[<be4d441c717d4e50930ec0bd96302f03><be4d441c717d4e50930ec0bd96302f03>]
 % ReportLab generated PDF document -- digest (opensource)
 
 /Info 3683 0 R

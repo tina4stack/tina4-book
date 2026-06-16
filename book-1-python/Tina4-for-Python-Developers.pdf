@@ -6530,12 +6530,12 @@ endobj
 endobj
 1260 0 obj
 <<
-/Border [ 0 0 0 ] /Contents () /Dest [ 3495 0 R /XYZ 70.8 181.4898 0 ] /Rect [ 507.7956 104.4898 524.4756 118.4898 ] /Subtype /Link /Type /Annot
+/Border [ 0 0 0 ] /Contents () /Dest [ 3601 0 R /XYZ 70.8 790.4898 0 ] /Rect [ 507.7956 104.4898 524.4756 118.4898 ] /Subtype /Link /Type /Annot
 >>
 endobj
 1261 0 obj
 <<
-/Border [ 0 0 0 ] /Contents () /Dest [ 3495 0 R /XYZ 70.8 181.4898 0 ] /Rect [ 88.8 102.4898 142.72 114.4898 ] /Subtype /Link /Type /Annot
+/Border [ 0 0 0 ] /Contents () /Dest [ 3601 0 R /XYZ 70.8 790.4898 0 ] /Rect [ 88.8 102.4898 142.72 114.4898 ] /Subtype /Link /Type /Annot
 >>
 endobj
 1262 0 obj
@@ -22986,7 +22986,7 @@ endobj
 endobj
 3878 0 obj
 <<
-/Author (Tina4 Stack) /CreationDate (D:20260615215544+00'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20260615215544+00'00') /Producer (ReportLab PDF Library - \(opensource\)) 
+/Author (Tina4 Stack) /CreationDate (D:20260616072009+00'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20260616072009+00'00') /Producer (ReportLab PDF Library - \(opensource\)) 
   /Subject (\(unspecified\)) /Title (Tina4 for Python Developers) /Trapped /False
 >>
 endobj
@@ -26199,7 +26199,7 @@ endobj
 endobj
 4495 0 obj
 <<
-/Count 4 /Dest [ 3495 0 R /XYZ 70.8 181.4898 0 ] /First 4496 0 R /Last 4499 0 R /Parent 4482 0 R /Prev 4494 0 R 
+/Count 4 /Dest [ 3601 0 R /XYZ 70.8 790.4898 0 ] /First 4496 0 R /Last 4499 0 R /Parent 4482 0 R /Prev 4494 0 R 
   /Title (11. Gotchas)
 >>
 endobj
@@ -42107,7 +42107,7 @@ xref
 trailer
 <<
 /ID 
-[<848137978135b9ae4ae31c60cf8f9711><848137978135b9ae4ae31c60cf8f9711>]
+[<88dc65bdd73c6b3fb8ea1fb8b1e797a0><88dc65bdd73c6b3fb8ea1fb8b1e797a0>]
 % ReportLab generated PDF document -- digest (opensource)
 
 /Info 3878 0 R
