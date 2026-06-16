@@ -1,5 +1,15 @@
 # Chapter 35: Release Notes
 
+## v3.13.29 (2026-06-16) — Live API search (`api_search`/`api_class`/`api_method`) now finds what you ask for
+
+The live reflection index behind the `api_*` MCP tools — what AI assistants query for real method signatures instead of guessing — had three gaps, now fixed:
+
+- **Metaprogrammed methods were invisible.** `Frond.add_filter` / `add_global` / `add_test` are defined through a custom class/instance descriptor, and the reflector's `__qualname__` owner check skipped them — they never entered the index. Reflection now walks `obj.__dict__`, unwraps staticmethod/classmethod/property/descriptor wrappers, and strips receiver params, so `api_method("Frond", "add_test")` returns `add_test(name, fn)`.
+- **Class-qualified queries weren't steered.** `api_search("Frond.add_test")` returned unrelated `add_*`/`*test*` methods because only the bare name was scored. Ranking now weights the owning class, fqn segments, and an exact `Class.method` match, so the right method ranks first.
+- **Lookups only matched the deep fqn.** `api_class`/`api_method` now resolve the documented public import path and a bare class name (`Database`), not just `tina4_python.database.connection.Database`.
+
+The bundled AI skills (developer/maintainer/js) now instruct assistants to query `api_*` before guessing a signature. Full suite: 2,905 passing.
+
 ## v3.13.28 (2026-06-16) — Frond: custom `add_test` now honoured by `is`
 
 **Python only.** A test registered with `Frond.add_test("positive", fn)` was ignored by `{% if x is positive %}` — the `is` evaluator checked a hardcoded built-in table (`even`, `odd`, `defined`, …) and never consulted the instance's custom-test registry, so every custom test silently returned false. It now merges the registered tests (reachable via the bound evaluator) over the built-ins, so custom registrations work and can override built-ins — matching PHP, Ruby, and Node. Built-in tests are unchanged. Surfaced by a cross-engine host-API check (`add_filter`/`add_global`/`add_test`/`form_token`) while building the verified cheatsheet. Full suite: 2,901 passing.

@@ -1,5 +1,15 @@
 # Chapter 35: Release Notes
 
+## v3.13.29 (2026-06-16) — Live API search finds magic methods + ranks qualified queries
+
+Parity with the Python master fix for the `api_*` live-reflection tools (what AI assistants query for real signatures):
+
+- **Magic methods are now indexed.** `Frond::addFilter` / `addGlobal` / `addTest` dispatch through `__call`/`__callStatic`, so the token parser never saw them. `Docs` now reads `@method` docblock tags (and `Frond` declares them, which also helps IDE autocomplete), so `api_method("Frond", "addTest")` returns `addTest(string $name, callable $fn)`.
+- **Class-qualified ranking.** `api_search("Frond.addTest")` now ranks `Frond::addTest` first — the owning class, fqn segments, and an exact `Class.method` match are scored.
+- **Natural-name lookups.** `api_class`/`api_method` resolve a bare class name (`Database`) and leading-backslash variants, not just the exact fqn.
+
+The bundled AI skills now tell assistants to query `api_*` before guessing. Full suite: 3,014 passing.
+
 ## v3.13.26 (2026-06-16) — pooling fixes: standalone writes auto-commit + independent pooled PostgreSQL connections
 
 **Behavioural default change.** A standalone write made **outside** an explicit transaction now auto-commits on its own connection before returning — the default `autoCommit` is flipped to *on* across all adapters. Previously autocommit was off by default, which broke connection pooling: a standalone write stayed uncommitted on one pooled connection while the next read round-robined to another and saw nothing. Explicit transactions (`startTransaction`/`commit`/`rollback`) stay atomic — MySQL/MSSQL suspend driver autocommit for the duration of the transaction, and Firebird's commit branch is gated on `transaction === null`. Set `TINA4_AUTOCOMMIT=false` for strict manual-commit mode (per-connection override: `Database::create($url, autoCommit: false)`).

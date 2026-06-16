@@ -1,5 +1,14 @@
 # Chapter 35: Release Notes
 
+## v3.13.29 (2026-06-16) — Live API search ranks qualified queries + resolves natural names
+
+Parity with the Python master fix for the `api_*` live-reflection tools. (Ruby's `Frond.add_filter`/`add_global`/`add_test` are plain methods, already indexed — the metaprogramming gap that hit Python/PHP doesn't apply here.)
+
+- **Class-qualified ranking.** `api_search("Frond.add_test")` now ranks `Tina4::Frond#add_test` first — the owning class, fqn segments, and an exact `Class.method` match are scored, instead of the qualifier being dead weight.
+- **Natural-name lookups.** `api_class`/`api_method` resolve a bare class name (`Database`) and longer nested paths via a new resolver, not just the exact fqn.
+
+The bundled AI skills now tell assistants to query `api_*` before guessing. Full suite: 3,079 passing.
+
 ## v3.13.27 (2026-06-16) — Frond template-engine parity fixes
 
 A 50-case cross-engine audit (every Frond tag, filter, and test rendered through all four frameworks with identical templates) surfaced five places where Ruby's output diverged from the Twig/Jinja standard. All are now fixed to match:

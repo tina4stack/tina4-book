@@ -1,5 +1,14 @@
 # Chapter 35: Release Notes
 
+## v3.13.29 (2026-06-16) — Live API search ranks qualified queries + resolves the public import path
+
+Parity with the Python master fix for the `api_*` live-reflection tools. (Node's `Frond.addFilter`/`addGlobal`/`addTest` are normal class methods the reflector already sees — the metaprogramming gap that hit Python/PHP doesn't apply.)
+
+- **Class-qualified ranking.** `api_search("Frond.addTest")` now ranks `Frond.addTest` first — the owning class, fqn segments, and an exact `Class.method` match are scored.
+- **Natural-name lookups.** `api_class`/`api_method` resolve the published import path (`@tina4/orm.Database`) and a bare class name, not just the stored fqn.
+
+The bundled AI skills now tell assistants to query `api_*` before guessing. Full suite: 3,756 passing.
+
 ## v3.13.27 (2026-06-16) — Frond template-engine parity fixes
 
 A 50-case cross-engine audit (every Frond tag, filter, and test rendered through all four frameworks with identical templates) surfaced two places where Node's output diverged from the Twig/Jinja standard. Both are now fixed to match:
