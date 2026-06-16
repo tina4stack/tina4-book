@@ -1,5 +1,14 @@
 # Chapter 35: Release Notes
 
+## v3.13.27 (2026-06-16) — Frond template-engine parity fixes
+
+A 50-case cross-engine audit (every Frond tag, filter, and test rendered through all four frameworks with identical templates) surfaced two places where Node's output diverged from the Twig/Jinja standard. Both are now fixed to match:
+
+- **`{{ "%.2f" | format(value) }}`** is now a real printf — it handles precision/width/flags (`%.2f` → `3.14`) instead of only `%s`/`%d`, and it resolves a *variable* argument to its value. Unquoted filter arguments are now treated as variable references (a `VarRef` resolved at apply-time); quoted literals stay literal, numbers/bools/null are coerced.
+- **`nl2br`** escapes its input, inserts `<br />`, and is marked safe (it was emitting an un-safe `<br>` that the auto-escaper then escaped).
+
+Behavioural note: these change rendered output for the affected filters — correctness fixes toward the documented Twig/Jinja behaviour. Full suite: 3,752 passing.
+
 ## v3.13.26 (2026-06-16) — pooling fix: standalone writes auto-commit; explicit transactions stay atomic
 
 **Behavioural default change.** A standalone write — `execute`/`insert`/`update`/`delete` made **outside** an explicit transaction — now **auto-commits on its own connection before returning** (`autoCommit` default flipped to *on*). Previously autocommit was off by default, which broke connection pooling: a standalone write stayed uncommitted on one pooled connection while the next read round-robined to a different connection and saw nothing.

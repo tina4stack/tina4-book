@@ -1,5 +1,16 @@
 # Chapter 35: Release Notes
 
+## v3.13.27 (2026-06-16) — Frond template-engine parity fixes
+
+A 50-case cross-engine audit (every Frond tag, filter, and test rendered through all four frameworks with identical templates) surfaced six places where Python's output diverged from the Twig/Jinja standard. All are now fixed to match:
+
+- **`{{ x | e }}` / `escape`** no longer double-escapes — the filter returns a `SafeString`, so the auto-escaper leaves it alone (`<b>` → `&lt;b&gt;`, not `&amp;lt;b&amp;gt;`).
+- **`{{ "%.2f" | format(value) }}`** now resolves a *variable* argument to its value (it previously errored). Unquoted filter arguments are treated as variable references; quoted literals stay literal.
+- **`{%- ... -%}` whitespace control** now actually trims — a single up-front pass applies every trim marker, including on closing tags (`endif`/`endfor`) and block-body boundaries.
+- **`json_encode`** emits compact `[1,2,3]` (no spaces); **`round`** at precision 0 renders the integer `4` (not `4.0`); **`nl2br`** escapes its input, inserts `<br />`, and is marked safe — all matching PHP.
+
+Behavioural note: these change rendered output for the affected filters — they are correctness fixes toward the documented Twig/Jinja behaviour. Full suite: 2,900 passing.
+
 ## v3.13.26 (2026-06-16) — pooling fix: standalone writes auto-commit; explicit transactions stay atomic
 
 **Behavioural default change.** A standalone write — `execute`/`insert`/`update`/`delete` made **outside** an explicit transaction — now **auto-commits on its own connection before returning**. Previously the default was autocommit *off*, which broke connection pooling: a standalone `INSERT` landed uncommitted on one pooled connection, then the next read round-robined to a different connection and saw nothing. Standalone writes are now durable and visible across the pool.

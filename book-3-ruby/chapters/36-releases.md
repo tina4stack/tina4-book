@@ -1,5 +1,15 @@
 # Chapter 35: Release Notes
 
+## v3.13.27 (2026-06-16) — Frond template-engine parity fixes
+
+A 50-case cross-engine audit (every Frond tag, filter, and test rendered through all four frameworks with identical templates) surfaced five places where Ruby's output diverged from the Twig/Jinja standard. All are now fixed to match:
+
+- **Expression-parser literal bug** — `{{ 'a' ~ 'b' }}` and `{{ 'Y' if x else 'N' }}` came out mangled (the literal detector stripped the outer quotes off the *whole* expression before concatenation / inline-if ran). The detector now only treats an expression as a single string literal when the opening quote's match is the final character, so concatenation and inline-if of two quoted literals work.
+- **`{{ x | e }}` / `nl2br`** return a `SafeString`, so the auto-escaper no longer double-escapes them; `nl2br` escapes its input and emits `<br />`.
+- **`url_encode`** percent-encodes spaces as `%20` (was form-encoding them as `+`).
+
+Behavioural note: these change rendered output for the affected cases — correctness fixes toward the documented Twig/Jinja behaviour. `TINA4_AUTOCOMMIT=false` strict mode remains unsupported in Ruby (unchanged). Full suite: 3,075 examples.
+
 ## v3.13.26 (2026-06-16) — pooling parity confirmed; standalone writes auto-commit
 
 Ruby already had the correct behaviour, so this release is a parity + test pass rather than a code change. Standalone writes auto-commit on their own connection (the `pg`, `sqlite3`, and `mysql2` drivers run in autocommit mode by default), pooled connections are independent (`PG.connect` opens a fresh backend per pool slot), and explicit transactions (`start_transaction`/`commit`/`rollback`) stay atomic. A new regression test asserts a standalone write is visible across pooled connections, bringing Ruby in line with the pooling fix shipped to Python, PHP, and Node.
