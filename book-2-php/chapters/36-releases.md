@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.31 (2026-06-17) — Version alignment (no functional change in PHP)
+
+Cross-framework version alignment with the Ruby request/response parity release. PHP's request body, query, headers, cookies, file uploads (raw-bytes `content`), and response surface were already in parity — no behavioural change here. Full suite: 3,024 passing.
+
 ## v3.13.30 (2026-06-16) — Typed route params coerce + /__dev auth-bypass fixed (⚠ behavioural change)
 
 **Behavioural change.** Typed path params now arrive coerced: `{id:int}` → `int`, `{price:float}` → `float` (other types and untyped params stay strings; matching unchanged). `compilePath()` computed the param-type map but `addRoute()` dropped it, so the existing cast in `matchInTable()` was dead code and `{id:int}` arrived as the string `"42"` — now wired through, bringing PHP in line with Python/Ruby/Node. Separately, a bug fix: the dev-admin auth bypass tested `$request->url` (always the full `scheme://host/path`) so it never matched — a write to `/__dev/…` (and the gallery prefixes) returned 401 instead of bypassing; it now tests `$request->path`. Full suite: 3,024 passing.

@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.31 (2026-06-17) — Version alignment (no functional change in Node)
+
+Cross-framework version alignment with the Ruby request/response parity release. Node's request/response surface (parsed `req.body`, `req.query`, case-insensitive headers, `req.files[...].content` as a Buffer, `res.json`/`redirect`/`file`/`stream`) was already in parity — no behavioural change here. Full suite: 3,775 passing.
+
 ## v3.13.30 (2026-06-16) — Typed route params coerce + JWT expiry now in minutes (⚠ two breaking changes)
 
 **Two behavioural changes.** (1) Typed path params now arrive coerced: `{id:int}` → `number`, `{price:float}` → `number` (other types and untyped params stay strings; matching unchanged) — previously the value was the string `"42"`. (2) `getToken` / `refreshToken` `expiresIn` is now in **minutes** (default 60), not seconds — matching Python/PHP/Ruby and Node's own docs; callers passing a seconds value (e.g. `3600`) must divide by 60. Both bring Node into cross-framework parity. Also fixed a stale `hashPassword` iteration-count docstring and a `refreshToken` signature drift in the guide. Full suite: 3,775 passing.

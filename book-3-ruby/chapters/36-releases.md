@@ -1,5 +1,11 @@
 # Chapter 35: Release Notes
 
+## v3.13.31 (2026-06-17) — Request/response parity with Python/PHP/Node (⚠ breaking: request.body)
+
+**Breaking.** `request.body` now returns the **parsed** body (JSON/form → Hash) like the other three frameworks; the raw string moves to `request.body_raw`. Apps that read the raw body — webhook signature/HMAC verification, `JSON.parse(request.body)`, SOAP/XML — must switch to `request.body_raw`. Reading fields via `request.body["key"]` now works directly. (Framework internals graphql/wsdl were repointed.)
+
+Additive: uploaded files gain a raw-bytes **`content`** field with indifferent string/symbol keys (`file["content"]` / `file[:content]`), parity with the others — materialised **lazily** on first access so `:tempfile`-only handlers never buffer large uploads in memory. `response.stream` now accepts a positional generator (`stream(gen)`) in addition to the block form. Full suite: 3,090 passing.
+
 ## v3.13.30 (2026-06-16) — Cross-framework parity release (no functional change in Ruby)
 
 Version alignment with Python/PHP/Node, which gained typed-route-param coercion this release. Ruby already coerced `{id:int}` → `Integer` and `{price:float}` → `Float` (it was the reference for the cross-framework fix), so there is no behavioural change here. Verified green against the routing and auth suites. Full suite: 3,079 passing.
