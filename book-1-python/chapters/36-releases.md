@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.36 (2026-06-18) — Instant WebSocket dev-reload
+
+Dev-reload is now a WebSocket push instead of a poll. On a file change `tina4 serve` POSTs `/__dev/api/reload`; the server re-imports just the changed route module in-process — mtime-tracked, same PID, **no respawn** — then broadcasts `{type, file, mtime}` to every browser on the `/__dev_reload` WebSocket, and the injected toolbar client reloads instantly (CSS changes hot-swap the `<link>` href without a full reload). The `/__dev/api/mtime` poll is now a fallback only, used when the socket is down. `Router.add` replaces a re-registered `(method, path)` in place so the fresh handler wins instead of being shadowed by a stale duplicate. Debug-mode only — production is untouched. Full suite: 2,952 passing.
+
 ## v3.13.35 (2026-06-17) — Live MCP endpoint for AI agents
 
 The built-in MCP server is now actually reachable. It was fully built — 50+ dev tools (live DB queries, file I/O sandboxed to the project, route list, project overview, framework docs search) — but never mounted, so no MCP client could connect. `tina4 serve` now exposes it at `/__dev/mcp` (JSON-RPC) + `/__dev/mcp/sse`, gated on debug mode, giving an AI agent (Claude Desktop/Code) live access scoped to the running project. Also fixed the `route_list` dev tool, which referenced a non-existent `Router._routes` (now `Router.get_routes()`) and errored for every caller — caught by new tool-coverage tests. Full suite: 2,943 passing.

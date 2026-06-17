@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.36 (2026-06-18) — Instant WebSocket dev-reload + dev-admin file browser fix
+
+Dev-reload is now a WebSocket push, matching Python. `tina4 serve` POSTs `/__dev/api/reload`; the server re-loads changed route files in-process (`rescan_routes!`, mtime-tracked, no respawn) and broadcasts `{type, file, mtime}` over `/__dev_reload` (held open by a process-wide manager; the upgrade needs a hijack-capable server such as Puma). The injected client is WebSocket-primary and only polls `/__dev/api/mtime` when the socket is down. **Also fixed:** the dev-admin file browser returned `type` instead of `is_dir`, so folders never rendered in the dashboard tree — `/__dev/api/files` now returns `is_dir`, `has_children`, real per-entry `git_status` and the repo `branch`, full parity with Python/PHP. Full suite: 3,149 passing.
+
 ## v3.13.35 (2026-06-17) — Live MCP endpoint for AI agents
 
 The built-in MCP server is now actually reachable, and its tools actually work. Two bugs: the dev tools were never registered on the default server (so it had zero tools), and `route_list` called `route[:method]` (subscript) on `Tina4::Route` objects that only expose attr-readers (every call raised). Both fixed; `DevAdmin.handle_request` now mounts `/__dev/mcp` (JSON-RPC) + `/__dev/mcp/sse` in debug mode, giving an AI agent (Claude Desktop/Code) live access (DB queries, file I/O, routes, docs) scoped to the running project. 17 new specs; full suite 3,136 examples.
