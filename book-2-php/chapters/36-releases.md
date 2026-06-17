@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.35 (2026-06-17) — Live MCP endpoint for AI agents
+
+The built-in MCP server is now actually reachable. Its 48 dev tools (live DB queries, sandboxed file I/O, route list, project overview, docs search) were fully built but never mounted. `DevAdmin::register()` now mounts `/__dev/mcp` (JSON-RPC) + `/__dev/mcp/sse` in debug mode, so an AI agent (Claude Desktop/Code) gets live access scoped to the running project. The SSE handshake was made SAPI-safe for the built-in server. 15 new tests; full suite 3,064 passing.
+
 ## v3.13.34 (2026-06-17) — Store images + dual-port test
 
 Fixed blank product images in the example store: the storefront templates read `product.imageUrl` (camelCase) but `toDict()` emits snake_case `image_url`. Aligned the templates to `image_url` (matching the API and the Python store). Corrected stale env-var names in `example/.env.example` (notably `SECRET` → `TINA4_SECRET`, which PHP rejects at boot). Added `DualPortReloadTest` locking in the AI dual-port dev mode (main port hot-reloads; port+1000 is the stable AI port). Full suite: 3,049 passing.

@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.35 (2026-06-17) — Live MCP endpoint for AI agents
+
+The built-in MCP server is now actually reachable. It was fully built — 50+ dev tools (live DB queries, file I/O sandboxed to the project, route list, project overview, framework docs search) — but never mounted, so no MCP client could connect. `tina4 serve` now exposes it at `/__dev/mcp` (JSON-RPC) + `/__dev/mcp/sse`, gated on debug mode, giving an AI agent (Claude Desktop/Code) live access scoped to the running project. Also fixed the `route_list` dev tool, which referenced a non-existent `Router._routes` (now `Router.get_routes()`) and errored for every caller — caught by new tool-coverage tests. Full suite: 2,943 passing.
+
 ## v3.13.34 (2026-06-17) — Demo + onboarding fixes
 
 The example store crashed on boot: `app.py` imported `orm_bind`, which was renamed to `bind_database` in 3.13 (no alias). Switched it, so the demo boots, migrates, seeds, and serves real data again. Corrected stale env-var names in the README and `example/.env` to the names the framework actually reads (`TINA4_SECRET`, `TINA4_LOG_LEVEL`, `TINA4_LOCALE`, `TINA4_SESSION_BACKEND`, `TINA4_SWAGGER_*`) — the demo had been signing JWTs with a blank secret — and unified project creation on the `tina4` CLI. Examples/docs only; framework unchanged.

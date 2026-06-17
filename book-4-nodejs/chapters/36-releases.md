@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.35 (2026-06-17) — Live MCP endpoint + working DB tools for AI agents
+
+The built-in MCP server is now reachable and its database tools actually work. It was fully built but never mounted; ~10 dev tools used a bare `require` that's undefined under ESM (so they errored); and the DB tools read a `globalThis.__tina4_db` that nothing set — and called the async `Database` methods synchronously. Now: `DevAdmin.register()` mounts `/__dev/mcp` (JSON-RPC) + `/__dev/mcp/sse` in debug mode; `initDatabase()` exposes the Database on `globalThis.__tina4_db`; the tool dispatch is async end to end; and the require-based tools resolve correctly. An AI agent (Claude Desktop/Code) gets live access (real DB queries, file I/O, routes, docs) scoped to the running project. New regression tests; full suite 3,909 passing.
+
 ## v3.13.34 (2026-06-17) — Scaffolder fix + dual-port reload correction
 
 `npx tina4nodejs init` scaffolded an unresolvable `"tina4-nodejs": "^0.0.1"` dependency and dev/serve scripts that invoked the Rust CLI — fixed to `^3.0.0` and `npx tina4nodejs serve` so a pure-npm project installs and runs. Corrected the AI dual-port dev mode, which was inverted vs Python: the **main port now hot-reloads** (dev toolbar + `/__dev_reload` injected) and **port+1000 is the stable AI port** — previously reversed, so the `tina4` client's reload POST (which targets the base port) never reached the browser. Full suite: 3,858 passing.
