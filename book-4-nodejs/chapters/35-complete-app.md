@@ -1279,7 +1279,7 @@ services:
       - TINA4_DEBUG=false
       - TINA4_SECRET=${JWT_SECRET:-change-me-in-production}
       - TINA4_CACHE_BACKEND=redis
-      - TINA4_CACHE_URL=redis
+      - TINA4_CACHE_URL=redis://redis:6379
     volumes:
       - taskflow-data:/app/data
       - taskflow-logs:/app/logs

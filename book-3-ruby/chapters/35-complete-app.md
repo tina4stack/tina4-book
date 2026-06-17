@@ -946,7 +946,7 @@ TINA4_LOG_LEVEL=WARNING
 JWT_SECRET=your-production-secret-at-least-32-characters
 TINA4_DATABASE_URL=sqlite:///data/app.db
 TINA4_CACHE_BACKEND=redis
-TINA4_CACHE_URL=redis
+TINA4_CACHE_URL=redis://redis:6379
 ```
 
 Deploy:
