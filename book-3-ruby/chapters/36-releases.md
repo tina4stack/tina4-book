@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.33 (2026-06-17) — Queues: priority pop + automatic dead-lettering (⚠ behavioural change)
+
+**Behavioural change.** `job.fail(reason)` now re-enqueues (incrementing `attempts`) until `attempts >= max_retries`, then dead-letters — a `consume` loop retries `max_retries` times automatically. `pop`/`consume` are now priority-ordered (was FIFO); new additive `retry_backoff:`. Bug fixes: `consume(id:)` no longer raises and `pop_by_id` now works (implements `find_by_id`). Only the file backend changed. Queue chapter rewritten to match. Full suite: 3,119 passing.
+
 ## v3.13.32 (2026-06-17) — Caching: per-query bypass + X-Cache headers (chapter rewritten to match code)
 
 Added a per-query bypass — `db.fetch(..., no_cache: true)` (also `fetch_one`/`fetch_all`) skips lookup + store. `Tina4::ResponseCache` now sets `X-Cache: HIT|MISS` + `X-Cache-TTL` (this fixed a bug where the MISS header silently no-op'd on a real Request). The caching chapter was rewritten to match code (real `cache_stats` shapes, all seven backends + file fallback, the three cache layers, accurate env/defaults), dropping earlier aspirational claims. Full suite: 3,099 passing.

@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.33 (2026-06-17) — Queues: priority pop + automatic dead-lettering (⚠ behavioural change)
+
+**Behavioural change.** `job.fail()` now **re-enqueues** the job (incrementing `attempts`) until `attempts >= max_retries`, then moves it to the dead-letter store — so a `for job in queue.consume(topic): … job.fail(e)` loop retries `max_retries` times and dead-letters automatically (no manual `retry_failed()`). Previously `fail()` only marked the job failed. Also: `pop`/`consume` now return the **highest-priority** available job first (ties oldest-first) instead of FIFO; new additive `Queue(..., retry_backoff=0)` delays the auto re-enqueue. Only the file/lite backend changed (brokers delegate retry/dead-lettering). The queue chapter was rewritten to match (the documented retry→dead-letter flow is now real). Full suite: 2,933 passing.
+
 ## v3.13.32 (2026-06-17) — Caching: per-query bypass + X-Cache headers (chapter rewritten to match code)
 
 Added a per-query cache bypass — `db.fetch(... , no_cache=True)` (also `fetch_one`/`fetch_all`) skips both the lookup and the store for that one call. The HTTP `ResponseCache` now stamps `X-Cache: HIT|MISS` and `X-Cache-TTL: <seconds>` on cached responses (no `Cache-Control`). The caching chapter was substantially rewritten to match the code: the real `cache_stats()` shapes, all seven backends + file-backend fallback, the three cache layers (request-scoped auto, persistent DB, response), and accurate env/defaults — removing earlier aspirational claims (a fictional stats shape, stale-while-revalidate, a `/__dev` per-key panel, auto `Cache-Control`). Full suite: 2,924 passing.

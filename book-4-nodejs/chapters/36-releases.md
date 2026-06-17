@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.33 (2026-06-17) — Queues: priority pop + auto dead-lettering + TINA4_QUEUE_URL parity (⚠ behavioural change)
+
+**Behavioural change.** `job.fail(reason)` now re-enqueues (incrementing `attempts` exactly once — a double-increment bug is fixed) until `attempts >= maxRetries`, then dead-letters — a `for await` consume loop retries automatically. `pop`/`consume` are now priority-ordered (was FIFO); new additive `retryBackoff`. **Config parity:** the broker backends now read `TINA4_QUEUE_URL` like Python/PHP/Ruby (per-backend `TINA4_RABBITMQ_*`/`KAFKA_*`/`MONGO_*` vars remain as overrides). Only the file backend changed for lifecycle. Queue chapter rewritten to match. Full suite: 3,858 passing.
+
 ## v3.13.32 (2026-06-17) — Caching: per-query bypass + string-middleware + X-Cache-TTL (chapter rewritten)
 
 Added a per-query bypass — `await db.fetchAll(sql, params, limit, offset, { noCache: true })` (also `fetch`/`fetchOne`) skips lookup + store; the option is a trailing arg, not the params array. The `"ResponseCache:300"` string-middleware form now works (parity with Python/Ruby), and `responseCache` now also sets `X-Cache-TTL` alongside `X-Cache`. The caching chapter was rewritten to match code — correct async/await on every cache-aside example, real `cacheStats()` shapes, all seven backends + file fallback, the three cache layers — dropping earlier aspirational claims. Full suite: 3,801 passing.

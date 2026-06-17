@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.33 (2026-06-17) — Queues: priority pop + automatic dead-lettering (⚠ behavioural change)
+
+**Behavioural change.** `$job->fail()` now re-enqueues (incrementing `attempts`) until `attempts >= maxRetries`, then dead-letters — a `consume` loop retries `maxRetries` times automatically. `pop`/`consume` are now priority-ordered (was FIFO); new additive `retryBackoff` config. Bug fix: `Job::$topic` is now **public** (was private → fatal when read). Only the file backend changed. Queue chapter rewritten to match. Full suite: 3,046 passing.
+
 ## v3.13.32 (2026-06-17) — Caching: per-query bypass + X-Cache headers + string-middleware (chapter rewritten)
 
 Added a per-query bypass — `$db->fetch(..., noCache: true)` (also `fetchOne`/`fetchAll`) skips lookup + store. `ResponseCache` now sets `X-Cache: HIT|MISS` + `X-Cache-TTL`, and the `"ResponseCache:300"` string-middleware form now works (parity with Python/Ruby) — this also fixed a dispatch bug where the response cache's store step never ran on the route path. The KV helpers live in `\Tina4\Middleware\`. The caching chapter was rewritten to match code (real `cacheStats()` shapes, all seven backends + file fallback, the three cache layers, accurate env/defaults), dropping earlier aspirational claims. Full suite: 3,035 passing.
