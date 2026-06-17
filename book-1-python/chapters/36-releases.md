@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.32 (2026-06-17) — Caching: per-query bypass + X-Cache headers (chapter rewritten to match code)
+
+Added a per-query cache bypass — `db.fetch(... , no_cache=True)` (also `fetch_one`/`fetch_all`) skips both the lookup and the store for that one call. The HTTP `ResponseCache` now stamps `X-Cache: HIT|MISS` and `X-Cache-TTL: <seconds>` on cached responses (no `Cache-Control`). The caching chapter was substantially rewritten to match the code: the real `cache_stats()` shapes, all seven backends + file-backend fallback, the three cache layers (request-scoped auto, persistent DB, response), and accurate env/defaults — removing earlier aspirational claims (a fictional stats shape, stale-while-revalidate, a `/__dev` per-key panel, auto `Cache-Control`). Full suite: 2,924 passing.
+
 ## v3.13.31 (2026-06-17) — Documentation fixes (no functional change)
 
 Corrected the developer guide: `Response.add_header` is an instance method — the class-level `Response.add_header(...)` shown previously raises `TypeError`, so it's now `response.add_header(...)` (including six middleware examples in Chapter 10). Removed a stale `fieldName` key from the `request.files` upload example (the dict has `filename`, `type`, `content`, `size`). Code is unchanged. Full suite: 2,914 passing.

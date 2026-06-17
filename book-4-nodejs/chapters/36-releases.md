@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.32 (2026-06-17) — Caching: per-query bypass + string-middleware + X-Cache-TTL (chapter rewritten)
+
+Added a per-query bypass — `await db.fetchAll(sql, params, limit, offset, { noCache: true })` (also `fetch`/`fetchOne`) skips lookup + store; the option is a trailing arg, not the params array. The `"ResponseCache:300"` string-middleware form now works (parity with Python/Ruby), and `responseCache` now also sets `X-Cache-TTL` alongside `X-Cache`. The caching chapter was rewritten to match code — correct async/await on every cache-aside example, real `cacheStats()` shapes, all seven backends + file fallback, the three cache layers — dropping earlier aspirational claims. Full suite: 3,801 passing.
+
 ## v3.13.31 (2026-06-17) — Version alignment (no functional change in Node)
 
 Cross-framework version alignment with the Ruby request/response parity release. Node's request/response surface (parsed `req.body`, `req.query`, case-insensitive headers, `req.files[...].content` as a Buffer, `res.json`/`redirect`/`file`/`stream`) was already in parity — no behavioural change here. Full suite: 3,775 passing.

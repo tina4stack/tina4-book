@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.32 (2026-06-17) — Caching: per-query bypass + X-Cache headers + string-middleware (chapter rewritten)
+
+Added a per-query bypass — `$db->fetch(..., noCache: true)` (also `fetchOne`/`fetchAll`) skips lookup + store. `ResponseCache` now sets `X-Cache: HIT|MISS` + `X-Cache-TTL`, and the `"ResponseCache:300"` string-middleware form now works (parity with Python/Ruby) — this also fixed a dispatch bug where the response cache's store step never ran on the route path. The KV helpers live in `\Tina4\Middleware\`. The caching chapter was rewritten to match code (real `cacheStats()` shapes, all seven backends + file fallback, the three cache layers, accurate env/defaults), dropping earlier aspirational claims. Full suite: 3,035 passing.
+
 ## v3.13.31 (2026-06-17) — Version alignment (no functional change in PHP)
 
 Cross-framework version alignment with the Ruby request/response parity release. PHP's request body, query, headers, cookies, file uploads (raw-bytes `content`), and response surface were already in parity — no behavioural change here. Full suite: 3,024 passing.

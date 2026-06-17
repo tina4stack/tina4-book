@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.32 (2026-06-17) — Caching: per-query bypass + X-Cache headers (chapter rewritten to match code)
+
+Added a per-query bypass — `db.fetch(..., no_cache: true)` (also `fetch_one`/`fetch_all`) skips lookup + store. `Tina4::ResponseCache` now sets `X-Cache: HIT|MISS` + `X-Cache-TTL` (this fixed a bug where the MISS header silently no-op'd on a real Request). The caching chapter was rewritten to match code (real `cache_stats` shapes, all seven backends + file fallback, the three cache layers, accurate env/defaults), dropping earlier aspirational claims. Full suite: 3,099 passing.
+
 ## v3.13.31 (2026-06-17) — Request/response parity with Python/PHP/Node (⚠ breaking: request.body)
 
 **Breaking.** `request.body` now returns the **parsed** body (JSON/form → Hash) like the other three frameworks; the raw string moves to `request.body_raw`. Apps that read the raw body — webhook signature/HMAC verification, `JSON.parse(request.body)`, SOAP/XML — must switch to `request.body_raw`. Reading fields via `request.body["key"]` now works directly. (Framework internals graphql/wsdl were repointed.)
