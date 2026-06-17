@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.34 (2026-06-17) — Cross-framework parity release (no functional change in Ruby)
+
+Version alignment with Python/PHP/Node. Ruby's example app, env handling, and AI dual-port dev mode (main port hot-reloads; port+1000 stable) were already correct — verified live this release (main injects the reload script; port+1000 shows the AI-port badge with no reload). No code change. Full suite: 3,119 passing.
+
 ## v3.13.33 (2026-06-17) — Queues: priority pop + automatic dead-lettering (⚠ behavioural change)
 
 **Behavioural change.** `job.fail(reason)` now re-enqueues (incrementing `attempts`) until `attempts >= max_retries`, then dead-letters — a `consume` loop retries `max_retries` times automatically. `pop`/`consume` are now priority-ordered (was FIFO); new additive `retry_backoff:`. Bug fixes: `consume(id:)` no longer raises and `pop_by_id` now works (implements `find_by_id`). Only the file backend changed. Queue chapter rewritten to match. Full suite: 3,119 passing.

@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.34 (2026-06-17) — Scaffolder fix + dual-port reload correction
+
+`npx tina4nodejs init` scaffolded an unresolvable `"tina4-nodejs": "^0.0.1"` dependency and dev/serve scripts that invoked the Rust CLI — fixed to `^3.0.0` and `npx tina4nodejs serve` so a pure-npm project installs and runs. Corrected the AI dual-port dev mode, which was inverted vs Python: the **main port now hot-reloads** (dev toolbar + `/__dev_reload` injected) and **port+1000 is the stable AI port** — previously reversed, so the `tina4` client's reload POST (which targets the base port) never reached the browser. Full suite: 3,858 passing.
+
 ## v3.13.33 (2026-06-17) — Queues: priority pop + auto dead-lettering + TINA4_QUEUE_URL parity (⚠ behavioural change)
 
 **Behavioural change.** `job.fail(reason)` now re-enqueues (incrementing `attempts` exactly once — a double-increment bug is fixed) until `attempts >= maxRetries`, then dead-letters — a `for await` consume loop retries automatically. `pop`/`consume` are now priority-ordered (was FIFO); new additive `retryBackoff`. **Config parity:** the broker backends now read `TINA4_QUEUE_URL` like Python/PHP/Ruby (per-backend `TINA4_RABBITMQ_*`/`KAFKA_*`/`MONGO_*` vars remain as overrides). Only the file backend changed for lifecycle. Queue chapter rewritten to match. Full suite: 3,858 passing.
