@@ -22,7 +22,7 @@ The example store crashed on boot: `app.py` imported `orm_bind`, which was renam
 
 ## v3.13.33 (2026-06-17) — Queues: priority pop + automatic dead-lettering (⚠ behavioural change)
 
-**Behavioural change.** `job.fail()` now **re-enqueues** the job (incrementing `attempts`) until `attempts >= max_retries`, then moves it to the dead-letter store — so a `for job in queue.consume(topic): … job.fail(e)` loop retries `max_retries` times and dead-letters automatically (no manual `retry_failed()`). Previously `fail()` only marked the job failed. Also: `pop`/`consume` now return the **highest-priority** available job first (ties oldest-first) instead of FIFO; new additive `Queue(..., retry_backoff=0)` delays the auto re-enqueue. Only the file/lite backend changed (brokers delegate retry/dead-lettering). The queue chapter was rewritten to match (the documented retry→dead-letter flow is now real). Full suite: 2,933 passing.
+**Behavioural change.** `job.fail()` now **re-enqueues** the job (incrementing `attempts`) until `attempts >= max_retries`, then moves it to the dead-letter store — so a `for job in queue.consume(topic): ... job.fail(e)` loop retries `max_retries` times and dead-letters automatically (no manual `retry_failed()`). Previously `fail()` only marked the job failed. Also: `pop`/`consume` now return the **highest-priority** available job first (ties oldest-first) instead of FIFO; new additive `Queue(..., retry_backoff=0)` delays the auto re-enqueue. Only the file/lite backend changed (brokers delegate retry/dead-lettering). The queue chapter was rewritten to match (the documented retry→dead-letter flow is now real). Full suite: 2,933 passing.
 
 ## v3.13.32 (2026-06-17) — Caching: per-query bypass + X-Cache headers (chapter rewritten to match code)
 
@@ -34,7 +34,7 @@ Corrected the developer guide: `Response.add_header` is an instance method — t
 
 ## v3.13.30 (2026-06-16) — Typed route params now arrive coerced (⚠ behavioural change)
 
-**Behavioural change.** A typed path param now arrives **coerced to its type** instead of as a raw string: `{id:int}` / `{id:integer}` → `int`, `{price:float}` / `{x:number}` → `float`. Every other type (`string`, `alpha`, `alnum`, `slug`, `uuid`, `path`) and an untyped `{id}` stay strings; URL matching is unchanged (`{id:int}` still 404s on non-digits). Previously `{id:int}` matched only digits but still handed the handler the string `"42"` — code that did string operations on a typed param must adjust. This brings Python in line with Ruby (which already coerced) and the documented “auto-converted” behaviour, now matched by PHP and Node too. Also fixed a reversed `check_password` argument-order line in the dev guide. Full suite: 2,914 passing.
+**Behavioural change.** A typed path param now arrives **coerced to its type** instead of as a raw string: `{id:int}` / `{id:integer}` → `int`, `{price:float}` / `{x:number}` → `float`. Every other type (`string`, `alpha`, `alnum`, `slug`, `uuid`, `path`) and an untyped `{id}` stay strings; URL matching is unchanged (`{id:int}` still 404s on non-digits). Previously `{id:int}` matched only digits but still handed the handler the string `"42"` — code that did string operations on a typed param must adjust. This brings Python in line with Ruby (which already coerced) and the documented "auto-converted" behaviour, now matched by PHP and Node too. Also fixed a reversed `check_password` argument-order line in the dev guide. Full suite: 2,914 passing.
 
 ## v3.13.29 (2026-06-16) — Live API search (`api_search`/`api_class`/`api_method`) now finds what you ask for
 
@@ -48,7 +48,7 @@ The bundled AI skills (developer/maintainer/js) now instruct assistants to query
 
 ## v3.13.28 (2026-06-16) — Frond: custom `add_test` now honoured by `is`
 
-**Python only.** A test registered with `Frond.add_test("positive", fn)` was ignored by `{% if x is positive %}` — the `is` evaluator checked a hardcoded built-in table (`even`, `odd`, `defined`, …) and never consulted the instance's custom-test registry, so every custom test silently returned false. It now merges the registered tests (reachable via the bound evaluator) over the built-ins, so custom registrations work and can override built-ins — matching PHP, Ruby, and Node. Built-in tests are unchanged. Surfaced by a cross-engine host-API check (`add_filter`/`add_global`/`add_test`/`form_token`) while building the verified cheatsheet. Full suite: 2,901 passing.
+**Python only.** A test registered with `Frond.add_test("positive", fn)` was ignored by `{% if x is positive %}` — the `is` evaluator checked a hardcoded built-in table (`even`, `odd`, `defined`, ...) and never consulted the instance's custom-test registry, so every custom test silently returned false. It now merges the registered tests (reachable via the bound evaluator) over the built-ins, so custom registrations work and can override built-ins — matching PHP, Ruby, and Node. Built-in tests are unchanged. Surfaced by a cross-engine host-API check (`add_filter`/`add_global`/`add_test`/`form_token`) while building the verified cheatsheet. Full suite: 2,901 passing.
 
 ## v3.13.27 (2026-06-16) — Frond template-engine parity fixes
 
@@ -65,7 +65,7 @@ Behavioural note: these change rendered output for the affected filters — they
 
 **Behavioural default change.** A standalone write — `execute`/`insert`/`update`/`delete` made **outside** an explicit transaction — now **auto-commits on its own connection before returning**. Previously the default was autocommit *off*, which broke connection pooling: a standalone `INSERT` landed uncommitted on one pooled connection, then the next read round-robined to a different connection and saw nothing. Standalone writes are now durable and visible across the pool.
 
-Explicit transactions are unchanged and stay atomic — inside `start_transaction()` … `commit()`/`rollback()` the per-statement commit is suppressed (the commit branches are gated on `not self._in_transaction`), so a `rollback()` still discards everything. The psycopg2 connection still runs with `connection.autocommit = False`, so the framework owns commit boundaries and the v3.13.15 idle-in-transaction read-rollback still applies.
+Explicit transactions are unchanged and stay atomic — inside `start_transaction()` ... `commit()`/`rollback()` the per-statement commit is suppressed (the commit branches are gated on `not self._in_transaction`), so a `rollback()` still discards everything. The psycopg2 connection still runs with `connection.autocommit = False`, so the framework owns commit boundaries and the v3.13.15 idle-in-transaction read-rollback still applies.
 
 Set `TINA4_AUTOCOMMIT=false` in `.env` for strict manual-commit mode (every write needs an explicit `commit()`).
 
@@ -142,13 +142,13 @@ The ORM-to-database binder is now **`bind_database`** across all four frameworks
 bind_database(Database("sqlite:///app.db"))
 
 # Register a NAMED connection and point a model at it:
-bind_database(Database("postgres://…/analytics", "u", "p"), name="analytics")
+bind_database(Database("postgres://.../analytics", "u", "p"), name="analytics")
 
 class Visit(ORM):
     _db = "analytics"        # this model uses the analytics connection
 ```
 
-A model can live on a different database from the default — `bind_database(db, name="…")` registers it and `_db = "…"` selects it. A missing named connection raises a clear error.
+A model can live on a different database from the default — `bind_database(db, name="...")` registers it and `_db = "..."` selects it. A missing named connection raises a clear error.
 
 **Migration:** rename `orm_bind(...)` → `bind_database(...)`. That is the only change; the `name=` argument, per-model `_db`, and `.env` resolution are new or unchanged.
 
@@ -661,7 +661,7 @@ When `TINA4_DEBUG=true`, the rich `ErrorOverlay` page is unchanged.
 
 ### Tests
 
-Each framework added 6–14 regression tests covering: event payload shape, dev/prod symmetry, listener priority ordering, listener-error safety, and CWE-209 (no trace markers in the prod body).
+Each framework added 6-14 regression tests covering: event payload shape, dev/prod symmetry, listener priority ordering, listener-error safety, and CWE-209 (no trace markers in the prod body).
 
 - Python: 2,748 passed, 44 skipped
 - PHP: 2,877 passed
@@ -776,7 +776,7 @@ $frond->addFilter("currency", $fn);
 
 ### `clearRegistry()` for test fixtures
 
-Every framework exposes a class-level method to wipe user-registered filters/globals/tests without touching the built-ins (upper, lower, length, defined, even, …). Useful in test setup/teardown to prevent state leaks between specs.
+Every framework exposes a class-level method to wipe user-registered filters/globals/tests without touching the built-ins (upper, lower, length, defined, even, ...). Useful in test setup/teardown to prevent state leaks between specs.
 
 ```php
 \Tina4\Frond::clearRegistry();
@@ -1237,9 +1237,9 @@ Drop in for both Python and PHP. No `.env` changes, no API changes.
 
 ## v3.12.13 (2026-05-29)
 
-Consolidated parity release. PHP ran ahead through two independent patch releases (3.12.11–3.12.12) while Python / Ruby / Node stayed at 3.12.10. This release realigns all four frameworks on **3.12.13** and ships the cross-framework dev-admin parity sweep — five tiers of work that bring PHP, Ruby and Node up to Python's AI-assisted development surface.
+Consolidated parity release. PHP ran ahead through two independent patch releases (3.12.11-3.12.12) while Python / Ruby / Node stayed at 3.12.10. This release realigns all four frameworks on **3.12.13** and ships the cross-framework dev-admin parity sweep — five tiers of work that bring PHP, Ruby and Node up to Python's AI-assisted development surface.
 
-### Cross-framework dev-admin parity sweep (Tier 1–5)
+### Cross-framework dev-admin parity sweep (Tier 1-5)
 
 The Python framework had pulled ahead on a series of dev-admin features driven by real frustration with the AI coder loop ("Applying a small patch went and messed up my whole file", "Says it is creating files but then doesn't", repeated import-error spirals). This release ports the full set to PHP, Ruby, and Node — same intent, language-idiomatic implementations.
 
@@ -1264,7 +1264,7 @@ The Python framework had pulled ahead on a series of dev-admin features driven b
 
 PHP's larger delta reflects new tests + the 3.12.11 + 3.12.12 lineage rolling forward.
 
-**Why all four frameworks at once.** Per the cross-framework parity rule: a feature that exists in only one framework is technical debt. The Python-only Tier 1–5 surface had been accumulating for two weeks while the UX was settling. With it settled, this release closes the gap in one coordinated sweep.
+**Why all four frameworks at once.** Per the cross-framework parity rule: a feature that exists in only one framework is technical debt. The Python-only Tier 1-5 surface had been accumulating for two weeks while the UX was settling. With it settled, this release closes the gap in one coordinated sweep.
 
 ### Folded-in from PHP 3.12.11 — file upload regression (`tina4-book#139`)
 
@@ -1303,7 +1303,7 @@ Drop in. No `.env` changes, no API changes.
 
 ## v3.12.10 (2026-05-14)
 
-Version-alignment release. PHP ran ahead through three independent patch releases (3.12.7–3.12.9) while Python / Ruby / Node stayed at 3.12.6. This release realigns all four frameworks on **3.12.10** and ships the ORM `save()` fix.
+Version-alignment release. PHP ran ahead through three independent patch releases (3.12.7-3.12.9) while Python / Ruby / Node stayed at 3.12.6. This release realigns all four frameworks on **3.12.10** and ships the ORM `save()` fix.
 
 ### PHP — `ORM->save()` no longer swallows write failures (#114)
 
@@ -1319,7 +1319,7 @@ $this->_db->commit();
 
 **Cross-framework parity check.** Python, Ruby and Node don't have this exact failure mode — they build the write payload from declared fields only (not all public properties), and their DB adapters raise on bad SQL, which the existing `try/except` already catches. PHP was the outlier on both counts. 3 regression tests in `tests/Issue114Test.php`; PHP suite 2235 → 2238 passing.
 
-### Also in the PHP 3.12.7–3.12.9 patch line
+### Also in the PHP 3.12.7-3.12.9 patch line
 
 These shipped to PHP between 3.12.6 and this release; folded into the consolidated 3.12.10 line:
 
@@ -1368,7 +1368,7 @@ PHP-only bug fix release. Python / Ruby / Node ship the same version stamp for p
 
 ### PHP — multipart bodies with file uploads now parse correctly (#135)
 
-Two stacked bugs in `Tina4\Request::__construct` made `$request->body` come through as the raw multipart bytes (~11 KB blobs starting with `------WebKitFormBoundary…`) whenever the request included a file upload:
+Two stacked bugs in `Tina4\Request::__construct` made `$request->body` come through as the raw multipart bytes (~11 KB blobs starting with `------WebKitFormBoundary...`) whenever the request included a file upload:
 
 1. The constructor called `$this->parseBody()` BEFORE initialising `$this->files`. Inside parseBody's multipart branch, the line `$this->files = array_merge($this->files, $parsed['files'])` read an uninitialised typed property — fatal `Error`.
 2. After fixing the init order, that same line tried to mutate the `readonly` `$files` property — another fatal `Error`.
@@ -1403,7 +1403,7 @@ Six new vars give you full control over logging without touching code:
 | `TINA4_LOG_OUTPUT` | `stdout` | `stdout`, `file`, or `both`. Strict — `stdout` means stdout only. |
 | `TINA4_LOG_CRITICAL` | `false` | Enables a `Log.critical()` level above `error`. Off = no-op. |
 | `TINA4_LOG_ROTATE_SIZE` | `10485760` (10 MB) | Rotate when the file exceeds this many bytes. `0` disables rotation. |
-| `TINA4_LOG_ROTATE_KEEP` | `5` | Number of rotated files to retain (`app.log.1` … `app.log.N`). Older ones are deleted. |
+| `TINA4_LOG_ROTATE_KEEP` | `5` | Number of rotated files to retain (`app.log.1` ... `app.log.N`). Older ones are deleted. |
 
 Implementation uses each language's stdlib — Python's `logging.handlers.RotatingFileHandler`, Ruby's `Logger.new(path, shift_age, shift_size)`, and a roll-your-own atomic-rename pattern in PHP and Node. Zero new dependencies in any framework.
 
@@ -1973,7 +1973,7 @@ Massive test parity push across all 4 frameworks. CSRF middleware tests expanded
 
 **Database badge on load** — The Database tab count badge now shows the table count immediately when the dev admin opens, without needing to click the tab first.
 
-**Star wiggle animation** — The GitHub star button on the landing page uses an empty star (☆) with a playful wiggle animation: 3-second delay on page load, then wiggles at random 3–18 second intervals.
+**Star wiggle animation** — The GitHub star button on the landing page uses an empty star (☆) with a playful wiggle animation: 3-second delay on page load, then wiggles at random 3-18 second intervals.
 
 ### Bug Fixes
 

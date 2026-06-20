@@ -230,7 +230,7 @@ This chapter lists every variable the Python framework reads, grouped by subsyst
 
 ## Logging
 
-Logs default to stdout in `text` format. Set `TINA4_LOG_OUTPUT=file` plus `TINA4_LOG_FILE=app.log` to write to disk; the framework rotates at `TINA4_LOG_ROTATE_SIZE` bytes and keeps `TINA4_LOG_ROTATE_KEEP` backups (`app.log.1` … `app.log.N`). Switch `TINA4_LOG_FORMAT=json` for one structured record per line — perfect for shipping to Loki, Datadog, or any JSON-aware log aggregator.
+Logs default to stdout in `text` format. Set `TINA4_LOG_OUTPUT=file` plus `TINA4_LOG_FILE=app.log` to write to disk; the framework rotates at `TINA4_LOG_ROTATE_SIZE` bytes and keeps `TINA4_LOG_ROTATE_KEEP` backups (`app.log.1` ... `app.log.N`). Switch `TINA4_LOG_FORMAT=json` for one structured record per line — perfect for shipping to Loki, Datadog, or any JSON-aware log aggregator.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -241,7 +241,7 @@ Logs default to stdout in `text` format. Set `TINA4_LOG_OUTPUT=file` plus `TINA4
 | `TINA4_LOG_OUTPUT` | `stdout` | Where logs go. Options: `stdout`, `file`, `both`. |
 | `TINA4_LOG_CRITICAL` | `false` | Enables the `Log.critical(...)` level above `error`. When off, calls to `Log.critical()` are silent no-ops. |
 | `TINA4_LOG_ROTATE_SIZE` | `10485760` | Bytes per file before rotation (default 10 MB). `0` disables rotation entirely. |
-| `TINA4_LOG_ROTATE_KEEP` | `5` | Number of rotated files to keep (`app.log.1` … `app.log.N`). Older files are deleted on the next rotation. |
+| `TINA4_LOG_ROTATE_KEEP` | `5` | Number of rotated files to keep (`app.log.1` ... `app.log.N`). Older files are deleted on the next rotation. |
 | `TINA4_LOG_MAX_SIZE` | `10485760` | Legacy alias for `TINA4_LOG_ROTATE_SIZE`. Per-file log size limit in bytes (10 MB). Rotated when exceeded. |
 | `TINA4_LOG_KEEP` | `5` | Legacy alias for `TINA4_LOG_ROTATE_KEEP`. Number of rotated log files to retain. |
 
