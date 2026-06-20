@@ -18,7 +18,7 @@ Core CRUD methods (get/set/delete/has/all/clear/destroy) are consistent. Flash, 
 | MongoDB | YES | YES | YES | YES |
 | Database | YES | YES | YES | YES |
 
-- [ ] **PARITY: OK** — all 5 backends across all 4 frameworks
+- [ ] **PARITY: OK** - all 5 backends across all 4 frameworks
 
 ## Core Methods
 
@@ -39,14 +39,14 @@ Core CRUD methods (get/set/delete/has/all/clear/destroy) are consistent. Flash, 
 
 | # | Issue | Severity | Status |
 |---|-------|----------|--------|
-| 1 | ~~Node.js duplicate `clear()`~~ | HIGH | FIXED — removed first, kept metadata-preserving version |
-| 2 | ~~Flash API differs~~ | MEDIUM | FIXED — all dual-mode flash() + get_flash/getFlash alias |
-| 3 | ~~Ruby `regenerate()` returns nil~~ | MEDIUM | FIXED — returns new session ID |
-| 4 | ~~Node.js `save()` private~~ | MEDIUM | FIXED — made public |
-| 5 | ~~Node `getId()` naming~~ | LOW | FIXED — renamed to `getSessionId()` |
-| 6 | ~~`cookie_header()` only Python/Ruby~~ | LOW | FIXED — added to PHP/Node |
-| 7 | Constructor differs | LOW | BY DESIGN — language idioms |
-| 8 | Persistence model differs | LOW | BY DESIGN — lazy vs auto-save |
+| 1 | ~~Node.js duplicate `clear()`~~ | HIGH | FIXED - removed first, kept metadata-preserving version |
+| 2 | ~~Flash API differs~~ | MEDIUM | FIXED - all dual-mode flash() + get_flash/getFlash alias |
+| 3 | ~~Ruby `regenerate()` returns nil~~ | MEDIUM | FIXED - returns new session ID |
+| 4 | ~~Node.js `save()` private~~ | MEDIUM | FIXED - made public |
+| 5 | ~~Node `getId()` naming~~ | LOW | FIXED - renamed to `getSessionId()` |
+| 6 | ~~`cookie_header()` only Python/Ruby~~ | LOW | FIXED - added to PHP/Node |
+| 7 | Constructor differs | LOW | BY DESIGN - language idioms |
+| 8 | Persistence model differs | LOW | BY DESIGN - lazy vs auto-save |
 
 ## Documentation Gaps
 

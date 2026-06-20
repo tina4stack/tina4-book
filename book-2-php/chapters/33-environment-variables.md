@@ -1,6 +1,6 @@
 # Environment Variables
 
-> **⚠️ BREAKING CHANGE — Tina4 v3.12.0**
+> **⚠️ BREAKING CHANGE - Tina4 v3.12.0**
 >
 > Every framework env var now requires the `TINA4_` prefix. The legacy un-prefixed names (`DATABASE_URL`, `SECRET`, `SMTP_HOST`, `HOST_NAME`, etc.) no longer work. Setting them at startup makes the framework refuse to boot with a list of renames.
 >
@@ -9,7 +9,7 @@
 > **Conventional names stay un-prefixed:** `PORT`, `HOST`, `NODE_ENV`, `RACK_ENV`, `RUBY_ENV`, `ENVIRONMENT`. These are runtime/PaaS conventions, not framework config.
 
 
-Tina4 is configured through environment variables, read from `.env` at the project root. Every variable has a sensible default — most projects set three or four values and leave the rest alone.
+Tina4 is configured through environment variables, read from `.env` at the project root. Every variable has a sensible default; most projects set three or four values and leave the rest alone.
 
 This chapter lists every variable the PHP framework reads, grouped by subsystem. Start with the minimum-config examples at the end, then come back here when you need to tune something specific.
 
@@ -152,7 +152,7 @@ This chapter lists every variable the PHP framework reads, grouped by subsystem.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `TINA4_TEMPLATE_CACHE_TTL` | `0` | Lifetime of compiled Frond templates in production, in seconds. `0` means cache forever (no filesystem checks per render); a positive value re-reads and re-tokenises a template once it has been cached for that long. Ignored when `TINA4_DEBUG=true` — debug mode always re-reads. |
+| `TINA4_TEMPLATE_CACHE_TTL` | `0` | Lifetime of compiled Frond templates in production, in seconds. `0` means cache forever (no filesystem checks per render); a positive value re-reads and re-tokenises a template once it has been cached for that long. Ignored when `TINA4_DEBUG=true`; debug mode always re-reads. |
 
 ---
 
@@ -262,7 +262,7 @@ Logs default to stdout. Set `TINA4_LOG_OUTPUT=file` plus `TINA4_LOG_FILE=app.log
 | `TINA4_LOG_FORMAT` | `text` | Wire format for emitted lines. `text` is human-readable; `json` emits one structured object per line for ingestion by Loki, ELK, etc. |
 | `TINA4_LOG_OUTPUT` | `stdout` | Where lines are sent. `stdout` writes to the process stream (great for systemd / containers), `file` writes only to `TINA4_LOG_FILE`, `both` does both. |
 | `TINA4_LOG_CRITICAL` | `false` | Enable `Log::critical()` emission. Off by default so security-relevant criticals can be intentionally surfaced rather than buried in routine output. |
-| `TINA4_LOG_ROTATE_SIZE` | `10485760` | Rotation threshold in bytes (10 MB default). Set `0` to disable rotation entirely — useful when an external tool (logrotate, Docker driver) owns the file. |
+| `TINA4_LOG_ROTATE_SIZE` | `10485760` | Rotation threshold in bytes (10 MB default). Set `0` to disable rotation entirely, useful when an external tool (logrotate, Docker driver) owns the file. |
 | `TINA4_LOG_ROTATE_KEEP` | `5` | Number of rotated backups to retain. Older files are pruned on rotation. |
 
 ---
@@ -308,7 +308,7 @@ The dashboard AI chat and the framework's RAG-based code search both default to 
 | `TINA4_EMBED_URL` | `http://andrevanzuydam.com:11435` | Embeddings endpoint surfaced by the dev dashboard `/__dev/api/embed` probe. |
 | `TINA4_IMAGE_URL` | `http://andrevanzuydam.com:11436` | Image-generation endpoint (e.g. SDXL Turbo) for the dev dashboard image tools. |
 | `TINA4_SUPERVISOR_URL` | _(framework port + 2000)_ | Override the URL of the Rust agent supervisor that the dev dashboard proxies for `/__dev/api/supervise/*` and `/__dev/api/execute`. Defaults to `http://127.0.0.1:9145` when `TINA4_PORT=7145`. |
-| `TINA4_MCP` | _(inherits `TINA4_DEBUG`)_ | Master switch for the MCP subsystem. When unset, follows `TINA4_DEBUG` — MCP is on in dev and off in prod. Set to `false` to keep MCP disabled while leaving debug mode on, or to `true` to expose MCP from a production server (combine with `TINA4_MCP_REMOTE` if binding off-localhost). |
+| `TINA4_MCP` | _(inherits `TINA4_DEBUG`)_ | Master switch for the MCP subsystem. When unset, follows `TINA4_DEBUG`: MCP is on in dev and off in prod. Set to `false` to keep MCP disabled while leaving debug mode on, or to `true` to expose MCP from a production server (combine with `TINA4_MCP_REMOTE` if binding off-localhost). |
 | `TINA4_MCP_PORT` | _(framework port + 2000)_ | Port the MCP server listens on. Defaults to `TINA4_PORT + 2000` (so `7145` → `9145`). Set explicitly when running multiple Tina4 instances on the same host. |
 | `TINA4_MCP_REMOTE` | `false` | Allow the MCP server to bind on non-localhost interfaces. **Never enable in production.** |
 | `TINA4_NO_AI_PORT` | `false` | Disables the MCP port listener in dev mode. |

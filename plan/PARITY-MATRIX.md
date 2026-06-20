@@ -1,4 +1,4 @@
-# Tina4 — Cross-Framework Parity Matrix
+# Tina4: Cross-Framework Parity Matrix
 
 Last updated: 2026-04-02 | Version: 3.10.55 (pending release)
 
@@ -149,9 +149,9 @@ Last updated: 2026-04-02 | Version: 3.10.55 (pending release)
 
 | Gap | Resolution |
 |-----|-----------|
-| MongoDB driver | Implemented — pymongo, ext-mongodb, mongo gem, mongodb npm |
-| ODBC driver | Implemented — pyodbc, pdo_odbc, ruby-odbc, odbc npm |
-| Route groups (Python) | RouteGroup class added — matches PHP/Ruby/Node |
+| MongoDB driver | Implemented: pymongo, ext-mongodb, mongo gem, mongodb npm |
+| ODBC driver | Implemented: pyodbc, pdo_odbc, ruby-odbc, odbc npm |
+| Route groups (Python) | RouteGroup class added, matches PHP/Ruby/Node |
 | ORM relationships | All 4 have declarative + imperative styles |
 | Frond sandbox mode | Already implemented in all 4 (was false positive) |
 | Frond fragment caching | Already implemented in all 4 (was false positive) |

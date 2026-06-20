@@ -16,10 +16,10 @@ Four levels, in order of increasing severity:
 
 | Level | Method | When to use |
 |-------|--------|-------------|
-| DEBUG | `Tina4::Log.debug` | Detailed trace — request internals, query params, timings |
-| INFO | `Tina4::Log.info` | Normal operations — request received, user logged in |
-| WARNING | `Tina4::Log.warning` | Something unexpected but recoverable — deprecated API called |
-| ERROR | `Tina4::Log.error` | Something broke — use for unrecoverable failures too |
+| DEBUG | `Tina4::Log.debug` | Detailed trace: request internals, query params, timings |
+| INFO | `Tina4::Log.info` | Normal operations: request received, user logged in |
+| WARNING | `Tina4::Log.warning` | Something unexpected but recoverable: deprecated API called |
+| ERROR | `Tina4::Log.error` | Something broke: use for unrecoverable failures too |
 
 ---
 

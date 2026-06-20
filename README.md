@@ -1,8 +1,8 @@
-# Tina4 for Dummies — The Complete Guide
+# Tina4 for Dummies: The Complete Guide
 
 **5 books. 4 languages. 1 framework. Zero dependencies.**
 
-This repository holds the full Tina4 documentation — one book per supported language plus a cross-language introduction and a frontend companion. All chapters are plain Markdown, rendered on [tina4.com](https://tina4.com) via VitePress.
+This repository holds the full Tina4 documentation: one book per supported language plus a cross-language introduction and a frontend companion. All chapters are plain Markdown, rendered on [tina4.com](https://tina4.com) via VitePress.
 
 ---
 
@@ -189,7 +189,7 @@ This repository holds the full Tina4 documentation — one book per supported la
 37. [Upgrading from v2 to v3](book-4-nodejs/chapters/37-upgrading-from-v2.md)
 38. [Complete Feature List](book-4-nodejs/chapters/38-feature-list.md)
 
-### Book 5: tina4-js — The 1.5KB Reactive Frontend Core
+### Book 5: tina4-js - The 1.5KB Reactive Frontend Core
 
 [📥 Download PDF](book-5-javascript/Tina4-Javascript-Developer.pdf)
 

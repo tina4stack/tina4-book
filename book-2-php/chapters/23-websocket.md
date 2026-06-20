@@ -517,7 +517,7 @@ Router::websocket("/ws/notifications/{userId}", function ($connection, $event, $
 });
 ```
 
-Broadcasting happens from inside the `Router::websocket()` handler through the `$connection` object — `$connection->send()` for one client, `$connection->broadcast()` for everyone on the same path, and `$connection->broadcastToRoom()` for a room. Request-response meets real-time.
+Broadcasting happens from inside the `Router::websocket()` handler through the `$connection` object: `$connection->send()` for one client, `$connection->broadcast()` for everyone on the same path, and `$connection->broadcastToRoom()` for a room. Request-response meets real-time.
 
 ---
 

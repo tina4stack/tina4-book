@@ -2,7 +2,7 @@
 
 ## The Name
 
-**TINA4** — **T**he **I**ntelligent **N**ative **A**pplication **4**ramework
+**TINA4**: **T**he **I**ntelligent **N**ative **A**pplication **4**ramework
 
 ## The Tagline
 
@@ -14,16 +14,16 @@
 
 ## The Philosophy
 
-Most frameworks are designed for humans. Tina4 is designed for both — the human developer and the AI assistant working alongside them.
+Most frameworks are designed for humans. Tina4 is designed for both: the human developer and the AI assistant working alongside them.
 
-- **Intelligent** — the framework understands AI. CLAUDE.md ships with every project. AI tools know the conventions, the structure, the API. No guessing.
-- **Native** — zero runtime dependencies. Built from scratch in each language using only the standard library. Not a wrapper. Not a port. Native.
-- **Application** — this builds real production applications. Routing, ORM, auth, queues, WebSocket, email, GraphQL — 44 features, all included.
-- **4ramework** — four languages (Python, PHP, Ruby, Node.js), one API. Learn once, build anywhere. The "4" is both the number and "for" — a framework *for* developers.
+- **Intelligent**: the framework understands AI. CLAUDE.md ships with every project. AI tools know the conventions, the structure, the API. No guessing.
+- **Native**: zero runtime dependencies. Built from scratch in each language using only the standard library. Not a wrapper. Not a port. Native.
+- **Application**: this builds real production applications. Routing, ORM, auth, queues, WebSocket, email, GraphQL, 44 features, all included.
+- **4ramework**: four languages (Python, PHP, Ruby, Node.js), one API. Learn once, build anywhere. The "4" is both the number and "for", a framework *for* developers.
 
 ## The Differentiator
 
-> The framework that gets out of the way — for humans AND for AI.
+> The framework that gets out of the way, for humans AND for AI.
 
 Consistent conventions mean the AI never guesses wrong. Zero dependencies mean the AI never picks the wrong package. Convention over configuration means the AI always knows where things go. One CLAUDE.md file means the AI has complete framework knowledge from the first prompt.
 
@@ -37,7 +37,7 @@ Consistent conventions mean the AI never guesses wrong. Zero dependencies mean t
 
 ### In code banners (CLI, welcome pages, server startup)
 ```
-Tina4 {Language} v{version} — The Intelligent Native Application 4ramework
+Tina4 {Language} v{version} - The Intelligent Native Application 4ramework
 ```
 
 ### In README headers
@@ -47,12 +47,12 @@ Tina4 {Language} v{version} — The Intelligent Native Application 4ramework
 
 ### In package descriptions
 ```
-Tina4 for {Language} — The Intelligent Native Application 4ramework
+Tina4 for {Language} - The Intelligent Native Application 4ramework
 ```
 
 ### In test file headers
 ```
-Tina4 — The Intelligent Native Application 4ramework
+Tina4 - The Intelligent Native Application 4ramework
 ```
 
 ### Never use

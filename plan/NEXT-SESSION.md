@@ -2,7 +2,7 @@
 
 ## Priority 1: Brand Update
 Apply `BRAND-GUIDE.md` across all repos:
-- "TINA4 — The Intelligent Native Application 4ramework"
+- "TINA4: The Intelligent Native Application 4ramework"
 - "Simple. Fast. Human."
 - "Built for AI. Built for you."
 - Replace all "This is not a framework" / "This Is Now A 4Framework"

@@ -2,7 +2,7 @@
 
 > **Generated:** 2026-04-03 | **Version:** v3.10.67
 
-## Status: HIGH PARITY (90%) — Minor property/naming gaps
+## Status: HIGH PARITY (90%): Minor property/naming gaps
 
 ---
 
@@ -21,17 +21,17 @@
 | `cookies` | dict | N/A (use $_COOKIE) | Hash | N/A (parse header) | INCONSISTENT |
 | `content_type` | str (property) | string (property) | String (attr_reader) | via headers | INCONSISTENT |
 
-## Issues — Request
+## Issues: Request
 
 | # | Issue | Severity | Status |
 |---|-------|----------|--------|
-| 1 | Ruby `body` vs `body_parsed` | MEDIUM | BY DESIGN — Rack idiom |
-| 2 | Ruby header keys underscores | MEDIUM | BY DESIGN — Rack normalizes |
-| 3 | Ruby `files` uses tempfile | MEDIUM | BY DESIGN — Rack manages temps |
-| 4 | ~~Node.js `files` is array~~ | MEDIUM | FIXED — dict keyed by fieldName |
-| 5 | ~~Python no `query` property~~ | LOW | FIXED — `query` added separate from `params` |
-| 6 | ~~PHP/Node no `cookies`~~ | LOW | FIXED — parsed from Cookie header |
-| 7 | ~~Node no `contentType`~~ | LOW | FIXED — contentType property added |
+| 1 | Ruby `body` vs `body_parsed` | MEDIUM | BY DESIGN - Rack idiom |
+| 2 | Ruby header keys underscores | MEDIUM | BY DESIGN - Rack normalizes |
+| 3 | Ruby `files` uses tempfile | MEDIUM | BY DESIGN - Rack manages temps |
+| 4 | ~~Node.js `files` is array~~ | MEDIUM | FIXED - dict keyed by fieldName |
+| 5 | ~~Python no `query` property~~ | LOW | FIXED - `query` added separate from `params` |
+| 6 | ~~PHP/Node no `cookies`~~ | LOW | FIXED - parsed from Cookie header |
+| 7 | ~~Node no `contentType`~~ | LOW | FIXED - contentType property added |
 
 ---
 
@@ -52,15 +52,15 @@
 | Callable `response(data)` | YES | YES | YES (call) | YES | OK |
 | `stream(generator)` | YES | YES | YES | YES | OK |
 
-## Issues — Response
+## Issues: Response
 
 | # | Issue | Severity | Status |
 |---|-------|----------|--------|
-| 1 | ~~`xml()` missing in PHP/Node~~ | MEDIUM | FIXED — added to both |
-| 2 | Ruby `status()`/`header()` getter+setter | LOW | BY DESIGN — Ruby idiom |
-| 3 | ~~Ruby missing callable response~~ | LOW | FIXED — `response.call(data, status, content_type)` |
-| 4 | Cookie option naming differs | LOW | BY DESIGN — language conventions |
-| 5 | Node.js `render()` async | MEDIUM | BY DESIGN — Node is async |
+| 1 | ~~`xml()` missing in PHP/Node~~ | MEDIUM | FIXED - added to both |
+| 2 | Ruby `status()`/`header()` getter+setter | LOW | BY DESIGN - Ruby idiom |
+| 3 | ~~Ruby missing callable response~~ | LOW | FIXED - `response.call(data, status, content_type)` |
+| 4 | Cookie option naming differs | LOW | BY DESIGN - language conventions |
+| 5 | Node.js `render()` async | MEDIUM | BY DESIGN - Node is async |
 
 ## Documentation Gaps
 

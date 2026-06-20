@@ -25,11 +25,11 @@ Restructure all 4 books (Python, PHP, Ruby, Node.js) + tina4-documentation from 
 |-------|---------|-------|--------|
 | 11 | Caching | 16 | Renumber |
 | 12 | Queues | 13 | Renumber |
-| 13 | Events | — | **WRITE NEW** |
-| 14 | Localization | — | **WRITE NEW** |
-| 15 | Logging | — | **WRITE NEW** |
+| 13 | Events | - | **WRITE NEW** |
+| 14 | Localization | - | **WRITE NEW** |
+| 15 | Logging | - | **WRITE NEW** |
 | 16 | Email (Messenger) | 15 | Renumber |
-| 17 | Frontend & HtmlElement | 17 | Update — add HtmlElement section |
+| 17 | Frontend & HtmlElement | 17 | Update: add HtmlElement section |
 | 18 | Testing | 19 | Renumber |
 | 19 | Scaffolding | 26 | Renumber |
 
@@ -37,16 +37,16 @@ Restructure all 4 books (Python, PHP, Ruby, Node.js) + tina4-documentation from 
 | New # | Chapter | Old # | Action |
 |-------|---------|-------|--------|
 | 20 | Swagger / OpenAPI | 11 | Renumber |
-| 21 | API Client | — | **WRITE NEW** |
+| 21 | API Client | - | **WRITE NEW** |
 | 22 | GraphQL | 18 | Renumber |
 | 23 | WebSocket | 14 | Renumber |
-| 24 | WSDL / SOAP | — | **WRITE NEW** |
+| 24 | WSDL / SOAP | - | **WRITE NEW** |
 
 ### Advanced (25-28)
 | New # | Chapter | Old # | Action |
 |-------|---------|-------|--------|
-| 25 | DI Container | — | **WRITE NEW** |
-| 26 | Service Runner | — | **WRITE NEW** |
+| 25 | DI Container | - | **WRITE NEW** |
+| 26 | Service Runner | - | **WRITE NEW** |
 | 27 | MCP Dev Tools | 27 | Keep |
 | 28 | Custom MCP Servers | 28 | Keep |
 
@@ -67,13 +67,13 @@ Restructure all 4 books (Python, PHP, Ruby, Node.js) + tina4-documentation from 
 ### Releases (35)
 | New # | Chapter | Old # | Action |
 |-------|---------|-------|--------|
-| 35 | Releases | 30 | Renumber — top-level, not buried |
+| 35 | Releases | 30 | Renumber: top-level, not buried |
 
 ### Appendix (36-37)
 | New # | Chapter | Old # | Action |
 |-------|---------|-------|--------|
 | 36 | Upgrading from v2 | 29 | Renumber (PHP/Python only) |
-| 37 | Feature List (44 features) | — | **WRITE NEW** — the 44-feature list with descriptions |
+| 37 | Feature List (44 features) | - | **WRITE NEW**: the 44-feature list with descriptions |
 
 ---
 
@@ -118,7 +118,7 @@ Old → New filename mapping:
 
 ### Phase 2: Create merged chapter
 
-- **10-middleware-security.md** — merge old 08-middleware.md + 10-security.md into one chapter
+- **10-middleware-security.md**: merge old 08-middleware.md + 10-security.md into one chapter
 
 ### Phase 3: Write 8 new chapters (× 4 languages = 32 files)
 

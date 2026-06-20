@@ -1,6 +1,6 @@
 # Environment Variables
 
-> **⚠️ BREAKING CHANGE — Tina4 v3.12.0**
+> **⚠️ BREAKING CHANGE: Tina4 v3.12.0**
 >
 > Every framework env var now requires the `TINA4_` prefix. The legacy un-prefixed names (`DATABASE_URL`, `SECRET`, `SMTP_HOST`, `HOST_NAME`, etc.) no longer work. Setting them at startup makes the framework refuse to boot with a list of renames.
 >
@@ -9,7 +9,7 @@
 > **Conventional names stay un-prefixed:** `PORT`, `HOST`, `NODE_ENV`, `RACK_ENV`, `RUBY_ENV`, `ENVIRONMENT`. These are runtime/PaaS conventions, not framework config.
 
 
-Tina4 Ruby is configured through environment variables, read from `.env` at the project root. Every variable has a sensible default — most projects set three or four values and leave the rest alone.
+Tina4 Ruby is configured through environment variables, read from `.env` at the project root. Every variable has a sensible default, so most projects set three or four values and leave the rest alone.
 
 This chapter lists every variable the Ruby framework reads, grouped by subsystem. Start with the minimum-config examples at the end, then come back here when you need to tune something specific.
 

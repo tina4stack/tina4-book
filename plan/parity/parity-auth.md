@@ -2,7 +2,7 @@
 
 > **Generated:** 2026-04-03 | **Version:** v3.10.67
 
-## Status: MODERATE PARITY (80%) — Several critical issues
+## Status: MODERATE PARITY (80%): Several critical issues
 
 ---
 
@@ -46,7 +46,7 @@
 | Ruby | `get_payload(token)` | `hash \| nil` |
 | Node.js | `getPayload(token)` | `Record \| null` |
 
-- [ ] **PARITY: OK** — all decode without verification, same signature
+- [ ] **PARITY: OK** - all decode without verification, same signature
 - [ ] **Documented?** All CLAUDE.md: yes
 
 ## Password Hashing
@@ -60,8 +60,8 @@
 | Ruby | **bcrypt** | ~12 cost factor | bcrypt format |
 | Node.js | PBKDF2-SHA256 | 100000 | `pbkdf2_sha256:iterations:salt:hash` |
 
-- [ ] **CRITICAL ISSUE:** Ruby uses **bcrypt**, not PBKDF2 — hashes NOT cross-framework portable
-- [ ] **CRITICAL ISSUE:** Node.js delimiter is `:` not `$` — hashes NOT portable to Python/PHP
+- [ ] **CRITICAL ISSUE:** Ruby uses **bcrypt**, not PBKDF2, so hashes are NOT cross-framework portable
+- [ ] **CRITICAL ISSUE:** Node.js delimiter is `:` not `$`, so hashes are NOT portable to Python/PHP
 - [ ] **PARITY ISSUE:** Python iterations (260000) differ from PHP/Node (100000)
 - [ ] **Documented?** Ruby mentions bcrypt. Others don't flag incompatibility.
 
@@ -123,20 +123,20 @@
 
 | # | Issue | Severity | Status |
 |---|-------|----------|--------|
-| 1 | ~~Ruby uses bcrypt~~ | CRITICAL | FIXED — now PBKDF2-SHA256, hashes portable |
-| 2 | ~~Node.js delimiter `:` not `$`~~ | CRITICAL | FIXED — `$` delimiter, backward compat on read |
-| 3 | ~~expires_in units differ~~ | CRITICAL | FIXED — all use MINUTES (default 60) |
-| 4 | ~~Ruby API key not timing-safe~~ | HIGH | FIXED — uses OpenSSL.fixed_length_secure_compare |
-| 5 | ~~PHP/Node require explicit secret~~ | MEDIUM | FIXED — all read TINA4_SECRET from env with warning |
-| 6 | ~~Iterations differ~~ | MEDIUM | FIXED — all default to 260000 |
-| 7 | Python doesn't support RS256 | MEDIUM | PARKED — install `cryptography` module for RS256 |
-| 8 | ~~PHP/Node missing API key fallback~~ | LOW | FIXED — authenticateRequest falls back to API key |
+| 1 | ~~Ruby uses bcrypt~~ | CRITICAL | FIXED - now PBKDF2-SHA256, hashes portable |
+| 2 | ~~Node.js delimiter `:` not `$`~~ | CRITICAL | FIXED - `$` delimiter, backward compat on read |
+| 3 | ~~expires_in units differ~~ | CRITICAL | FIXED - all use MINUTES (default 60) |
+| 4 | ~~Ruby API key not timing-safe~~ | HIGH | FIXED - uses OpenSSL.fixed_length_secure_compare |
+| 5 | ~~PHP/Node require explicit secret~~ | MEDIUM | FIXED - all read TINA4_SECRET from env with warning |
+| 6 | ~~Iterations differ~~ | MEDIUM | FIXED - all default to 260000 |
+| 7 | Python doesn't support RS256 | MEDIUM | PARKED - install `cryptography` module for RS256 |
+| 8 | ~~PHP/Node missing API key fallback~~ | LOW | FIXED - authenticateRequest falls back to API key |
 
 ## Documentation Gaps
 
 | # | Gap | Status |
 |---|-----|--------|
-| 1 | ~~expires_in units~~ | FIXED — all minutes now |
-| 2 | ~~Cross-framework hash incompatibility~~ | FIXED — all PBKDF2 with `$` delimiter |
+| 1 | ~~expires_in units~~ | FIXED - all minutes now |
+| 2 | ~~Cross-framework hash incompatibility~~ | FIXED - all PBKDF2 with `$` delimiter |
 | 3 | PHP CLAUDE.md missing refreshToken, authenticateRequest, validateApiKey | TODO |
 | 4 | Node.js CLAUDE.md has no Auth method stubs | TODO |

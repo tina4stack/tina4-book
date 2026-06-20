@@ -1,4 +1,4 @@
-# tina4 env — Environment Configuration Tool
+# tina4 env: Environment Configuration Tool
 
 ## What it does
 

@@ -38,7 +38,7 @@ There are five levels, in ascending severity:
 
 | Level | Method | When to Use |
 |-------|--------|-------------|
-| `ALL` | — | All levels (used only as a filter setting) |
+| `ALL` | - | All levels (used only as a filter setting) |
 | `DEBUG` | `Log.debug()` | Verbose diagnostic data; development only |
 | `INFO` | `Log.info()` | Normal operational events |
 | `WARNING` | `Log.warning()` | Unexpected conditions that are not errors |

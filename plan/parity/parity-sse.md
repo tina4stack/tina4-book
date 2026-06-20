@@ -6,7 +6,7 @@
 
 ---
 
-## `response.stream()` — Streaming Response Method
+## `response.stream()`: Streaming Response Method
 
 | # | Feature | Python | PHP | Ruby | Node.js |
 |---|---------|--------|-----|------|---------|
@@ -41,8 +41,8 @@
 |-----------|----------------|-------------------|-------|
 | Python | Yes (asyncio ASGI) | Yes (uvicorn) | Built-in server modified to flush `more_body` chunks immediately |
 | PHP | Yes (built-in) | Yes (Apache/nginx) | Uses `ob_flush()` + `flush()`, `set_time_limit(0)` |
-| Ruby | Yes (WEBrick/Puma) | Yes (Puma) | Returns Rack `Enumerator` body — server iterates and flushes |
-| Node.js | Yes (node:http) | Yes (cluster) | Native `ServerResponse.write()` — chunked by default |
+| Ruby | Yes (WEBrick/Puma) | Yes (Puma) | Returns Rack `Enumerator` body, server iterates and flushes |
+| Node.js | Yes (node:http) | Yes (cluster) | Native `ServerResponse.write()`, chunked by default |
 
 ---
 

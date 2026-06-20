@@ -1,6 +1,6 @@
 # Environment Variables
 
-> **⚠️ BREAKING CHANGE — Tina4 v3.12.0**
+> **⚠️ BREAKING CHANGE - Tina4 v3.12.0**
 >
 > Every framework env var now requires the `TINA4_` prefix. The legacy un-prefixed names (`DATABASE_URL`, `SECRET`, `SMTP_HOST`, `HOST_NAME`, etc.) no longer work. Setting them at startup makes the framework refuse to boot with a list of renames.
 >
@@ -9,7 +9,7 @@
 > **Conventional names stay un-prefixed:** `PORT`, `HOST`, `NODE_ENV`, `RACK_ENV`, `RUBY_ENV`, `ENVIRONMENT`. These are runtime/PaaS conventions, not framework config.
 
 
-Tina4 Python is configured through environment variables, read from `.env` at the project root. Every variable has a sensible default — most projects set three or four values and leave the rest alone.
+Tina4 Python is configured through environment variables, read from `.env` at the project root. Every variable has a sensible default, and most projects set three or four values and leave the rest alone.
 
 This chapter lists every variable the Python framework reads, grouped by subsystem. Start with the minimum-config examples at the end, then come back here when you need to tune something specific.
 
@@ -26,11 +26,11 @@ This chapter lists every variable the Python framework reads, grouped by subsyst
 | `TINA4_HOST_NAME` | `localhost:7146` | Fully-qualified host used in generated absolute URLs (Swagger, OAuth redirects, emails). |
 | `TINA4_DEBUG` | `false` | Master debug toggle. Enables Swagger UI, dev dashboard, live reload, template dump filter, error overlay. Never set to `true` in production. |
 | `TINA4_ENV` | `development` | Runtime environment label. Values like `development`, `staging`, `production` control dev-only features. |
-| `TINA4_ENV_FILE` | `.env` | Alternative `.env` path. Read at boot before any other framework config — point at `.env.staging` or `.env.production` to switch the whole config tree. |
+| `TINA4_ENV_FILE` | `.env` | Alternative `.env` path. Read at boot before any other framework config; point at `.env.staging` or `.env.production` to switch the whole config tree. |
 | `TINA4_SUPPRESS` | `false` | Suppresses the framework startup banner. Useful in CI runs or systemd units where stdout is parsed by another process. |
 | `TINA4_HEALTH_PATH` | `/__health` | URL for the built-in liveness/readiness endpoint. The legacy `/health` path is kept as an alias. |
 | `TINA4_NO_BROWSER` | `false` | Stops `tina4 serve` from opening your browser on every restart. Recommended during active development. |
-| `TINA4_OPEN_BROWSER` | `true` | Alternative flag — set to `false` to prevent the browser opening on start. |
+| `TINA4_OPEN_BROWSER` | `true` | Alternative flag, set to `false` to prevent the browser opening on start. |
 | `TINA4_NO_RELOAD` | `false` | Disables the dev hot-reload signal from the Rust CLI. Use when you want a stable server for debugging. |
 | `TINA4_DEV_POLL_INTERVAL` | `1.0` | Seconds between dev-mode mtime polls. Lower for faster reload, higher to reduce CPU. |
 | `TINA4_PUBLIC_DIR` | `src/public` | Directory served as static files under `/`. |
@@ -141,7 +141,7 @@ This chapter lists every variable the Python framework reads, grouped by subsyst
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `TINA4_TEMPLATE_CACHE_TTL` | `0` | Frond template compile-cache TTL in seconds. `0` keeps compiled templates in memory permanently — set to a positive value if you want the engine to recompile after N seconds (rarely needed; `tina4 serve` invalidates the cache automatically on file change). |
+| `TINA4_TEMPLATE_CACHE_TTL` | `0` | Frond template compile-cache TTL in seconds. `0` keeps compiled templates in memory permanently; set to a positive value if you want the engine to recompile after N seconds (rarely needed; `tina4 serve` invalidates the cache automatically on file change). |
 
 ---
 
@@ -230,12 +230,12 @@ This chapter lists every variable the Python framework reads, grouped by subsyst
 
 ## Logging
 
-Logs default to stdout in `text` format. Set `TINA4_LOG_OUTPUT=file` plus `TINA4_LOG_FILE=app.log` to write to disk; the framework rotates at `TINA4_LOG_ROTATE_SIZE` bytes and keeps `TINA4_LOG_ROTATE_KEEP` backups (`app.log.1` ... `app.log.N`). Switch `TINA4_LOG_FORMAT=json` for one structured record per line — perfect for shipping to Loki, Datadog, or any JSON-aware log aggregator.
+Logs default to stdout in `text` format. Set `TINA4_LOG_OUTPUT=file` plus `TINA4_LOG_FILE=app.log` to write to disk; the framework rotates at `TINA4_LOG_ROTATE_SIZE` bytes and keeps `TINA4_LOG_ROTATE_KEEP` backups (`app.log.1` ... `app.log.N`). Switch `TINA4_LOG_FORMAT=json` for one structured record per line, perfect for shipping to Loki, Datadog, or any JSON-aware log aggregator.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `TINA4_LOG_LEVEL` | `ERROR` | Minimum log level written to files. Options: `ALL`, `DEBUG`, `INFO`, `WARNING`, `ERROR`. |
-| `TINA4_LOG_FILE` | _(empty — stdout only)_ | Path to a log file. Empty leaves logs on stdout. Relative paths are resolved against `TINA4_LOG_DIR`; absolute paths are used verbatim. |
+| `TINA4_LOG_FILE` | _(empty - stdout only)_ | Path to a log file. Empty leaves logs on stdout. Relative paths are resolved against `TINA4_LOG_DIR`; absolute paths are used verbatim. |
 | `TINA4_LOG_DIR` | `logs` | Directory for log files. Joined with `TINA4_LOG_FILE` when the latter is a relative path. |
 | `TINA4_LOG_FORMAT` | `text` | Output format. `text` writes the human-readable `[INFO   ] message` form; `json` writes one structured JSON record per line. |
 | `TINA4_LOG_OUTPUT` | `stdout` | Where logs go. Options: `stdout`, `file`, `both`. |

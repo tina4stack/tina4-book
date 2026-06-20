@@ -1,4 +1,4 @@
-# Tina4 v3 — Developer-Facing API Parity Audit
+# Tina4 v3: Developer-Facing API Parity Audit
 
 > **Generated:** 2026-04-03 | **Version:** v3.10.67
 > **Scope:** Every developer-facing method, compared across Python, PHP, Ruby, Node.js
@@ -8,7 +8,7 @@
 
 ## 1. ORM (Model)
 
-### 1.1 Instance Methods — CRUD
+### 1.1 Instance Methods: CRUD
 
 #### `save()`
 | Framework | Return | Notes |
@@ -41,7 +41,7 @@
 | Ruby | `bool` |
 | Node.js | `void` |
 
-- **PARITY ISSUE:** Same as delete() — void vs bool
+- **PARITY ISSUE:** Same as delete(), void vs bool
 - **Documented?** All 4 CLAUDE.md: yes
 
 #### `restore()`
@@ -77,7 +77,7 @@
 - **PARITY: OK** -- all return list of error strings, empty = valid
 - **Documented?** All 4 CLAUDE.md: yes
 
-### 1.2 Instance Methods — Serialization
+### 1.2 Instance Methods: Serialization
 
 #### `to_dict()` / `toDict()` / `to_h()`
 | Framework | Primary Name | `include` param? |
@@ -107,7 +107,7 @@
 - **PARITY ISSUE:** PHP's `toArray()` returns a dict (it's the primary dict method), while Python/Ruby/Node's `toArray()` returns a flat list of values. **Different semantics for the same name.**
 - **Documented?** All CLAUDE.md: yes
 
-### 1.3 Instance Methods — Relationships (Imperative)
+### 1.3 Instance Methods: Relationships (Imperative)
 
 #### `has_one()` / `hasOne()` / `query_has_one()`
 | Framework | Name | Params |
@@ -135,7 +135,7 @@
 - **PARITY: OK** (Ruby naming aside)
 - **Documented?** All CLAUDE.md: yes
 
-#### Auto-wired Foreign Keys — `ForeignKeyField` / `$foreignKeys` / `foreign_key_field` / `type: "foreignKey"`
+#### Auto-wired Foreign Keys: `ForeignKeyField` / `$foreignKeys` / `foreign_key_field` / `type: "foreignKey"`
 
 A single foreign key declaration automatically wires both `belongs_to` (on the declaring model) and `has_many` (on the referenced model). The declaring-side association name is the column name with `_id` stripped; the has-many-side name defaults to the declaring class name lowercased + `s`, overridable.
 
@@ -146,10 +146,10 @@ A single foreign key declaration automatically wires both `belongs_to` (on the d
 | Ruby | `foreign_key_field :user_id, references: User` | `post.user` + `user.posts` |
 | Node.js | `user_id: { type: "foreignKey", references: "User" }` | `post.belongsTo(User)` + `user.hasMany(Post)` |
 
-- **PARITY: OK** — all four frameworks implement FK auto-wiring with equivalent semantics
+- **PARITY: OK** - all four frameworks implement FK auto-wiring with equivalent semantics
 - **Documented?** Book Ch06 (ORM Relationships): yes in all four frameworks
 
-### 1.4 Class/Static Methods — Finders
+### 1.4 Class/Static Methods: Finders
 
 #### `find(pk_value, include?)` / `findById()`
 | Framework | Type | Params | Return |
@@ -179,7 +179,7 @@ A single foreign key declaration automatically wires both `belongs_to` (on the d
 - **PARITY: OK** -- all are class/static methods, accept dict/hash, return saved instance
 - **Documented?** All CLAUDE.md: yes
 
-### 1.5 Class/Static Methods — Queries
+### 1.5 Class/Static Methods: Queries
 
 #### `all()`
 | Framework | Type | Params | Return |
@@ -229,7 +229,7 @@ A single foreign key declaration automatically wires both `belongs_to` (on the d
 
 - **PARITY ISSUES:**
   1. PHP is instance method
-  2. Node.js doesn't have a separate `where()` — uses `findAll` with where param
+  2. Node.js doesn't have a separate `where()`, it uses `findAll` with where param
   3. Ruby missing limit/offset
   4. Python returns tuple, others return array
 - **Documented?** Python/PHP/Ruby CLAUDE.md: yes. Node.js: no separate `where()` documented.
@@ -284,29 +284,29 @@ A single foreign key declaration automatically wires both `belongs_to` (on the d
 
 ---
 
-## PARITY ISSUES SUMMARY — ORM
+## PARITY ISSUES SUMMARY: ORM
 
 ### Critical (behavior differences)
 
 | # | Issue | Frameworks Affected | Status |
 |---|-------|-------------------|--------|
-| 1 | ~~PHP query methods are instance methods~~ | PHP | **BY DESIGN** — `User().where()` is same pattern in Python. Instance carries DB context. |
-| 2 | ~~`all()` return types differ~~ | All | FIXED — all return array of ORM objects |
-| 3 | ~~`select()` return types differ~~ | All | FIXED — all return array of ORM objects |
-| 4 | ~~`scope()` semantics differ~~ | All | FIXED — all register a reusable named method via scope() |
-| 5 | ~~PHP `count()` has no params~~ | PHP | FIXED — `count($conditions, $params)` added |
-| 6 | ~~Node.js has no `where()` method~~ | Node.js | FIXED — `where()` added, `findAll` renamed to `all()` |
-| 7 | ~~`save()` return type differs~~ | All | FIXED — all return self/this on success, false/null on failure (fluent) |
+| 1 | ~~PHP query methods are instance methods~~ | PHP | **BY DESIGN** - `User().where()` is same pattern in Python. Instance carries DB context. |
+| 2 | ~~`all()` return types differ~~ | All | FIXED - all return array of ORM objects |
+| 3 | ~~`select()` return types differ~~ | All | FIXED - all return array of ORM objects |
+| 4 | ~~`scope()` semantics differ~~ | All | FIXED - all register a reusable named method via scope() |
+| 5 | ~~PHP `count()` has no params~~ | PHP | FIXED - `count($conditions, $params)` added |
+| 6 | ~~Node.js has no `where()` method~~ | Node.js | FIXED - `where()` added, `findAll` renamed to `all()` |
+| 7 | ~~`save()` return type differs~~ | All | FIXED - all return self/this on success, false/null on failure (fluent) |
 
-### Moderate (naming/param differences) — ALL FIXED 2026-04-03
+### Moderate (naming/param differences): ALL FIXED 2026-04-03
 
 | # | Issue | Status |
 |---|-------|--------|
-| 8 | ~~Node.js `withTrashed` uses `skip` not `offset`~~ | FIXED — renamed to `offset` |
-| 9 | ~~PHP `toArray()` is dict~~ | FIXED — `toDict()` is primary, `toArray()` returns values, `toAssoc()` added as alias everywhere |
-| 10 | ~~`toJson()` include param missing in PHP/Node~~ | FIXED — added `include` param |
-| 11 | ~~Ruby relationship methods named `query_*`~~ | FIXED — `imperative_has_one/many/belongs_to` aliases added |
-| 12 | ~~Node.js `hasMany()` missing limit/offset~~ | FIXED — added `limit=100, offset=0` params |
+| 8 | ~~Node.js `withTrashed` uses `skip` not `offset`~~ | FIXED - renamed to `offset` |
+| 9 | ~~PHP `toArray()` is dict~~ | FIXED - `toDict()` is primary, `toArray()` returns values, `toAssoc()` added as alias everywhere |
+| 10 | ~~`toJson()` include param missing in PHP/Node~~ | FIXED - added `include` param |
+| 11 | ~~Ruby relationship methods named `query_*`~~ | FIXED - `imperative_has_one/many/belongs_to` aliases added |
+| 12 | ~~Node.js `hasMany()` missing limit/offset~~ | FIXED - added `limit=100, offset=0` params |
 
 ### Documentation gaps
 

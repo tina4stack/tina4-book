@@ -1,4 +1,4 @@
-# Tina4 API Parity Audit — 2026-04-08
+# Tina4 API Parity Audit: 2026-04-08
 
 > **Generated:** 2026-04-08 | **Version:** v3.10.82 | **Scope:** All developer-facing methods across Python, PHP, Ruby, Node.js
 
@@ -135,8 +135,8 @@ Tina4 maintains **94.1% API parity** across all 4 frameworks. All core features 
 | `destroy()` | ✅ | ✅ | ✅ | ✅ | |
 | `regenerate()` | ✅ | ✅ | ✅ | ✅ | |
 | `save()` | ✅ | ⚠️ Implicit | ✅ | ✅ | |
-| `flash()` | ✅ | ❌ **MISSING** | ✅ | ✅ | **Gap — add to PHP** |
-| `get_flash()` | ✅ | ❌ **MISSING** | ✅ | ✅ | **Gap — add to PHP** |
+| `flash()` | ✅ | ❌ **MISSING** | ✅ | ✅ | **Gap - add to PHP** |
+| `get_flash()` | ✅ | ❌ **MISSING** | ✅ | ✅ | **Gap - add to PHP** |
 | `cookie_header()` | ✅ | ✅ | ✅ | ✅ | |
 | `gc()` | ✅ | ✅ | ✅ | ✅ | |
 | File backend | ✅ | ✅ | ✅ | ✅ | |
@@ -189,7 +189,7 @@ Tina4 maintains **94.1% API parity** across all 4 frameworks. All core features 
 
 ---
 
-## WebSocket Subsystem (86.8%) — Weakest
+## WebSocket Subsystem (86.8%): Weakest
 
 | Feature | Python | PHP | Ruby | Node.js | Notes |
 |---------|--------|-----|------|---------|-------|
@@ -254,12 +254,12 @@ Tina4 maintains **94.1% API parity** across all 4 frameworks. All core features 
 
 ## By-Design Differences (Acceptable)
 
-1. **ORM PK lookup naming** — PHP uses `findById()`; others use `find_by_id()`. Both work; PHP name predates parity effort.
-2. **Router auth defaults** — Python/Node: GET public, writes require auth; PHP/Ruby: stricter (all protected by default).
-3. **File upload encoding** — Python raw bytes; PHP raw binary; Ruby Rack tempfile; Node Buffer. Language/framework convention.
-4. **Response API style** — Python/Ruby: callable function; PHP/Node: object methods. Language idiom.
-5. **Ruby soft_delete_field** — Configurable column name vs hardcoded `deleted_at` in others. Ruby is more flexible.
-6. **Ruby i18n uses YAML** — Others use JSON. By design.
+1. **ORM PK lookup naming**: PHP uses `findById()`; others use `find_by_id()`. Both work; PHP name predates parity effort.
+2. **Router auth defaults**: Python/Node: GET public, writes require auth; PHP/Ruby: stricter (all protected by default).
+3. **File upload encoding**: Python raw bytes; PHP raw binary; Ruby Rack tempfile; Node Buffer. Language/framework convention.
+4. **Response API style**: Python/Ruby: callable function; PHP/Node: object methods. Language idiom.
+5. **Ruby soft_delete_field**: Configurable column name vs hardcoded `deleted_at` in others. Ruby is more flexible.
+6. **Ruby i18n uses YAML**: Others use JSON. By design.
 
 ---
 

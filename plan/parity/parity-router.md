@@ -17,7 +17,7 @@ Route registration, parameter syntax, auth defaults, middleware, grouping, and W
 | Ruby | Class `Router.get(path, &block)` | path + middleware: [] + &block | `Route` |
 | Node.js | Instance `router.get(path, handler, middlewares?, meta?)` or top-level `get()` | path + handler + optional arrays | `RouteRef` |
 
-- [ ] **PARITY: OK** — all support GET/POST/PUT/PATCH/DELETE/ANY + WebSocket
+- [ ] **PARITY: OK** - all support GET/POST/PUT/PATCH/DELETE/ANY + WebSocket
 - [ ] **Documented?** All CLAUDE.md: yes
 
 ## Route Parameter Syntax
@@ -31,12 +31,12 @@ Route registration, parameter syntax, auth defaults, middleware, grouping, and W
 | `:id` (Express) | NO | NO | NO | YES (compat) |
 | `[id]` (file-based) | NO | NO | NO | YES (compat) |
 
-- [ ] **PARITY: OK** — all use `{param}` as primary syntax
+- [ ] **PARITY: OK** - all use `{param}` as primary syntax
 - [ ] **Documented?** CLAUDE.md: yes. Skill: yes (just added). Book Ch5: yes.
 
 ## Auth Defaults
 
-- [ ] **PARITY: OK** — GET=public, POST/PUT/PATCH/DELETE=secured across all 4
+- [ ] **PARITY: OK** - GET=public, POST/PUT/PATCH/DELETE=secured across all 4
 
 ## Middleware
 
@@ -47,7 +47,7 @@ Route registration, parameter syntax, auth defaults, middleware, grouping, and W
 | Ruby | `middleware: []` kwarg | `Router.group(prefix, middleware: [], &block)` | `Router.use(class)` |
 | Node.js | `middlewares?` param | `router.group(prefix, cb, middlewares?)` | `Router.use(class)` |
 
-- [ ] **PARITY: OK** — all support route, group, and global middleware
+- [ ] **PARITY: OK** - all support route, group, and global middleware
 - [ ] **Documented?** All CLAUDE.md: yes
 
 ## Route Grouping
@@ -59,7 +59,7 @@ Route registration, parameter syntax, auth defaults, middleware, grouping, and W
 | Ruby | `Router.group(prefix, middleware: [], &block)` | `GroupContext` instance |
 | Node.js | `router.group(prefix, callback, middlewares?)` | `RouteGroup` instance |
 
-- [ ] **PARITY: OK** — all support nested groups with prefix + middleware inheritance
+- [ ] **PARITY: OK** - all support nested groups with prefix + middleware inheritance
 - [ ] **Documented?** All CLAUDE.md: yes
 
 ## Chaining (secure/noAuth/cache)
@@ -70,7 +70,7 @@ Route registration, parameter syntax, auth defaults, middleware, grouping, and W
 | Make public | `@noauth()` / `.noAuth()` | `.noAuth()` | `.no_auth()` | `.noAuth()` |
 | Cache response | `@cached()` / `.cache()` | `.cache()` | `.cache()` | `.cache()` |
 
-- [ ] **PARITY: OK** — naming follows language conventions (snake_case vs camelCase)
+- [ ] **PARITY: OK** - naming follows language conventions (snake_case vs camelCase)
 - [ ] **Documented?** All CLAUDE.md: yes
 
 ## Route Matching
@@ -82,12 +82,12 @@ Route registration, parameter syntax, auth defaults, middleware, grouping, and W
 | Ruby | `Router.match(method, path)` class | `[route, params]` or `nil` |
 | Node.js | `router.match(method, pathname)` instance | `MatchResult` or `null` |
 
-- [x] **FIXED:** Ruby now uses `match(method, path)` — consistent with all frameworks
+- [x] **FIXED:** Ruby now uses `match(method, path)`, consistent with all frameworks
 - [ ] **Documented?** Internal API, not developer-facing
 
 ## Handler Signature
 
-- [ ] **PARITY: OK** — all use `handler(request, response)` with same request/response properties
+- [ ] **PARITY: OK** - all use `handler(request, response)` with same request/response properties
 
 ## File-Based Route Discovery
 

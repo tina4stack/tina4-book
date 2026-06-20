@@ -1,4 +1,4 @@
-# Tina4 Dev Admin — Unified SPA Build Plan
+# Tina4 Dev Admin: Unified SPA Build Plan
 
 > **Created:** 2026-04-05 | **Repo:** tina4stack/tina4-dev-admin
 > **Stack:** tina4-js + Vite | **Output:** single `tina4-dev-admin.js` bundle
@@ -10,72 +10,72 @@
 
 - [ ] Init tina4-js + Vite project in `tina4-dev-admin/`
 - [ ] Configure Vite for single-file IIFE bundle output
-- [ ] Set up theme system — CSS variables from `data-framework` attribute
+- [ ] Set up theme system: CSS variables from `data-framework` attribute
 - [ ] Framework colors: Python #3b82f6, PHP #8b5cf6, Ruby #ef4444, Node #22c55e
-- [ ] Create `api.ts` — fetch wrapper for `/__dev/api/*` endpoints
-- [ ] Create `app.ts` — entry point, tab router, theme init
+- [ ] Create `api.ts`: fetch wrapper for `/__dev/api/*` endpoints
+- [ ] Create `app.ts`: entry point, tab router, theme init
 - [ ] Create minimal HTML test shell for local development
 
 ## Phase 2: Core UI Components
 
-- [ ] `TabBar` — tab navigation with active state, badge counts
-- [ ] `DataTable` — reusable sortable table component
-- [ ] `Badge` — status badges (pending/completed/failed/reserved/auth/open)
-- [ ] `Modal` — reusable modal dialog
-- [ ] `CodeBlock` — syntax-highlighted code display
-- [ ] `FilterBar` — filter buttons with active state
-- [ ] `MetricCard` — system info card (label + value)
-- [ ] `EmptyState` — "No data" placeholder
+- [ ] `TabBar`: tab navigation with active state, badge counts
+- [ ] `DataTable`: reusable sortable table component
+- [ ] `Badge`: status badges (pending/completed/failed/reserved/auth/open)
+- [ ] `Modal`: reusable modal dialog
+- [ ] `CodeBlock`: syntax-highlighted code display
+- [ ] `FilterBar`: filter buttons with active state
+- [ ] `MetricCard`: system info card (label + value)
+- [ ] `EmptyState`: "No data" placeholder
 
 ## Phase 3: Tab Components (14 tabs)
 
-### Group A — Data Display (simple tables)
+### Group A: Data Display (simple tables)
 
-- [ ] **Routes** — table of method, path, auth, handler. Badge colors per HTTP method. Link to open route.
+- [ ] **Routes**: table of method, path, auth, handler. Badge colors per HTTP method. Link to open route.
   - API: `GET /__dev/api/routes`
 
-- [ ] **Requests** — HTTP request log with method, path, status, duration, size. Clear button.
+- [ ] **Requests**: HTTP request log with method, path, status, duration, size. Clear button.
   - API: `GET /__dev/api/requests`, `POST /__dev/api/requests/clear`
 
-- [ ] **Messages** — application log with level badges, search, category filter.
+- [ ] **Messages**: application log with level badges, search, category filter.
   - API: `GET /__dev/api/messages`, `GET /__dev/api/messages/search`, `POST /__dev/api/messages/clear`
 
-- [ ] **WebSockets** — active connections table with ID, path, IP, connected time. Disconnect button.
+- [ ] **WebSockets**: active connections table with ID, path, IP, connected time. Disconnect button.
   - API: `GET /__dev/api/websockets`, `POST /__dev/api/websockets/disconnect`
 
-### Group B — Interactive Panels
+### Group B: Interactive Panels
 
-- [ ] **Queue** — jobs table with status filter (pending/completed/failed/reserved). Replay, retry, purge actions. Stats bar.
+- [ ] **Queue**: jobs table with status filter (pending/completed/failed/reserved). Replay, retry, purge actions. Stats bar.
   - API: `GET /__dev/api/queue`, `POST /__dev/api/queue/retry`, `POST /__dev/api/queue/purge`, `POST /__dev/api/queue/replay`
 
-- [ ] **Mailbox** — inbox/sent toggle. Message list with read modal. Seed and clear buttons.
+- [ ] **Mailbox**: inbox/sent toggle. Message list with read modal. Seed and clear buttons.
   - API: `GET /__dev/api/mailbox`, `GET /__dev/api/mailbox/read`, `POST /__dev/api/mailbox/seed`, `POST /__dev/api/mailbox/clear`
 
-- [ ] **Errors** — exception list with traceback. Resolve/clear actions. "Ask Tina4" button opens chat with error context.
+- [ ] **Errors**: exception list with traceback. Resolve/clear actions. "Ask Tina4" button opens chat with error context.
   - API: `GET /__dev/api/broken`, `POST /__dev/api/broken/resolve`, `POST /__dev/api/broken/clear`
 
-### Group C — Database & Tools
+### Group C: Database & Tools
 
-- [ ] **Database** — SQL query editor (textarea + Ctrl+Enter). Results table. Table browser sidebar. Paste data modal. Seed with fake data.
+- [ ] **Database**: SQL query editor (textarea + Ctrl+Enter). Results table. Table browser sidebar. Paste data modal. Seed with fake data.
   - API: `POST /__dev/api/query`, `GET /__dev/api/tables`, `GET /__dev/api/table`, `POST /__dev/api/seed`
 
-- [ ] **Connections** — database connection builder. Driver selector (SQLite/Postgres/MySQL/MSSQL/Firebird/MongoDB/ODBC). Dynamic form fields per driver. Test + save to .env.
+- [ ] **Connections**: database connection builder. Driver selector (SQLite/Postgres/MySQL/MSSQL/Firebird/MongoDB/ODBC). Dynamic form fields per driver. Test + save to .env.
   - API: `GET /__dev/api/connections`, `POST /__dev/api/connections/test`, `POST /__dev/api/connections/save`
 
-- [ ] **Tools** — tool runner buttons: Carbon benchmark, test suite, route analyzer, migrations, seeders, AI detection. Output display.
+- [ ] **Tools**: tool runner buttons: Carbon benchmark, test suite, route analyzer, migrations, seeders, AI detection. Output display.
   - API: `POST /__dev/api/tool`
 
-### Group D — Visualization
+### Group D: Visualization
 
-- [ ] **Metrics** — quick stats grid (files, LOC, classes, functions, routes, templates). Bubble chart (SVG) — circle size = LOC, color = complexity. Click drill-down for per-file detail.
+- [ ] **Metrics**: quick stats grid (files, LOC, classes, functions, routes, templates). Bubble chart (SVG), circle size = LOC, color = complexity. Click drill-down for per-file detail.
   - API: `GET /__dev/api/metrics`, `GET /__dev/api/metrics/full`, `GET /__dev/api/metrics/file`
 
-- [ ] **System** — metric cards: uptime, memory, framework version, Python/PHP/Ruby/Node version, DB status, platform, CPU. Live timestamp.
+- [ ] **System**: metric cards: uptime, memory, framework version, Python/PHP/Ruby/Node version, DB status, platform, CPU. Live timestamp.
   - API: `GET /__dev/api/system`
 
-### Group E — AI Chat
+### Group E: AI Chat
 
-- [ ] **Chat (Code With Me)** — message history, input field, provider config (TINA4_AI_URL). MCP tool execution. File change badges. Undo button. Offline fallback.
+- [ ] **Chat (Code With Me)**: message history, input field, provider config (TINA4_AI_URL). MCP tool execution. File change badges. Undo button. Offline fallback.
   - API: `POST /__dev/api/chat`, `POST /__dev/api/chat/undo`
 
 ## Phase 4: Chat / Code With Me Enhancement
@@ -85,11 +85,11 @@
 - [ ] Backward compat with `ANTHROPIC_API_KEY` / `OPENAI_API_KEY`
 - [ ] System prompt with project context (routes, tables, templates, models)
 - [ ] MCP tool definitions sent as LLM tools (file_read, file_write, file_list, database_query, etc.)
-- [ ] Tool execution loop — handle tool_use responses, execute via MCP functions, send results back
+- [ ] Tool execution loop: handle tool_use responses, execute via MCP functions, send results back
 - [ ] Auto-write files immediately (vibe coding), hot-reload picks up changes
-- [ ] Undo support — snapshot files before writing, revert on undo
+- [ ] Undo support: snapshot files before writing, revert on undo
 - [ ] File change badges in chat (show which files were created/modified)
-- [ ] Offline fallback — regex-based answers when no API key set
+- [ ] Offline fallback: regex-based answers when no API key set
 
 ## Phase 5: Toolbar
 

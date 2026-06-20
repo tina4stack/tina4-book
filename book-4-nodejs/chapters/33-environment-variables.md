@@ -1,6 +1,6 @@
 # Environment Variables
 
-> **⚠️ BREAKING CHANGE — Tina4 v3.12.0**
+> **⚠️ BREAKING CHANGE: Tina4 v3.12.0**
 >
 > Every framework env var now requires the `TINA4_` prefix. The legacy un-prefixed names (`DATABASE_URL`, `SECRET`, `SMTP_HOST`, `HOST_NAME`, etc.) no longer work. Setting them at startup makes the framework refuse to boot with a list of renames.
 >
@@ -9,7 +9,7 @@
 > **Conventional names stay un-prefixed:** `PORT`, `HOST`, `NODE_ENV`, `RACK_ENV`, `RUBY_ENV`, `ENVIRONMENT`. These are runtime/PaaS conventions, not framework config.
 
 
-Tina4 Node.js is configured through environment variables, read from `.env` at the project root. Every variable has a sensible default — most projects set three or four values and leave the rest alone.
+Tina4 Node.js is configured through environment variables, read from `.env` at the project root. Every variable has a sensible default; most projects set three or four values and leave the rest alone.
 
 This chapter lists every variable the Node.js framework reads, grouped by subsystem. Start with the minimum-config examples at the end, then come back here when you need to tune something specific.
 
@@ -31,7 +31,7 @@ This chapter lists every variable the Node.js framework reads, grouped by subsys
 | `TINA4_NO_BROWSER` | `false` | Stops `tina4 serve` from opening your browser on every restart. |
 | `TINA4_NO_RELOAD` | `false` | Disables the dev hot-reload signal from the Rust CLI. Use when you want a stable server for debugging. |
 | `TINA4_PRODUCTION` | `false` | Forces production-mode startup (cluster mode, debug overlays disabled). Set automatically by `tina4 serve --production`. |
-| `TINA4_ALLOW_LEGACY_ENV` | `false` | Bypass the v3.12 env-prefix guard. CI / migration scripts only — never enable in production. |
+| `TINA4_ALLOW_LEGACY_ENV` | `false` | Bypass the v3.12 env-prefix guard. CI / migration scripts only, never enable in production. |
 
 ---
 

@@ -573,7 +573,7 @@ await db.insert("products", {
     in_stock: 1
 });
 
-// Insert multiple rows — call insert() once per row
+// Insert multiple rows - call insert() once per row
 await db.insert("products", { name: "USB Cable", price: 9.99, in_stock: 1 });
 await db.insert("products", { name: "HDMI Cable", price: 14.99, in_stock: 1 });
 ```
@@ -706,7 +706,7 @@ TINA4_DB_CACHE=true
 Identical queries with identical parameters return cached results. The cache invalidates itself when you call `execute()`, `insert()`, `update()`, or `delete()` on the same table.
 
 ```typescript
-// fetch() takes (sql, params?, limit?, offset?) — there is no per-call cache bypass.
+// fetch() takes (sql, params?, limit?, offset?) - there is no per-call cache bypass.
 const products = await db.fetch("SELECT * FROM products", [], 10, 0);
 
 // Clear the entire cache

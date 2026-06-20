@@ -1,6 +1,6 @@
-# Plan Folder — Tools
+# Plan Folder: Tools
 
-## `extract_api.py` — API Reference Extractor
+## `extract_api.py`: API Reference Extractor
 
 Parses all 4 Tina4 framework codebases and generates a single comparative
 `API-REFERENCE.md` listing every public class and its public methods, grouped
@@ -52,7 +52,7 @@ Files are classified into areas by filename keyword matching:
 
 ### Output
 
-`API-REFERENCE.md` — one table per class per framework, grouped by feature area.
+`API-REFERENCE.md` - one table per class per framework, grouped by feature area.
 Useful for spotting parity gaps: if a feature area shows entries for 3 frameworks
 but not the 4th, that framework is missing the feature.
 

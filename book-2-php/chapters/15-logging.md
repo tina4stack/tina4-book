@@ -6,9 +6,9 @@
 
 Structured logging writes JSON. Every log entry is a machine-readable object with a timestamp, level, message, and whatever context you attach. Log aggregators (Datadog, Grafana Loki, AWS CloudWatch, Papertrail) can query, filter, and alert on structured logs.
 
-Tina4 provides `Tina4\Log` for structured logging. Each level has its own method — `Log::debug()`, `Log::info()`, `Log::warning()`, `Log::error()`, `Log::critical()`. Output is JSON by default. Zero external packages.
+Tina4 provides `Tina4\Log` for structured logging. Each level has its own method: `Log::debug()`, `Log::info()`, `Log::warning()`, `Log::error()`, `Log::critical()`. Output is JSON by default. Zero external packages.
 
-The historical `Tina4\Debug::message()` API still works as a compatibility shim that forwards to `Tina4\Log` — use it if you're upgrading from a v3.12.x codebase. New code should use the level-specific `Log` methods.
+The historical `Tina4\Debug::message()` API still works as a compatibility shim that forwards to `Tina4\Log`; use it if you're upgrading from a v3.12.x codebase. New code should use the level-specific `Log` methods.
 
 ---
 

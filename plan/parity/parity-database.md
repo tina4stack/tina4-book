@@ -17,12 +17,12 @@ Connection strings, query methods, transactions, pooling, ID generation, and sch
 | Ruby | `Database.new(connection_string, username=nil, password=nil, driver_name=nil, pool=0)` | Auto-detects driver |
 | Node.js | `await Database.create(url, username?, password?, pool?)` | Async factory required |
 
-- [ ] **PARITY: OK** — all accept URL + credentials + pool size
+- [ ] **PARITY: OK** - all accept URL + credentials + pool size
 - [ ] **Documented?** All CLAUDE.md: yes
 
 ## Connection URL Format
 
-- [ ] **PARITY: OK** — identical format across all 4:
+- [ ] **PARITY: OK** - identical format across all 4:
 
 ```
 sqlite:///path/to/db.sqlite
@@ -45,7 +45,7 @@ odbc:///DSN=MyDSN
 | Ruby | `fetch(sql, params=[], limit: 100, offset: nil)` | `DatabaseResult` |
 | Node.js | `fetch(sql, params?, limit?, offset?)` | `DatabaseResult` |
 
-- [ ] **PARITY: OK** — param order and defaults consistent
+- [ ] **PARITY: OK** - param order and defaults consistent
 - [ ] **Documented?** All CLAUDE.md: yes
 
 ### `fetch_one()` / `fetchOne()`
@@ -69,7 +69,7 @@ odbc:///DSN=MyDSN
 | Ruby | `execute(sql, params=[])` | `hash` |
 | Node.js | `execute(sql, params?)` | `unknown` |
 
-- [ ] **PARITY ISSUE:** Return types differ — Python returns `DatabaseResult`, PHP returns `bool`, Ruby returns hash, Node returns unknown
+- [ ] **PARITY ISSUE:** Return types differ: Python returns `DatabaseResult`, PHP returns `bool`, Ruby returns hash, Node returns unknown
 - [ ] **Documented?** All CLAUDE.md: yes but return types differ
 
 ## DatabaseResult Format
@@ -86,7 +86,7 @@ odbc:///DSN=MyDSN
 
 - [ ] **PARITY ISSUE:** Python has `affected_rows` and `error` fields that others lack
 - [ ] **PARITY ISSUE:** Python missing `limit`/`offset` on DatabaseResult
-- [ ] **Documented?** Partially — format not shown in most CLAUDE.md files
+- [ ] **Documented?** Partially - format not shown in most CLAUDE.md files
 
 ## Transaction Methods
 
@@ -97,7 +97,7 @@ odbc:///DSN=MyDSN
 | Ruby | `transaction { \|db\| ... }` (block) | `commit()` | `rollback()` |
 | Node.js | `startTransaction()` | `commit()` | `rollback()` |
 
-- [ ] **PARITY: OK** — Ruby adds block syntax for auto-rollback on exception
+- [ ] **PARITY: OK** - Ruby adds block syntax for auto-rollback on exception
 - [ ] **Documented?** All CLAUDE.md: yes
 
 ## ID Generation
@@ -111,7 +111,7 @@ odbc:///DSN=MyDSN
 | Ruby | `get_next_id(table, pk_column: "id", generator_name: nil)` |
 | Node.js | `getNextId(table, pkColumn?, generatorName?)` |
 
-- [ ] **PARITY: OK** — all use same strategy (tina4_sequences table for SQLite/MySQL/MSSQL, sequences for PostgreSQL, generators for Firebird)
+- [ ] **PARITY: OK** - all use same strategy (tina4_sequences table for SQLite/MySQL/MSSQL, sequences for PostgreSQL, generators for Firebird)
 - [ ] **Documented?** All CLAUDE.md: yes
 
 ## Schema Introspection
@@ -127,7 +127,7 @@ odbc:///DSN=MyDSN
 
 ## Environment Variables
 
-- [ ] **PARITY: OK** — all use same env vars:
+- [ ] **PARITY: OK** - all use same env vars:
 
 | Var | Default |
 |-----|---------|
@@ -143,10 +143,10 @@ odbc:///DSN=MyDSN
 
 | # | Issue | Severity | Status |
 |---|-------|----------|--------|
-| 1 | ~~`execute()` return type~~ | MEDIUM | FIXED — bool for writes, DatabaseResult for RETURNING. get_error()/get_last_id() on all. |
-| 2 | ~~Python DatabaseResult limit/offset~~ | LOW | FIXED — all adapters populate limit/offset |
-| 3 | ~~PHP getColumns on adapter~~ | LOW | FIXED — getColumns() added to Database class |
-| 4 | ~~Node.js missing cacheStats()~~ | LOW | FIXED — cacheStats() added |
+| 1 | ~~`execute()` return type~~ | MEDIUM | FIXED - bool for writes, DatabaseResult for RETURNING. get_error()/get_last_id() on all. |
+| 2 | ~~Python DatabaseResult limit/offset~~ | LOW | FIXED - all adapters populate limit/offset |
+| 3 | ~~PHP getColumns on adapter~~ | LOW | FIXED - getColumns() added to Database class |
+| 4 | ~~Node.js missing cacheStats()~~ | LOW | FIXED - cacheStats() added |
 
 ## Documentation Gaps
 

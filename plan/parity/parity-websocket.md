@@ -2,7 +2,7 @@
 
 > **Generated:** 2026-04-03 | **Version:** v3.10.67
 
-## Status: HIGH PARITY (95%) — audit corrected, PHP has full WebSocket
+## Status: HIGH PARITY (95%) - audit corrected, PHP has full WebSocket
 
 ---
 
@@ -26,7 +26,7 @@
 | Client disconnected | `on_close` | N/A | `on(:close)` | `on("close")` |
 | Error | `on_error` | N/A | `on(:error)` | `on("error")` |
 
-- [ ] **PARITY ISSUE:** Event names differ — `on_connect` vs `on(:open)` vs `on("connection")`
+- [ ] **PARITY ISSUE:** Event names differ: `on_connect` vs `on(:open)` vs `on("connection")`
 
 ## Connection Properties
 
@@ -42,8 +42,8 @@
 
 | # | Issue | Severity | Status |
 |---|-------|----------|--------|
-| 1 | ~~PHP has NO WebSocket server~~ | CRITICAL | **AUDIT ERROR** — PHP has full WS: WebSocket.php, WebSocketConnection.php, WebSocketBackplane.php |
-| 2 | ~~Event naming inconsistent~~ | MEDIUM | FIXED — all use `open/message/close/error`. Python added `on("open", handler)` alongside decorators. Node changed `connection` → `open`. |
-| 3 | ~~Connection missing ip/headers/params~~ | MEDIUM | FIXED — PHP: added ip, headers, params to WebSocketConnection. Node: added ip, headers to interface. |
-| 4 | ~~Node.js missing NATS backplane~~ | LOW | **AUDIT ERROR** — all 4 frameworks have Redis + NATS backplane |
-| 5 | Backplane config style differs | LOW | BY DESIGN — env vars vs classes |
+| 1 | ~~PHP has NO WebSocket server~~ | CRITICAL | **AUDIT ERROR** - PHP has full WS: WebSocket.php, WebSocketConnection.php, WebSocketBackplane.php |
+| 2 | ~~Event naming inconsistent~~ | MEDIUM | FIXED - all use `open/message/close/error`. Python added `on("open", handler)` alongside decorators. Node changed `connection` → `open`. |
+| 3 | ~~Connection missing ip/headers/params~~ | MEDIUM | FIXED - PHP: added ip, headers, params to WebSocketConnection. Node: added ip, headers to interface. |
+| 4 | ~~Node.js missing NATS backplane~~ | LOW | **AUDIT ERROR** - all 4 frameworks have Redis + NATS backplane |
+| 5 | Backplane config style differs | LOW | BY DESIGN - env vars vs classes |

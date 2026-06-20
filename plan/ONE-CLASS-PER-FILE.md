@@ -1,4 +1,4 @@
-# Plan: One Domain Object Per File — All 4 Frameworks
+# Plan: One Domain Object Per File (All 4 Frameworks)
 
 ## Decision (2026-04-09)
 
@@ -6,7 +6,7 @@ Enforce **one domain object per file** across all 4 Tina4 frameworks (PHP, Pytho
 
 ### Why
 
-A duplicate `Job` class lived inside `Queue.php` alongside the canonical `Job.php`. When `getBasePath()` was made private on `Queue`, the copy in `Queue.php` still called it — a runtime fatal that tests missed entirely because the two class definitions masked each other.
+A duplicate `Job` class lived inside `Queue.php` alongside the canonical `Job.php`. When `getBasePath()` was made private on `Queue`, the copy in `Queue.php` still called it, a runtime fatal that tests missed entirely because the two class definitions masked each other.
 
 ### Rule
 
@@ -60,5 +60,5 @@ A **domain object** is any class that:
 - Each split must maintain all existing imports/exports so nothing breaks
 - Run full test suite after each framework's split
 - Parity: split must happen in all 4 frameworks in the same session (per parity rule)
-- Middleware splits are the highest value — `CsrfMiddleware` and auth bugs showed these diverge
-- **Do not** split at once — do one framework at a time, run tests, commit, move on
+- Middleware splits are the highest value: `CsrfMiddleware` and auth bugs showed these diverge
+- **Do not** split at once, do one framework at a time, run tests, commit, move on
