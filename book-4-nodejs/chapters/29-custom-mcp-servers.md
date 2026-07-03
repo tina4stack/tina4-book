@@ -19,8 +19,9 @@ const mcp = new McpServer("/api/my-tools", "My App Tools", "1.0.0");
 ```
 
 The server registers HTTP endpoints at:
-- `POST /api/my-tools/message` -- JSON-RPC message handler
-- `GET /api/my-tools/sse` -- SSE endpoint for client discovery
+- `POST /api/my-tools` -- Streamable HTTP (the current transport): send JSON-RPC and read the response inline. `initialize` returns an `Mcp-Session-Id` header, `DELETE` ends the session.
+- `POST /api/my-tools/message` -- legacy JSON-RPC message handler
+- `GET /api/my-tools/sse` -- legacy SSE discovery handshake
 
 Register it with the router in your server setup:
 
@@ -284,7 +285,7 @@ crmMcp.registerRoutes(router);
 export { crmMcp };
 ```
 
-Connect Claude Code to `http://localhost:7148/crm/mcp/sse` and ask:
+Connect Claude Code to `http://localhost:7148/crm/mcp` (Streamable HTTP) and ask:
 
 > "Find all customers named Smith and show their recent orders"
 
