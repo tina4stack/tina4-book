@@ -1920,12 +1920,12 @@ endobj
 endobj
 370 0 obj
 <<
-/Border [ 0 0 0 ] /Contents () /Dest [ 829 0 R /XYZ 70.8 262.9898 0 ] /Rect [ 513.3556 177.4898 524.4756 191.4898 ] /Subtype /Link /Type /Annot
+/Border [ 0 0 0 ] /Contents () /Dest [ 823 0 R /XYZ 70.8 790.4898 0 ] /Rect [ 513.3556 177.4898 524.4756 191.4898 ] /Subtype /Link /Type /Annot
 >>
 endobj
 371 0 obj
 <<
-/Border [ 0 0 0 ] /Contents () /Dest [ 829 0 R /XYZ 70.8 262.9898 0 ] /Rect [ 88.8 175.4898 131.58 187.4898 ] /Subtype /Link /Type /Annot
+/Border [ 0 0 0 ] /Contents () /Dest [ 823 0 R /XYZ 70.8 790.4898 0 ] /Rect [ 88.8 175.4898 131.58 187.4898 ] /Subtype /Link /Type /Annot
 >>
 endobj
 372 0 obj
@@ -5420,7 +5420,7 @@ endobj
 endobj
 899 0 obj
 <<
-/Author (Tina4 Stack) /CreationDate (D:20260707143845+00'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20260707143845+00'00') /Producer (ReportLab PDF Library - \(opensource\)) 
+/Author (Tina4 Stack) /CreationDate (D:20260708111233+00'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20260708111233+00'00') /Producer (ReportLab PDF Library - \(opensource\)) 
   /Subject (\(unspecified\)) /Title (tina4-js \204 The 1.5KB Reactive Core) /Trapped /False
 >>
 endobj
@@ -6361,7 +6361,7 @@ endobj
 endobj
 1079 0 obj
 <<
-/Dest [ 829 0 R /XYZ 70.8 262.9898 0 ] /Parent 1063 0 R /Prev 1078 0 R /Title (Summary)
+/Dest [ 823 0 R /XYZ 70.8 790.4898 0 ] /Parent 1063 0 R /Prev 1078 0 R /Title (Summary)
 >>
 endobj
 1080 0 obj
@@ -9941,7 +9941,7 @@ xref
 trailer
 <<
 /ID 
-[<342ef229fe16bb4edfe20ce8b61ebb5a><342ef229fe16bb4edfe20ce8b61ebb5a>]
+[<ebfc7e8d8044172a80e22277e0c2809e><ebfc7e8d8044172a80e22277e0c2809e>]
 % ReportLab generated PDF document -- digest (opensource)
 
 /Info 899 0 R
