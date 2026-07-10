@@ -1,5 +1,24 @@
 # Chapter 35: Release Notes
 
+## v3.13.69 (2026-07-10) - The Api client grows up: uploads, downloads, redirects, and a breaking upload signature
+
+The built-in HTTP `Api` client gained four zero-dependency capabilities, shipped across all four frameworks.
+
+- **Multipart upload.** `Api#upload` POSTs a `multipart/form-data` body from a file on disk (`file_path:`) OR from in-memory bytes (`file_bytes:` plus `filename:`), with optional extra text fields, so you never need a temp file. The part Content-Type is guessed from the filename, and the client's default headers (including any Authorization) are sent too. A missing file or no source returns a clean error response, never raises, and sends nothing over the wire.
+- **Streaming download.** `Api#download` streams a GET body straight to disk in 64KB chunks, so a multi-megabyte file never lands in memory whole. The returned `ApiResponse` carries `path` (and no body), and writes nothing on an error status.
+- **Transport seam.** An injectable `transport:` (any object responding to `#call`) lets application developers unit-test code that calls an `Api` without a live server. Tina4's own suite never injects a fake (the no-mock rule stands); every framework test hits a real local server.
+- **Opt-in cookie jar.** Pass `cookies: true` for a per-client in-memory jar: the client parses `Set-Cookie` (leading `name=value`, last write wins) and replays the accumulated `Cookie` header on later requests.
+
+`Net::HTTP` does not auto-follow redirects, so the client now follows them itself in a bounded loop (up to 10 hops) and strips the `Authorization` and `Cookie` headers on a cross-origin hop (a different scheme, host, or port), so neither a bearer token nor a session cookie can leak to a host you did not authenticate to. Same-origin redirects keep them. This also corrects a documentation claim that the redirect auth-strip was Python-only; it now applies in Ruby too.
+
+### Breaking
+
+- **`Api#upload` `file_path` is now a keyword argument.** It was a required positional argument. Switch `api.upload(path, "/tmp/x.png")` to `api.upload(path, file_path: "/tmp/x.png")`. This reconciles Ruby to the canonical cross-framework signature.
+
+### Also shipping
+
+- **AI coder rule-path skill.** The AI coding-assistant scaffolder writes each tool's rule and context files to the correct path, across all four frameworks.
+
 ## v3.13.68 (2026-07-10) - Steadier test suite
 
 The documentation-search performance spec no longer fails at random. It timed a single request against a 50ms budget, and one slow sample on a busy machine turned the whole suite red. It now takes the best of several samples, so the check measures real speed instead of scheduler noise. Test-only; nothing in the framework changed.

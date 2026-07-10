@@ -1,5 +1,20 @@
 # Chapter 35: Release Notes
 
+## v3.13.69 (2026-07-10) - The Api client grows up: uploads, downloads, and safe redirects
+
+The built-in HTTP `Api` client gained four zero-dependency capabilities, shipped across all four frameworks. All are opt-in and non-breaking.
+
+- **Multipart upload.** `api.upload()` POSTs a `multipart/form-data` body from a file on disk (`filePath`) OR from in-memory bytes (`fileBytes` plus `filename`), with optional extra text fields, so you never need a temp file. The part Content-Type is guessed from the filename. A missing file or no source returns a clean error result and never throws.
+- **Streaming download.** `api.download()` writes a GET body straight to disk in 64KB chunks, so a multi-megabyte file never lands in memory whole. It returns the status, headers, and the on-disk `path` (there is no `body` field), and writes nothing on an error status.
+- **Transport seam.** An injectable transport lets application developers unit-test code that calls an `Api` without a live server. Tina4's own suite never injects a fake (the no-mock rule stands); every framework test hits a real local server.
+- **Opt-in cookie jar.** Pass `{ cookies: true }` for a per-client in-memory jar: the client parses `Set-Cookie` (leading `name=value`, last write wins) and replays the accumulated `Cookie` header on later requests.
+
+Bare `node:http` and `node:https` do not follow redirects, so the client now follows them itself (bounded to 10 hops): 301/302/303 on a body-bearing method become GET, and 307/308 preserve method and body. On a cross-origin hop (a different scheme, host, or port) it strips the `Authorization` and `Cookie` headers, so neither a bearer token nor a session cookie can leak to a host you did not authenticate to. Same-origin redirects keep them.
+
+### Also shipping
+
+- **AI coder rule-path skill.** The AI coding-assistant scaffolder writes each tool's rule and context files to the correct path, across all four frameworks.
+
 ## v3.13.68 (2026-07-10) - Parity release
 
 A version bump to keep all four frameworks on the same number. No functional changes to the Node.js package since 3.13.67; the accompanying change is a fix to the Tina4 maintainer AI skill so it links plan and source files by a path that resolves when clicked.
