@@ -1,5 +1,9 @@
 # Chapter 35: Release Notes
 
+## v3.13.71 (2026-07-11) - AI skills: sharper tina4_code guidance
+
+A skills-and-docs release; no change to the Node.js package. The bundled Tina4 AI skills now state WHY `tina4_code` is deprecated: in a boot-and-verify gate (scaffold the output, boot it, run it) `tina4_code` failed where a strong model grounded with `tina4_context` passed, so the tools point to grounding plus a strong model over the self-hosted coder. The recommendation is unchanged - ground with `tina4_context` and write the code yourself; only the rationale is sharper. Running `curl -fsSL https://tina4.com/install-skills.sh | sh` now installs these updated skills by default.
+
 ## v3.13.70 (2026-07-11) - Installed-package imports, column defaults on INSERT, a Firebird charset override, and stacked Swagger metadata
 
 ### Installed-package imports resolve (#32)
