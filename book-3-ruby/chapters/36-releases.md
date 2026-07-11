@@ -1,5 +1,19 @@
 # Chapter 35: Release Notes
 
+## v3.13.70 (2026-07-11) - Column defaults on INSERT, a Firebird charset override, and stacked Swagger metadata
+
+### ORM honours column defaults on INSERT (#165)
+
+An INSERT now omits any column you never set on the model, so the database applies that column's own DEFAULT. Previously `save` serialised every declared column, sending an explicit NULL for the ones you left alone; a `NOT NULL DEFAULT <x>` column then failed the insert, because a DB default applies only when the column is omitted, not when NULL is passed. The rule is now precise: a column you never touch is omitted and the database fills it in; a column you explicitly set to `nil` is written as NULL; a column with a non-nil ORM default is still written. When every insertable column is unset, the row inserts with the engine's all-defaults form. UPDATE is unchanged. Shipped across all four frameworks, verified with real-SQLite positive and negative tests.
+
+### Firebird connection charset override (#160)
+
+The Firebird adapter no longer hardcodes the connection charset to UTF8. You can override it, in precedence order, with a `?charset=` query on the connection URL (`firebird://host:port/path?charset=NONE`), an explicit `charset:` keyword on `connect`, or the `TINA4_DATABASE_CHARSET` environment variable. The default stays UTF8, so nothing changes unless you ask for it. This fixes double-encoded UTF-8 bytes read from a legacy NONE database. Shipped across all four frameworks.
+
+### Stacked Swagger metadata all survives (#59)
+
+Stacking summary, description, and tags on one route keeps every value in the generated OpenAPI spec, whatever the order. Ruby was already correct; the fix landed in PHP and Node, and all four now carry a lock-in test so the behaviour cannot drift again.
+
 ## v3.13.69 (2026-07-10) - The Api client grows up: uploads, downloads, redirects, and a breaking upload signature
 
 The built-in HTTP `Api` client gained four zero-dependency capabilities, shipped across all four frameworks.

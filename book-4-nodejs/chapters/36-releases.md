@@ -1,5 +1,23 @@
 # Chapter 35: Release Notes
 
+## v3.13.70 (2026-07-11) - Installed-package imports, column defaults on INSERT, a Firebird charset override, and stacked Swagger metadata
+
+### Installed-package imports resolve (#32)
+
+Importing `tina4-nodejs/orm`, `tina4-nodejs/frond`, or `tina4-nodejs/swagger` from an application that installed the package now works, and `response.render()` renders correctly from an installed app. The published packages referenced their siblings by the internal `@tina4/*` workspace names, which only resolve inside this monorepo, so a consumer install failed to find them. Those references now resolve to the real subpaths, so an installed app imports the subpath entry points and renders templates the same way the in-repo examples do.
+
+### ORM honours column defaults on INSERT (#165)
+
+An INSERT now omits any column you never set on the model, so the database applies that column's own DEFAULT. Previously `save()` serialised every declared column, sending an explicit NULL for the ones you left alone; a `NOT NULL DEFAULT <x>` column then failed the insert, because a DB default applies only when the column is omitted, not when NULL is passed. The rule is now precise: a column you never touch is omitted and the database fills it in; a column you explicitly set to `null` is written as NULL; a column with a non-null ORM default is still written. When every insertable column is unset, the row inserts with the engine's all-defaults form. UPDATE is unchanged. Shipped across all four frameworks, verified with real-SQLite positive and negative tests.
+
+### Firebird connection charset override (#160)
+
+The Firebird adapter no longer hardcodes the connection charset to UTF8. You can override it, in precedence order, with a `?charset=` query on the connection URL (`firebird://host:port/path?charset=NONE`), an explicit `charset` option on `connect()`, or the `TINA4_DATABASE_CHARSET` environment variable. The default stays UTF8, so nothing changes unless you ask for it. This fixes double-encoded UTF-8 bytes read from a legacy NONE database. Shipped across all four frameworks.
+
+### Stacked Swagger metadata all survives (#59)
+
+Stacking summary, description, and tags on one route now keeps every value in the generated OpenAPI spec, whatever the order. This was a Node-visible drift where all but the annotation nearest the route method were dropped; it is fixed here and in PHP (Python and Ruby were already correct), and all four now carry a lock-in test so the behaviour cannot drift again.
+
 ## v3.13.69 (2026-07-10) - The Api client grows up: uploads, downloads, and safe redirects
 
 The built-in HTTP `Api` client gained four zero-dependency capabilities, shipped across all four frameworks. All are opt-in and non-breaking.
