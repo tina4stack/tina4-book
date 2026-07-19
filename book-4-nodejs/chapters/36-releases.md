@@ -1,5 +1,15 @@
 # Chapter 35: Release Notes
 
+## v3.13.79 (2026-07-19) - Session cookies get Secure behind a proxy, and a renamed cookie is read back
+
+If you run Node behind a TLS-terminating proxy, the session cookie shipped without `Secure` over the very deployments that were encrypted. This release fixes that and reads a renamed cookie back.
+
+- **Security: `Secure` is now proxy-aware.** `buildSessionCookie()` set `Secure` only from an explicit `TINA4_SESSION_SECURE` and ignored `x-forwarded-proto`, so HTTPS behind a TLS-terminating proxy shipped the session cookie without `Secure`. `Secure` now reads the scheme through `isSecureScheme()` (the `x-forwarded-proto` first hop, else the native scheme), still honours `TINA4_SESSION_SECURE`, and `SameSite=None` forces `Secure`.
+- **Plain HTTP is unchanged.** Without a proxy header and without TLS, the cookie stays non-Secure.
+- **`TINA4_SESSION_NAME` is now read back.** The name resolves through one function (`sessionCookieName()`) on both the write and the read side, and the incoming cookie is matched on an exact `name=` prefix; the default is byte-identical.
+
+Reported by justin-k-bruce (nodejs#34). Real wire tests read the actual `Set-Cookie` and replay a renamed cookie.
+
 ## v3.13.77 (2026-07-16) - A slow background task no longer runs on top of itself
 
 - **`background()` never overlaps a task with itself.** The timer used `setInterval`, which fires on a fixed schedule and does not wait for an async callback, so a run slower than the interval had a second copy start alongside it. The timer is now re-armed only after each run settles, making the interval the gap between runs. Found by cross-checking the Python report against all four frameworks, not by a Node report.

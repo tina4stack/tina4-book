@@ -1,5 +1,15 @@
 # Chapter 35: Release Notes
 
+## v3.13.79 (2026-07-19) - Session cookies get Secure behind a proxy, and a renamed cookie is read back
+
+If you run Python behind nginx, an ALB, or any TLS-terminating proxy, your session cookie shipped without `Secure` on the very deployments that were encrypted. This release fixes that and reads a renamed cookie back.
+
+- **Security: `Secure` now follows the scheme the client actually used.** The response emit path in `server.py` hand-wrote the session `Set-Cookie` header and never called the cookie builder, so the documented `TINA4_SESSION_SECURE` did nothing and there was no proxy detection at all. The emit path now routes through the one cookie builder (`cookie_header`). `Secure` is set when `TINA4_SESSION_SECURE` is truthy, when `SameSite` is `None` (browsers reject `None` without `Secure`), or when the request is HTTPS - detected proxy-aware through `x-forwarded-proto`, whose first hop is the client-facing one, resolved by `Request.is_secure_scheme()`, else the native scheme.
+- **Plain HTTP is unchanged.** Without a proxy header and without TLS, the cookie stays non-Secure, so the browser keeps returning it and local sessions never break silently.
+- **`TINA4_SESSION_NAME` is now read back.** The write side honoured `TINA4_SESSION_NAME`, but the incoming-cookie read used a hardcoded `tina4_session` literal, so an operator who renamed the cookie wrote one name and read another, and the session silently never resumed. Both sides now resolve the name through one function (`session_cookie_name()`); the default is byte-identical to before.
+
+Reported by justin-k-bruce (python#95). Real-server tests read the actual `Set-Cookie` off a live server driven with a real `X-Forwarded-Proto` header; the name test resumes a renamed cookie across two requests and proves the default is unchanged.
+
 ## v3.13.77 (2026-07-16) - A slow background task no longer runs on top of itself
 
 - **`background()` never overlaps a task with itself.** A sync callback that took longer than the loop's timeout used to have a second copy started alongside it, and every later tick piled on another. A callable already running in a thread pool cannot be cancelled, so the timeout abandoned the wrapper while the thread kept working. Each run is now awaited to completion before the next tick, and an overrun only logs a warning. The old warning claimed the task "was interrupted" when it was still running, which pointed away from the cause; it now says the task is still running and the next run is deferred.

@@ -1,5 +1,17 @@
 # Chapter 35: Release Notes
 
+## v3.13.79 (2026-07-19) - Session cookies get Secure behind a proxy, honour SameSite, and a renamed cookie is read back
+
+If you run Ruby behind a TLS-terminating proxy, the session cookie shipped without `Secure` and always used `SameSite=Lax`, whatever you configured. This release fixes both and reads a renamed cookie back.
+
+- **Security: the session cookie now goes through the builder.** The `Set-Cookie` was hand-written in `rack_app.rb` and never went through the cookie builder, so `TINA4_SESSION_SECURE` was a silent no-op and `SameSite` was hardcoded to `Lax`, ignoring `TINA4_SESSION_SAMESITE`. The emit path now routes through the builder: `Secure` is proxy-aware through `Request.secure_scheme?` (the `x-forwarded-proto` first hop, else the native scheme), honours `TINA4_SESSION_SECURE`, and `SameSite=None` forces `Secure`. `TINA4_SESSION_SAMESITE` is honoured.
+- **Plain HTTP is unchanged.** Without a proxy header and without TLS, the cookie stays non-Secure.
+- **`TINA4_SESSION_NAME` is now read back.** The name resolves through one method (`Session.cookie_name`) on both sides, the same as the other three frameworks; the default is byte-identical.
+- **`TINA4_SESSION_BACKEND` now selects the handler.** Backend selection was unreachable before, so the setting did nothing. The Redis/Valkey and Mongo session handlers now read their connection from the environment instead of a hardcoded `localhost`.
+- **A background no-overlap spec** was added, matching the other three frameworks.
+
+Reported by justin-k-bruce (ruby#31). Real specs, no mocks.
+
 ## v3.13.77 (2026-07-16) - Background task scheduling confirmed, no code change
 
 Ruby needed no fix this release. A cross-framework check of a reported Python bug (`background()` running a slow task concurrently with itself) confirmed Ruby was already correct: each task owns a thread that sleeps, calls, and sleeps again, so a run can never overlap the next one. Python and Node.js were brought in line with that behaviour.
