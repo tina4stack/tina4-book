@@ -40,7 +40,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Response | 18 | 18 | 0 | 0 |
 | Middleware | 13 | 13 | 0 | 0 |
 | AutoCrud | 5 | 5 | 0 | 0 |
-| SqlTranslation | 17 | 17 | 0 | 0 |
+| SQLTranslator | 17 | 17 | 0 | 0 |
 | Metrics | 3 | 3 | 0 | 0 |
 | ErrorOverlay | 3 | 3 | 0 | 0 |
 | DotEnv | 7 | 7 | 0 | 0 |
@@ -1780,7 +1780,7 @@ Methods are matched by normalised snake_case name. ✅ = full parity, ⚠️ = m
 | Ruby | `model_class` | `untyped` |
 | Node | `model: DiscoveredModel, prefix: string = "/api"` | `None` |
 
-## SqlTranslation
+## SQLTranslator
 
 | Method | Python | PHP | Ruby | Node | Return Match |
 |--------|--------|-----|------|------|:------------:|

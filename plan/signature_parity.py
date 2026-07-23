@@ -1013,20 +1013,20 @@ FEATURE_SOURCES = {
         "Ruby":   BASE / "tina4-ruby/lib/tina4/auto_crud.rb",
         "Node":   BASE / "tina4-nodejs/packages/orm/src/autoCrud.ts",
     },
-    "SqlTranslation": {
+    "SQLTranslator": {
         "Python": [
             BASE / "tina4-python/tina4_python/database/adapter.py",
             BASE / "tina4-python/tina4_python/core/cache.py",
         ],
         "PHP":    [
-            BASE / "tina4-php/Tina4/SqlTranslation.php",
+            BASE / "tina4-php/Tina4/SQLTranslator.php",
             BASE / "tina4-php/Tina4/QueryCache.php",
         ],
         "Ruby":   [
-            BASE / "tina4-ruby/lib/tina4/sql_translation.rb",
+            BASE / "tina4-ruby/lib/tina4/sql_translator.rb",
             BASE / "tina4-ruby/lib/tina4/cache.rb",
         ],
-        "Node":   BASE / "tina4-nodejs/packages/orm/src/sqlTranslation.ts",
+        "Node":   BASE / "tina4-nodejs/packages/orm/src/sqlTranslator.ts",
     },
     "Metrics": {
         "Python": BASE / "tina4-python/tina4_python/dev_admin/metrics.py",

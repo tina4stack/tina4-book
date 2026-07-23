@@ -3476,7 +3476,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `shutdown()` |
 | `reset()` |
 
-### PHP: `SqlTranslation` (`SqlTranslation.php`)
+### PHP: `SQLTranslator` (`SQLTranslator.php`)
 
 | Method | 
 |--------|
@@ -4755,7 +4755,7 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `exists()` |
 | `toMongo()` |
 
-### Node: `SQLTranslator` (`orm/src/sqlTranslation.ts`)
+### Node: `SQLTranslator` (`orm/src/sqlTranslator.ts`)
 
 | Method | 
 |--------|
