@@ -234,7 +234,7 @@ This repository holds the full Tina4 documentation: one book per supported langu
 
 ## About
 
-Tina4 is a family of zero-dependency web frameworks for Python, PHP, Ruby, and Node.js. Same architecture, same conventions, 55 built-in features across all four languages. See [tina4.com](https://tina4.com) for the project home.
+Tina4 is a family of zero-dependency web frameworks for Python, PHP, Ruby, and Node.js. Same architecture, same conventions, 97 built-in features across all four languages. See [tina4.com](https://tina4.com) for the project home.
 
 ## Building the books
 
