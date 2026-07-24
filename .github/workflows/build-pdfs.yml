@@ -77,24 +77,48 @@ jobs:
           git config user.name "tina4-bot"
           git config user.email "bot@tina4.com"
           git add book-*/Tina4-*.pdf book-*/Understanding-Tina4.pdf
-          git commit -m "chore(pdf): regenerate books from $(git rev-parse --short HEAD~1) [skip pdf]
+          # NB: ${GITHUB_SHA::7}, not HEAD~1 — the checkout is fetch-depth: 1
+          # so HEAD~1 doesn't exist and `git rev-parse` printed nothing, which
+          # is why the existing auto-commits read "regenerate books from  ".
+          git commit -m "chore(pdf): regenerate books from ${GITHUB_SHA::7} [skip pdf]
 
           Auto-commit by build-pdfs.yml on a push that changed chapter
           content, book.yml, or the build script."
           git push origin main
 
-      # Optional: when the user has set DOCS_DEPLOY_TOKEN as a repo
-      # secret (a fine-grained PAT with contents:write on
-      # tina4-documentation), also push the PDFs into the docs site so
-      # they ship without a separate manual step. The `if` test runs
-      # via env var because GitHub Actions doesn't allow `secrets.X`
-      # directly inside an `if:` expression.
-      - name: Mirror PDFs into tina4-documentation (optional)
+      # Pushes the freshly built PDFs into tina4-documentation, which is
+      # what tina4.com actually serves from (docs/public/pdfs). Needs
+      # DOCS_DEPLOY_TOKEN as a repo secret: a fine-grained PAT with
+      # contents:write on tina4stack/tina4-documentation ONLY.
+      #
+      # The missing-token check lives in the script rather than an `if:`
+      # on purpose. Actions won't take `secrets.X` inside an `if:`, and
+      # the env-var workaround made the step render as a plain grey
+      # "skipped" dash — indistinguishable from a deliberate no-op. The
+      # secret went unset from the day this was written and the live
+      # site's PDFs silently rotted for nearly three months before
+      # anyone noticed. Now the step always runs and says so loudly.
+      - name: Mirror PDFs into tina4-documentation
         env:
           DOCS_TOKEN: ${{ secrets.DOCS_DEPLOY_TOKEN }}
-        if: ${{ env.DOCS_TOKEN != '' }}
         run: |
           set -e
+          if [ -z "${DOCS_TOKEN}" ]; then
+            echo "::warning title=PDFs did NOT reach tina4.com::DOCS_DEPLOY_TOKEN is not set on tina4stack/tina4-book, so the regenerated PDFs were committed here but NOT mirrored into tina4-documentation. The live site is now serving stale PDFs. Mirror by hand, or add the secret: a fine-grained PAT with contents:write on tina4stack/tina4-documentation only, then 'gh secret set DOCS_DEPLOY_TOKEN --repo tina4stack/tina4-book'."
+            echo
+            echo "  DOCS_DEPLOY_TOKEN not set - PDFs will NOT reach tina4.com; mirror by hand."
+            echo
+            echo "  tina4.com serves docs/public/pdfs from tina4stack/tina4-documentation."
+            echo "  Without the token this job cannot push there, so the PDFs just"
+            echo "  committed to tina4-book are the ONLY fresh copies that exist."
+            echo
+            echo "  To fix permanently:"
+            echo "    1. Create a fine-grained PAT scoped to tina4stack/tina4-documentation"
+            echo "       ONLY, with Repository permissions > Contents: Read and write."
+            echo "    2. gh secret set DOCS_DEPLOY_TOKEN --repo tina4stack/tina4-book"
+            echo
+            exit 0
+          fi
           tmp="$(mktemp -d)"
           git clone --depth=1 \
             "https://x-access-token:${DOCS_TOKEN}@github.com/tina4stack/tina4-documentation.git" \
@@ -103,13 +127,14 @@ jobs:
           cp book-*/Tina4-*.pdf book-*/Understanding-Tina4.pdf "$tmp/docs/public/pdfs/"
           cd "$tmp"
           if git diff --quiet -- docs/public/pdfs/; then
-            echo "No PDF changes for docs site — skipping."
+            echo "No PDF changes for docs site - tina4.com is already current."
             exit 0
           fi
           git config user.name "tina4-bot"
           git config user.email "bot@tina4.com"
           git add docs/public/pdfs/
-          git commit -m "chore(pdf): sync v3.12.x book PDFs from tina4-book@${GITHUB_SHA::7}
+          git commit -m "chore(pdf): sync book PDFs from tina4-book@${GITHUB_SHA::7}
 
           Auto-mirrored by tina4-book/build-pdfs.yml."
           git push origin main
+          echo "Mirrored to tina4-documentation@main - tina4.com will pick these up on the next Jenkins deploy."
