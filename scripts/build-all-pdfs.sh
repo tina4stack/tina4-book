@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 # Regenerate every tina4-book PDF from source markdown.
 #
-# Dependencies: Python 3 + reportlab (`pip3 install --user reportlab`).
-# Output: PDF files alongside each book's chapters/ directory. PDFs are
-# gitignored; regenerate whenever chapter content changes.
+# Dependencies: Python 3 + the pinned versions in scripts/requirements.txt
+# (`pip3 install --user -r scripts/requirements.txt`). Use the pins: the
+# build is byte-reproducible, and a different reportlab/pillow could make
+# your local rebuild differ from CI's and churn all seven PDFs.
+#
+# Output: PDF files alongside each book's chapters/ directory. .gitignore
+# ignores *.pdf broadly but un-ignores each book's release PDF, so those
+# seven ARE committed - they're what the docs-site mirror ships to
+# tina4.com. CI regenerates and commits them on any chapter change.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

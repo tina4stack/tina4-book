@@ -48,10 +48,16 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install build deps (reportlab + PyYAML — both pure Python)
+      # Pinned in scripts/requirements.txt. The PDF build is deliberately
+      # byte-reproducible, so an unpinned reportlab/pillow upgrade could
+      # silently re-churn all seven books (and fire a Jenkins deploy) on
+      # whatever morning the new release landed. Upgrades are a deliberate
+      # commit to that file.
+      - name: Install build deps (pinned — see scripts/requirements.txt)
         run: |
           python -m pip install --upgrade pip
-          python -m pip install reportlab PyYAML
+          python -m pip install -r scripts/requirements.txt
+          python -m pip freeze | grep -iE '^(reportlab|pillow|PyYAML)='
 
       # rsvg-convert handles the SVG→PNG cover-logo conversion. The
       # PNG is committed to assets/, but if it ever needs regenerating

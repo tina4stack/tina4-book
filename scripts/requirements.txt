@@ -1,0 +1,31 @@
+# Pinned build dependencies for the Tina4 book PDFs.
+#
+# These are pinned because the PDF build is byte-reproducible on purpose:
+# an unchanged book must rebuild to identical bytes so the docs-site mirror
+# in .github/workflows/build-pdfs.yml can skip it instead of pushing a
+# commit (and a Jenkins deploy of tina4.com) on every run. A reportlab or
+# pillow release that changes output formatting would re-churn all seven
+# books, so upgrades happen deliberately rather than silently on whatever
+# the runner resolved that morning.
+#
+# Verified byte-identical across reportlab 4.5.0 and 5.0.0, so the pin is a
+# guard against future drift, not a workaround for a known break.
+#
+# Local setup (matches CI exactly):
+#     pip3 install --user -r scripts/requirements.txt
+#
+# To upgrade: bump a pin, run `python3 scripts/test_reproducible.py` to
+# confirm the build is still self-consistent, then rebuild all seven books
+# and expect a one-time PDF churn commit if the output formatting moved.
+
+reportlab==5.0.0
+
+# Reads book.yml. build_pdf.py falls back to a tiny built-in parser if this
+# is missing, but the fallback handles a smaller YAML subset - keep it here
+# so CI and local always take the same code path.
+PyYAML==6.0.3
+
+# Transitive via reportlab, pinned explicitly because it encodes the cover
+# logo PNG into the PDF: a pillow change would alter the embedded image
+# bytes and therefore every book's hash.
+pillow==12.3.0
