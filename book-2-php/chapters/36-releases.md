@@ -284,7 +284,7 @@ The built-in HTTP `Api` client gained four zero-dependency capabilities, shipped
 
 ### Also shipping (previously held)
 
-- **Firebird pdo_firebird fallback.** The Firebird adapter prefers ext-interbase and silently falls back to pdo_firebird when the native extension is absent or broken (for example the macOS clumplet case). Force a driver with `TINA4_FIREBIRD_DRIVER=pdo` app-wide, or a `?driver=pdo` query param on one connection.
+- **Firebird `pdo_firebird` fallback.** The Firebird adapter prefers `ext-interbase` and silently falls back to `pdo_firebird` when the native extension is absent or broken (for example the macOS clumplet case). Force a driver with `TINA4_FIREBIRD_DRIVER=pdo` app-wide, or a `?driver=pdo` query param on one connection.
 - **REPL database env fix.** The interactive console now connects using the project database URL and credentials (it previously read a legacy `DATABASE_URL` and skipped the bind), matching the running application.
 - **AI coder rule-path skill.** The AI coding-assistant scaffolder writes each tool's rule and context files to the correct path, across all four frameworks.
 
