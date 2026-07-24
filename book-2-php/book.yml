@@ -1,7 +1,7 @@
 title: "Tina4 for PHP Developers"
 subtitle: "Zero Dependencies, 55 Features, Built for AI"
 accent: "#7b1fa2"
-version: "v3.12.4"
+version: "v3.13.85"
 cover_logo: "assets/tina4-cover-logo.png"
 chapters_dir: "book-2-php/chapters"
 output: "book-2-php/Tina4-for-PHP-Developers.pdf"

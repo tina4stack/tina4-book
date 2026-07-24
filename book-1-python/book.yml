@@ -1,7 +1,7 @@
 title: "Tina4 for Python Developers"
 subtitle: "Zero Dependencies, 55 Features, Built for AI"
 accent: "#306998"
-version: "v3.12.4"
+version: "v3.13.85"
 cover_logo: "assets/tina4-cover-logo.png"
 chapters_dir: "book-1-python/chapters"
 output: "book-1-python/Tina4-for-Python-Developers.pdf"
