@@ -1,4 +1,4 @@
-# Chapter 36: Upgrading from v2 to v3
+# Chapter 37: Upgrading from v2 to v3
 
 ## 1. Overview
 
@@ -452,7 +452,7 @@ Features that did not exist in v2. Each is covered in its own chapter:
 - **Email sending** -- Native SMTP, no SwiftMailer (Chapter 16).
 - **Caching layer** -- File, Redis, Valkey, Mongo backends (Chapter 11).
 - **GraphQL** -- Built-in GraphQL endpoint (Chapter 22).
-- **CLI tooling** -- `tina4` command for scaffolding, migrations, serving (Chapter 30).
+- **CLI tooling** -- `tina4` command for scaffolding, migrations, serving (Chapter 31).
 - **Auto-mapping in ORM** -- `$autoMap = true` eliminates manual field mappings (Chapter 6).
 - **Rate limiting** -- Per-IP rate limiting via env vars (Chapter 10).
 - **CSRF protection** -- Built-in, enabled by default (Chapter 10).

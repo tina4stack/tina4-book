@@ -1,4 +1,4 @@
-# Chapter 16: Real-time (WebRTC)
+# Chapter 18: Real-time (WebRTC)
 
 ## Peer-to-Peer Without a Media Server
 

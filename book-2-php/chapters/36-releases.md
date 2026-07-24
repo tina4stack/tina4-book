@@ -1,4 +1,4 @@
-# Chapter 35: Release Notes
+# Chapter 36: Release Notes
 
 ## v3.13.85 (2026-07-24) - The dev-admin bundle ships once
 PHP already shipped a single `tina4-dev-admin.min.js`; this release adds the PHP
@@ -2123,7 +2123,7 @@ Catch-up release covering v3.11.0 → v3.11.9 across all 4 frameworks.
 
 Tina4 PHP follows semantic versioning. The major number changes when something breaks. The minor number changes when something new arrives. The patch number changes when something gets fixed. Each release is available on Packagist.
 
-This chapter covers the full v3 line -- from the first release candidate through the current stable release. If you are upgrading from v2, read Chapter 36 first. It covers every breaking change and gives you a migration checklist.
+This chapter covers the full v3 line -- from the first release candidate through the current stable release. If you are upgrading from v2, read Chapter 37 first. It covers every breaking change and gives you a migration checklist.
 
 ---
 
@@ -2950,7 +2950,7 @@ The v3.0.0 release is a ground-up rewrite. Zero Composer dependencies. The HTTP 
 
 ### Breaking Changes from v2
 
-These are the changes that will break existing code. See Chapter 29 for a full migration checklist.
+These are the changes that will break existing code. See Chapter 37 for a full migration checklist.
 
 **PHP version.** Requires PHP 8.0 or later.
 
@@ -3016,7 +3016,7 @@ Five release candidates shipped before the final v3.0.0 release. They covered th
 
 | From | To | Action Required |
 |------|----|----------------|
-| v2.x | v3.0.0 | Full migration -- see Chapter 29 |
+| v2.x | v3.0.0 | Full migration -- see Chapter 37 |
 | v3.0-3.3 | v3.4.0 | Update `fetch()` calls to use `->data` on DatabaseResult |
 | v3.0-3.8 | v3.9.1 | Add auth to POST/PUT/PATCH/DELETE routes or mark them `->allowAnonymous()` |
 | v3.9.x | v3.10.x | No breaking changes -- update and test |

@@ -1,4 +1,4 @@
-# Chapter 35: Release Notes
+# Chapter 36: Release Notes
 
 ## v3.13.85 (2026-07-24) - The dev-admin bundle ships once
 Every install carried the dev-admin dashboard twice. `tina4-dev-admin.js` and

@@ -1,8 +1,8 @@
-# Chapter 28: Building Custom MCP Servers
+# Chapter 29: Building Custom MCP Servers
 
 ## 1. Beyond Dev Tools
 
-Chapter 27 covered the built-in MCP server that ships with Tina4. It exposes framework internals for AI-assisted development. This chapter goes further: you build your own MCP servers that expose your application's business logic.
+Chapter 28 covered the built-in MCP server that ships with Tina4. It exposes framework internals for AI-assisted development. This chapter goes further: you build your own MCP servers that expose your application's business logic.
 
 A CRM system exposes customer lookup. An accounting system exposes invoice queries. A warehouse system exposes inventory checks. Any domain logic that an AI assistant should access becomes an MCP tool.
 

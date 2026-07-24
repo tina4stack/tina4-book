@@ -1,4 +1,4 @@
-# Chapter 34: Building a Complete App
+# Chapter 35: Building a Complete App
 
 ## 1. Putting It All Together
 
@@ -1391,7 +1391,7 @@ This chapter used every major concept from the book:
 | Frontend (tina4css dashboard) | Chapter 17 |
 | WebSocket (live updates) | Chapter 23 |
 | Testing (full test suite) | Chapter 18 |
-| Docker deployment | Chapter 33 |
+| Docker deployment | Chapter 34 |
 
 ---
 
