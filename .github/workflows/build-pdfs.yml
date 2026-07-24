@@ -59,6 +59,14 @@ jobs:
       - name: Install librsvg (for cover-logo PNG conversion if needed)
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends librsvg2-bin
 
+      # Guards the reproducible build: builds one book twice and fails if
+      # the bytes differ. If this breaks, every CI run starts pushing a
+      # fresh commit (and a Jenkins deploy) to tina4-documentation even
+      # when no chapter changed. Runs before the real build so it cannot
+      # disturb the artifacts that get committed.
+      - name: Check PDF build is reproducible
+        run: python3 scripts/test_reproducible.py
+
       - name: Build all PDFs
         run: bash scripts/build-all-pdfs.sh
 

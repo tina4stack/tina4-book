@@ -42,6 +42,22 @@ try:
 except ImportError:  # pragma: no cover - optional dep; we fall back to a tiny parser
     yaml = None
 
+import reportlab.rl_config
+
+# Reproducible output. Without this, reportlab stamps every PDF with the
+# wall-clock /CreationDate and /ModDate (in LOCAL time, so a Mac and a UTC
+# CI runner never agree) and folds that timestamp into the document /ID.
+# Every rebuild therefore produced seven byte-different PDFs even when not
+# a single chapter had changed, which meant the docs-site mirror in
+# .github/workflows/build-pdfs.yml could never skip an unchanged book and
+# pushed a fresh commit — and a Jenkins deploy — on every single run.
+#
+# invariant=1 pins the timestamp to 2000-01-01T00:00:00Z. Setting
+# SOURCE_DATE_EPOCH (the reproducible-builds standard) overrides that and
+# still yields byte-identical output; reportlab honours it natively in
+# reportlab.lib.utils.TimeStamp. Must be set before any canvas is built.
+reportlab.rl_config.invariant = 1
+
 from reportlab.lib.colors import HexColor, black, white
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
 from reportlab.lib.pagesizes import A4
@@ -353,6 +369,25 @@ class ParseContext:
     accent_hex: str
     styles: dict[str, ParagraphStyle]
     toc_entries: list[tuple[int, str, str]]  # (level, title, anchor)
+    # How many times each heading slug has been seen so far. Anchors must be
+    # unique document-wide (canvas.bookmarkPage keys off them), and two
+    # chapters can legitimately share a heading like "Summary". A single
+    # ParseContext spans every chapter in a book, so counting here makes the
+    # suffix stable: first "summary", then "summary-2", "summary-3".
+    anchor_counts: dict[str, int] = field(default_factory=dict)
+
+    def unique_anchor(self, title: str) -> str:
+        """Deterministic, readable, collision-free anchor for a heading.
+
+        This used to be ``_slug(title) + f"-p{id(line)}"``. id() is the
+        CPython memory address, so every build produced different anchor
+        names and therefore byte-different PDFs even when no chapter had
+        changed — see scripts/test_reproducible.py.
+        """
+        slug = _slug(title)
+        seen = self.anchor_counts.get(slug, 0) + 1
+        self.anchor_counts[slug] = seen
+        return slug if seen == 1 else f"{slug}-{seen}"
 
 
 class _Bookmarked(Paragraph):
@@ -413,7 +448,7 @@ def parse_markdown(path: Path, ctx: ParseContext) -> list:
             title_raw = h.group(2)
             # Strip "Chapter NN: " prefix for cleaner outline if present
             title_clean = re.sub(r"^Chapter\s+\d+:\s*", "", title_raw)
-            anchor = _slug(title_clean) + f"-p{id(line)}"
+            anchor = ctx.unique_anchor(title_clean)
             style_key = ["ChapterTitle", "SectionHeading", "SubsectionHeading", "SubsectionHeading"][min(level, 3)]
             out.append(_Bookmarked(
                 _format_inline(title_clean, ctx.accent_hex),
@@ -597,7 +632,11 @@ def build_pdf(cfg: BookConfig) -> Path:
                    topMargin=0.9 * inch, bottomMargin=0.9 * inch,
                    leftMargin=0.9 * inch, rightMargin=0.9 * inch,
                    title=cfg.title,
-                   author="Tina4 Stack")
+                   author="Tina4 Stack",
+                   # Belt and braces alongside rl_config.invariant above:
+                   # BaseDocTemplate hands this straight to the canvas, so
+                   # the setting cannot be lost to import-order surprises.
+                   invariant=1)
 
     story: list = _build_cover(cfg, styles)
 
