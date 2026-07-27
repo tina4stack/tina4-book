@@ -42,6 +42,23 @@ The parameter no longer carries a default, so an unset argument resolves through
 `TINA4_JWT_ALGORITHM` exactly as `getToken` and `validToken` do. Pass one
 explicitly and it still wins.
 
+### authenticateRequest honours the overrides it accepts
+
+`authenticateRequest(headers, secret?, algorithm?)` took both arguments and
+dropped them. The body called `validToken(token)` with no arguments, so a caller
+asking to verify against a particular secret silently got the environment's
+instead, and `algorithm` defaulted to the literal `"HS256"`, shadowing
+`TINA4_JWT_ALGORITHM` the same way `authMiddleware` did.
+
+Both are now forwarded. Python, PHP and Ruby already honoured them, so this was
+the last framework where the same call gave a different answer.
+
+The test covering this used to assert the old behaviour - that the secret
+parameter was ignored and the environment always governed. That documented a
+defect as a contract and is why the divergence survived as long as it did. It now
+asserts the override works, with a negative case alongside it so the positive one
+cannot pass by accident.
+
 ### nbf is enforced, with 60 seconds of leeway (nodejs#39)
 
 A token stamped not-valid-until-noon was accepted at nine. `validToken` checked
