@@ -4475,14 +4475,6 @@ This document lists all public classes and methods extracted from the 4 Tina4 fr
 | `write(sessionId: string, data: SessionData, _ttl: number)` |
 | `destroy(sessionId: string)` |
 
-### Node: `RedisNpmSessionHandler` (`core/src/sessionHandlers/redisHandler.ts`)
-
-| Method | 
-|--------|
-| `read(sessionId: string)` |
-| `write(sessionId: string, data: SessionData, ttl: number)` |
-| `destroy(sessionId: string)` |
-
 ### Node: `ValkeySessionHandler` (`core/src/sessionHandlers/valkeyHandler.ts`)
 
 | Method | 
