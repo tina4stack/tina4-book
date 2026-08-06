@@ -1,5 +1,104 @@
 # Chapter 36: Release Notes
 
+## v3.13.95 (2026-08-06) - Preparing for the 3.14 stable release
+
+One of several releases still to come before **3.14 stable**. The theme is
+parity: the same call now means the same thing in Python, PHP, Ruby and Node.
+Method shapes and inputs are unchanged - this is bug fixes, optimizations, and
+a much harder test suite behind them. See "Possible breaking" at the end for
+the handful of behaviour corrections that could affect an app relying on the
+old, wrong result.
+
+### Queues
+
+- The dev dashboard queue panel lists the store it counts (`b07a9d9`)
+- The AMQP vhost is read as the path segment (`815fad9`)
+
+### Logging
+
+- An explicit argument beats the environment, which beats the default (`9af3c52`). `configure()` no longer writes `process.env`, so it cannot clobber the value for child processes
+- `Log.reset()` returns a long-lived process to environment-driven resolution (`d04edfc`)
+
+### Databases
+
+- Every connect is bounded by `TINA4_DATABASE_CONNECT_TIMEOUT` (`72f7074`)
+- Where a driver has its own connect timer, it wins and its message is translated (`e196c00`)
+- `count()` returns the true total, not the last page's row count (`cb831c3`)
+- `toPaginate` reports the page it is on (`8ba6c82`)
+- Case-insensitive primary-key match; Firebird `tableExists` matches both spellings (`9f31a35`)
+- Firebird: a column name is folded back only when Firebird folded it (`ac8528d`)
+- `node-firebird` bumped past a 13% authentication failure, and pinned (`688cf53`)
+
+### Sessions
+
+- The Mongo session database default is `tina4`, matching the others (`d068c40`)
+- An environment URI no longer overrides an explicitly configured Mongo host and port (`696731c`)
+- The session key prefix contract is locked in (`3e5a30e`)
+- Firebird's DDL branch is measured, not inferred (`08ed08e`)
+
+### Document store
+
+- `find()` is deferred, and there is one sort contract (`abfc1a9`, `3163b3e`)
+
+### Local by default, production by environment variable
+
+The document store runs on a local SQLite file with no configuration and no
+services, and becomes a real MongoDB collection when you set one environment
+variable. The call sites are identical either way. The same shape holds across
+the framework: SQLite is the default database, the queue is file-backed until
+you point it at a broker, and the cache is in-memory until you give it a URL.
+
+### Bulk insert
+
+Pass a list of rows to `insert()` and the framework builds one prepared
+statement and runs it inside a single transaction on a single connection,
+instead of a round trip per row. Same call in all four languages.
+
+```php
+$db->insert("orders", [
+    ["customer_id" => 1, "total" => 9.99],
+    ["customer_id" => 2, "total" => 14.50],
+    ["customer_id" => 3, "total" => 22.00],
+]);
+```
+
+### Tooling
+
+The `tina4` CLI reached 3.8.67 over this cycle:
+
+- `tina4 init` now wires the project up rather than printing instructions for it
+- `tina4 deploy docker` gained `--runtime cli|fpm|swoole` for PHP
+- The skills installer worked on macOS but installed nothing on Debian/Ubuntu. Fixed
+- Skills install for Codex as well as Claude
+- `tina4 metrics` gained cross-file duplication detection, Rust support, and now refuses a file it cannot parse instead of scoring it
+- `tina4 serve` no longer opens a duplicate browser tab
+
+The documentation site you are reading runs on **tina4press**, our own
+zero-Vue static site generator built on tina4-js. 271 pages, no framework
+runtime on the page.
+
+### Possible breaking
+
+Method shapes and inputs did not change. These are behaviour corrections, so
+they only affect an application that depended on the previous, incorrect
+result:
+
+- **`count()` in Ruby and Node** returned the number of rows the last page
+  produced. It now returns the true total. Code that treated it as a page size
+  will see a different number.
+- **The AMQP vhost** was read as `"/"` plus the path segment, so
+  `amqp://host/production` looked for `//production`. If you worked around this
+  by naming your vhost with a leading slash, remove it.
+- **Configuration precedence.** An explicit argument now beats the environment.
+  If you both set `TINA4_LOG_DIR` and passed a directory to `configure()`, the
+  code now wins. Setting only one is unaffected. Ruby deployments that read
+  `tina4.log` from the project root should read `logs/tina4.log`.
+- **The Mongo session database default in Node** is now `tina4`, matching the
+  other three. Set it explicitly if you relied on the old default.
+- **An unknown connection scheme, or an unknown `TINA4_SESSION_BACKEND`,**
+  raises instead of silently falling back to SQLite or to file sessions.
+- **A missing MongoDB driver** raises rather than falling through.
+
 ## v3.13.94 (2026-07-29) - A write with no filter is an error
 
 `update()` and `delete()` with no WHERE clause used to be accepted. Two of the

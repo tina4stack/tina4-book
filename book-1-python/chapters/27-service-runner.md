@@ -249,19 +249,22 @@ Start the runner in your `src/app.py`:
 
 ```python
 # src/app.py
-from tina4_python.tina4 import Tina4
+import atexit
 from src.worker_services import runner
 
-app = Tina4()
+runner.start()
 
-@app.on_startup
-def start_services():
-    runner.start()
-
-@app.on_shutdown
-def stop_services():
-    runner.stop()
+# ServiceRunner does not stop itself, so hand it to atexit. The interpreter
+# runs this on a clean exit and on SIGTERM, which is what an orchestrator
+# sends before it stops the container.
+atexit.register(runner.stop)
 ```
+
+There is no app object and no lifecycle decorator. Tina4 for Python registers
+routes with bare `@get` and `@post`, and `src/app.py` runs at import time, so
+starting the runner is a plain call. `runner.start()` launches every registered
+service in a background thread and returns, which leaves the web server free to
+carry on serving.
 
 ---
 
