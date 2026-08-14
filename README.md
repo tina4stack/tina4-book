@@ -1,8 +1,8 @@
 # Tina4 for Dummies: The Complete Guide
 
-**5 books. 4 languages. 1 framework. Zero dependencies.**
+**7 books. 6 languages. 1 framework. Zero runtime dependencies.**
 
-This repository holds the full Tina4 documentation: one book per supported language plus a cross-language introduction and a frontend companion. All chapters are plain Markdown, rendered on [tina4.com](https://tina4.com) via VitePress.
+This repository holds the full Tina4 documentation: one book per supported language plus a cross-language introduction. All chapters are plain Markdown, rendered on [tina4.com](https://tina4.com) with tina4press.
 
 ---
 
@@ -59,6 +59,8 @@ This repository holds the full Tina4 documentation: one book per supported langu
 36. [Release Notes](book-1-python/chapters/36-releases.md)
 37. [Upgrading from v2 to v3](book-1-python/chapters/37-upgrading-from-v2.md)
 38. [Complete Feature List](book-1-python/chapters/38-feature-list.md)
+39. [Realtime and WebRTC](book-1-python/chapters/39-realtime-webrtc.md)
+40. [AI Client](book-1-python/chapters/40-ai-client.md)
 
 ### Book 2: Tina4 for PHP Developers
 
@@ -102,6 +104,8 @@ This repository holds the full Tina4 documentation: one book per supported langu
 36. [Release Notes](book-2-php/chapters/36-releases.md)
 37. [Upgrading from v2 to v3](book-2-php/chapters/37-upgrading-from-v2.md)
 38. [Complete Feature List](book-2-php/chapters/38-feature-list.md)
+39. [Realtime and WebRTC](book-2-php/chapters/39-realtime-webrtc.md)
+40. [AI Client](book-2-php/chapters/40-ai-client.md)
 
 ### Book 3: Tina4 for Ruby Developers
 
@@ -143,8 +147,9 @@ This repository holds the full Tina4 documentation: one book per supported langu
 34. [Deployment](book-3-ruby/chapters/34-deployment.md)
 35. [Building a Complete App](book-3-ruby/chapters/35-complete-app.md)
 36. [Release Notes](book-3-ruby/chapters/36-releases.md)
-37. [Upgrading from v2 to v3](book-3-ruby/chapters/37-upgrading-from-v2.md)
-38. [Complete Feature List](book-3-ruby/chapters/38-feature-list.md)
+37. [Complete Feature List](book-3-ruby/chapters/37-feature-list.md)
+38. [Realtime and WebRTC](book-3-ruby/chapters/38-realtime-webrtc.md)
+39. [AI Client](book-3-ruby/chapters/39-ai-client.md)
 
 ### Book 4: Tina4 for Node.js Developers
 
@@ -186,8 +191,9 @@ This repository holds the full Tina4 documentation: one book per supported langu
 34. [Deployment](book-4-nodejs/chapters/34-deployment.md)
 35. [Building a Complete App](book-4-nodejs/chapters/35-complete-app.md)
 36. [Release Notes](book-4-nodejs/chapters/36-releases.md)
-37. [Upgrading from v2 to v3](book-4-nodejs/chapters/37-upgrading-from-v2.md)
-38. [Complete Feature List](book-4-nodejs/chapters/38-feature-list.md)
+37. [Complete Feature List](book-4-nodejs/chapters/37-feature-list.md)
+38. [Realtime and WebRTC](book-4-nodejs/chapters/38-realtime-webrtc.md)
+39. [AI Client](book-4-nodejs/chapters/39-ai-client.md)
 
 ### Book 5: tina4-js - The 1.5KB Reactive Frontend Core
 
@@ -234,7 +240,7 @@ This repository holds the full Tina4 documentation: one book per supported langu
 
 ## About
 
-Tina4 is a family of zero-dependency web frameworks for Python, PHP, Ruby, and Node.js. Same architecture, same conventions, 98 built-in features across all four languages. See [tina4.com](https://tina4.com) for the project home.
+Tina4 is a family of zero-dependency web frameworks for Python, PHP, Ruby, and Node.js. The four backends share one architecture and one set of conventions. See [tina4.com](https://tina4.com) for the project home.
 
 ## Building the books
 

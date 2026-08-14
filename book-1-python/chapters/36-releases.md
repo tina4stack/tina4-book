@@ -1,5 +1,318 @@
 # Chapter 36: Release Notes
 
+## v3.13.101 (2026-08-14) - One AI client, four languages
+
+One class. Three methods. No provider SDK.
+Tina4 applications can now call local models, OpenAI, and Anthropic through the
+same small API: `Ai.chat`, `Ai.complete`, and `Ai.embed`.
+
+### What ships
+
+- The native `tina4 metrics` CLI now owns every code-health calculation. Framework-level metrics commands and quick census implementations are gone.
+- Dev-admin keeps its metrics tab through two thin native-JSON adapters: full analysis and file detail.
+
+- `Ai.chat` returns one `ChatResponse` with text, model, token usage, finish reason, and the raw provider response.
+- `Ai.complete` sends one user message and returns its text.
+- `Ai.embed` accepts one string or a list and preserves that input shape in its output.
+- `stream=True` yields ordered text deltas from OpenAI-compatible and Anthropic streams.
+
+### Failure is data
+
+Hosted providers refuse to send a request without `TINA4_AI_KEY`. Connection and
+total-request deadlines stay separate. Retries cover connection failures, HTTP 429,
+and HTTP 5xx responses, but stop after the first streamed delta. Errors never include
+the key, prompt, or provider response body.
+
+### Upgrade notes
+
+This release adds a new API. It does not add the unimplemented `Llm.ask` or
+`Llm.ask_json` proposal. Vision, image generation, tools, agents, and conversation
+state remain outside this release. The client uses Python's standard library; your
+dependency tree does not grow.
+
+## v3.13.100 (2026-08-14) - Frond keeps the whole page
+
+This fast-follow release fixes template inheritance and puts a ceiling on
+Frond's caches. The template engine now rejects a second `{% extends %}` tag,
+preserves nested root blocks, and evicts stale compiled state instead of
+letting a long-running process grow without limit.
+
+### Template inheritance
+
+- A template may declare one parent. A second `{% extends %}` now raises a clear error instead of changing the parent without warning (`9bb7279`)
+- The final block-substitution pass now tracks nesting depth. A block nested inside another root block no longer causes the outer content to disappear (`91828ce`)
+
+### Bounded caches
+
+- Template, fragment, and expression caches now have size bounds and TTL sweeps. Long-running workers release stale entries while rendered output stays unchanged (`82e02de`)
+
+### Frond extension scope
+
+- Class calls to `add_filter`, `add_global`, and `add_test` remain process-global. Instance calls now affect that renderer only, so one request or test cannot seed every Frond instance created later (`ecf66e6`)
+
+### AI skill installer
+
+- Skill downloads retry transient network and HTTP failures. A short GitHub raw-content outage no longer drops the whole install (`09dd6b8`)
+
+### Release consistency
+
+- `pyproject.toml`, `uv.lock`, the packaged fallback version, and the AI-facing guide now agree on `3.13.100`. New version guards stop a partial bump before release (`1aec8c7`, `44188a6`)
+
+### Upgrade notes
+
+No valid template syntax changes. Code that relied on an instance extension
+leaking globally must register on `Frond` itself. A template with two `{% extends %}` tags was
+already contradictory; it now fails at the line that needs fixing. Cache
+eviction may trigger a reparse, but it does not change the rendered bytes.
+
+The Frond AOT compiler is not part of this release. Parser and compiler parity
+for Ruby and Node.js remains planned for `3.13.101`.
+
+## v3.13.99 (2026-08-13) - Stability, parity, and secure by default
+
+The biggest step yet on the road to **3.14 stable**. This release closes out
+Phases 1 through 5 of the v3 parity audit: roughly thirty breaking changes,
+and every one of them is a security fix, a parity fix, or a correctness fix,
+never a change made for its own sake. Two conformance grids, logging and
+database adapters, are now fully proven against real services in all four
+frameworks, and a small batch of genuinely new bugs gets fixed alongside
+them. Read "Possible breaking" before you upgrade: several of these changes
+correct a footgun that was silently doing the wrong thing.
+
+### Security
+
+Security now defaults on instead of requiring opt-in.
+
+- Security headers emit by default, including `Content-Security-Policy: default-src 'self'`, which blocks inline scripts and third-party CDNs. Relax the policy with `TINA4_CSP`; HSTS emits only on HTTPS, when `TINA4_HSTS` is set (`bfc1597`)
+- `TINA4_CSRF=true` now actually attaches the CSRF middleware, where it used to be inert. A blank `TINA4_SECRET` fails closed now instead of minting a forgeable public-default token (`3249495`)
+- The dev server binds `127.0.0.1` by default; set `TINA4_HOST=0.0.0.0` to expose it. A cross-origin `/__dev` mutation is refused, and `.env` is never served through the file endpoints (`41b3aeb`)
+- A symlink whose real path escapes the public directory is refused, and dotfiles (`.env`, `.git`) 404 instead of serving (`c51c686`)
+- `{% include %}`, `{% extends %}`, and `{% import %}` in a Frond template are confined to the templates directory. A path that escapes it, with `..`, an absolute path, or a symlink, now raises (`f858c11`)
+- `tina4 serve` on a busy port no longer kills whatever holds it. It reclaims only a port held by an identifiable Tina4 dev server, refuses a foreign holder, and honours `TINA4_NO_TAKEOVER` / `--no-kill` (`fdd7d86`)
+- A hostile inbound `X-Request-ID` (CRLF, illegal characters, an over-long value) is sanitized to a fresh id instead of echoed back raw, closing a response-header and log-injection path (`1d324d5`)
+- The dead `render_production_error` function is removed; nothing called it. The dev error overlay now redacts `Authorization`, `Cookie`, and `Set-Cookie` headers plus secret-looking body fields, and caps the rendered stack at 50 frames (`7b460ea`)
+- A repeated multipart file field now yields a list instead of silently dropping every upload but the last. The new safe-save helper rejects `..` and absolute filenames (`9fd483c`)
+
+### Data integrity
+
+Four footguns that used to fail silently now fail loud, or stop failing at all.
+
+- An unparseable or unsupported MongoDB WHERE clause now raises instead of silently matching every document. A DELETE or UPDATE with no WHERE is rejected outright. Write an explicit WHERE, or call `truncate()` for the whole collection (`3315d1c`)
+- `truncate()` on a Mongo collection now actually empties it. It used to report success while leaving every document in place (`079873e`)
+- Firebird write results are correct now: `db.insert().last_id` and `db.update()` / `db.delete()` `.affected_rows` return real values instead of `None` or `0` (`de441c5`)
+- MSSQL pagination converges on `OFFSET`/`FETCH` in all four frameworks (`4491cf8`)
+
+### ORM and validation
+
+Eight fixes bring the ORM's write path, validation, and generated schema into
+agreement across all four frameworks.
+
+- `create_table()` now injects the soft-delete column (`is_deleted INTEGER DEFAULT 0`) for a `soft_delete = True` model that does not declare it itself (`6c190c2`)
+- A soft-deleted child is no longer returned through relationship traversal, lazy or eager. The phantom `on_delete=` foreign-key parameter is removed and now raises a clear "read-side-only" error instead of silently doing nothing (`2e9a69a`)
+- The imperative `has_many` default row cap changes from a silent 100 to the whole result set. A caller relying on the old truncation now gets every row (`558a000`)
+- A REST list `?page` below 1 clamps to page 1 instead of handing a negative offset to the driver; an oversized `?limit` or `?per_page` is capped at 100 (`761873a`)
+- Loading a row from the database no longer re-enforces write-path business constraints (required, length, range, choices). A stored row that violates a constraint tightened after it was written now loads instead of aborting the whole page; the write path is unchanged and still rejects a bad save (`6095243`)
+- AutoCrud returns `422` with field errors for an invalid create or update, where it used to return `400`. The write body is now allow-listed: `is_deleted` is never client-writable, and a client-supplied primary key is stripped on both create and update, closing a mass-assignment hole and an IDOR-shaped redirect (`9941536`)
+- `seed_table`'s `seed` parameter is removed and now raises if you pass a non-default value. Seed your own `FakeData` instance for determinism (`80e897b`)
+- The validation message vocabulary is unified across all four frameworks; `in_list` now renders a compact JSON list (`must be one of ["a","b","c"]`) (`b9fbd7e`)
+
+### Request model - the big one
+
+`request.params` is route-params-only now, in all four frameworks. Python
+used to merge the query string and the route params into `params`, so
+`request.params["id"]` could silently return a client-supplied `?id=` value
+that shadowed the real route parameter, a param-pollution surface. Client
+input lives only in `request.query` and `request.body` now; `request.params`
+holds route params and nothing else. A handler or middleware reading the old
+merged `params` must read `query` or `body` explicitly.
+
+Three related fixes ship with it: a malformed JSON body returns the raw
+string it failed to parse, the empty-body sentinel is Python's native
+`None`, `Request` gains a mutable `user` field, and `header()` lookup is
+case-fold only now (it no longer also converts `-` to `_`) (`7df99c8`).
+
+### Migrations
+
+- PHP, Ruby, and Node's `rollback` is fail-safe now too, matching Python's already-correct behaviour: a missing `.down.sql` file or a failed down script raises and leaves the `tina4_migration` ledger row in place, instead of deleting the tracking row and leaving the schema applied but untracked (`9289017`)
+
+### HTTP
+
+- Responses gzip-compress when eligible in PHP, Ruby, and Node (body over 1024 bytes, `Accept-Encoding: gzip`, a compressible content type); a cacheable 200 gets a strong ETag and a matching `If-None-Match` gets a 304. The static-file ETag format is unified to `W/"<size>-<mtime>"` on all four, so a cache revalidates once instead of on every deploy. Python's 304 now carries `ETag` and `Last-Modified`, and `If-None-Match` follows RFC 7232 (weak, list, or `*`) instead of an exact-string match (`4a389f9`)
+- A `403` now negotiates HTML versus JSON the same way `404` and `500` already do (`7af21c6`)
+- The OpenAPI spec converges on one shape across languages: a secured operation documents a `401`, and `summary`/`tags` always populate (`47fbcf2`)
+- A route group's prefix join is normalized, so a route no longer mis-registers on a bare concatenation or an uncollapsed double slash (`14df0ed`)
+
+### Dev tooling
+
+- The inline `@tests` descriptor builders are renamed: `assert_equal`/`assert_raises`/`assert_true`/`assert_false` become `expect_equal`, `expect_raises`, `expect_true`, `expect_false`. `tina4 python test` now discovers and runs the inline surface with a real exit code, so a previously-green run that executed none of your inline tests may now actually run, and fail, them (`d854b9d`)
+- `TestResponse` preserves duplicate headers; a new multi-value accessor sits alongside the unchanged single-value `headers[name]` (`21bc198`)
+- MCP `serverInfo.version` and outbound HTTP requests now report the real framework version instead of a placeholder; the framework client sends `User-Agent: Tina4/<version>` unless the caller already supplies one (`4275713`)
+
+### Proven in all four
+
+Two conformance grids close out fully proven, tested against real services in
+every framework, no mocks:
+
+- **Logging.** A real per-language runner now exercises the shared logger contract end to end. Closing it surfaced and fixed real bugs: bootstrap `configure()` no longer invents defaults, and a request id is now cleared in a `finally` block so it can never bleed into the next request (`f809b38`)
+- **Database adapters** (ADR-0044). A real runner against SQLite, PostgreSQL, MySQL, MSSQL, and Firebird proved every adapter implements the same interface. It found a real bug on the way: `MySQLAdapter` ran with `autocommit=False` under InnoDB's REPEATABLE-READ, so a plain `fetch()` / `fetch_one()` opened an implicit transaction that a later `start_transaction()` then collided with (`f29579a`, `543d8c1`)
+
+### Bug fixes
+
+- A route path containing a literal parenthesis, like `/products/(sale)`, now matches correctly everywhere. Python and Ruby were already correct; PHP and Node compiled the literal characters as regex syntax (`8534b27`)
+
+### Possible breaking
+
+Read these before you upgrade. Every entry here is a security, parity, or
+correctness fix, none is a change made for its own sake.
+
+- **`request.params` is route-params-only.** Read query-string values from `request.query` and body values from `request.body`. This is the single largest behaviour change in the release.
+- **Security headers, including CSP, emit by default.** An app depending on inline scripts or a third-party CDN needs `TINA4_CSP` to relax the policy.
+- **`TINA4_CSRF=true` now actually attaches the CSRF middleware.** If you set it and never noticed CSRF enforcement, it enforces now.
+- **A blank `TINA4_SECRET` fails closed.** Set a real secret; the framework no longer falls back to a guessable public default.
+- **The dev server binds `127.0.0.1` by default.** Set `TINA4_HOST=0.0.0.0` to expose it on your network.
+- **An unparseable Mongo WHERE now raises instead of matching everything.** Add an explicit WHERE, or call `truncate()`.
+- **`create_table()` adds `is_deleted` for a soft-delete model automatically.** A model that already declares the column is unaffected.
+- **The `on_delete=` foreign-key parameter is removed and raises.** Relationships are read-side only; enforce integrity in your migrations.
+- **The imperative `has_many` no longer caps at 100 rows.** A caller relying on the old truncation now gets every row.
+- **`?page=0` clamps to page 1, and `?limit` caps at 100.** A client can no longer request the whole table in one page.
+- **AutoCrud returns `422`, not `400`, on invalid input**, and never accepts `is_deleted` or a client-supplied primary key in the write body.
+- **`seed_table`'s `seed` parameter is removed and raises.** Seed your own `FakeData` instance instead.
+- **Validation messages changed wording**, including `in_list`'s compact JSON rendering.
+- **A malformed JSON body returns the raw string**, not an empty dict.
+- **The static-file `ETag` format changed**, so every cache revalidates once on upgrade.
+- **A route group's prefix join is normalized.** A route depending on the old mis-registered, doubled-slash path must use the corrected one.
+- **The inline testing descriptors are renamed** `assert_*` to `expect_*`, and `tina4 python test` now actually runs them.
+
+### Coming in 3.13.100
+
+Frond's compiler, extensibility, auto-escaping, sandboxing, and caching work
+(features 48 through 60) is deferred to the 3.13.100 fast-follow, alongside a
+refreshed Carbonah benchmark harness and a configurable database column-name
+casing option.
+
+## v3.13.98 (2026-08-11) - Skills discipline
+
+A maintenance release. No API changed, and no behaviour changed in your app.
+
+The bundled AI coding skills - the ones that install with
+`curl -fsSL https://tina4.com/install-skills.sh | sh` - moved onto one shared
+plan discipline. A plan file has one format (Scope, Tests, Bugs, Commits), and a
+checkbox is ticked only when the work is verified green at HEAD, never on a
+claim. That keeps an agent's plan file honest, so it always reflects what
+actually shipped.
+
+The framework package also shed internal dead weight: duplicate design-system
+source files that were never compiled or served at runtime. Nothing your code
+imports or renders changed.
+
+Nothing to upgrade. If you use the Tina4 AI skills, re-run the installer.
+
+## v3.13.97 (2026-08-07) - Behaviour corrections
+
+A small bug-fix release on the road to **3.14 stable**. No new surface, no
+renames. Two behaviours come back into line with the contract. A broker queue
+refuses an operation it cannot honour instead of losing your data, and a parity
+test locks DocStore's date handling so it stays correct. Read "Possible
+breaking" if your app calls `clear()` or `purge()` on a Kafka or RabbitMQ queue.
+
+### Queues
+
+- `clear()` and `purge()` on a broker backend raise a named refusal. A broker delivers messages to consumers and cannot address them by status, so neither call can be honoured. Kafka's `clear()` returned `0` and `purge()` did nothing; RabbitMQ drained the live queue and destroyed its messages. Both raise now, rather than return a meaningless count or throw away data you meant to keep (`2a0cb8c`)
+
+### DocStore
+
+- `distinct()` dedups values by equality, so two equal dates collapse to one row. Python was already correct; a parity test now locks it across all four frameworks (`8de6025`)
+
+### Possible breaking
+
+- **`clear()` and `purge()` raise on a broker queue (Kafka, RabbitMQ).** The result never matched the call: Kafka returned `0`, RabbitMQ destroyed the live queue. Catch the refusal, or guard the call. A database-backed queue still clears and purges as before.
+
+## v3.13.96 (2026-08-07) - One paginate envelope, one message shape
+
+Another step toward **3.14 stable**, and the theme is still parity: the same
+call means the same thing in Python, PHP, Ruby and Node. This release settles
+two subsystems that had drifted into four shapes. Pagination returns one
+envelope of seven keys with a true total. The Messenger IMAP path returns one
+message shape, addresses mail by a real IMAP UID, and hands back attachments
+you can write straight to disk. Some of these are behaviour changes, so read
+"Possible breaking" at the end before you upgrade.
+
+### Pagination
+
+- `to_paginate()` takes no arguments and reads every field from the query that ran; pass one and it raises (`790f6bc`)
+- The envelope is exactly seven snake_case keys: `records`, `total`, `page`, `per_page`, `total_pages`, `limit`, `offset` (`790f6bc`)
+- `total` is a true `COUNT(*)` for the filter, never the row count the page returned (`790f6bc`)
+- The AutoCrud REST list endpoint returns the same seven keys (`891e9a2`)
+
+```python
+# Fetch the page you want, then describe it. No arguments.
+result = db.fetch("SELECT * FROM orders", [], 20, 40)   # 20 per page, page 3
+return response(result.to_paginate())
+# {"records": [...], "total": 250, "page": 3, "per_page": 20,
+#  "total_pages": 13, "limit": 20, "offset": 40}
+```
+
+### Messenger
+
+- `send()` returns `{success, message, id}` on both the real-send and dev-capture paths. `error` became `message`, `message_id` became `id`, and the capture-only `dev` key is gone (`5e912ca`)
+- `id` carries a real `Message-ID` header the message actually sets, so it is populated instead of always empty (`5e912ca`)
+- `inbox()` and `search()` return `snippet` as decoded, tag-stripped plain text truncated to 200 characters, not raw base64 (`5e912ca`)
+- `read()` of a UID that does not exist returns `None`, not `{}` (`5e912ca`)
+- IMAP credentials are their own now: `TINA4_MAIL_IMAP_USERNAME` and `TINA4_MAIL_IMAP_PASSWORD`, falling back to the SMTP pair, plus `imap_username` / `imap_password` and an `imap_encryption` constructor argument (`5e912ca`)
+- The `uid` from an IMAP read is a real IMAP UID, so it still addresses the right message after another client expunges the mailbox (`3237383`)
+- `read()` folds each attachment's decoded bytes into `attachments[i]["content"]`, so you write an attachment straight to disk (`dabd87d`)
+
+### Api client
+
+- `Api.send()` is renamed `Api.send_request()`, the one name PHP, Ruby and Node already use (Ruby's `send` is `Object#send` and cannot be an HTTP verb). There is no alias, the primary is renamed. The verb methods `get` / `post` / `put` / `patch` / `delete`, `upload` and `download` are unchanged (`e54ae00`)
+
+### Swagger
+
+- `servers[0].url` defaults to `/`, which resolves under any port, host or proxy, instead of a hard-coded `http://localhost:7145` (`d19fcac`)
+- `info.version` defaults to `1.0.0` and `info.description` to an empty string (`d19fcac`)
+- `components.schemas` is keyed by the model class name, with a `required` array derived from column nullability (`d19fcac`)
+- `operationId` keeps a path's leading underscores, so `/__health` and `/health` stay distinct (`d19fcac`)
+- An operation documents only the response codes the framework really returns (`d19fcac`)
+
+### Migrations
+
+- `code` is the canonical kind for a code migration, the same word in all four frameworks. An unknown kind raises and names the valid ones instead of being quietly accepted (`7ce89dd`)
+
+### Server
+
+- An oversized request body answers `413`, not `500` (`d448027`)
+- `TINA4_PORT` is the port variable and wins; bare `PORT` still works but is deprecated and goes in 3.14 (`a0b0dab`)
+- A public `asgi()` bootstrap exposes the app to any ASGI server (`a653908`)
+- A synchronous route handler runs in a worker thread, so a slow handler no longer blocks the event loop (`867b8d9`)
+
+### Build and skills
+
+- The framework SCSS compilers are gone; the `tina4` Rust CLI owns SCSS now (`9773bcc`)
+- tina4-css is pinned to one artefact and one URL (`546448f`)
+- The skills point at the ADRs and make `tina4 metrics`, Carbonah and mcp.tina4.com the lean, green, grounded workflow (`5cca039`)
+
+### Proven in all four
+
+The Messenger, Swagger and pagination behaviours are locked by machine-checked
+contract suites that run against real services in every framework: a live
+GreenMail server for the mailbox, a real 250-row SQLite table for pagination.
+No mocks.
+
+### Possible breaking
+
+Read these before you upgrade. Each affects an app that relied on the old shape:
+
+- **`Api.send()` is now `Api.send_request()`** with no alias. Replace `api.send(method, ...)` with `api.send_request(method, ...)`.
+- **`to_paginate()` takes no arguments.** The old `to_paginate(page, per_page)` form raises. Fetch the page you want, then call `to_paginate()`.
+- **`total` is the true count.** It was the page's row count in some frameworks; it is now a `COUNT(*)` for the filter. Read `len(records)` for the page size.
+- **The paginate envelope is seven keys.** A reader of the dropped alias keys must move to `records`, `total`, `page`, `per_page`, `total_pages`, `limit` and `offset`.
+- **A Messenger `uid` is a real IMAP UID.** Discard any `uid` stored by an older version and re-read it; the old values were never stable across an expunge.
+- **`send()` and `read()` changed keys.** `send()` returns `{success, message, id}`; `read()` of a missing UID returns `None`; dates are ISO-8601.
+- **Swagger defaults moved.** `servers[0].url` is `/`, `info.version` is `1.0.0`, `info.description` is empty. Set `TINA4_SWAGGER_SERVERS`, `TINA4_SWAGGER_VERSION` or `TINA4_SWAGGER_DESCRIPTION` to restore the old values.
+- **An unknown migration kind raises** instead of being ignored.
+- **The framework no longer compiles SCSS.** Use the `tina4` Rust CLI.
+
+
 ## v3.13.95 (2026-08-06) - Preparing for the 3.14 stable release
 
 One of several releases still to come before **3.14 stable**. The theme is
@@ -22,7 +335,7 @@ old, wrong result.
 
 - Every connect that can block is bounded, so a wedged server fails instead of hanging (`7c51d3d`)
 - `count()` returns the true total, not the last page's row count (`f9b8280`)
-- `toPaginate` reports the page it is on (`6f85c3f`)
+- `to_paginate` reports the page it is on (`6f85c3f`)
 - `update()` matches the primary key in data case-insensitively (`c122e6d`)
 - Firebird: a column name is folded back only when Firebird folded it (`ef6139d`)
 - Firebird: `table_exists` matches either spelling Firebird may have stored (`1c4dc34`)

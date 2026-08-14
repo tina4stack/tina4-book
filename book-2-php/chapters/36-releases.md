@@ -1,5 +1,316 @@
 # Chapter 36: Release Notes
 
+## v3.13.101 (2026-08-14) - One AI client, four languages
+
+One class. Three methods. No provider SDK.
+Tina4 applications can now call local models, OpenAI, and Anthropic through the
+same small API: `AI::chat`, `AI::complete`, and `AI::embed`.
+
+### What ships
+
+- The native `tina4 metrics` CLI now owns every code-health calculation. Framework-level metrics commands and quick census implementations are gone.
+- Dev-admin keeps its metrics tab through two thin native-JSON adapters: full analysis and file detail.
+
+- `AI::chat` returns one `ChatResponse` with text, model, token usage, finish reason, and the raw provider response.
+- `AI::complete` sends one user message and returns its text.
+- `AI::embed` accepts one string or a list and preserves that input shape in its output.
+- `stream: true` yields ordered text deltas from OpenAI-compatible and Anthropic streams.
+
+### Failure is data
+
+Hosted providers refuse to send a request without `TINA4_AI_KEY`. Connection and
+total-request deadlines stay separate. Retries cover connection failures, HTTP 429,
+and HTTP 5xx responses, but stop after the first streamed delta. Errors never include
+the key, prompt, or provider response body.
+
+### Breaking name change
+
+PHP class names ignore case, so the old developer-tool installer could not remain
+`Tina4\AI` beside the new application client. The installer is now `Tina4\AITools`.
+Application code uses `Tina4\AI`. The transport uses PHP's built-in streams; your
+dependency tree does not grow.
+
+## v3.13.100 (2026-08-14) - Frond keeps the whole page
+
+This fast-follow release fixes template inheritance and puts a ceiling on
+Frond's caches. The template engine now rejects a second `{% extends %}` tag,
+preserves nested root blocks, and evicts stale compiled state instead of
+letting a long-running process grow without limit.
+
+### Template inheritance
+
+- A template may declare one parent. A second `{% extends %}` now raises a clear error instead of changing the parent without warning (`c7739aa0`)
+- PHP's AST substitution already preserved nested root blocks. A shared regression now locks that correct behavior across all four frameworks (`955c66e0`)
+
+### Bounded caches
+
+- Template, fragment, and expression caches now have size bounds and TTL sweeps. Long-running workers release stale entries while rendered output stays unchanged (`236dbabc`)
+
+### Frond extension scope
+
+- Class calls to `addFilter`, `addGlobal`, and `addTest` remain process-global. Instance calls now affect that renderer only, so one request or test cannot seed every Frond instance created later (`f6fb7f23`)
+
+### AI skill installer
+
+- Skill downloads retry transient network and HTTP failures. A short GitHub raw-content outage no longer drops the whole install (`aaeba4fc`, `45730d7f`)
+
+### Release consistency
+
+- The runtime version and AI-facing guide now agree on `3.13.100`. The existing version guard caught the stale guide before release (`aaf5ffa9`)
+
+### Upgrade notes
+
+No valid template syntax changes. Code that relied on an instance extension
+leaking globally must register on `Frond` itself. A template with two `{% extends %}` tags was
+already contradictory; it now fails at the line that needs fixing. Cache
+eviction may trigger a reparse, but it does not change the rendered bytes.
+
+The Frond AOT compiler is not part of this release. Parser and compiler parity
+for Ruby and Node.js remains planned for `3.13.101`.
+
+## v3.13.99 (2026-08-13) - Stability, parity, and secure by default
+
+The biggest step yet on the road to **3.14 stable**. This release closes out
+Phases 1 through 5 of the v3 parity audit: roughly thirty breaking changes,
+and every one of them is a security fix, a parity fix, or a correctness fix,
+never a change made for its own sake. Two conformance grids, logging and
+database adapters, are now fully proven against real services in all four
+frameworks, and a small batch of genuinely new bugs gets fixed alongside
+them, including one that broke first-time login under the built-in server.
+Read "Possible breaking" before you upgrade: several of these changes correct
+a footgun that was silently doing the wrong thing.
+
+### Security
+
+Security now defaults on instead of requiring opt-in.
+
+- Security headers emit by default, including `Content-Security-Policy: default-src 'self'`, which blocks inline scripts and third-party CDNs. Relax the policy with `TINA4_CSP`; HSTS emits only on HTTPS, when `TINA4_HSTS` is set (`853c47c`)
+- `TINA4_CSRF=true` now actually attaches the CSRF middleware, where it used to be inert. A blank `TINA4_SECRET` fails closed now instead of minting a forgeable public-default token (`001f966a`)
+- The dev server binds `127.0.0.1` by default; set `TINA4_HOST=0.0.0.0` to expose it. A cross-origin `/__dev` mutation is refused, and `.env` is never served through the file endpoints (`698e6a6`)
+- A symlink whose real path escapes the public directory is refused, and dotfiles (`.env`, `.git`) 404 instead of serving. The public-directory search order is now `public` before `src/public` (`c422f4b`)
+- `{% include %}`, `{% extends %}`, and `{% import %}` in a Frond template are confined to the templates directory. A path that escapes it, with `..`, an absolute path, or a symlink, now raises (`42a0723`)
+- `tina4 serve` on a busy port no longer kills whatever holds it. It reclaims only a port held by an identifiable Tina4 dev server, refuses a foreign holder, and honours `TINA4_NO_TAKEOVER` / `--no-kill` (`40cd4c0`)
+- A hostile inbound `X-Request-ID` (CRLF, illegal characters, an over-long value) is sanitized to a fresh id instead of echoed back raw, closing a response-header and log-injection path (`1d9d607`)
+- The dead `renderProductionError` function is removed; nothing called it. The dev error overlay now redacts `Authorization`, `Cookie`, and `Set-Cookie` headers plus secret-looking body fields, and caps the rendered stack at 50 frames (`df860de`)
+- A repeated multipart file field now yields a list instead of silently dropping every upload but the last. The new safe-save helper rejects `..` and absolute filenames, and an over-limit upload now answers `413` mid-stream, per chunk, instead of after buffering the whole body (`a6bb4b3`)
+
+### Data integrity
+
+Footguns that used to fail silently now fail loud, or stop failing at all.
+
+- An unparseable or unsupported MongoDB WHERE clause now raises instead of silently matching every document. A DELETE or UPDATE with no WHERE is rejected outright. Write an explicit WHERE, or call `truncate()` for the whole collection (`baf1af5`)
+- `truncate()` on a Mongo collection was already correct in PHP; the other three frameworks now match it (`7ac2c0b`)
+- MongoDB's next-id generator now raises on error instead of silently returning `1`, which used to produce duplicate ids (`833cceb`)
+- Firebird write results are correct now: `$db->insert()->lastId` and `$db->update()` / `$db->delete()` `->affectedRows` return real values instead of a missing or zero value (`27dd66e`)
+- MSSQL pagination converges on `OFFSET`/`FETCH` in all four frameworks; binary parameters travel as `0x` literals (`1deb9d6`)
+- `App::background()` now returns a `Tina4\BackgroundTask` handle instead of `$this` (it used to be fluent). Split a chained `->background(a)->background(b)` into two separate calls (`9f62bde`)
+
+### ORM and validation
+
+Eight fixes bring the ORM's write path, validation, and generated schema into
+agreement across all four frameworks.
+
+- `datetime` name-inference is anchored now, so a column whose name only substring-matched (`runtime`, `downtime`, `updated_by`) is no longer typed as a datetime. Declare an explicit `\DateTime` property, or an `*_at` / `*_date` / `*_time` name, to keep it (`d97a405`)
+- Ruby ORM `validate()` now enforces length/type/format on save, matching PHP; the two validators now speak one canonical message vocabulary, and PHP's own messages drop the colon (`"name: is required"` becomes `"name is required"`) (`cd9ab0d`)
+- `create_table()` now injects the soft-delete column (`is_deleted INTEGER DEFAULT 0`) for a `softDelete = true` model that does not declare it itself (`3d10d5e`)
+- A soft-deleted child is no longer returned through relationship traversal, lazy or eager (`94ccf77`)
+- The imperative `hasMany` default row cap changes from a silent 100 to the whole result set. A caller relying on the old truncation now gets every row (`4e1d5df`)
+- A REST list `?page` was already clamped to a minimum of 1 in PHP; an oversized `?limit` or `?per_page` is now capped at 100 across all four frameworks (`a8088ec`)
+- AutoCrud returns `422` with field errors for an invalid create or update, where it used to return `500`. The write body is now allow-listed: `is_deleted` is never client-writable, and a client-supplied primary key is stripped on both create and update, closing a mass-assignment hole and an IDOR-shaped redirect (`51cd524`)
+- `seed_table` now routes through the parameterized adapter insert instead of hand-written MySQL/SQLite backtick SQL. The generated SQL changes, and the dev-admin seed tool now works on PostgreSQL, MSSQL, and Firebird, where it used to be broken (`6208fbb`)
+
+### Request model - the big one
+
+`$request->params` is route-params-only now, in all four frameworks. Client
+input lives only in `$request->query` and `$request->body`; `$request->params`
+holds route params and nothing else, closing a param-pollution surface where
+Ruby's equivalent used to merge query and body values in with the route
+params. A handler or middleware reading the old merged `params` must read
+`query` or `body` explicitly (`88edd95`).
+
+### Migrations
+
+- `rollback` is fail-safe now: a missing `.down.sql` file or a failed down script raises and leaves the `tina4_migration` ledger row in place, instead of deleting the tracking row and leaving the schema applied but untracked (`49b404a`)
+
+### HTTP
+
+- Your responses now gzip-compress when eligible (body over 1024 bytes, `Accept-Encoding: gzip`, a compressible content type); a cacheable 200 gets a strong ETag and a matching `If-None-Match` gets a 304. The static-file ETag format is unified to `W/"<size>-<mtime>"` on all four frameworks, so a cache revalidates once instead of on every deploy (`5f8e85e`)
+- A `403` now negotiates HTML versus JSON the same way `404` and `500` already do, and the `404` now carries a `request_id` too (`ac26239`)
+- The OpenAPI spec converges on one shape across languages: a secured operation documents a `401`, and `summary`/`tags` always populate. The Swagger UI CDN default moves to jsdelivr, off unpkg (`e28a08b`)
+- Python, Ruby, and Node's route-group prefix join is normalized to match PHP's, so a route no longer mis-registers on a bare concatenation or an uncollapsed double slash (`7b8dc44`)
+
+### Dev tooling
+
+- `tina4php serve` no longer crashes the process when the AI port (`base + 1000`) is busy; it warns and skips, matching the other three frameworks. `new Server()`'s default port changes from 7146 to 7145, which affects only a direct no-argument construct, since every real caller passes an explicit port (`fdf27d3`)
+- The CLI's `--version` and `commands --json` now report the real framework version instead of `0.0.0` in a git checkout; outbound HTTP requests from the framework client now carry `User-Agent: Tina4/<version>` unless the caller already supplies one (`6a6ddc2`)
+- The session cookie now emits under a testing `Response`, closing a gap the built-in server also hit (see "Bug fixes" below) (`1881b0a`)
+- The inline `@tests` descriptor builders are renamed: `Testing::assertEqual`/`assertRaises`/`assertTrue`/`assertFalse` become `Testing::expectEqual`, `expectRaises`, `expectTrue`, `expectFalse`. `Testing::discover()` now scans only an explicit tests directory and parses `@tests` arguments as literals, never `eval`, so a docblock outside that directory is no longer discovered or executed. `bin/tina4php test` now discovers and runs the inline surface with a real exit code (`e797e9b`)
+
+### Proven in all four
+
+Two conformance grids close out fully proven, tested against real services in
+every framework, no mocks:
+
+- **Logging.** A real per-language runner now exercises the shared logger contract end to end. Closing it surfaced and fixed real bugs, including PHP's context circular-detection, which is rebuilt to be reference-aware (`8b14f11`)
+- **Database adapters** (ADR-0044). A real runner against SQLite, PostgreSQL, MySQL, MSSQL, and Firebird proved every adapter implements the same interface. PHP's `DatabaseAdapter` interface still required the removed `query`/`lastInsertId`/`error` methods and was missing `connect`/`getDatabaseType`/`autocommit` - both `CachedDatabase` and `Database` would have hard-fatalled at class load. `Database::executeMany()` now delegates once instead of looping through the facade (`1488143`)
+
+### Bug fixes
+
+- A route path containing a literal parenthesis, like `/products/(sale)`, now matches correctly everywhere. Python and Ruby were already correct; PHP and Node compiled the literal characters as regex syntax (`d12e5d8`)
+- The built-in server's first-time session cookie is emitted correctly now. `emitSessionCookie()` branched on `headers_sent()`, which is never true under `Tina4\Server`'s raw socket, so a first-time login through `tina4 serve` silently produced no `Set-Cookie` header and session auth quietly failed. A new `Response::$rawSocket` flag (kept separate from the `testing` flag, which would also have broken SSE streaming) fixes it: `emitSessionCookie()` now checks `headers_sent() || isTesting() || isRawSocket()` (`d12e5d8`)
+
+### Possible breaking
+
+Read these before you upgrade. Every entry here is a security, parity, or
+correctness fix, none is a change made for its own sake.
+
+- **`$request->params` is route-params-only.** Read query-string values from `$request->query` and body values from `$request->body`. This is the single largest behaviour change in the release.
+- **Security headers, including CSP, emit by default.** An app depending on inline scripts or a third-party CDN needs `TINA4_CSP` to relax the policy.
+- **`TINA4_CSRF=true` now actually attaches the CSRF middleware.** If you set it and never noticed CSRF enforcement, it enforces now.
+- **A blank `TINA4_SECRET` fails closed.** Set a real secret; the framework no longer falls back to a guessable public default.
+- **The dev server binds `127.0.0.1` by default.** Set `TINA4_HOST=0.0.0.0` to expose it on your network.
+- **An unparseable Mongo WHERE now raises instead of matching everything.** Add an explicit WHERE, or call `truncate()`.
+- **`App::background()` returns a handle, not `$this`.** Split a chained call into two separate calls.
+- **`datetime` name-inference is anchored.** A column that only substring-matched a datetime-ish name needs an explicit `\DateTime` property or a `*_at`/`*_date`/`*_time` name.
+- **Validation messages changed wording**, including the dropped colon after a field name.
+- **`create_table()` adds `is_deleted` for a soft-delete model automatically.** A model that already declares the column is unaffected.
+- **The imperative `hasMany` no longer caps at 100 rows.** A caller relying on the old truncation now gets every row.
+- **`?limit`/`?per_page` caps at 100.** A client can no longer request the whole table in one page.
+- **AutoCrud returns `422`, not `500`, on invalid input**, and never accepts `is_deleted` or a client-supplied primary key in the write body.
+- **The static-file `ETag` format changed**, so every cache revalidates once on upgrade.
+- **`new Server()`'s default port changes from 7146 to 7145.** Only affects a direct no-argument construct.
+- **The inline testing descriptors are renamed** `assert*` to `expect*`, and `Testing::discover()` no longer uses `eval` or scans outside the tests directory.
+
+### Coming in 3.13.100
+
+Frond's compiler, extensibility, auto-escaping, sandboxing, and caching work
+(features 48 through 60) is deferred to the 3.13.100 fast-follow, alongside a
+refreshed Carbonah benchmark harness and a configurable database column-name
+casing option.
+
+## v3.13.98 (2026-08-11) - Skills discipline
+
+A maintenance release. No API changed, and no behaviour changed in your app.
+
+The bundled AI coding skills - the ones that install with
+`curl -fsSL https://tina4.com/install-skills.sh | sh` - moved onto one shared
+plan discipline. A plan file has one format (Scope, Tests, Bugs, Commits), and a
+checkbox is ticked only when the work is verified green at HEAD, never on a
+claim. That keeps an agent's plan file honest, so it always reflects what
+actually shipped.
+
+The framework package also shed internal dead weight: duplicate design-system
+source files that were never compiled or served at runtime. Nothing your code
+imports or renders changed.
+
+Nothing to upgrade. If you use the Tina4 AI skills, re-run the installer.
+
+## v3.13.97 (2026-08-07) - Behaviour corrections
+
+A small bug-fix release on the road to **3.14 stable**. No new methods, no
+renames. Four behaviours come back into line with the Python reference.
+`forceDelete()` removes the row instead of throwing. A destroyed session stays
+destroyed. DocStore's `distinct()` counts two equal dates as one. And the queue
+tests that guard all of this can no longer pass while the code is broken.
+
+### ORM
+
+- `forceDelete()` removes the row. It referenced an undefined `$whereParams`, so the `:id` never bound and the call threw a `TypeError` instead of deleting anything. It binds the id and deletes now (`91c33b5a`)
+
+### Sessions
+
+- `destroy()` no longer resurrects. A `set()` then `save()` after `destroy()` re-created the session under the id you just destroyed. `destroy()` clears the session id now, so a later `save()` writes nothing (`146b5088`)
+
+### DocStore
+
+- `distinct()` dedups by value. It compared non-ObjectId values by object identity, so two equal `DateTime` values came back as separate rows. It compares by value now, and equal dates collapse to one (`198b18bb`)
+
+### Under the hood
+
+- The broker queue already refused `clear()` and `purge()` by name. A real RabbitMQ test now locks that refusal so it cannot regress (`d2e66ebd`)
+- The queue-invariant tests were hiding a ghost. A `$this->fail()` inside a `catch (\RuntimeException)` was swallowed, because PHPUnit's `AssertionFailedError` extends `\RuntimeException`, so a test stayed green even after the code stopped refusing. The asserts moved outside the catch, and a mutation run proves they fail when the guard is gone (`f1ff3331`)
+
+### Possible breaking
+
+- **`forceDelete()` now removes the row.** It threw a `TypeError` and deleted nothing before. Code that caught that error and assumed the row survived will find it gone. That was the bug.
+- **A destroyed session no longer accepts a write.** A `set()` plus `save()` after `destroy()` used to re-create the session under the old id; it writes nothing now. Save before you destroy, or destroy last.
+
+## v3.13.96 (2026-08-07) - One paginate envelope, one message shape
+
+Another step toward **3.14 stable**, and the theme is still parity: the same
+call means the same thing in Python, PHP, Ruby and Node. This release settles
+two subsystems that had drifted into four shapes. Pagination returns one
+envelope of seven keys with a true total. The Messenger IMAP path returns one
+message shape, addresses mail by a real IMAP UID, and hands back attachments
+you can write straight to disk. Some of these are behaviour changes, so read
+"Possible breaking" at the end before you upgrade.
+
+### Pagination
+
+- `toPaginate()` takes no arguments and reads every field from the query that ran; pass one and it throws (`80257ecf`)
+- The envelope is exactly seven snake_case keys: `records`, `total`, `page`, `per_page`, `total_pages`, `limit`, `offset` (`80257ecf`)
+- `total` is a true `COUNT(*)` for the filter, never the page's row count (`80257ecf`)
+- The AutoCrud REST list endpoint returns the same seven keys (`51b54018`)
+
+```php
+// Fetch the page you want, then describe it. No arguments.
+$result = $db->fetch("SELECT * FROM orders", [], 20, 40);   // 20 per page, page 3
+return $response->json($result->toPaginate());
+// ["records" => [...], "total" => 250, "page" => 3, "per_page" => 20,
+//  "total_pages" => 13, "limit" => 20, "offset" => 40]
+```
+
+### Messenger
+
+- `send()` returns `{success, message, id}` on both paths, with `id` populated from a real `Message-ID` header (`48a7e6db`)
+- `inbox()` and `search()` items are exactly `{uid, subject, from, to, date, snippet, seen}`: `to` was added, `msgno`, `flagged` and `size` were dropped, `date` is ISO-8601, and `snippet` is decoded plain text (`48a7e6db`)
+- `read()` returns exactly the ten canonical keys `{uid, subject, from, to, cc, date, body_text, body_html, attachments, headers}`. The PHP-only extras `msgno`, `message_id`, `seen` and `flagged` are gone; read the Message-ID from `headers` (#70)
+- IMAP authenticated to the SMTP account before and could return the wrong mailbox. Credentials are separate now: `TINA4_MAIL_IMAP_USERNAME` / `TINA4_MAIL_IMAP_PASSWORD` (falling back to the SMTP pair), plus `imapUsername` / `imapPassword` and an `imapEncryption` constructor parameter (`48a7e6db`)
+- New methods: `markUnread()`, `sendTemplate()` (renders a Frond template) and `delete()` (`48a7e6db`)
+- `read()` folds each attachment's decoded bytes into `attachments[i]["content"]`, so an attachment downloads straight from `read()` (`1abb1b43`)
+
+### Swagger
+
+- `servers[0].url` defaults to `/`, not `http://localhost:7145`, and `info.description` defaults to an empty string (`8adb0256`)
+- `components.schemas` carries a `required` array derived from column nullability; `info.contact` emits `name` and `url`, not only `email` (`8adb0256`)
+- Framework-internal routes are excluded by one shared list, so PHP no longer publishes ten of its own service routes (`8adb0256`)
+- `operationId` keeps a path's leading underscores, so `/__health` and `/health` stay distinct (`8adb0256`)
+
+### Migrations
+
+- `code` is the canonical kind for a code migration, the same word in all four frameworks. An unknown kind throws and names the valid ones (`f0e76dda`)
+
+### Server
+
+- An oversized request body answers `413`, not `500` (`8a4c3793`)
+- `TINA4_PORT` is the port variable and wins; bare `PORT` still works but is deprecated and goes in 3.14 (`5b73b40a`)
+
+### Build and skills
+
+- The framework SCSS compilers are gone; the `tina4` Rust CLI owns SCSS now (`be86c157`)
+- tina4-css is pinned to one artefact and one URL (`21858bcb`)
+- The skills point at the ADRs and make `tina4 metrics`, Carbonah and mcp.tina4.com the lean, green, grounded workflow (`a2827203`)
+
+### Proven in all four
+
+The Messenger, Swagger and pagination behaviours are locked by machine-checked
+contract suites that run against real services in every framework: a live
+GreenMail server for the mailbox, a real 250-row SQLite table for pagination.
+No mocks.
+
+### Possible breaking
+
+Read these before you upgrade. Each affects an app that relied on the old shape:
+
+- **`toPaginate()` takes no arguments.** The old `toPaginate(page, perPage)` form throws. Fetch the page, then call `toPaginate()`.
+- **`total` is the true count.** It was the page's row count in some frameworks; it is now a `COUNT(*)` for the filter. Use `count($records)` for the page size.
+- **The paginate envelope is seven keys.** A reader of the dropped alias keys must move to the seven canonical keys.
+- **`inbox()` and `read()` changed keys.** `inbox()` dropped `msgno`, `flagged` and `size` and added `to`; `read()` returns exactly ten keys, dropping `msgno`, `message_id`, `seen` and `flagged`; dates are ISO-8601. Read the Message-ID from `headers`, and use `uid` (never the removed `msgno`) to address a message.
+- **Swagger defaults moved.** `servers[0].url` is `/`, `info.description` is empty. `TINA4_SWAGGER_SERVERS` and `TINA4_SWAGGER_DESCRIPTION` still override.
+- **An unknown migration kind throws** instead of being ignored.
+- **The framework no longer compiles SCSS.** Use the `tina4` Rust CLI.
+
+
 ## v3.13.95 (2026-08-06) - Preparing for the 3.14 stable release
 
 One of several releases still to come before **3.14 stable**. The theme is
