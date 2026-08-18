@@ -245,7 +245,9 @@ This chapter lists every variable the Ruby framework reads, grouped by subsystem
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `TINA4_LOG_LEVEL` | `[TINA4_LOG_ALL]` | Console log level. Options: `[TINA4_LOG_ALL]`, `[TINA4_LOG_DEBUG]`, `[TINA4_LOG_INFO]`, `[TINA4_LOG_WARNING]`, `[TINA4_LOG_ERROR]`, `[TINA4_LOG_NONE]`. Also accepts plain `DEBUG`, `INFO`, `ERROR`, etc. |
+| `TINA4_LOG_LEVEL` | `INFO` | Console severity threshold. Options: `ALL`, `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`, `NONE`, or the matching bracketed framework constant. |
+| `TINA4_LOG_FILE_LEVEL` | `ALL` | Independent severity threshold for the file sink. |
+| `TINA4_LOG_STRICT` | `false` | Raise when a configured log sink fails instead of continuing with the remaining sinks. Accepts only `true` or `false`. |
 | `TINA4_LOG_MAX_SIZE` | `10` | Per-file log size limit in megabytes. Rotated when exceeded. |
 | `TINA4_LOG_KEEP` | `5` | Number of rotated log files to retain. |
 
@@ -463,3 +465,19 @@ TINA4_MAIL_FROM=noreply@myapp.com
 ```
 
 No `TINA4_DEBUG`. It defaults to `false`, which is what you want in production. Set a real secret, a real database, locked-down CORS origins, HSTS, and SMTP credentials if you send email. Everything else has a production-appropriate default.
+## Feature Module Settings
+
+These settings are read by focused framework modules rather than the server bootstrap. They remain part of the public configuration surface.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `TINA4_FEEDBACK_DEV_USER` | _(empty)_ | Local-development identity for testing the feedback widget without authentication. Never use this as production authentication. |
+| `TINA4_KAFKA_ASSIGN_TIMEOUT` | `15` | Seconds the first Kafka dequeue waits for partition assignment. Later polls use the normal short interval. |
+| `TINA4_MCP_URL` | `https://mcp.tina4.com` | Grounding service URL shown and used by the developer admin. |
+| `TINA4_QUEUE_PATH` | `data/queue` | Base directory for the file-backed queue. Relative paths resolve from the working directory. |
+| `TINA4_SESSION_MEMCACHED_HOST` | `localhost` | Memcached host for the session backend. |
+| `TINA4_SESSION_MEMCACHED_PORT` | `11211` | Memcached port for the session backend. |
+| `TINA4_SESSION_MEMCACHED_PREFIX` | `tina4:session:` | Key prefix for Memcached sessions. Give each application a distinct prefix when sharing a server. |
+| `TINA4_SESSION_REDIS_DB` | `0` | Redis database number used by the session backend. |
+| `TINA4_SWAGGER_CONTACT_TEAM` | _(empty)_ | Contact name placed in the generated OpenAPI `info.contact` object. |
+| `TINA4_SWAGGER_CONTACT_URL` | _(empty)_ | Contact URL placed in the generated OpenAPI `info.contact` object. |

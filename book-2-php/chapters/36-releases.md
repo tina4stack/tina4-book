@@ -1,10 +1,18 @@
 # Chapter 36: Release Notes
 
+## v3.13.104 (2026-08-17) - GIS and configuration-first SSO
+
+- `Point` and model `pointFields` add PostGIS-first point storage, metre-based distance queries, GiST indexes, and GeoJSON output. Tina4 uses longitude-first coordinates and fails clearly on unsupported engines.
+- `Sso` adds provider-neutral OpenID Connect discovery, Authorization Code with PKCE, introspection, Session handoff, refresh, logout, and automatic `/auth/*` routes.
+- Existing secured routes accept the normalized SSO identity through `$request->user`; provider tokens remain reserved Session data.
+- Swagger publishes the configured OpenID Connect discovery scheme.
+- No runtime package dependency was added. Database and cryptography language extensions remain capabilities, not framework dependencies.
+
 ## v3.13.103 (2026-08-16) - Metrics you can trust, releases that cannot lie
 
-This release restores one public version across Python, PHP, Ruby, and Node.js.
-Version 3.13.102 reached PyPI and Packagist, but its RubyGems and npm packages
-still contained 3.13.101. Skip 3.13.102 and upgrade to 3.13.103.
+Version 3.13.102 was a skills-only release, so the framework runtime packages
+correctly remained at 3.13.101. Version 3.13.103 is the next framework release
+and carries the metrics and release-hardening changes below.
 
 ### What changed
 
@@ -28,7 +36,7 @@ PostgreSQL's explicit `timeout expired` result is now classified as the configur
 connection timeout at the clock boundary. Immediate connection refusals remain
 ordinary connection errors.
 
-+## v3.13.101 (2026-08-14) - One AI client, four languages
+## v3.13.101 (2026-08-14) - One AI client, four languages
 
 One class. Three methods. No provider SDK.
 Tina4 applications can now call local models, OpenAI, and Anthropic through the

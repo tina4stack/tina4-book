@@ -26,7 +26,7 @@ This chapter lists every variable the PHP framework reads, grouped by subsystem.
 | `TINA4_WS_PORT` | _(inherits port)_ | Separate port for the WebSocket server. Leave unset to share the HTTP port. |
 | `TINA4_HOST_NAME` | `localhost:7145` | Fully-qualified host used in generated absolute URLs (Swagger, OAuth redirects, emails). |
 | `TINA4_DEBUG` | `false` | Master debug toggle. Enables Swagger UI, dev dashboard, live reload, template dump filter, error overlay. Never set to `true` in production. |
-| `TINA4_LOG_LEVEL` | `ERROR` | Minimum message level shown when `TINA4_DEBUG=true`. Options: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `ALL`. |
+| `TINA4_LOG_LEVEL` | `INFO` | Console severity threshold. Options: `ALL`, `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`, `NONE`. |
 | `TINA4_NO_BROWSER` | `false` | Stops `tina4 serve` from opening your browser on every restart. Recommended during active development. |
 | `TINA4_NO_RELOAD` | `false` | Disables the dev hot-reload signal from the Rust CLI. Use when you want a stable server for debugging. |
 | `TINA4_SUPPRESS` | `false` | Hides the Tina4 startup banner. Useful in CI and systemd units where stdout is ingested. |
@@ -248,7 +248,9 @@ This chapter lists every variable the PHP framework reads, grouped by subsystem.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `TINA4_LOG_LEVEL` | `ERROR` | Minimum log level written to files. Options: `ALL`, `DEBUG`, `INFO`, `WARNING`, `ERROR`. |
+| `TINA4_LOG_LEVEL` | `INFO` | Console severity threshold. Options: `ALL`, `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`, `NONE`. |
+| `TINA4_LOG_FILE_LEVEL` | `ALL` | Independent severity threshold for the file sink. |
+| `TINA4_LOG_STRICT` | `false` | Raise when a configured log sink fails instead of continuing with the remaining sinks. Accepts only `true` or `false`. |
 | `TINA4_LOG_DEBUG` | `0` | Numeric flag for debug-level messages. Used internally by `Debug::message()`. |
 | `TINA4_LOG_INFO` | `1` | Numeric flag for info-level messages. |
 | `TINA4_LOG_ERROR` | `3` | Numeric flag for error-level messages. |
@@ -501,3 +503,19 @@ TINA4_MAIL_FROM=noreply@myapp.com
 ```
 
 No `TINA4_DEBUG`. It defaults to `false`, which is what you want in production. Set a real secret, a real database, locked-down CORS origins, HSTS, and SMTP credentials if you send email. Everything else has a production-appropriate default.
+## Feature Module Settings
+
+These settings are read by focused framework modules rather than the server bootstrap. They remain part of the public configuration surface.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `TINA4_ENV` | `development` | Runtime environment name. Set `production` to disable development-only behaviour. |
+| `TINA4_FEEDBACK_DEV_USER` | _(empty)_ | Local-development identity for testing the feedback widget without authentication. Never use this as production authentication. |
+| `TINA4_SERVE_FORK` | `true` when supported | Set `false` to keep request handling in one process for a debugger or profiler. Systems without `pcntl` and `posix` remain serial. |
+| `TINA4_SESSION_MEMCACHED_HOST` | `localhost` | Memcached host for the session backend. |
+| `TINA4_SESSION_MEMCACHED_PORT` | `11211` | Memcached port for the session backend. |
+| `TINA4_SESSION_MEMCACHED_PREFIX` | `tina4:session:` | Key prefix for Memcached sessions. Give each application a distinct prefix when sharing a server. |
+| `TINA4_SESSION_VALKEY_PREFIX` | `tina4:session:` | Key prefix for Valkey sessions. |
+| `TINA4_SWAGGER_CONTACT_TEAM` | _(empty)_ | Contact name placed in the generated OpenAPI `info.contact` object. |
+| `TINA4_SWAGGER_CONTACT_URL` | _(empty)_ | Contact URL placed in the generated OpenAPI `info.contact` object. |
+| `TINA4_TRUSTED_PROXIES` | _(empty)_ | Comma-separated IP addresses and CIDR ranges allowed to supply forwarding headers. Empty trusts no proxy. |

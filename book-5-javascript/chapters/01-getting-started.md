@@ -293,6 +293,18 @@ class AppHeader extends Tina4Element {
 customElements.define('app-header', AppHeader);
 ```
 
+The component file must run before the browser can upgrade `<app-header>`. The
+scaffold has already handled that wiring. Open `src/main.ts` and you will find:
+
+```typescript
+import.meta.glob('./components/**/*.ts', { eager: true });
+```
+
+Vite turns that line into one import per component file. Add a file under
+`src/components/`, define its hyphenated tag with `customElements.define()`, and
+the tag becomes available on the next reload. If you remove the glob, import the
+file yourself with `import './components/app-header'`.
+
 Then use it in any template:
 
 ```typescript
