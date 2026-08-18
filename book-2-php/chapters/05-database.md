@@ -1154,6 +1154,19 @@ seedTable($db, "users", 50, [
 
 Every row gets `role = "member"` and `active = 1`. The field map generates the rest.
 
+### Seeding ORM Models
+
+Use `FakeData::seedOrm()` for one model and `FakeData::seedModels()` for a related model graph:
+
+```php
+FakeData::seedOrm(User::class, count: 20, clear: true, seed: 42);
+FakeData::seedModels([User::class, Order::class], count: 20, clear: true, seed: 42);
+```
+
+`seedModels()` orders parents before children and clears in reverse order so foreign keys remain valid. Its `seed` controls the `FakeData` instance it creates. `seedTable()` deliberately has no seed argument because its generators belong to the caller; create `new FakeData(42)` and pass its methods in the field map, as shown above.
+
+FakeData is suitable for tests, development, demos, and load data. It is not cryptographically secure: never use it to create production passwords, tokens, API keys, or other secrets.
+
 ### When to Use It
 
 - Populating a development database with realistic data

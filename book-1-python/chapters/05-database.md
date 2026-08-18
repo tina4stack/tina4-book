@@ -1036,6 +1036,21 @@ seed_table(db, "users", 50,
 
 Every row gets `role = "member"` and `active = 1`. The field map generates the rest.
 
+### Seeding ORM Models
+
+Use `seed_orm()` for one model and `seed_models()` for a related model graph:
+
+```python
+from tina4_python.seeder import seed_orm, seed_models
+
+seed_orm(User, count=20, seed=42, clear=True)
+seed_models([User, Order], count=20, seed=42, clear=True)
+```
+
+`seed_models()` orders parents before children and clears in reverse order so foreign keys remain valid. Its `seed` controls the `FakeData` instance it creates. `seed_table()` deliberately has no seed argument because its generators belong to the caller; create `FakeData(seed=42)` and pass its methods in the field map, as shown above.
+
+FakeData is suitable for tests, development, demos, and load data. It is not cryptographically secure: never use it to create production passwords, tokens, API keys, or other secrets.
+
 ### When to Use It
 
 - Populating a development database with realistic data

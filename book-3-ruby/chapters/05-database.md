@@ -1116,7 +1116,13 @@ The column types tell `FakeData` what kind of data to generate for each field.
 
 ### Batch Seeding
 
-Seed multiple tables in order with `seed_batch`. Pass `clear: true` to delete existing records first (in reverse order, respecting foreign keys):
+Use `seed_models` when the models have relationships. It topologically orders parents before children and clears in reverse order, regardless of the order supplied:
+
+```ruby
+Tina4.seed_models([Order, User], count: 20, clear: true, seed: 42)
+```
+
+For an explicitly ordered batch, use `seed_batch`. Pass `clear: true` to delete existing records first:
 
 ```ruby
 Tina4.seed_batch([
@@ -1124,6 +1130,10 @@ Tina4.seed_batch([
   { orm_class: Order, count: 100, overrides: { status: "pending" } }
 ], clear: true)
 ```
+
+`seed_orm` and `seed_models` create and seed their own `FakeData`. `seed_table` uses caller-provided generators, so create `Tina4::FakeData.new(seed: 42)` and close over that instance when deterministic raw-table data is required.
+
+FakeData is suitable for tests, development, demos, and load data. It is not cryptographically secure: never use it to create production passwords, tokens, API keys, or other secrets.
 
 ### Seed Files
 

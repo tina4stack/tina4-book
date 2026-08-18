@@ -188,7 +188,9 @@ call.leave();
 
 `leave()` is terminal. It sends `bye`, closes every peer connection, stops your local tracks (the camera light goes off), closes the signalling socket, and sets `status` to `'closed'`. The session cannot be reused. Call `rtc.call()` again to rejoin.
 
-Calls carry no token. The signalling WebSocket opens without auth, and there is no `token` option on `rtc.call()`. Secure a private room on the server (the signalling route), not from this client. Only `chat` and file operations take a `token`.
+Calls carry no token. The signalling WebSocket opens without auth, and there is no `token` option on `rtc.call()`. The backend's built-in `calls` route is therefore public; its chat/files authorization hook does not protect call signalling.
+
+For a private call, register an application-owned secured signalling route and check room membership from the verified token on every relayed frame. Until `rtc.call()` gains an explicitly versioned token option, connect that route with a small application WebSocket client: `new WebSocket(url, ["bearer", token])`. Do not point `rtc.call({ signallingUrl })` at the secured route: it still opens the socket without credentials. Unguessable room ids reduce discovery but are not authorization.
 
 ---
 

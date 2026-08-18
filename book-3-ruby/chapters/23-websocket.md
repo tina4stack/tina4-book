@@ -674,7 +674,7 @@ end
 
 When you run a single server instance, `broadcast` reaches every connected client. But in production you often run multiple instances behind a load balancer. Each instance only knows about its own connections. A message broadcast on instance A never reaches clients connected to instance B.
 
-A backplane solves this. It relays WebSocket messages across all instances using a shared pub/sub channel. Tina4 supports Redis as a backplane out of the box.
+A backplane solves this. It relays WebSocket messages across all instances using the shared `tina4:ws` pub/sub channel. Tina4 supports Redis and NATS adapters. The file-free local path remains the default; a network backplane needs its broker and the matching client gem.
 
 ### Configuration
 
@@ -685,17 +685,29 @@ TINA4_WS_BACKPLANE=redis
 TINA4_WS_BACKPLANE_URL=redis://localhost:6379
 ```
 
-When `TINA4_WS_BACKPLANE` is set, every `broadcast` call publishes the message to Redis. Every instance subscribes to the same channel and forwards the message to its local connections. No code changes required -- your existing WebSocket routes work as before.
+For NATS:
+
+```bash
+TINA4_WS_BACKPLANE=nats
+TINA4_WS_BACKPLANE_URL=nats://localhost:4222
+```
+
+Every `broadcast` call delivers to local connections first, then publishes an envelope to the backplane. Sibling instances discard the sender's echo and relay the message to their own local connections. Your WebSocket routes do not change.
 
 ### Requirements
 
-The Redis backplane requires a Redis client gem as an optional dependency:
+Install only the client for the adapter your application selects:
 
 ```bash
-gem install redis
+bundle add redis
+bundle add nats-pure
 ```
 
-If `TINA4_WS_BACKPLANE` is not set (the default), Tina4 broadcasts only to local connections. This is fine for single-instance deployments.
+These are application dependencies, not Tina4 core dependencies. Tina4 requires them only when it starts the selected adapter. If the gem is missing or the broker cannot connect, Tina4 logs `WebSocket backplane wiring failed, continuing local-only` and keeps process-local delivery alive. Monitor that message: a multi-instance application running local-only will miss broadcasts from its siblings.
+
+Verify the setup with two Tina4 processes. Connect one WebSocket client to each process, broadcast from the first, and confirm the second client receives the frame. A single-process test proves only local delivery.
+
+If `TINA4_WS_BACKPLANE` is not set, Tina4 broadcasts only to local connections. This is the correct default for a single instance.
 
 ---
 

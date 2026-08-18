@@ -838,6 +838,12 @@ The app runs in production mode with persistent data volumes, automatic restarts
 
 ---
 
+## HTTP Caching, Compression, and ETags
+
+Tina4 applies gzip to eligible dynamic responses and then computes a strong ETag from the final post-compression bytes. The identity and gzip representations therefore have different ETags, and `Vary: Accept-Encoding` keeps intermediary caches from mixing them. A matching `If-None-Match` returns `304 Not Modified` with an empty body while preserving the validators.
+
+Static files use a weak validator derived from file size and modification time. Streaming responses bypass dynamic compression and ETag generation because their complete representation is not buffered. Test both identity and gzip requests when validating cache behavior.
+
 ## 13. Gotchas
 
 ### 1. .env Not Loaded in Docker

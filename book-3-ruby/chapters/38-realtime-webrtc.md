@@ -192,6 +192,10 @@ Tina4 never parses the SDP. Peers address each other by putting a `to` field in 
 
 The socket is public and the room is a URL segment, so treat the room id as a capability. Gate call access at your app layer if a call must be private: issue unguessable room ids, or check membership before you hand the client a room name.
 
+For a private call, do not mount the built-in `calls` feature and assume its `authorize:` Proc protects signalling: that Proc applies only to chat and files. Register an application-owned signalling route with `Tina4::Router.websocket(path) { ... }.secure`, then verify the authenticated identity in `connection.auth` belongs to the requested room on open and on every relayed frame. Browser clients carry the JWT with `new WebSocket(url, ["bearer", token])`.
+
+The current `tina4-js` `rtc.call()` helper opens the built-in public signalling socket and has no signalling-token option. Use a small application WebSocket client for the protected route (or add token support to that client API in a separately versioned change). Unguessable room names reduce discovery; they are not authorization.
+
 ---
 
 ## 7. Chat: Secured Channels, Presence, History

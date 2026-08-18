@@ -6,6 +6,17 @@ The last chapter was raw SQL. It works. It also gets repetitive. Every insert de
 
 Tina4's ORM turns database rows into Python objects. Define a model class with fields. The ORM writes the SQL. It stays SQL-first -- you can drop to raw SQL at any moment -- but for the 90% case of CRUD operations, the ORM handles the grunt work.
 
+Configure the database before the models are used. The configuration-first path is an environment entry such as `TINA4_DATABASE_URL=sqlite:///data/app.db`. For an explicit connection, bind it once during application startup:
+
+```python
+from tina4_python import Database
+from tina4_python.orm import bind_database
+
+bind_database(Database("sqlite:///data/app.db"))
+```
+
+If neither path supplies a database, ORM operations fail with guidance to call `bind_database()` or set `TINA4_DATABASE_URL`; they do not guess a connection.
+
 Picture a blog. Authors, posts, comments. Authors own many posts. Posts own many comments. Comments belong to posts. Modeling these relationships with raw SQL means JOINs and manual foreign key management. The ORM makes this declarative.
 
 ---
@@ -133,8 +144,8 @@ A complete model. Here is what each piece does:
 | `IntegerField` | `int` | `INTEGER` | Whole numbers |
 | `StringField` | `str` | `VARCHAR(255)` | Text strings |
 | `NumericField` | `float` | `REAL` | Decimal numbers |
-| `BooleanField` | `bool` | `INTEGER` (0/1) | True/False |
-| `DateTimeField` | `str` | `DATETIME` | Date and time |
+| `BooleanField` | `bool` | Engine-native `BOOLEAN` where supported; numeric storage elsewhere | True/False |
+| `DateTimeField` | `datetime` | `DATETIME` | Date and time |
 | `TextField` | `str` | `TEXT` | Long text |
 | `BlobField` | `bytes` | `BLOB` | Binary data |
 | `ForeignKeyField` | `int` | `INTEGER` | Foreign key - auto-wires `belongs_to` and `has_many` (see [Relationships](#_6-relationships)) |
@@ -375,7 +386,7 @@ async def delete_note(id, request, response):
 ```python
 @get("/api/notes")
 async def list_notes(request, response):
-    category = request.params.get("category")
+    category = request.query.get("category")
 
     if category:
         notes = Note.where("category = ?", [category])
@@ -1012,7 +1023,7 @@ async def published_posts(request, response):
 
 @get("/api/posts/recent")
 async def recent_posts(request, response):
-    days = int(request.params.get("days", 7))
+    days = int(request.query.get("days", 7))
     posts = BlogPost.recent(days)
     return response({"posts": [p.to_dict() for p in posts]})
 ```
