@@ -63,6 +63,7 @@ This repository holds the full Tina4 documentation: one book per supported langu
 40. [AI Client](book-1-python/chapters/40-ai-client.md)
 41. [OpenID Connect SSO](book-1-python/chapters/41-sso.md)
 42. [GIS and PostGIS](book-1-python/chapters/42-gis.md)
+43. [IoT and MQTT](book-1-python/chapters/43-iot-mqtt.md)
 
 ### Book 2: Tina4 for PHP Developers
 
@@ -110,6 +111,7 @@ This repository holds the full Tina4 documentation: one book per supported langu
 40. [AI Client](book-2-php/chapters/40-ai-client.md)
 41. [OpenID Connect SSO](book-2-php/chapters/41-sso.md)
 42. [GIS and PostGIS](book-2-php/chapters/42-gis.md)
+43. [IoT and MQTT](book-2-php/chapters/43-iot-mqtt.md)
 
 ### Book 3: Tina4 for Ruby Developers
 
@@ -156,6 +158,7 @@ This repository holds the full Tina4 documentation: one book per supported langu
 39. [AI Client](book-3-ruby/chapters/39-ai-client.md)
 40. [OpenID Connect SSO](book-3-ruby/chapters/40-sso.md)
 41. [GIS and PostGIS](book-3-ruby/chapters/41-gis.md)
+42. [IoT and MQTT](book-3-ruby/chapters/42-iot-mqtt.md)
 
 ### Book 4: Tina4 for Node.js Developers
 
@@ -202,6 +205,7 @@ This repository holds the full Tina4 documentation: one book per supported langu
 39. [AI Client](book-4-nodejs/chapters/39-ai-client.md)
 40. [OpenID Connect SSO](book-4-nodejs/chapters/40-sso.md)
 41. [GIS and PostGIS](book-4-nodejs/chapters/41-gis.md)
+42. [IoT and MQTT](book-4-nodejs/chapters/42-iot-mqtt.md)
 
 ### Book 5: tina4-js - The 1.5KB Reactive Frontend Core
 
