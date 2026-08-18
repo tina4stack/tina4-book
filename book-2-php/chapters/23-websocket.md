@@ -940,7 +940,18 @@ NATS needs its protocol client in the application:
 composer require basis-company/nats
 ```
 
-The NATS client is an application dependency, not a Tina4 core dependency. Tina4 loads it only when the application selects NATS. If the package is missing or the broker cannot connect, Tina4 logs `WebSocket backplane wiring failed, continuing local-only` and keeps process-local delivery alive. Monitor that message: a multi-instance application running local-only will miss broadcasts from its siblings.
+The NATS client is an application dependency, not a Tina4 core dependency. Tina4 loads it only when the application selects NATS. An explicit selection is a deployment contract: an unknown adapter, missing package, or unreachable broker fails startup with `Configured WebSocket backplane failed`. Tina4 never claims distributed delivery while running local-only.
+
+### When to Choose a Backplane
+
+| Deployment | Choice |
+|---|---|
+| One Tina4 process or container | Leave `TINA4_WS_BACKPLANE` unset |
+| Multiple instances and Redis is already operated | `redis` |
+| Multiple instances and NATS is already operated | `nats` |
+| Unsure which broker to introduce | Redis is usually the simpler starting point |
+
+The signal is the process count, not traffic volume: once clients can land on different Tina4 instances, broadcasts need a shared backplane. Do not install NATS solely because Tina4 supports it; choose it when the deployment already uses NATS or needs NATS as its wider event bus.
 
 Verify the setup with two Tina4 processes. Connect one WebSocket client to each process, broadcast from the first, and confirm the second client receives the frame. A single-process test proves only local delivery.
 
@@ -978,7 +989,7 @@ If `TINA4_WS_BACKPLANE` is not set, Tina4 broadcasts only to local connections. 
 
 **Problem:** Users connected to different server instances do not see each other's messages.
 
-**Cause:** `$connection->broadcast()` sends only to clients on the same server process. Multiple instances behind a load balancer each maintain their own connection sets.
+**Cause:** `TINA4_WS_BACKPLANE` is unset, so `$connection->broadcast()` correctly uses local-only mode. Multiple instances behind a load balancer each maintain their own connection sets.
 
 **Fix:** Use a pub/sub backend. Redis works well. Each server subscribes to a Redis channel. Broadcast messages publish to Redis. All servers receive them.
 

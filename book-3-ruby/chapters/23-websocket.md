@@ -703,7 +703,18 @@ bundle add redis
 bundle add nats-pure
 ```
 
-These are application dependencies, not Tina4 core dependencies. Tina4 requires them only when it starts the selected adapter. If the gem is missing or the broker cannot connect, Tina4 logs `WebSocket backplane wiring failed, continuing local-only` and keeps process-local delivery alive. Monitor that message: a multi-instance application running local-only will miss broadcasts from its siblings.
+These are application dependencies, not Tina4 core dependencies. Tina4 requires them only when it starts the selected adapter. An explicit selection is a deployment contract: an unknown adapter, missing gem, or unreachable broker fails startup with `Configured WebSocket backplane failed`. Tina4 never claims distributed delivery while running local-only.
+
+### When to Choose a Backplane
+
+| Deployment | Choice |
+|---|---|
+| One Tina4 process or container | Leave `TINA4_WS_BACKPLANE` unset |
+| Multiple instances and Redis is already operated | `redis` |
+| Multiple instances and NATS is already operated | `nats` |
+| Unsure which broker to introduce | Redis is usually the simpler starting point |
+
+The signal is the process count, not traffic volume: once clients can land on different Tina4 instances, broadcasts need a shared backplane. Do not install NATS solely because Tina4 supports it; choose it when the deployment already uses NATS or needs NATS as its wider event bus.
 
 Verify the setup with two Tina4 processes. Connect one WebSocket client to each process, broadcast from the first, and confirm the second client receives the frame. A single-process test proves only local delivery.
 
