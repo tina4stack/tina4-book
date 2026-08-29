@@ -528,6 +528,19 @@ for (let i = 0; i < 50; i++) {
 console.log("Seeded 50 users");
 ```
 
+For ORM models, use the seeder helpers rather than writing the loop yourself:
+
+```typescript
+import { seedOrm, seedModels } from "tina4-nodejs/orm";
+
+await seedOrm(User, 20, undefined, 42, { clear: true });
+await seedModels([User, Order], 20, { clear: true, seed: 42 });
+```
+
+`seedModels()` orders parents before children and clears in reverse order so foreign keys remain valid. `seedOrm()` and `seedModels()` create and seed their own `FakeData`. `seedTable()` deliberately rejects `opts.seed` because its generators belong to the caller; create `new FakeData(42)` and close over it in the field map instead.
+
+FakeData is suitable for tests, development, demos, and load data. It is not cryptographically secure: never use it to create production passwords, tokens, API keys, or other secrets.
+
 Run it as a script:
 
 ```bash

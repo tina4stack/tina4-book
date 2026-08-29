@@ -231,7 +231,9 @@ Logs default to stdout. Set `TINA4_LOG_OUTPUT=file` plus `TINA4_LOG_FILE=app.log
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `TINA4_LOG_LEVEL` | `DEBUG` | Minimum log level written to console and files. Options: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `ALL`. |
+| `TINA4_LOG_LEVEL` | `INFO` | Console severity threshold. Options: `ALL`, `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`, `NONE`. |
+| `TINA4_LOG_FILE_LEVEL` | `ALL` | Independent severity threshold for the file sink. |
+| `TINA4_LOG_STRICT` | `false` | Raise when a configured log sink fails instead of continuing with the remaining sinks. Accepts only `true` or `false`. |
 | `TINA4_LOG_MAX_SIZE` | `10` | Per-file log size limit in megabytes. Rotated when exceeded. |
 | `TINA4_LOG_KEEP` | `5` | Number of rotated log files to retain. |
 
@@ -474,3 +476,20 @@ TINA4_MAIL_FROM=noreply@myapp.com
 ```
 
 No `TINA4_DEBUG`. It defaults to `false`, which is what you want in production. Set a real secret, a real database, locked-down CORS origins, HSTS, and SMTP credentials if you send email. Everything else has a production-appropriate default.
+## Feature Module Settings
+
+These settings are read by focused framework modules rather than the server bootstrap. They remain part of the public configuration surface.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `TINA4_ENV` | `development` | Runtime environment name. Set `production` to disable development-only behaviour. |
+| `TINA4_FEEDBACK_DEV_USER` | _(empty)_ | Local-development identity for testing the feedback widget without authentication. Never use this as production authentication. |
+| `TINA4_MAIL_TLS_INSECURE` | `false` | Disable SMTP TLS certificate validation for local self-signed certificates. Never enable in production. |
+| `TINA4_MCP_URL` | `https://mcp.tina4.com` | Grounding service URL shown and used by the developer admin. |
+| `TINA4_SESSION_MEMCACHED_HOST` | `127.0.0.1` | Memcached host for the session backend. |
+| `TINA4_SESSION_MEMCACHED_PORT` | `11211` | Memcached port for the session backend. |
+| `TINA4_SESSION_MEMCACHED_PREFIX` | `tina4:session:` | Key prefix for Memcached sessions. Give each application a distinct prefix when sharing a server. |
+| `TINA4_SSE_HEARTBEAT` | `15` | Seconds between SSE comment heartbeats. Set `0` or a negative value to disable them. |
+| `TINA4_SWAGGER_CONTACT_TEAM` | _(empty)_ | Contact name placed in the generated OpenAPI `info.contact` object. |
+| `TINA4_SWAGGER_CONTACT_URL` | _(empty)_ | Contact URL placed in the generated OpenAPI `info.contact` object. |
+| `TINA4_TRUSTED_PROXIES` | _(empty)_ | Comma-separated IP addresses and CIDR ranges allowed to supply forwarding headers. Empty trusts no proxy. |

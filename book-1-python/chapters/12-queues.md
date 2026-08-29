@@ -67,7 +67,16 @@ Install the driver:
 uv add pymongo
 ```
 
-The key point: your code stays the same. The `Queue` class, `push`, `pop`, and `consume` work identically whether the backend is file, RabbitMQ, Kafka, or MongoDB. The backend is configured via environment variables.
+The backend is configured through environment variables, but the providers do not pretend to support operations their brokers cannot perform. The portable core is message delivery and acknowledgement; management operations depend on the provider.
+
+| Provider | Supported contract | Explicitly unavailable |
+|---|---|---|
+| File / lite | Every queue operation | None |
+| MongoDB | Every queue operation | None |
+| RabbitMQ | Push, consume, complete, fail/reject, stable non-destructive dead letters, broker size where available, close | Priority, delay, pop by ID, purge by status, failed-job listing, retry failed |
+| Kafka | Delivery, acknowledge, fail, stable non-destructive dead letters; `size()` honestly returns `0` | Priority, delay, pop by ID, failed-job listing, retry failed |
+
+This capability contract is defined by ADR-0022, ADR-0023, and ADR-0024. An unsupported operation raises an error naming the backend and operation. It never succeeds as a no-op or returns a misleading empty result.
 
 ---
 

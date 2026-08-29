@@ -12,7 +12,7 @@ The problem is that raw Web Components are verbose. Boilerplate for observed att
 
 ## 1. What Are Tina4 Components
 
-A Tina4 component is a Web Component. A real one. It extends `HTMLElement`, registers with `customElements.define()`, and works anywhere the browser runs. Drop it in a React app. Drop it in a static HTML page. Drop it in a WordPress theme. No framework runtime required to consume it.
+A Tina4 component is a Web Component. A real one. It extends `HTMLElement`, registers with `customElements.define()`, and works anywhere the browser runs. Drop it in a React app. Drop it in a static HTML page. Drop it in a WordPress theme. The page must load tina4-js and the component module, but the host needs no Tina4-specific adapter.
 
 `Tina4Element` adds three things on top of native Web Components:
 
@@ -43,6 +43,52 @@ class GreetingCard extends Tina4Element {
 }
 
 customElements.define('greeting-card', GreetingCard);
+```
+
+Defining the class is only half the job. The browser learns the tag when this
+module runs and reaches `customElements.define()`. If the page never imports the
+file, `<greeting-card>` stays an unknown HTML element and renders nothing.
+
+Projects created with `tina4 init js` already load every component under
+`src/components/`. The scaffold places this eager glob in `src/main.ts`:
+
+```typescript
+// src/main.ts
+import.meta.glob('./components/**/*.ts', { eager: true });
+```
+
+Add `src/components/greeting-card.ts`, reload the page, and the glob runs the
+module. You do not need to add an import elsewhere. The `{ eager: true }` part
+matters: without it, Vite creates loader functions but does not run them.
+
+If your project does not use the scaffold, import the component once from an
+entry module:
+
+```typescript
+// src/main.ts
+import './components/greeting-card';
+```
+
+For a Tina4 backend page with no TypeScript build, load the global bundle first,
+then load a browser-ready component file:
+
+```html
+<script src="/js/tina4js.min.js"></script>
+<script src="/js/components/greeting-card.js"></script>
+<greeting-card name="Alice"></greeting-card>
+```
+
+Generate that browser-ready pair with:
+
+```bash
+npx tina4js generate component greeting-card
+```
+
+Check registration in the browser console when a tag stays blank:
+
+```javascript
+customElements.get('greeting-card')
+// class GreetingCard ... when loaded; undefined when the module never ran
 ```
 
 Use it in HTML:

@@ -8,6 +8,17 @@ Queues move slow work to a background process. The handler drops a job onto a qu
 
 Tina4 has a built-in queue system. It works out of the box with a file-based backend. No Redis. No RabbitMQ. No external services. Add jobs. Process them.
 
+The providers share delivery semantics, but they do not pretend every broker supports every management operation:
+
+| Provider | Supported contract | Explicitly unavailable |
+|---|---|---|
+| File / lite | Every queue operation | None |
+| MongoDB | Every queue operation | None |
+| RabbitMQ | Push, consume, complete, fail/reject, stable non-destructive dead letters, broker size where available, close | Priority, delay, pop by ID, purge by status, failed-job listing, retry failed |
+| Kafka | Delivery, acknowledge, fail, stable non-destructive dead letters; `size()` honestly returns `0` | Priority, delay, pop by ID, failed-job listing, retry failed |
+
+This capability contract is defined by ADR-0022, ADR-0023, and ADR-0024. An unsupported operation raises an error naming the backend and operation. It never succeeds as a no-op or returns a misleading empty result.
+
 ---
 
 ## 2. Why Queues Matter

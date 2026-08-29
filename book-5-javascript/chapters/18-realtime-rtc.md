@@ -137,11 +137,11 @@ A live session starts at `'connecting'`, flips to `'connected'` when a peer conn
 
 ### Binding streams into the DOM
 
-`MediaStream` objects are set on `<video>` elements through the `.srcObject` property. Use an `effect` for the local stream and bind the remote peers in a `mount`:
+`MediaStream` objects are set on `<video>` elements through the `.srcObject` property. Use an `effect` for the local stream and a reactive function for the remote peer list:
 
 ```typescript
 import { rtc } from 'tina4js/rtc';
-import { html, mount, effect } from 'tina4js';
+import { html, effect } from 'tina4js';
 
 const call = await rtc.call('standup');
 
@@ -151,9 +151,9 @@ effect(() => {
   if (local) (document.querySelector('#me') as HTMLVideoElement).srcObject = local;
 });
 
-// remote peers - one <video> each, re-rendered as peers come and go
-mount('#peers', () => html`
-  ${call.peers.value.map(p => html`
+// Remote peers: the function tracks the signal and updates this fragment.
+document.querySelector('#peers')!.replaceChildren(html`
+  ${() => call.peers.value.map(p => html`
     <video autoplay playsinline .srcObject=${p.stream}></video>
   `)}
 `);
@@ -188,7 +188,9 @@ call.leave();
 
 `leave()` is terminal. It sends `bye`, closes every peer connection, stops your local tracks (the camera light goes off), closes the signalling socket, and sets `status` to `'closed'`. The session cannot be reused. Call `rtc.call()` again to rejoin.
 
-Calls carry no token. The signalling WebSocket opens without auth, and there is no `token` option on `rtc.call()`. Secure a private room on the server (the signalling route), not from this client. Only `chat` and file operations take a `token`.
+Calls carry no token. The signalling WebSocket opens without auth, and there is no `token` option on `rtc.call()`. The backend's built-in `calls` route is therefore public; its chat/files authorization hook does not protect call signalling.
+
+For a private call, register an application-owned secured signalling route and check room membership from the verified token on every relayed frame. Until `rtc.call()` gains an explicitly versioned token option, connect that route with a small application WebSocket client: `new WebSocket(url, ["bearer", token])`. Do not point `rtc.call({ signallingUrl })` at the secured route: it still opens the socket without credentials. Unguessable room ids reduce discovery but are not authorization.
 
 ---
 
@@ -244,19 +246,21 @@ interface ChatMessage {
 
 ```typescript
 import { rtc } from 'tina4js/rtc';
-import { html, mount } from 'tina4js';
+import { html } from 'tina4js';
 
 const chat = rtc.chat('general', { token: myJwt });
 
 await chat.history();        // load the last 50, prepended into chat.messages
 
-mount('#log', () => html`
-  ${chat.messages.value.map(m => html`<p><b>${m.user_id}</b> ${m.body}</p>`)}
+document.querySelector('#log')!.replaceChildren(html`
+  ${() => chat.messages.value.map(m => html`<p><b>${m.user_id}</b> ${m.body}</p>`)}
 `);
 
-mount('#who', () => html`Online: ${chat.presence.value.join(', ')}`);
-mount('#typing', () => html`
-  ${chat.typing.value.length ? `${chat.typing.value.join(', ')} typing...` : ''}
+document.querySelector('#who')!.replaceChildren(
+  html`Online: ${() => chat.presence.value.join(', ')}`
+);
+document.querySelector('#typing')!.replaceChildren(html`
+  ${() => chat.typing.value.length ? `${chat.typing.value.join(', ')} typing...` : ''}
 `);
 
 const input = document.querySelector('#msg') as HTMLInputElement;
@@ -343,7 +347,7 @@ One room. Video down the side, chat down the middle, a file drop at the bottom. 
 
 ```typescript
 import { rtc } from 'tina4js/rtc';
-import { html, mount, effect, signal } from 'tina4js';
+import { html, effect, signal } from 'tina4js';
 
 async function room(name: string, token: string) {
   // Fetch config once, share it with the call.
@@ -354,19 +358,6 @@ async function room(name: string, token: string) {
   const draft = signal('');
 
   await chat.history();
-
-  // local preview
-  effect(() => {
-    const local = call.localStream.value;
-    if (local) (document.querySelector('#me') as HTMLVideoElement).srcObject = local;
-  });
-
-  // remote peers
-  mount('#peers', () => html`
-    ${call.peers.value.map(p => html`
-      <video class="peer" autoplay playsinline .srcObject=${p.stream}></video>
-    `)}
-  `);
 
   const send = () => {
     const body = draft.value.trim();
@@ -380,27 +371,31 @@ async function room(name: string, token: string) {
     chat.send(`shared a file: ${res.filename}`);   // announce it in the channel
   };
 
-  mount('#app', () => html`
+  document.querySelector('#app')!.replaceChildren(html`
     <div class="room">
       <header>
         <span>Call: ${call.status}</span>
         <span>Chat: ${chat.status}</span>
-        <span>Online: ${chat.presence.value.length}</span>
+        <span>Online: ${() => chat.presence.value.length}</span>
       </header>
 
       <section class="stage">
         <video id="me" class="me" autoplay playsinline muted></video>
-        <div id="peers"></div>
+        <div id="peers">
+          ${() => call.peers.value.map(p => html`
+            <video class="peer" autoplay playsinline .srcObject=${p.stream}></video>
+          `)}
+        </div>
       </section>
 
       <aside class="chat">
         <div class="log">
-          ${chat.messages.value.map(m => html`
+          ${() => chat.messages.value.map(m => html`
             <p><b>${m.user_id}</b> ${m.body}</p>
           `)}
         </div>
         <div class="typing">
-          ${chat.typing.value.length ? `${chat.typing.value.join(', ')} typing...` : ''}
+          ${() => chat.typing.value.length ? `${chat.typing.value.join(', ')} typing...` : ''}
         </div>
         <form @submit=${(e: Event) => { e.preventDefault(); send(); }}>
           <input
@@ -424,6 +419,12 @@ async function room(name: string, token: string) {
       </footer>
     </div>
   `);
+
+  // The video exists after the app fragment is attached.
+  effect(() => {
+    const local = call.localStream.value;
+    if (local) (document.querySelector('#me') as HTMLVideoElement).srcObject = local;
+  });
 }
 
 room('standup', localStorage.getItem('tina4_token') ?? '');
