@@ -414,7 +414,7 @@ export default async function (req: Tina4Request, res: Tina4Response) {
 }
 ```
 
-`where()` takes a WHERE clause with `?` placeholders and an array of parameters. It returns an array of model instances. `all()` fetches all records. Both support pagination:
+`where()` takes a WHERE clause with `?` placeholders and an array of parameters. It returns a `ModelCollection` (covered just below). `all()` fetches all records. Both support pagination:
 
 ```typescript
 // With pagination
@@ -429,6 +429,52 @@ const notes3 = await Note.select(
   [1],
 );
 ```
+
+### ModelCollection -- The Page and the Total
+
+Pagination hides an awkward gap. You ask for 20 rows and you get 20 rows, but a
+pager needs to say "page 3 of 13", and that means knowing the total number of
+matching rows, not the 20 sitting on this page. The old answer was a second
+`COUNT(*)` query with the same filter written out again by hand.
+
+Tina4 closes the gap. `where()`, `select()`, `find()` (the filter form),
+`all()`, and `withTrashed()` all return a `ModelCollection`. It extends `Array`,
+so `Array.isArray()` stays true and you iterate it, index it, `.map()` it, read
+`.length`, and `JSON.stringify` it exactly as before. It just carries one extra
+thing: the total for the filter, independent of `limit` and `offset`. Remember
+Node's `where()` takes `limit` and `offset` positionally, after the params:
+
+```typescript
+const rows = await User.where("active = ?", [1], 20, 40);  // a page of up to 20 models
+rows.getTotalRecords();   // 250 -- the whole matching set, ignoring limit/offset
+```
+
+That total is free. Every one of those methods already runs a `COUNT(*)` probe
+when it fetches the page, and the ORM used to hydrate the models and throw the
+count away. `ModelCollection` keeps it instead, so `getTotalRecords()` fires no
+second query. It is a method, not a property, so the accessor is spelled the
+same way across all four frameworks.
+
+The single-record finders are untouched. `findById()`, `selectOne()`, and the
+primary-key finders still return one model or `null`.
+
+Call `toPaginate()` for a ready-made pagination envelope. It hands back the same
+seven keys as `(await db.fetch(...)).toPaginate()`, so a route paginates the
+same way whether the data came through the ORM or through raw SQL:
+
+```typescript
+// src/routes/api/notes/get.ts
+export default async function (req: Tina4Request, res: Tina4Response) {
+  const page = await Note.where("category = ?", ["work"], 20, 40);
+  res.json(page.toPaginate());
+  // { "records": [...20...], "total": 250, "page": 3, "per_page": 20,
+  //   "total_pages": 13, "limit": 20, "offset": 40 }
+}
+```
+
+The keys (`records`, `total`, `page`, `per_page`, `total_pages`, `limit`,
+`offset`) are snake_case and identical in all four frameworks, so a client reads
+the same JSON everywhere.
 
 ### selectOne -- Fetch a Single Record by SQL
 

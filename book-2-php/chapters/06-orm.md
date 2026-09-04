@@ -351,7 +351,7 @@ Router::get("/api/notes", function (Request $request, Response $response) {
 });
 ```
 
-`where()` takes a WHERE clause with `?` placeholders and an array of parameters. It returns an array of model instances. `all()` also returns an array of model instances. Both support pagination:
+`where()` takes a WHERE clause with `?` placeholders and an array of parameters. It returns a `ModelCollection` (covered just below). `all()` also returns a `ModelCollection`. Both support pagination:
 
 ```php
 // With pagination
@@ -366,6 +366,60 @@ $notes = (new Note())->select(
     [1], limit: 20, offset: 0
 );
 ```
+
+### ModelCollection -- The Page and the Total
+
+Pagination hides an awkward gap. You ask for 20 rows and you get 20 rows, but a
+pager needs to say "page 3 of 13", and that means knowing the total number of
+matching rows, not the 20 sitting on this page. The old answer was a second
+`COUNT(*)` query with the same filter written out again by hand.
+
+Tina4 closes the gap. `where()`, `select()`, `find()` (the filter form),
+`all()`, and `withTrashed()` all return a `ModelCollection`. It stays
+array-compatible: `foreach` it, index it with `$rows[0]`, `count()` it, and
+`json_encode()` it exactly as before. It just carries one extra thing: the total
+for the filter, independent of `limit` and `offset`.
+
+```php
+$rows = (new User())->where("active = ?", [1], limit: 20, offset: 40);  // a page of up to 20 models
+$rows->getTotalRecords();   // 250 -- the whole matching set, ignoring limit/offset
+```
+
+That total is free. Every one of those methods already runs a `COUNT(*)` probe
+when it fetches the page, and the ORM used to hydrate the models and throw the
+count away. `ModelCollection` keeps it instead, so `getTotalRecords()` fires no
+second query. It is a method, not a `count` property, on purpose, and it reads
+the same as the accessor on `DatabaseResult`.
+
+PHP is the one framework where this changes the return type. A PHP `array`
+cannot carry a property, so the read methods now return an object instead of a
+bare `array`. The four interfaces above keep that invisible to ordinary code,
+but native `array_map()`, `array_filter()`, and `is_array()` no longer apply to
+it. When you need a plain array for those, call `->toArray()`:
+
+```php
+$names = array_map(fn ($u) => $u->name, $rows->toArray());
+```
+
+The single-record finders are untouched. The primary-key finders and
+`selectOne()` still return one model or `null`.
+
+Call `toPaginate()` for a ready-made pagination envelope. It hands back the same
+seven keys as `$db->fetch(...)->toPaginate()`, so a route paginates the same way
+whether the data came through the ORM or through raw SQL:
+
+```php
+Router::get("/api/notes", function (Request $request, Response $response) {
+    $page = (new Note())->where("category = ?", ["work"], limit: 20, offset: 40);
+    return $response->json($page->toPaginate());
+    // {"records": [...20...], "total": 250, "page": 3, "per_page": 20,
+    //  "total_pages": 13, "limit": 20, "offset": 40}
+});
+```
+
+The keys (`records`, `total`, `page`, `per_page`, `total_pages`, `limit`,
+`offset`) are snake_case and identical in all four frameworks, so a client reads
+the same JSON everywhere.
 
 ### selectOne -- Fetch a Single Record by SQL
 

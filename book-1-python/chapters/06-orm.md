@@ -399,7 +399,7 @@ async def list_notes(request, response):
     })
 ```
 
-`where()` takes a WHERE clause with `?` placeholders and a list of parameters. It returns a list of model instances. `all()` fetches all records. Both support pagination:
+`where()` takes a WHERE clause with `?` placeholders and a list of parameters. It returns a `ModelCollection` (covered just below). `all()` fetches all records. Both support pagination:
 
 ```python
 # With pagination
@@ -414,6 +414,51 @@ notes = Note.select(
     [1], limit=20, offset=0
 )
 ```
+
+### ModelCollection -- The Page and the Total
+
+Pagination hides an awkward gap. You ask for 20 rows and you get 20 rows, but a
+pager needs to say "page 3 of 13", and that means knowing the total number of
+matching rows, not the 20 sitting on this page. The old answer was a second
+`COUNT(*)` query with the same filter written out again by hand.
+
+Tina4 closes the gap. `where()`, `select()`, `find()` (the filter form),
+`all()`, and `with_trashed()` all return a `ModelCollection` -- a subclass of
+`list`, so nothing you already wrote changes. You iterate it, index it, slice
+it, call `len()` on it, and serialise it to JSON exactly as before. It just
+carries one extra thing: the total for the filter, independent of `limit` and
+`offset`.
+
+```python
+rows = User.where("active = ?", [1], limit=20, offset=40)  # a page of up to 20 models
+rows.get_total_records()   # 250 -- the whole matching set, ignoring limit/offset
+```
+
+That total is free. Every one of those methods already runs a `COUNT(*)` probe
+when it fetches the page, and the ORM used to hydrate the models and throw the
+count away. `ModelCollection` keeps it instead, so `get_total_records()` fires
+no second query. It is a method, not a `.count` property, on purpose: `list`
+already has a `count()` method, so a `.count` attribute would shadow a built-in.
+
+The single-record finders are untouched. `find(pk)`, `find_by_id()`,
+`find_or_fail()`, `select_one()`, and `load()` still return one model or `None`.
+
+Call `to_paginate()` for a ready-made pagination envelope. It hands back the
+same seven keys as `db.fetch(...).to_paginate()`, so a route paginates the same
+way whether the data came through the ORM or through raw SQL:
+
+```python
+@get("/api/notes")
+async def list_notes(request, response):
+    page = Note.where("category = ?", ["work"], limit=20, offset=40)
+    return response(page.to_paginate())
+    # {"records": [...20...], "total": 250, "page": 3, "per_page": 20,
+    #  "total_pages": 13, "limit": 20, "offset": 40}
+```
+
+The keys (`records`, `total`, `page`, `per_page`, `total_pages`, `limit`,
+`offset`) are snake_case and identical in all four frameworks, so a client reads
+the same JSON everywhere.
 
 ### select_one -- Fetch a Single Record by SQL
 
