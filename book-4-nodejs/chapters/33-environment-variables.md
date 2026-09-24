@@ -484,7 +484,6 @@ These settings are read by focused framework modules rather than the server boot
 |----------|---------|-------------|
 | `TINA4_ENV` | `development` | Runtime environment name. Set `production` to disable development-only behaviour. |
 | `TINA4_FEEDBACK_DEV_USER` | _(empty)_ | Local-development identity for testing the feedback widget without authentication. Never use this as production authentication. |
-| `TINA4_MAIL_TLS_INSECURE` | `false` | Disable SMTP TLS certificate validation for local self-signed certificates. Never enable in production. |
 | `TINA4_MCP_URL` | `https://mcp.tina4.com` | Grounding service URL shown and used by the developer admin. |
 | `TINA4_SESSION_MEMCACHED_HOST` | `127.0.0.1` | Memcached host for the session backend. |
 | `TINA4_SESSION_MEMCACHED_PORT` | `11211` | Memcached port for the session backend. |
