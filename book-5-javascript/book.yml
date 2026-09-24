@@ -1,3 +1,9 @@
+# Copyright (c) 2026 Code Infinity
+# SPDX-License-Identifier: MPL-2.0
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 title: "tina4-js — The 1.5KB Reactive Core"
 subtitle: "Signals, Web Components, and a frontend you can fit in your head"
 accent: "#06b6d4"

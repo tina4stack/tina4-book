@@ -274,4 +274,4 @@ PDF copies are re-generated from the Markdown sources and live alongside each bo
 
 ## License
 
-MIT (c) 2007-2026 Tina4 Stack
+MPL-2.0. Copyright Code Infinity. Separate commercial terms are available from Code Infinity. Previously published releases retain their original licences.
