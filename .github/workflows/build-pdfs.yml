@@ -109,7 +109,7 @@ jobs:
       # Pushes the freshly built PDFs into tina4-documentation, which is
       # what tina4.com actually serves from (docs/public/pdfs). Needs
       # DOCS_DEPLOY_TOKEN as a repo secret: a fine-grained PAT with
-      # contents:write on tina4stack/tina4-documentation ONLY.
+      # contents:write and pull_requests:write on tina4stack/tina4-documentation ONLY.
       #
       # The missing-token check lives in the script rather than an `if:`
       # on purpose. Actions won't take `secrets.X` inside an `if:`, and
@@ -121,10 +121,11 @@ jobs:
       - name: Mirror PDFs into tina4-documentation
         env:
           DOCS_TOKEN: ${{ secrets.DOCS_DEPLOY_TOKEN }}
+          GH_TOKEN: ${{ secrets.DOCS_DEPLOY_TOKEN }}
         run: |
           set -e
           if [ -z "${DOCS_TOKEN}" ]; then
-            echo "::warning title=PDFs did NOT reach tina4.com::DOCS_DEPLOY_TOKEN is not set on tina4stack/tina4-book, so the regenerated PDFs were committed here but NOT mirrored into tina4-documentation. The live site is now serving stale PDFs. Mirror by hand, or add the secret: a fine-grained PAT with contents:write on tina4stack/tina4-documentation only, then 'gh secret set DOCS_DEPLOY_TOKEN --repo tina4stack/tina4-book'."
+            echo "::warning title=PDFs did NOT reach tina4.com::DOCS_DEPLOY_TOKEN is not set on tina4stack/tina4-book, so the regenerated PDFs were committed here but NOT mirrored into tina4-documentation. The live site is now serving stale PDFs. Mirror by hand, or add the secret: a fine-grained PAT with contents:write and pull_requests:write on tina4stack/tina4-documentation only, then 'gh secret set DOCS_DEPLOY_TOKEN --repo tina4stack/tina4-book'."
             echo
             echo "  DOCS_DEPLOY_TOKEN not set - PDFs will NOT reach tina4.com; mirror by hand."
             echo
@@ -134,7 +135,7 @@ jobs:
             echo
             echo "  To fix permanently:"
             echo "    1. Create a fine-grained PAT scoped to tina4stack/tina4-documentation"
-            echo "       ONLY, with Repository permissions > Contents: Read and write."
+            echo "       ONLY, with Contents and Pull requests permissions: Read and write."
             echo "    2. gh secret set DOCS_DEPLOY_TOKEN --repo tina4stack/tina4-book"
             echo
             exit 0
@@ -147,14 +148,22 @@ jobs:
           cp book-*/Tina4-*.pdf book-*/Understanding-Tina4.pdf "$tmp/docs/public/pdfs/"
           cd "$tmp"
           if git diff --quiet -- docs/public/pdfs/; then
-            echo "No PDF changes for docs site - tina4.com is already current."
+            echo "No PDF changes: the documentation repository already contains these bytes."
             exit 0
           fi
           git config user.name "tina4-bot"
           git config user.email "bot@tina4.com"
+          branch="automation/book-pdfs-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git switch -c "$branch"
           git add docs/public/pdfs/
           git commit -m "chore(pdf): sync book PDFs from tina4-book@${GITHUB_SHA::7}
 
-          Auto-mirrored by tina4-book/build-pdfs.yml."
-          git push origin main
-          echo "Mirrored to tina4-documentation@main - tina4.com will pick these up on the next Jenkins deploy."
+          Auto-mirrored by tina4-book/build-pdfs.yml.
+
+          Signed-off-by: tina4-bot <bot@tina4.com>
+          Co-Authored-By: Tina4 <82961293+tina4stack@users.noreply.github.com>"
+          git push origin "$branch"
+          gh pr create --repo tina4stack/tina4-documentation --base main --head "$branch" \
+            --title "docs: sync book PDFs from ${GITHUB_SHA::7}" \
+            --body "Generated from tina4-book@${GITHUB_SHA}. The reproducibility check and PDF build passed. Merge after the documentation checks pass to include these PDFs in the next site deployment."
+          echo "PDF mirror PR created. Publication awaits its checks, merge, and site deployment."
