@@ -4257,7 +4257,7 @@ These are the changes that will break existing code. See Chapter 37 for a full m
 
 **PHP version.** Requires PHP 8.0 or later.
 
-**Package name.** Changed from `tina4stack/tina4php` to `tina4stack/tina4-php` (note the hyphen).
+**Package.** Still `tina4stack/tina4php`, now at `^3.0`, and it is the only package: the v2 split packages (`tina4php-core`, `tina4php-database`, `tina4php-orm`) are gone.
 
 ```bash
 # v2
@@ -4280,7 +4280,7 @@ composer require tina4stack/tina4php
 - Feature count: 45 (was 44)
 - Full parity across Python, PHP, Ruby, Node.js
 
-composer require tina4stack/tina4-php
+composer require tina4stack/tina4php:^3.0
 ```
 
 **Directory structure.** `Tina4/` moved from `src/Tina4/` to the project root.
