@@ -154,7 +154,7 @@ Router.post("/api/register", async (req, res) => {
         return res.status(400).json({ error: "Password must be at least 8 characters" });
     }
 
-    const db = Database.getConnection();
+    const db = await Database.getConnection();
 
     // Check if email already exists
     const existing = await db.fetchOne("SELECT id FROM users WHERE email = :email", { email: body.email });
@@ -210,7 +210,7 @@ Router.post("/api/login", async (req, res) => {
         return res.status(400).json({ error: "Email and password are required" });
     }
 
-    const db = Database.getConnection();
+    const db = await Database.getConnection();
 
     // Find the user
     const user = await db.fetchOne(
@@ -785,7 +785,7 @@ Router.post("/api/register", async (req, res) => {
         return res.status(400).json({ errors });
     }
 
-    const db = Database.getConnection();
+    const db = await Database.getConnection();
 
     const existing = await db.fetchOne("SELECT id FROM users WHERE email = :email", { email: body.email });
     if (existing !== null) {
@@ -815,7 +815,7 @@ Router.post("/api/login", async (req, res) => {
         return res.status(400).json({ error: "Email and password are required" });
     }
 
-    const db = Database.getConnection();
+    const db = await Database.getConnection();
 
     const user = await db.fetchOne(
         "SELECT id, name, email, password_hash, role FROM users WHERE email = :email",
@@ -843,7 +843,7 @@ Router.post("/api/login", async (req, res) => {
 
 
 Router.get("/api/profile", async (req, res) => {
-    const db = Database.getConnection();
+    const db = await Database.getConnection();
 
     const user = await db.fetchOne(
         "SELECT id, name, email, role, created_at FROM users WHERE id = :id",
@@ -859,7 +859,7 @@ Router.get("/api/profile", async (req, res) => {
 
 
 Router.put("/api/profile", async (req, res) => {
-    const db = Database.getConnection();
+    const db = await Database.getConnection();
     const body = req.body;
     const userId = req.user.user_id;
 
@@ -891,7 +891,7 @@ Router.put("/api/profile", async (req, res) => {
 
 
 Router.put("/api/profile/password", async (req, res) => {
-    const db = Database.getConnection();
+    const db = await Database.getConnection();
     const body = req.body;
     const userId = req.user.user_id;
 
