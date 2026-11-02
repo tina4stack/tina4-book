@@ -163,7 +163,17 @@ jobs:
           Signed-off-by: tina4-bot <bot@tina4.com>
           Co-Authored-By: Tina4 <82961293+tina4stack@users.noreply.github.com>"
           git push origin "$branch"
-          gh pr create --repo tina4stack/tina4-documentation --base main --head "$branch" \
+          # The branch (with the regenerated PDFs) is now safely on
+          # tina4-documentation. Opening the PR is the only step that needs
+          # Pull requests: write - if DOCS_DEPLOY_TOKEN only carries Contents
+          # (a re-scoped or expired fine-grained PAT), do NOT fail the whole
+          # book build over it: the PDFs built and pushed, which is recoverable.
+          # Warn with the branch name so a human can open the PR, or re-scope
+          # the token so this self-mirrors again.
+          if gh pr create --repo tina4stack/tina4-documentation --base main --head "$branch" \
             --title "docs: sync book PDFs from ${GITHUB_SHA::7}" \
-            --body "Generated from tina4-book@${GITHUB_SHA}. The reproducibility check and PDF build passed. Merge after the documentation checks pass to include these PDFs in the next site deployment."
-          echo "PDF mirror PR created. Publication awaits its checks, merge, and site deployment."
+            --body "Generated from tina4-book@${GITHUB_SHA}. The reproducibility check and PDF build passed. Merge after the documentation checks pass to include these PDFs in the next site deployment."; then
+            echo "PDF mirror PR created. Publication awaits its checks, merge, and site deployment."
+          else
+            echo "::warning title=PDFs pushed but the mirror PR did not open::The regenerated PDFs were pushed to tina4-documentation branch '$branch', but 'gh pr create' failed - DOCS_DEPLOY_TOKEN can push (Contents) but is missing Pull requests: write on tina4stack/tina4-documentation. The branch is safe; open the PR by hand (gh pr create --repo tina4stack/tina4-documentation --base main --head $branch), or re-scope the token to Pull requests: Read and write so this job self-mirrors again. tina4.com serves the previous PDFs until the branch is merged."
+          fi
